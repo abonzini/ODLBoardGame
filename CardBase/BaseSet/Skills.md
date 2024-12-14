@@ -1,10 +1,10 @@
-![](./../../Pictures/BaseSet/1.svg)
+![](./../../Pictures/BaseSet/1.png)
 
-![](./../../Pictures/BaseSet/15.svg)
-![](./../../Pictures/BaseSet/16.svg)
-![](./../../Pictures/BaseSet/17.svg)
+![](./../../Pictures/BaseSet/15.png)
+![](./../../Pictures/BaseSet/16.png)
+![](./../../Pictures/BaseSet/17.png)
 
-![](./../../Pictures/BaseSet/18.svg)
-![](./../../Pictures/BaseSet/19.svg)
+![](./../../Pictures/BaseSet/18.png)
+![](./../../Pictures/BaseSet/19.png)
 
-![](./../../Pictures/BaseSet/20.svg)
+![](./../../Pictures/BaseSet/20.png)
