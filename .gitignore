@@ -1,1 +1,5 @@
 *.svg
+*\bin
+*.vs
+*\obj
+*\TestResults

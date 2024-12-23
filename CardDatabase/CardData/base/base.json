@@ -1,0 +1,27 @@
+[
+	{
+	  "cardData":
+	  {
+		"id": 2,
+		"name": "PEASANT",
+		"text": "",
+		"cardType": 1,
+		"targetMode": 1,
+		"targetCondition": 0,
+		"cost": 0,
+		"hp": 2,
+		"movement": 1,
+		"attack": 2,
+		"rarity": 1,
+		"expansion": 0,
+		"classType": 0
+	  },
+	  "unitData":
+	  {
+		"movement": 1,
+		"movementDenominator": 1,
+		"attack": 2,
+		"hp": 2
+	  }
+	}
+]
