@@ -16,14 +16,6 @@ namespace ODLGameEngine
     }
 
     /// <summary>
-    /// Whether card is unique to a class
-    /// </summary>
-    public enum ClassType
-    {
-        BASE
-    }
-
-    /// <summary>
     /// Which expansion the card belongs to
     /// </summary>
     public enum ExpansionId

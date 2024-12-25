@@ -8,6 +8,8 @@ namespace ODLGameEngine
 {
     public class GameStateManager
     {
+        // TODO FIRST:
+        // State machine of game state manager, actions in order and keep flow, accept commands only in specific situations
         // TODO
         // Contorls whole thing, contains data (hp, gold, hand#, contains hands too)
         // Allows cards to operate as needed, giving itself as base state but only allowing readonly and requesting actions back to game state, receive results
