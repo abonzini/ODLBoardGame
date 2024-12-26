@@ -30,13 +30,26 @@ namespace ODLGameEngine
         /// </summary>
         public Card card;
         /// <summary>
+        /// Who owns this card
+        /// </summary>
+        public PlayerId owner { get; set; } = PlayerId.SPECTATOR;
+        /// <summary>
+        /// Which lane is it on
+        /// </summary>
+        public LaneID laneCoordinate = LaneID.NO_LANE;
+        /// <summary>
+        /// Which tile of lane (absolute to board)
+        /// </summary>
+        public int tileCoordinate = -1;
+        /// <summary>
         /// Hp of thing
         /// </summary>
         public int hp { get; set; } = 0;
-        // Internal status
-        protected int damage = 0;
-        public int getCurrentHp() { return hp - damage; }
-        // Stealth shenanigans
+        /// <summary>
+        /// Damage taken
+        /// </summary>
+        public int damage { get; set; } = 0;
+        // Stealth shenanigans, important but never serialized
         protected bool isHidden = false;
         protected bool isTheRealOne = true;
         protected List<HiddenCorrelation> hiddenCorrelations = new List<HiddenCorrelation>(); // If stealth unit, need to define correlations for when they're discovered

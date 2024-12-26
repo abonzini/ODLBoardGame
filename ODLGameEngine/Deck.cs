@@ -10,7 +10,8 @@ namespace ODLGameEngine
     {
         public const int MAX_CARDS_IN_DECK = 60;
         int[] cardsInDeck = new int[MAX_CARDS_IN_DECK];
-        int cardCount = 0;
+        Dictionary<int, int> cardCount = new Dictionary<int, int>();
+        int totalCardCount = 0;
         /// <summary>
         /// Initializes deck given csv string of cards sequence
         /// </summary>
@@ -18,15 +19,21 @@ namespace ODLGameEngine
         public void InitializeDeck(string deckString)
         {
             Array.Clear(cardsInDeck);
-            cardCount = 0;
+            totalCardCount = 0;
 
             // Now I add string to the deck
             string[] cardStrings = deckString.Split(',');
             int cardsToAdd = (cardStrings.Count() > MAX_CARDS_IN_DECK) ? MAX_CARDS_IN_DECK : cardStrings.Count();
             for(int i = 0; i < cardsToAdd; i++)
             {
+                int cardId = int.Parse(cardStrings[i]);
+                if (!cardCount.ContainsKey(cardId))
+                {
+                    cardCount[cardId] = 0;
+                }
+                cardCount[cardId]++;
                 cardsInDeck[i] = int.Parse(cardStrings[i]);
-                cardCount++;
+                totalCardCount++;
             }
         }
         /// <summary>
@@ -36,10 +43,10 @@ namespace ODLGameEngine
         public string GetDeckString()
         {
             string retString = string.Empty;
-            for(int i = 0; i < cardCount; i++)
+            for(int i = 0; i < totalCardCount; i++)
             {
                 retString += cardsInDeck[i];
-                if(i < cardCount-1) // Add csv until last card
+                if(i < totalCardCount-1) // Add csv until last card
                 {
                     retString += ",";
                 }
@@ -52,7 +59,7 @@ namespace ODLGameEngine
         /// <returns>Number of cards in deck</returns>
         public int GetCardNumber()
         {
-            return cardCount;
+            return totalCardCount;
         }
         /// <summary>
         /// Gets last card of deck
@@ -60,10 +67,12 @@ namespace ODLGameEngine
         /// <returns>The card ID that was jsut popped</returns>
         public int PopCard()
         {
-            if(cardCount > 0)
+            if(totalCardCount > 0)
             {
-                cardCount--; // One less card
-                return cardsInDeck[cardCount]; // Return what was in the last position
+                int card = cardsInDeck[totalCardCount];
+                totalCardCount--; // One less card
+                cardCount[card]--;
+                return card; // Return what was in the last position
             }
             else
             {
@@ -76,10 +85,15 @@ namespace ODLGameEngine
         /// <param name="card">The card to add to top of deck</param>
         public void RestoreCard(int card)
         {
-            if(cardCount < MAX_CARDS_IN_DECK)
+            if(totalCardCount < MAX_CARDS_IN_DECK)
             {
-                cardsInDeck[cardCount] = card;
-                cardCount++;
+                cardsInDeck[totalCardCount] = card;
+                if (!cardCount.ContainsKey(card))
+                {
+                    cardCount[card] = 0;
+                }
+                cardCount[card]++;
+                totalCardCount++;
             }
             else
             {

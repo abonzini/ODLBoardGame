@@ -16,6 +16,6 @@ namespace ODLGameEngine
         public int movementDenominator { get; set; } = 1;
         public int attack { get; set; } = 0;
         // Internal Status Var
-        public int mvtCooldownTimer = 0;
+        public int mvtCooldownTimer { get; set; } = 0;
     }
 }

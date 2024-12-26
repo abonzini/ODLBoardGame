@@ -2,10 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
+    public enum PlayerId
+    {
+        SPECTATOR, // Meant for a spectator, lowest knowledge
+        PLAYER_1,
+        PLAYER_2,
+        OMNISCIENT // Highest knowledge
+    }
+
+    /// <summary>
+    /// Lanes
+    /// </summary>
+    public enum LaneID
+    {
+        NO_LANE,
+        LANE_PLAINS,
+        LANE_FOREST,
+        LANE_MOUNTAIN
+    }
+
     public class GameStateManager
     {
         // TODO FIRST:
