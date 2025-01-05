@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ODLGameEngine
@@ -10,8 +11,8 @@ namespace ODLGameEngine
     {
         public const int MAX_CARDS_IN_DECK = 60;
         int[] cardsInDeck = new int[MAX_CARDS_IN_DECK];
-        Dictionary<int, int> cardCount = new Dictionary<int, int>();
-        int totalCardCount = 0;
+        Dictionary<int, int> cardHistogram = new Dictionary<int, int>();
+        int cardCount = 0;
         /// <summary>
         /// Initializes deck given csv string of cards sequence
         /// </summary>
@@ -19,7 +20,7 @@ namespace ODLGameEngine
         public void InitializeDeck(string deckString)
         {
             Array.Clear(cardsInDeck);
-            totalCardCount = 0;
+            cardCount = 0;
 
             // Now I add string to the deck
             string[] cardStrings = deckString.Split(',');
@@ -27,30 +28,27 @@ namespace ODLGameEngine
             for(int i = 0; i < cardsToAdd; i++)
             {
                 int cardId = int.Parse(cardStrings[i]);
-                if (!cardCount.ContainsKey(cardId))
+                if (!cardHistogram.ContainsKey(cardId))
                 {
-                    cardCount[cardId] = 0;
+                    cardHistogram[cardId] = 0;
                 }
-                cardCount[cardId]++;
+                cardHistogram[cardId]++;
                 cardsInDeck[i] = int.Parse(cardStrings[i]);
-                totalCardCount++;
+                cardCount++;
             }
         }
         /// <summary>
         /// Request deck string for current deck
         /// </summary>
-        /// <returns>Deck string as it stands </returns>
+        /// <returns> Deck JSON string with count </returns>
         public string GetDeckString()
         {
             string retString = string.Empty;
-            for(int i = 0; i < totalCardCount; i++)
+            var options = new JsonSerializerOptions // Serializing options for nice format...
             {
-                retString += cardsInDeck[i];
-                if(i < totalCardCount-1) // Add csv until last card
-                {
-                    retString += ",";
-                }
-            }
+                WriteIndented = true
+            };
+            retString = JsonSerializer.Serialize(cardHistogram, options);
             return retString;
         }
         /// <summary>
@@ -59,7 +57,7 @@ namespace ODLGameEngine
         /// <returns>Number of cards in deck</returns>
         public int GetCardNumber()
         {
-            return totalCardCount;
+            return cardCount;
         }
         /// <summary>
         /// Gets last card of deck
@@ -67,11 +65,11 @@ namespace ODLGameEngine
         /// <returns>The card ID that was jsut popped</returns>
         public int PopCard()
         {
-            if(totalCardCount > 0)
+            if(cardCount > 0)
             {
-                int card = cardsInDeck[totalCardCount];
-                totalCardCount--; // One less card
-                cardCount[card]--;
+                int card = cardsInDeck[cardCount-1];
+                cardCount--; // One less card
+                cardHistogram[card]--;
                 return card; // Return what was in the last position
             }
             else
@@ -83,17 +81,17 @@ namespace ODLGameEngine
         /// Adds card back into last place
         /// </summary>
         /// <param name="card">The card to add to top of deck</param>
-        public void RestoreCard(int card)
+        public void InsertCard(int card)
         {
-            if(totalCardCount < MAX_CARDS_IN_DECK)
+            if(cardCount < MAX_CARDS_IN_DECK)
             {
-                cardsInDeck[totalCardCount] = card;
-                if (!cardCount.ContainsKey(card))
+                cardsInDeck[cardCount] = card;
+                if (!cardHistogram.ContainsKey(card))
                 {
-                    cardCount[card] = 0;
+                    cardHistogram[card] = 0;
                 }
-                cardCount[card]++;
-                totalCardCount++;
+                cardHistogram[card]++;
+                cardCount++;
             }
             else
             {
@@ -107,17 +105,12 @@ namespace ODLGameEngine
         public void ShuffleDeck(int randomSeed)
         {
             Random rng = new Random(randomSeed);
-            rng.Shuffle<int>(cardsInDeck);
+            rng.Shuffle<int>(cardsInDeck.AsSpan<int>().Slice(0, cardCount));
         }
-        /// <summary>
-        /// Adds new card to deck (has to shuffle deck after)
-        /// </summary>
-        /// <param name="card">Card to add</param>
-        /// <param name="randomSeed">Seed to shuffle</param>
-        public void InsertCard(int card, int randomSeed)
+
+        public override string ToString()
         {
-            RestoreCard(card);
-            ShuffleDeck(randomSeed);
+            return GetDeckString();
         }
     }
 }
