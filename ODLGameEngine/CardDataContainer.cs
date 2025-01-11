@@ -13,9 +13,9 @@ namespace ODLGameEngine
     public class CardDataContainer
     {
         public Card cardData { get; set; }
-        public Unit unitData { get; set; }
-        public Skill skillData { get; set; }
-        public Building buildingData { get; set; }
+        public Unit unitData { get; set; } = null;
+        public Skill skillData { get; set; } = null;
+        public Building buildingData { get; set; } = null;
     }
 
     /// <summary>
