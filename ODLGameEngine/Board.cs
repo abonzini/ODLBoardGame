@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,14 +11,14 @@ namespace ODLGameEngine
     {
         string _tag = "";
         Building _buildingInTile = null; // I guess will be a single element list? (leaving space for flexibility)
-        List<Unit> _unitsInTile = new List<Unit>();
+        SortedList<int, Unit> _unitsInTile = new SortedList<int, Unit>();
         int[] _playersUnits = [0, 0];
     }
     public class Lane /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
     {
         int _len;
         List<Tile> _tiles;
-        int[] _playersUnits;
+        int[] _playersUnits = [0, 0];
         public Lane(int n)
         {
             _len = n;
@@ -25,11 +26,11 @@ namespace ODLGameEngine
             _playersUnits = [0, 0]; // Players start w no units here
         }
 
-        IEnumerable<Tile> GetTiles(PlayerId player) /// Returns tile one by one relative to desired player
+        IEnumerable<Tile> GetTiles(PlayerId player, bool ascending = true) /// Returns tile one by one relative to desired player
         {
             int start, end, increment; 
-            // calculate order
-            if(PlayerId.PLAYER_2 != player) // All use the reference of 0 = beginning except player 2
+            // calculate order depending if I want ascending or descending
+            if(PlayerId.PLAYER_2 != player ^ !ascending) // All use the reference of 0 = beginning except player 2
             {
                 start = 0;
                 end = _len-1;
