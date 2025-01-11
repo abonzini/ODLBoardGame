@@ -27,22 +27,31 @@ namespace ODLGameEngine
         LANE_MOUNTAIN
     }
 
-    public class GameStateManager
+    /// <summary>
+    /// Contains all data about a game state, copyable and small, no methods.
+    /// The "moving parts" (actions, full board stste, decks, hands) are stored elsewhere
+    /// Can be serialized to clients to render full game state.
+    /// Can be sent to AI to make game decisions.
+    /// </summary>
+    public class GameState
     {
-        // TODO FIRST:
-        // State machine of game state manager, actions in order and keep flow, accept commands only in specific situations
-        // TODO
-        // Contorls whole thing, contains data (hp, gold, hand#, contains hands too)
-        // Allows cards to operate as needed, giving itself as base state but only allowing readonly and requesting actions back to game state, receive results
-        // Game state also contains info og hidden
-        // Request game/hand state as needed in json mode or similar for unity client
-        /* Finally, will contain AI methods that will be useful such as
-            - Get possible actions (play, pass, whatever)
-            - Get game state (& an absolute state hash independent of order)
-            - Reversion of game state back to prev action
-         */
+        public PlayerId currentPlayer { get; set; } = PlayerId.OMNISCIENT;
 
-        // TODO technical
-        // OrderedList of existing units (coordinates, buff tracker, player owner, etc), similar graveyard for units, will be picked-placed as corresponding when requested by game state
+        public PlayerState[] playerStates { get; set; } = [new PlayerState(), new PlayerState()];
+    }
+
+    /// <summary>
+    /// State of a player, to be contained in game state
+    /// </summary>
+    public class PlayerState
+    {
+        public int hp { get; set; } = 0;
+        public int gold { get; set; } = 0;
+        public int nBuildings { get; set; } = 0;
+        public int nUnits { get; set; } = 0;
+        public int handSize { get; set; } = 0;
+        public int deckSize { get; set; } = 0;
+        public string handInfo { get; set; } = "";
+        public string deckInfo { get; set; } = "";
     }
 }
