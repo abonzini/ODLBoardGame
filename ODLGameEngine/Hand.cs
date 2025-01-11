@@ -9,21 +9,8 @@ namespace ODLGameEngine
 {
     public class Hand
     {
-        List<int> cardsInHand = new List<int>();
-        /// <summary>
-        /// Returns a hand string listing cards in hand
-        /// </summary>
-        /// <returns>Csv list of cards in hand</returns>
-        public string GetHandString()
-        {
-            string retString = string.Empty;
-            var options = new JsonSerializerOptions // Serializing options for nice format...
-            {
-                WriteIndented = true
-            };
-            retString = JsonSerializer.Serialize(cardsInHand, options);
-            return retString;
-        }
+        public List<int> cardsInHand { get; set; } = new List<int>();
+
         /// <summary>
         /// Get hand size of player
         /// </summary>
@@ -69,7 +56,13 @@ namespace ODLGameEngine
 
         public override string ToString()
         {
-            return GetHandString();
+            string retString = string.Empty;
+            var options = new JsonSerializerOptions // Serializing options for nice format...
+            {
+                WriteIndented = true
+            };
+            retString = JsonSerializer.Serialize(cardsInHand, options);
+            return retString;
         }
     }
 }

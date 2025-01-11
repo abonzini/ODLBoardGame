@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
+    public enum GameStates
+    {
+    }
+
     public class GameStateMachine
     {
     }

@@ -10,9 +10,9 @@ namespace ODLGameEngine
     public class Deck
     {
         public const int MAX_CARDS_IN_DECK = 60;
-        int[] cardsInDeck = new int[MAX_CARDS_IN_DECK];
-        Dictionary<int, int> cardHistogram = new Dictionary<int, int>();
-        int cardCount = 0;
+        public int[] cardsInDeck { get; set; } = new int[MAX_CARDS_IN_DECK];
+        public Dictionary<int, int> cardHistogram { get; set; } = new Dictionary<int, int>();
+        public int cardCount { get; set; } = 0;
         /// <summary>
         /// Initializes deck given csv string of cards sequence
         /// </summary>
@@ -41,7 +41,7 @@ namespace ODLGameEngine
         /// Request deck string for current deck
         /// </summary>
         /// <returns> Deck JSON string with count </returns>
-        public string GetDeckString()
+        public string GetDeckHistogramString()
         {
             string retString = string.Empty;
             var options = new JsonSerializerOptions // Serializing options for nice format...
@@ -110,7 +110,7 @@ namespace ODLGameEngine
 
         public override string ToString()
         {
-            return GetDeckString();
+            return GetDeckHistogramString();
         }
     }
 }

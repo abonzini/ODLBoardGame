@@ -50,8 +50,8 @@ namespace ODLGameEngine
         /// </summary>
         public int damage { get; set; } = 0;
         // Stealth shenanigans, important but never serialized
-        protected bool isHidden = false;
-        protected bool isTheRealOne = true;
-        protected List<HiddenCorrelation> hiddenCorrelations = new List<HiddenCorrelation>(); // If stealth unit, need to define correlations for when they're discovered
+        protected bool isHidden { get; set; } = false;
+        protected bool isTheRealOne { get; set; } = true;
+        protected List<HiddenCorrelation> hiddenCorrelations { get; set; } = new List<HiddenCorrelation>(); // If stealth unit, need to define correlations for when they're discovered
     }
 }
