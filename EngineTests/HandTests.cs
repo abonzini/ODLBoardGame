@@ -1,4 +1,5 @@
 using ODLGameEngine;
+using System.Diagnostics.Metrics;
 using System.Text.Json;
 
 namespace EngineTests
@@ -22,7 +23,8 @@ namespace EngineTests
             hand.InsertCard(3, hand.GetHandSize());
             Assert.AreEqual(hand.GetHandSize(), 3); // Verify correct number
             string handString = hand.ToString();
-            List<int> cards = JsonSerializer.Deserialize<List<int>>(handString);
+            List<int>? cards = JsonSerializer.Deserialize<List<int>>(handString);
+            if (cards == null) throw new Exception("Deserialization of hand broke");
             for (int i = 0; i < 3; i++)
             {
                 Assert.AreEqual(cards[i], i+1); // Verify correct cards in correct order
