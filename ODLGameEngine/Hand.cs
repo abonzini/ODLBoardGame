@@ -26,14 +26,7 @@ namespace ODLGameEngine
         /// <param name="i">Position to insert at</param>
         public void InsertCard(int card, int i)
         {
-            if(i >= 0 && i<=cardsInHand.Count)
-            {
-                cardsInHand.Insert(i, card);
-            }
-            else
-            {
-                throw new Exception("Card inserted has to be contiguous to other cards!");
-            }
+            cardsInHand.Insert(i, card);
         }
         /// <summary>
         /// Removes the card at specific position (pops). Used when playing a card, and when undoing a draw
@@ -42,16 +35,9 @@ namespace ODLGameEngine
         /// <returns>The card that was removed</returns>
         public int RemoveCardAt(int i)
         {
-            if(i>=0 && i < cardsInHand.Count)
-            {
-                int card = cardsInHand[i];
-                cardsInHand.RemoveAt(i);
-                return card;
-            }
-            else
-            {
-                throw new Exception("Card removed from hand not in range!");
-            }
+            int card = cardsInHand[i];
+            cardsInHand.RemoveAt(i);
+            return card;
         }
 
         public override string ToString()

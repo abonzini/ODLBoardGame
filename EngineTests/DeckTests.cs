@@ -42,7 +42,7 @@ namespace EngineTests
             }
         }
         [TestMethod]
-        public void DeckInsertion()
+        public void DeckAddAndPop()
         {
             Deck newDeck = new Deck();
             // Will add 1 ones, 2 twos, etc, for a total of 15 cards
@@ -50,21 +50,21 @@ namespace EngineTests
             {
                 for (int j = 0; j < i; j++)
                 {
-                    newDeck.InsertCard(i);
+                    newDeck.InsertCard(0,i); // Added in reverse order for some reason
                 }
             }
-            Assert.AreEqual(newDeck.GetCardNumber(), 15);
-            // Make sure of individual cards
-            string deckHistogram = newDeck.GetDeckHistogramString();
-            Dictionary<int, int>? histogram = JsonSerializer.Deserialize<Dictionary<int, int>>(deckHistogram);
-            if (histogram == null) throw new Exception("Deserialization of deck broke");
-            for (int i = 1; i <= 5; i++) // Check existance of each card
+            // Now I pop one by one, should get them in the order as I added (due to inserting at 0!)
+            for (int i = 1; i <= 5; i++)
             {
-                Assert.AreEqual(histogram[i], i); // Verify i of each
+                for (int j = 0; j < i; j++)
+                {
+                    int card = newDeck.PopCard();
+                    Assert.AreEqual(card, i);
+                }
             }
         }
         [TestMethod]
-        public void DeckRestoration()
+        public void DeckInsertion()
         {
             Deck newDeck = new Deck();
             newDeck.InitializeDeck("1,2,3,4,5"); // Adds cards 1 2 3 4 5
@@ -74,7 +74,7 @@ namespace EngineTests
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {
                 Assert.AreEqual(histogram[i], 1); // Verify 1 of each
-                newDeck.InsertCard(i); // But also sneakily add another one
+                newDeck.InsertCard(0,i); // But also sneakily add another one
             }
             // Check again
             deckHistogram = newDeck.GetDeckHistogramString();
@@ -82,25 +82,9 @@ namespace EngineTests
             if (histogram == null) throw new Exception("Deserialization of deck broke");
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {
-                Assert.AreEqual(histogram[i], 2); // Verify 1 of each
+                Assert.AreEqual(histogram[i], 2); // Verify 2 of each
             }
         }
-        [TestMethod]
-        public void DeckShuffling()
-        {
-            Deck newDeck = new Deck();
-            for (int i = 1; i <= 5; i++) // Check existance of each card
-            {
-                newDeck.InsertCard(i); // Add cards 1,2,3,4,5 and will be shuffled (ensures no exception on shuffle)
-            }
-            newDeck.ShuffleDeck(0);
-            for (int i = 0; i < 5; i++)
-            {
-                int card = newDeck.PopCard();
-                bool isBetween = card > 0 && card <= 5;
-                Assert.IsTrue(isBetween); // Ensures card is between!
-            }
-            Assert.AreEqual(newDeck.GetCardNumber(), 0); // By now there should be 0 cards remaining   
-        }
+        
     }
 }

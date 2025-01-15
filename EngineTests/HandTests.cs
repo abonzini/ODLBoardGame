@@ -21,7 +21,7 @@ namespace EngineTests
             hand.InsertCard(2, hand.GetHandSize());
             hand.InsertCard(3, hand.GetHandSize());
             Assert.AreEqual(hand.GetHandSize(), 3); // Verify correct number
-            string handString = hand.GetHandString();
+            string handString = hand.ToString();
             List<int> cards = JsonSerializer.Deserialize<List<int>>(handString);
             for (int i = 0; i < 3; i++)
             {

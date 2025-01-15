@@ -9,32 +9,27 @@ namespace ODLGameEngine
 {
     public class Deck
     {
-        public const int MAX_CARDS_IN_DECK = 60;
-        public int[] cardsInDeck { get; set; } = new int[MAX_CARDS_IN_DECK];
+        public List<int> deck { get; set; } = new List<int>(30);
         public Dictionary<int, int> cardHistogram { get; set; } = new Dictionary<int, int>();
-        public int cardCount { get; set; } = 0;
         /// <summary>
         /// Initializes deck given csv string of cards sequence
         /// </summary>
         /// <param name="deckString">A csv string with each int id of the cards</param>
         public void InitializeDeck(string deckString)
         {
-            Array.Clear(cardsInDeck);
-            cardCount = 0;
+            deck.Clear();
 
             // Now I add string to the deck
             string[] cardStrings = deckString.Split(',');
-            int cardsToAdd = (cardStrings.Count() > MAX_CARDS_IN_DECK) ? MAX_CARDS_IN_DECK : cardStrings.Count();
-            for(int i = 0; i < cardsToAdd; i++)
+            foreach(string card in cardStrings)
             {
-                int cardId = int.Parse(cardStrings[i]);
+                int cardId = int.Parse(card);
                 if (!cardHistogram.ContainsKey(cardId))
                 {
                     cardHistogram[cardId] = 0;
                 }
                 cardHistogram[cardId]++;
-                cardsInDeck[i] = int.Parse(cardStrings[i]);
-                cardCount++;
+                deck.Add(cardId);
             }
         }
         /// <summary>
@@ -57,7 +52,7 @@ namespace ODLGameEngine
         /// <returns>Number of cards in deck</returns>
         public int GetCardNumber()
         {
-            return cardCount;
+            return deck.Count;
         }
         /// <summary>
         /// Gets last card of deck
@@ -65,10 +60,10 @@ namespace ODLGameEngine
         /// <returns>The card ID that was jsut popped</returns>
         public int PopCard()
         {
-            if(cardCount > 0)
+            if(deck.Count > 0)
             {
-                int card = cardsInDeck[cardCount-1];
-                cardCount--; // One less card
+                int card = deck.Last(); // Get card
+                deck.RemoveAt(deck.Count - 1); // Pop it
                 cardHistogram[card]--;
                 return card; // Return what was in the last position
             }
@@ -81,33 +76,16 @@ namespace ODLGameEngine
         /// Adds card back into last place
         /// </summary>
         /// <param name="card">The card to add to top of deck</param>
-        public void InsertCard(int card)
+        public void InsertCard(int position, int card)
         {
-            if(cardCount < MAX_CARDS_IN_DECK)
+            deck.Insert(position, card);
+            if (!cardHistogram.ContainsKey(card))
             {
-                cardsInDeck[cardCount] = card;
-                if (!cardHistogram.ContainsKey(card))
-                {
-                    cardHistogram[card] = 0;
-                }
-                cardHistogram[card]++;
-                cardCount++;
+                cardHistogram[card] = 0;
             }
-            else
-            {
-                throw new Exception("Deck full!");
-            }    
+            cardHistogram[card]++;
         }
-        /// <summary>
-        /// Shuffles deck
-        /// </summary>
-        /// <param name="randomSeed">Random seed to perform the shuffle</param>
-        public void ShuffleDeck(int randomSeed)
-        {
-            Random rng = new Random(randomSeed);
-            rng.Shuffle<int>(cardsInDeck.AsSpan<int>().Slice(0, cardCount));
-        }
-
+        
         public override string ToString()
         {
             return GetDeckHistogramString();

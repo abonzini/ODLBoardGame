@@ -89,8 +89,10 @@ namespace ODLGameEngine
         public Lane forestLane { get; set; } = new Lane(GameConstants.FOREST_TILES_NUMBER);
         public Lane mountainLane { get; set; } = new Lane(GameConstants.MOUNTAIN_TILES_NUMBER);
         // Units
-        SortedList<int, Unit>[] playerUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
-        SortedList<int, Building>[] playerBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
+        public SortedList<int, Unit>[] playerUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
+        public SortedList<int, Building>[] playerBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
+        public SortedList<int, Unit>[] deadUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
+        public SortedList<int, Building>[] deadBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
         // Methods
         public int laneCount { get; set; } = 3;
         public Lane GetLane(int i)
