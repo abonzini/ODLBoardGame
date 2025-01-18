@@ -14,7 +14,41 @@ namespace ODLGameEngine
         PLAYER_1,
         PLAYER_2,
         OMNISCIENT // Highest knowledge
-    }    
+    }
+    /// <summary>
+    /// What state the machine is
+    /// </summary>
+    public enum States
+    {
+        /// <summary>
+        /// State machine just created, reccomended to setup before continuing
+        /// </summary>
+        START,
+        /// <summary>
+        /// Loading a previously known state, GameState class
+        /// </summary>
+        LOAD_STATE,
+        /// <summary>
+        /// Start of a brand new game, shuffling and such needed
+        /// </summary>
+        GAME_INIT,
+        /// <summary>
+        /// Draw phase of player
+        /// </summary>
+        DRAW_PHASE,
+        /// <summary>
+        /// Action phase, players select their actions
+        /// </summary>
+        ACTION_PHASE,
+        /// <summary>
+        /// End of turn activities
+        /// </summary>
+        EOT,
+        /// <summary>
+        /// If end of game is triggered
+        /// </summary>
+        EOG
+    }
 
     /// <summary>
     /// Contains all data about a game state, copyable and small, no methods.
@@ -24,8 +58,9 @@ namespace ODLGameEngine
     /// The amount of info given to players and spectators is limited depending on their privileges to avoid cheating
     /// With this, a game state can be completely retrieved and any game can be started from any point (as well as from scratch)
     /// </summary>
-    public class GameState
+    public class GameStateClass
     {
+        public States currentState {  get; set; } = States.START;
         public string stateHash { get; set; } = "";
         public int seed { get; set; } = 0;
         public PlayerId currentPlayer { get; set; } = PlayerId.OMNISCIENT;
@@ -38,8 +73,11 @@ namespace ODLGameEngine
     /// </summary>
     public class PlayerState
     {
+        public string name { get; set; } = "";
+        public PlayerClassType playerClass { get; set; } = PlayerClassType.BASE;
         public int hp { get; set; } = 0;
         public int gold { get; set; } = 0;
+        public bool rushActive { get; set; } = true;
         public int nBuildings { get; set; } = 0;
         public int nUnits { get; set; } = 0;
         public Hand hand { get; set; } = new Hand();

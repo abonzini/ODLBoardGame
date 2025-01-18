@@ -57,7 +57,7 @@ namespace ODLGameEngine
         public int plainsBpCondition { get; set; } = 0b0;
         public int forestBpCondition { get; set; } = 0b0;
         public int mountainsBpCondition { get; set; } = 0b0;
-        // Playable info (will be in card
+        // Playable info (will be in card)
         public int cost { get; set; } = 0;
         public int hp { get; set; } = 0;
         public int movement { get; set; } = 0;
@@ -65,7 +65,7 @@ namespace ODLGameEngine
         public int attack { get; set; } = 0;
         public int rarity { get; set; } = 0;
         public ExpansionId expansion { get; set; } = ExpansionId.BASE;
-        public ClassType classType { get; set; } = ClassType.BASE;
+        public PlayerClassType classType { get; set; } = PlayerClassType.BASE;
         public bool stealthPlay { get; set; } = false; // Whether card triggers a stealth case
     }
 }
