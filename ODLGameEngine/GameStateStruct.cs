@@ -25,15 +25,15 @@ namespace ODLGameEngine
         /// </summary>
         START,
         /// <summary>
-        /// Loading a previously known state, GameState class
+        /// Initialization for Player 1
         /// </summary>
-        LOAD_STATE,
+        P1_INIT,
+        /// <summary>
+        /// Initialization for Player 2
+        /// </summary>
+        P2_INIT,
         /// <summary>
         /// Start of a brand new game, shuffling and such needed
-        /// </summary>
-        GAME_INIT,
-        /// <summary>
-        /// Draw phase of player
         /// </summary>
         DRAW_PHASE,
         /// <summary>
@@ -58,7 +58,7 @@ namespace ODLGameEngine
     /// The amount of info given to players and spectators is limited depending on their privileges to avoid cheating
     /// With this, a game state can be completely retrieved and any game can be started from any point (as well as from scratch)
     /// </summary>
-    public class GameStateClass
+    public class GameStateStruct
     {
         public States currentState {  get; set; } = States.START;
         public string stateHash { get; set; } = "";

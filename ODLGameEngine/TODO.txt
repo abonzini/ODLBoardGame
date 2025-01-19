@@ -1,0 +1,2 @@
+- P1, P2, shuffle and init
+- Tests for proper init, including reaching up to draw phase P1
