@@ -9,7 +9,7 @@ namespace ODLGameEngine
 {
     public class Hand
     {
-        public List<int> cardsInHand { get; set; } = new List<int>();
+        public List<int> CardsInHand { get; set; } = new List<int>();
 
         /// <summary>
         /// Get hand size of player
@@ -17,7 +17,7 @@ namespace ODLGameEngine
         /// <returns>Number of cards in their hand</returns>
         public int GetHandSize()
         {
-            return cardsInHand.Count;
+            return CardsInHand.Count;
         }
         /// <summary>
         /// Inserts a card to the hand
@@ -26,7 +26,7 @@ namespace ODLGameEngine
         /// <param name="i">Position to insert at</param>
         public void InsertCard(int card, int i)
         {
-            cardsInHand.Insert(i, card);
+            CardsInHand.Insert(i, card);
         }
         /// <summary>
         /// Removes the card at specific position (pops). Used when playing a card, and when undoing a draw
@@ -35,19 +35,19 @@ namespace ODLGameEngine
         /// <returns>The card that was removed</returns>
         public int RemoveCardAt(int i)
         {
-            int card = cardsInHand[i];
-            cardsInHand.RemoveAt(i);
+            int card = CardsInHand[i];
+            CardsInHand.RemoveAt(i);
             return card;
         }
 
         public override string ToString()
         {
-            string retString = string.Empty;
+            string retString;
             var options = new JsonSerializerOptions // Serializing options for nice format...
             {
                 WriteIndented = true
             };
-            retString = JsonSerializer.Serialize(cardsInHand, options);
+            retString = JsonSerializer.Serialize(CardsInHand, options);
             return retString;
         }
     }

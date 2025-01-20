@@ -35,7 +35,7 @@ namespace ODLGameEngine
             _detailedState = new GameStateStruct();
             int seed = (int)DateTime.Now.Ticks;
             Random seedGen = new Random(seed);
-            _detailedState.seed = seedGen.Next(int.MinValue, int.MaxValue);
+            _detailedState.Seed = seedGen.Next(int.MinValue, int.MaxValue);
         }
 
         // --------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ namespace ODLGameEngine
         /// <returns>The new state action, null if nothing happened</returns>
         public StepResult Step()
         {
-            switch(_detailedState.currentState)
+            switch(_detailedState.CurrentState)
             {
                 case States.START:
                 case States.ACTION_PHASE:
@@ -73,9 +73,9 @@ namespace ODLGameEngine
         /// <param name="initialState">State to load</param>
         public void LoadGame(GameStateStruct initialState)
         {
-            if (_detailedState.currentState != States.START) return; // Only works first thing
+            if (_detailedState.CurrentState != States.START) return; // Only works first thing
             _detailedState = initialState; // Overrides state to whatever I wanted
-            RequestNewState(_detailedState.currentState); // Asks to enter new state, will create next step too (new)
+            RequestNewState(_detailedState.CurrentState); // Asks to enter new state, will create next step too (new)
 
         }
         public void StartNewGame(Player p1, Player p2)
@@ -130,10 +130,10 @@ namespace ODLGameEngine
                     }
                     else
                     {
-                        ste.oldValue = _detailedState.currentState;
+                        ste.oldValue = _detailedState.CurrentState;
                         _stepHistory.Add(_currentStep);
                     }
-                    _detailedState.currentState = ste.newValue;
+                    _detailedState.CurrentState = ste.newValue;
                     _currentStep = new StepResult();
                     if(firstStep) _currentStep.tag = Tag.FIRST_STATE; // Tag it as first if needed (step can't be reverted)
                     // State transition complete!
@@ -141,7 +141,7 @@ namespace ODLGameEngine
                 case EventType.PLAYER_TRANSITION:
                     // Requested a transition to new state, which implies ending this step and creating a new one
                     TransitionEvent<PlayerId> pte = (TransitionEvent<PlayerId>)e; // Complete info and save "old" step
-                    _detailedState.currentPlayer = pte.newValue; // Player transition complete!
+                    _detailedState.CurrentPlayer = pte.newValue; // Player transition complete!
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -158,12 +158,12 @@ namespace ODLGameEngine
                 case EventType.STATE_TRANSITION:
                     // Requested a transition to new state, which implies ending this step and creating a new one
                     TransitionEvent<States> ste = (TransitionEvent<States>)e;
-                    _detailedState.currentState = ste.oldValue; // Just retrieves the prev state
+                    _detailedState.CurrentState = ste.oldValue; // Just retrieves the prev state
                     break;
                 case EventType.PLAYER_TRANSITION:
                     // Requested a transition to new state, which implies ending this step and creating a new one
                     TransitionEvent<PlayerId> pte = (TransitionEvent<PlayerId>)e; // Complete info and save "old" step
-                    _detailedState.currentPlayer = pte.oldValue; // Player transition complete!
+                    _detailedState.CurrentPlayer = pte.oldValue; // Player transition complete!
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -185,7 +185,7 @@ namespace ODLGameEngine
         }
         void TogglePlayer()
         {
-            var nextPlayer = _detailedState.currentPlayer switch // Player is always 1 unless it goes from 1 -> 2
+            var nextPlayer = _detailedState.CurrentPlayer switch // Player is always 1 unless it goes from 1 -> 2
             {
                 PlayerId.PLAYER_1 => PlayerId.PLAYER_2,
                 _ => PlayerId.PLAYER_1,

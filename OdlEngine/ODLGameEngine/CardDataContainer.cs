@@ -27,7 +27,7 @@ namespace ODLGameEngine
         public Dictionary<int, Unit> unitData = new Dictionary<int, Unit>();
         public Dictionary<int, Building> buildingData = new Dictionary<int, Building>();
         public Dictionary<int, Skill> skillData = new Dictionary<int, Skill>();
-        string _baseDir;
+        readonly string _baseDir;
         public CardFinder(string baseDir)
         {
             _baseDir = baseDir;

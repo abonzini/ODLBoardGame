@@ -26,7 +26,7 @@ namespace ODLGameEngine
     }
     public class Lane /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
     {
-        public LaneID id {get; set;} = LaneID.NO_LANE;
+        public LaneID Id {get; set;} = LaneID.NO_LANE;
         public int Len { get; set; } = 0;
         public List<Tile> Tiles { get; set; }
         public int[] PlayerUnitCount { get; set; } = [0, 0];
@@ -85,36 +85,36 @@ namespace ODLGameEngine
     /// </summary>
     public class Board
     {
-        public Lane plainsLane { get; set; } = new Lane(GameConstants.PLAINS_TILES_NUMBER);
-        public Lane forestLane { get; set; } = new Lane(GameConstants.FOREST_TILES_NUMBER);
-        public Lane mountainLane { get; set; } = new Lane(GameConstants.MOUNTAIN_TILES_NUMBER);
+        public Lane PlainsLane { get; set; } = new Lane(GameConstants.PLAINS_TILES_NUMBER);
+        public Lane ForestLane { get; set; } = new Lane(GameConstants.FOREST_TILES_NUMBER);
+        public Lane MountainLane { get; set; } = new Lane(GameConstants.MOUNTAIN_TILES_NUMBER);
         // Units
-        public SortedList<int, Unit>[] playerUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
-        public SortedList<int, Building>[] playerBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
-        public SortedList<int, Unit>[] deadUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
-        public SortedList<int, Building>[] deadBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
+        public SortedList<int, Unit>[] PlayerUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
+        public SortedList<int, Building>[] PlayerBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
+        public SortedList<int, Unit>[] DeadUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
+        public SortedList<int, Building>[] DeadBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
         // Methods
-        public int laneCount { get; set; } = 3;
+        public int LaneCount { get; set; } = 3;
         public Lane GetLane(int i)
         {
-            switch(i)
+            return i switch
             {
-                case 0: return plainsLane;
-                case 1: return forestLane;
-                case 2: return mountainLane;
-                default: throw new IndexOutOfRangeException("Chosen lane higher than lane count");
-            }
+                0 => PlainsLane,
+                1 => ForestLane,
+                2 => MountainLane,
+                _ => throw new IndexOutOfRangeException("Chosen lane higher than lane count"),
+            };
         }
         public Lane GetLane(LaneID laneID)
         {
-            switch (laneID)
+            return laneID switch
             {
-                case LaneID.NO_LANE: return null;
-                case LaneID.LANE_PLAINS: return plainsLane;
-                case LaneID.LANE_FOREST: return forestLane;
-                case LaneID.LANE_MOUNTAIN: return mountainLane;
-                default: throw new Exception("Unrecognized lane requested");
-            }
+                LaneID.NO_LANE => null,
+                LaneID.LANE_PLAINS => PlainsLane,
+                LaneID.LANE_FOREST => ForestLane,
+                LaneID.LANE_MOUNTAIN => MountainLane,
+                _ => throw new Exception("Unrecognized lane requested"),
+            };
         }
     }
 }

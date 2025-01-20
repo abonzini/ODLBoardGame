@@ -60,12 +60,12 @@ namespace ODLGameEngine
     /// </summary>
     public class GameStateStruct
     {
-        public States currentState {  get; set; } = States.START;
-        public string stateHash { get; set; } = "";
-        public int seed { get; set; } = 0;
-        public PlayerId currentPlayer { get; set; } = PlayerId.OMNISCIENT;
-        public PlayerState[] playerStates { get; set; } = [new PlayerState(), new PlayerState()];
-        public Board boardState { get; set; } = new Board();
+        public States CurrentState {  get; set; } = States.START;
+        public string StateHash { get; set; } = "";
+        public int Seed { get; set; } = 0;
+        public PlayerId CurrentPlayer { get; set; } = PlayerId.OMNISCIENT;
+        public PlayerState[] PlayerStates { get; set; } = [new PlayerState(), new PlayerState()];
+        public Board BoardState { get; set; } = new Board();
     }
 
     /// <summary>
@@ -73,14 +73,14 @@ namespace ODLGameEngine
     /// </summary>
     public class PlayerState
     {
-        public string name { get; set; } = "";
-        public PlayerClassType playerClass { get; set; } = PlayerClassType.BASE;
-        public int hp { get; set; } = 0;
-        public int gold { get; set; } = 0;
-        public bool rushActive { get; set; } = true;
-        public int nBuildings { get; set; } = 0;
-        public int nUnits { get; set; } = 0;
-        public Hand hand { get; set; } = new Hand();
-        public Deck deck { get; set; } = new Deck();
+        public string Name { get; set; } = "";
+        public PlayerClassType PlayerClass { get; set; } = PlayerClassType.BASE;
+        public int Hp { get; set; } = 0;
+        public int Gold { get; set; } = 0;
+        public bool RushActive { get; set; } = true;
+        public int NBuildings { get; set; } = 0;
+        public int NUnits { get; set; } = 0;
+        public Hand Hand { get; set; } = new Hand();
+        public Deck Deck { get; set; } = new Deck();
     }
 }

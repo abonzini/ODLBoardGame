@@ -9,27 +9,28 @@ namespace ODLGameEngine
 {
     public class Deck
     {
-        public List<int> deck { get; set; } = new List<int>(30);
-        public Dictionary<int, int> cardHistogram { get; set; } = new Dictionary<int, int>();
+        public List<int> Cards { get; set; } = new List<int>(30);
+        public Dictionary<int, int> CardHistogram { get; set; } = new Dictionary<int, int>();
         /// <summary>
         /// Initializes deck given csv string of cards sequence
         /// </summary>
         /// <param name="deckString">A csv string with each int id of the cards</param>
         public void InitializeDeck(string deckString)
         {
-            deck.Clear();
+            Cards.Clear();
 
             // Now I add string to the deck
             string[] cardStrings = deckString.Split(',');
             foreach(string card in cardStrings)
             {
                 int cardId = int.Parse(card);
-                if (!cardHistogram.ContainsKey(cardId))
+                if (!CardHistogram.TryGetValue(cardId, out int value))
                 {
-                    cardHistogram[cardId] = 0;
+                    value = 0;
+                    CardHistogram[cardId] = value;
                 }
-                cardHistogram[cardId]++;
-                deck.Add(cardId);
+                CardHistogram[cardId] = ++value;
+                Cards.Add(cardId);
             }
         }
         /// <summary>
@@ -38,12 +39,12 @@ namespace ODLGameEngine
         /// <returns> Deck JSON string with count </returns>
         public string GetDeckHistogramString()
         {
-            string retString = string.Empty;
+            string retString;
             var options = new JsonSerializerOptions // Serializing options for nice format...
             {
                 WriteIndented = true
             };
-            retString = JsonSerializer.Serialize(cardHistogram, options);
+            retString = JsonSerializer.Serialize(CardHistogram, options);
             return retString;
         }
         /// <summary>
@@ -52,25 +53,28 @@ namespace ODLGameEngine
         /// <returns>Number of cards in deck</returns>
         public int GetCardNumber()
         {
-            return deck.Count;
+            return Cards.Count;
         }
         /// <summary>
         /// Gets last card of deck
         /// </summary>
         /// <returns>The card ID that was just popped</returns>
-        public int PopCard()
+        public int PopCard(int position = -1)
         {
-            if(deck.Count > 0)
+            int card;
+            if(position == -1)
             {
-                int card = deck.Last(); // Get card
-                deck.RemoveAt(deck.Count - 1); // Pop it
-                cardHistogram[card]--;
-                return card; // Return what was in the last position
+                card = Cards.Last(); // Get card
+                Cards.RemoveAt(Cards.Count - 1); // Pop it
             }
             else
             {
-                throw new Exception("No cards in deck!");
+                card = Cards[position]; // Get card
+                Cards.RemoveAt(position); // Pop it
             }
+            
+            CardHistogram[card]--;
+            return card; // Return what was in the last position
         }
         /// <summary>
         /// Adds card back into last place
@@ -78,12 +82,13 @@ namespace ODLGameEngine
         /// <param name="card">The card to add to top of deck</param>
         public void InsertCard(int position, int card)
         {
-            deck.Insert(position, card);
-            if (!cardHistogram.ContainsKey(card))
+            Cards.Insert(position, card);
+            if (!CardHistogram.TryGetValue(card, out int value))
             {
-                cardHistogram[card] = 0;
+                value = 0;
+                CardHistogram[card] = value;
             }
-            cardHistogram[card]++;
+            CardHistogram[card] = ++value;
         }
         
         public override string ToString()
