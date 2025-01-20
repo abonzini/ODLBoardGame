@@ -12,10 +12,10 @@ namespace ODLGameEngine
     /// </summary>
     public class CardDataContainer
     {
-        public Card cardData { get; set; }
-        public Unit unitData { get; set; } = null;
-        public Skill skillData { get; set; } = null;
-        public Building buildingData { get; set; } = null;
+        public Card CardData { get; set; }
+        public Unit UnitData { get; set; } = null;
+        public Skill SkillData { get; set; } = null;
+        public Building BuildingData { get; set; } = null;
     }
 
     /// <summary>
@@ -50,21 +50,21 @@ namespace ODLGameEngine
                     foreach(CardDataContainer cardInfo in allTheseCards)
                     {
                         // Loaded data, add one by one to right places
-                        Card card = cardInfo.cardData;
+                        Card card = cardInfo.CardData;
                         cardBasicData[id] = card;
-                        switch (card.cardType)
+                        switch (card.CardType)
                         {
                             case CardType.UNIT:
-                                unitData[id] = cardInfo.unitData;
+                                unitData[id] = cardInfo.UnitData;
                                 break;
                             case CardType.SKILL:
-                                skillData[id] = cardInfo.skillData;
+                                skillData[id] = cardInfo.SkillData;
                                 break;
                             case CardType.BUILDING:
-                                buildingData[id] = cardInfo.buildingData;
+                                buildingData[id] = cardInfo.BuildingData;
                                 break;
                             default:
-                                throw new InvalidDataException($"Card doesn't have proper info, in card document {cardInfoFile} id {card.id}");
+                                throw new InvalidDataException($"Card doesn't have proper info, in card document {cardInfoFile} id {card.Id}");
                         }
                     }
                 }

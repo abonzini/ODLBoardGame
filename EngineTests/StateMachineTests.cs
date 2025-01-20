@@ -16,14 +16,14 @@ namespace EngineTests
         {
             GameStateMachine sm = new GameStateMachine();
             Player dummyPlayer = new Player();
-            Assert.AreEqual(sm.getDetailedState().currentState, States.START); // Ensure start in start state
+            Assert.AreEqual(sm.GetDetailedState().currentState, States.START); // Ensure start in start state
             sm.StartNewGame(dummyPlayer, dummyPlayer);
-            Assert.AreEqual(sm.getDetailedState().currentState, States.P1_INIT); // Now should be about to init P1
-            sm.step();
-            Assert.AreEqual(sm.getDetailedState().currentState, States.P2_INIT); // Now should be about to init P2
-            sm.step();
-            Assert.AreEqual(sm.getDetailedState().currentState, States.DRAW_PHASE); // Now game should be started
-            Assert.AreEqual(sm.getDetailedState().currentPlayer, PlayerId.PLAYER_1); // And P1 should be active
+            Assert.AreEqual(sm.GetDetailedState().currentState, States.P1_INIT); // Now should be about to init P1
+            sm.Step();
+            Assert.AreEqual(sm.GetDetailedState().currentState, States.P2_INIT); // Now should be about to init P2
+            sm.Step();
+            Assert.AreEqual(sm.GetDetailedState().currentState, States.DRAW_PHASE); // Now game should be started
+            Assert.AreEqual(sm.GetDetailedState().currentPlayer, PlayerId.PLAYER_1); // And P1 should be active
         }
     }
 }

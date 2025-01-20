@@ -14,14 +14,14 @@ namespace ODLGameEngine
         /// <summary>
         /// Name of player
         /// </summary>
-        public string name { get; set; } = "";
+        public string Name { get; set; } = "";
         /// <summary>
         /// Class the player is using
         /// </summary>
-        public PlayerClassType playerClass { get; set; } = PlayerClassType.BASE;
+        public PlayerClassType PlayerClass { get; set; } = PlayerClassType.BASE;
         /// <summary>
         /// The decks the player is starting with
         /// </summary>
-        public List<int> initialDecklist { get; set; } = new List<int>();
+        public List<int> InitialDecklist { get; set; } = new List<int>();
     }
 }

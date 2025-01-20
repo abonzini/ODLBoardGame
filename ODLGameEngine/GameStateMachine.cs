@@ -9,16 +9,13 @@ namespace ODLGameEngine
     public class GameStateMachine
     {
         GameStateStruct _detailedState = null; // State info, will work over this to advance game
-        public GameStateStruct getDetailedState() { return _detailedState; }
+        public GameStateStruct GetDetailedState() { return _detailedState; }
         CardFinder _cardDb = null;
-        CardFinder cardDb
+        CardFinder CardDb
         {
             get
             {
-                if (_cardDb == null)
-                {
-                    _cardDb = new CardFinder(".\\..\\..\\..\\..\\CardDatabase"); // Shouldn't happen unless testing!! Wonder if this path is always ok
-                }
+                _cardDb ??= new CardFinder(".\\..\\..\\..\\..\\CardDatabase"); // Shouldn't happen unless testing!! Wonder if this path is always ok
                 return _cardDb;
             }
             set
@@ -26,9 +23,9 @@ namespace ODLGameEngine
                 _cardDb = value;
             }
         }
-        Player[] players = [null, null]; // Both players, this should be never null for a new game
-        List<StepResult> stepHistory = new List<StepResult>();
-        StepResult currentStep = null;
+        readonly Player[] _players = [null, null]; // Both players, this should be never null for a new game
+        readonly List<StepResult> _stepHistory = new List<StepResult>();
+        StepResult _currentStep = null;
 
         /// <summary>
         /// Initializes an empty game state, and will create a random seed unless overwritten later
@@ -38,7 +35,7 @@ namespace ODLGameEngine
             _detailedState = new GameStateStruct();
             int seed = (int)DateTime.Now.Ticks;
             Random seedGen = new Random(seed);
-            _detailedState.seed = seed = seedGen.Next(int.MinValue, int.MaxValue);
+            _detailedState.seed = seedGen.Next(int.MinValue, int.MaxValue);
         }
 
         // --------------------------------------------------------------------------------------
@@ -49,7 +46,7 @@ namespace ODLGameEngine
         /// Performs a step of the state, moves the game state forward. Does nothing if machine is awaiting actions instead
         /// </summary>
         /// <returns>The new state action, null if nothing happened</returns>
-        public StepResult step()
+        public StepResult Step()
         {
             switch(_detailedState.currentState)
             {
@@ -58,17 +55,17 @@ namespace ODLGameEngine
                     return null;
                 case States.P1_INIT:
                     InitializePlayer(PlayerId.PLAYER_1);
-                    requestNewState(States.P2_INIT);
+                    RequestNewState(States.P2_INIT);
                     break;
                 case States.P2_INIT:
                     InitializePlayer(PlayerId.PLAYER_2);
-                    togglePlayer(); // Init finished, now begin game w P1 active
-                    requestNewState(States.DRAW_PHASE);
+                    TogglePlayer(); // Init finished, now begin game w P1 active
+                    RequestNewState(States.DRAW_PHASE);
                     break;
                 default:
                     throw new NotImplementedException("State not yet implemented");
             }
-            return stepHistory.Last();
+            return _stepHistory.Last();
         }
         /// <summary>
         /// Starts a game from loading a state. Only works in very beginning
@@ -78,76 +75,67 @@ namespace ODLGameEngine
         {
             if (_detailedState.currentState != States.START) return; // Only works first thing
             _detailedState = initialState; // Overrides state to whatever I wanted
-            requestNewState(_detailedState.currentState); // Asks to enter new state, will create next step too (new)
+            RequestNewState(_detailedState.currentState); // Asks to enter new state, will create next step too (new)
 
         }
         public void StartNewGame(Player p1, Player p2)
         {
-            players[0] = p1;
-            players[1] = p2;
-            requestNewState(States.P1_INIT); // Switches to first actual state
+            _players[0] = p1;
+            _players[1] = p2;
+            RequestNewState(States.P1_INIT); // Switches to first actual state
         }
 
         public void InitializePlayer(PlayerId player) // This function randomizes! Needs to restore seed after!
         {
-            int playerId;
-            switch (player)
+            var playerId = player switch
             {
-                case PlayerId.PLAYER_1:
-                    playerId = 0;
-                    break;
-                case PlayerId.PLAYER_2:
-                    playerId = 1;
-                    break;
-                default:
-                    throw new InvalidOperationException("Can only be used when intiializing player!");
-            }
+                PlayerId.PLAYER_1 => 0,
+                PlayerId.PLAYER_2 => 1,
+                _ => throw new InvalidOperationException("Can only be used when intiializing player!"),
+            };
         }
 
         /// <summary>
         /// Goes back to beggining of previous step (i.e. undoes the last thing that happened)
         /// </summary>
-        void undoPreviousStep()
+        void UndoPreviousStep()
         {
-            if (currentStep == null || currentStep.tag == Tag.FIRST_STATE) { return; } // Nothing to do here
-            if(currentStep.events.Count != 0) { throw new Exception("Standing in a non-empty current event!"); } // This should never happen
+            if (_currentStep == null || _currentStep.tag == Tag.FIRST_STATE) { return; } // Nothing to do here
+            if(_currentStep.events.Count != 0) { throw new Exception("Standing in a non-empty current event!"); } // This should never happen
 
-            currentStep = stepHistory.Last();
-            stepHistory.RemoveAt(stepHistory.Count - 1); // Removes last step from history!
-            for(int i = currentStep.events.Count - 1; i >= 0; i--) // Pops events in reverse order, one by one
+            _currentStep = _stepHistory.Last();
+            _stepHistory.RemoveAt(_stepHistory.Count - 1); // Removes last step from history!
+            for(int i = _currentStep.events.Count - 1; i >= 0; i--) // Pops events in reverse order, one by one
             {
-                revertEvent(currentStep.events[i]); // Revert the event
+                RevertEvent(_currentStep.events[i]); // Revert the event
             }
-            currentStep.events.Clear(); // Clear list as all events have been reverted
+            _currentStep.events.Clear(); // Clear list as all events have been reverted
         }
         /// <summary>
         /// Executes an event to change game state, adds to current queue and moves state
         /// </summary>
         /// <param name="e">The event to add and excecute</param>
-        void executeEvent(Event e)
+        void ExecuteEvent(Event e)
         {
-            if(currentStep != null) // Add event to history
-            {
-                currentStep.events.Add(e);
-            }
+            _currentStep?.events.Add(e);
             switch (e.eventType)
             {
                 case EventType.STATE_TRANSITION:
                     // Requested a transition to new state, which implies ending this step and creating a new one
                     TransitionEvent<States> ste = (TransitionEvent<States>)e; // Complete info and save "old" step
                     bool firstStep = false;
-                    if(currentStep == null)
+                    if(_currentStep == null)
                     {
                         firstStep = true;
                     }
                     else
                     {
                         ste.oldValue = _detailedState.currentState;
-                        stepHistory.Add(currentStep);
+                        _stepHistory.Add(_currentStep);
                     }
                     _detailedState.currentState = ste.newValue;
-                    currentStep = new StepResult();
-                    if(firstStep) currentStep.tag = Tag.FIRST_STATE; // Tag it as first if needed (step can't be reverted)
+                    _currentStep = new StepResult();
+                    if(firstStep) _currentStep.tag = Tag.FIRST_STATE; // Tag it as first if needed (step can't be reverted)
                     // State transition complete!
                     break;
                 case EventType.PLAYER_TRANSITION:
@@ -163,7 +151,7 @@ namespace ODLGameEngine
         /// Performs the opposite action of an event. Doesn't remove from step! Just opposite
         /// </summary>
         /// <param name="e">Event to revert</param>
-        void revertEvent(Event e)
+        void RevertEvent(Event e)
         {
             switch (e.eventType)
             {
@@ -185,9 +173,9 @@ namespace ODLGameEngine
         // --------------------------------------------------------------------------------------
         // -------------------------------  GAME ENGINE REQUESTS --------------------------------
         // --------------------------------------------------------------------------------------
-        void requestNewState(States state)
+        void RequestNewState(States state)
         {
-            executeEvent(
+            ExecuteEvent(
                 new TransitionEvent<States>()
                 {
                     eventType = EventType.STATE_TRANSITION,
@@ -195,19 +183,14 @@ namespace ODLGameEngine
                     description = $"Next state: {Enum.GetName(state)}"
                 }); // Execute state transition event
         }
-        void togglePlayer()
+        void TogglePlayer()
         {
-            PlayerId nextPlayer;
-            switch(_detailedState.currentPlayer) // Player is always 1 unless it goes from 1 -> 2
+            var nextPlayer = _detailedState.currentPlayer switch // Player is always 1 unless it goes from 1 -> 2
             {
-                case PlayerId.PLAYER_1:
-                    nextPlayer = PlayerId.PLAYER_2;
-                    break;
-                default:
-                    nextPlayer = PlayerId.PLAYER_1;
-                    break;
-            }
-            executeEvent(
+                PlayerId.PLAYER_1 => PlayerId.PLAYER_2,
+                _ => PlayerId.PLAYER_1,
+            };
+            ExecuteEvent(
                 new TransitionEvent<PlayerId>()
                 {
                     eventType = EventType.PLAYER_TRANSITION,

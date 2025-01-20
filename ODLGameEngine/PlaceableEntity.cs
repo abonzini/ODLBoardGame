@@ -24,34 +24,34 @@ namespace ODLGameEngine
         /// <summary>
         /// Unique ID that this entity has, no other one has it. Equivalent to the global order of play
         /// </summary>
-        public int uniqueId = 0;
+        public int UniqueId = 0;
         /// <summary>
         /// Card for reference
         /// </summary>
-        public Card card;
+        public Card Card;
         /// <summary>
         /// Who owns this card
         /// </summary>
-        public PlayerId owner { get; set; } = PlayerId.SPECTATOR;
+        public PlayerId Owner { get; set; } = PlayerId.SPECTATOR;
         /// <summary>
         /// Which lane is it on
         /// </summary>
-        public LaneID laneCoordinate = LaneID.NO_LANE;
+        public LaneID LaneCoordinate = LaneID.NO_LANE;
         /// <summary>
         /// Which tile of lane (absolute to board)
         /// </summary>
-        public int tileCoordinate = -1;
+        public int TileCoordinate = -1;
         /// <summary>
         /// Hp of thing
         /// </summary>
-        public int hp { get; set; } = 0;
+        public int Hp { get; set; } = 0;
         /// <summary>
         /// Damage taken
         /// </summary>
-        public int damage { get; set; } = 0;
-        // Stealth shenanigans, important but never serialized
-        protected bool isHidden { get; set; } = false;
-        protected bool isTheRealOne { get; set; } = true;
-        protected List<HiddenCorrelation> hiddenCorrelations { get; set; } = new List<HiddenCorrelation>(); // If stealth unit, need to define correlations for when they're discovered
+        public int Damage { get; set; } = 0;
+        // Stealth shenanigans
+        protected bool IsHidden { get; set; } = false;
+        protected bool IsTheRealOne { get; set; } = true;
+        protected List<HiddenCorrelation> HiddenCorrelations { get; set; } = new List<HiddenCorrelation>(); // If stealth unit, need to define correlations for when they're discovered
     }
 }

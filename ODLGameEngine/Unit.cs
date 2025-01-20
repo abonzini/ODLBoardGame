@@ -12,10 +12,10 @@ namespace ODLGameEngine
     public class Unit : PlaceableEntity
     {
         // Stats
-        public int movement { get; set; } = 0;
-        public int movementDenominator { get; set; } = 1;
-        public int attack { get; set; } = 0;
+        public int Movement { get; set; } = 0;
+        public int MovementDenominator { get; set; } = 1;
+        public int Attack { get; set; } = 0;
         // Internal Status Var
-        public int mvtCooldownTimer { get; set; } = 0;
+        public int MvtCooldownTimer { get; set; } = 0;
     }
 }

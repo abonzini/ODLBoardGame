@@ -9,10 +9,10 @@ namespace ODLGameEngine
 {
     public class Tile
     {
-        public string tag { get; set; } = "";
-        public int buildingInTile { get; set; } = 0;
-        public SortedSet<int> unitsInTile { get; set; } = new SortedSet<int>();
-        public int[] playerUnitCount { get; set; } = [0, 0];
+        public string Tag { get; set; } = "";
+        public int BuildingInTile { get; set; } = 0;
+        public SortedSet<int> UnitsInTile { get; set; } = new SortedSet<int>();
+        public int[] PlayerUnitCount { get; set; } = [0, 0];
     }
     /// <summary>
     /// Lanes
@@ -27,13 +27,13 @@ namespace ODLGameEngine
     public class Lane /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
     {
         public LaneID id {get; set;} = LaneID.NO_LANE;
-        public int len { get; set; } = 0;
-        public List<Tile> tiles { get; set; }
-        public int[] playerUnitCount { get; set; } = [0, 0];
+        public int Len { get; set; } = 0;
+        public List<Tile> Tiles { get; set; }
+        public int[] PlayerUnitCount { get; set; } = [0, 0];
         public Lane(int n)
         {
-            len = n;
-            tiles = new List<Tile>(n);
+            Len = n;
+            Tiles = new List<Tile>(n);
         }
 
         public IEnumerable<Tile> GetTiles(PlayerId player, bool ascending = true) /// Returns tile one by one relative to desired player
@@ -43,39 +43,39 @@ namespace ODLGameEngine
             if(PlayerId.PLAYER_2 != player ^ !ascending) // All use the reference of 0 = beginning except player 2
             {
                 start = 0;
-                end = len-1;
+                end = Len-1;
                 increment = 1;
             }
             else
             {
-                start = len-1;
+                start = Len-1;
                 end = 0;
                 increment = -1;
             }
 
             for (int i = start; increment * i <= increment * end; i += increment)
             {
-                yield return tiles[i];
+                yield return Tiles[i];
             }
         }
 
         public Tile GetTile(PlayerId player, int index)
         {
-            if(0 <= index && index < len)
+            if(0 <= index && index < Len)
             {
                 throw new IndexOutOfRangeException("Desired index out of bounds for this lane");
             }
             // If player is p2, reverse the desired index
             if(PlayerId.PLAYER_2 == player)
             {
-                index = len - 1 - index;
+                index = Len - 1 - index;
             }
-            return tiles[index];
+            return Tiles[index];
         }
 
         public int GetLastTile(PlayerId player) /// Returns the edge of the tile (to decide if advance or damage castle)
         {
-            if (player != PlayerId.PLAYER_2) return len - 1;
+            if (player != PlayerId.PLAYER_2) return Len - 1;
             else return 0;
         }
     }

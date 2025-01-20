@@ -57,7 +57,7 @@ namespace ODLGameEngine
         /// <summary>
         /// Gets last card of deck
         /// </summary>
-        /// <returns>The card ID that was jsut popped</returns>
+        /// <returns>The card ID that was just popped</returns>
         public int PopCard()
         {
             if(deck.Count > 0)

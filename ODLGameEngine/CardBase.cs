@@ -47,25 +47,25 @@ namespace ODLGameEngine
     /// </summary>
     public class Card
     {
-        public int id { get; set; } = 0;
-        public string name { get; set; } = "";
-        public string text { get; set; } = "";
-        public CardType cardType { get; set; } = CardType.UNKNOWN;
-        public TargetMode targetMode { get; set; } = TargetMode.NO_TARGET;
-        public TargetCondition targetCondition { get; set; } = TargetCondition.NONE;
+        public int Id { get; set; } = 0;
+        public string Name { get; set; } = "";
+        public string Text { get; set; } = "";
+        public CardType CardType { get; set; } = CardType.UNKNOWN;
+        public TargetMode TargetMode { get; set; } = TargetMode.NO_TARGET;
+        public TargetCondition TargetCondition { get; set; } = TargetCondition.NONE;
         // Which tiles would be available to build in each
-        public int plainsBpCondition { get; set; } = 0b0;
-        public int forestBpCondition { get; set; } = 0b0;
-        public int mountainsBpCondition { get; set; } = 0b0;
+        public int PlainsBpCondition { get; set; } = 0b0;
+        public int ForestBpCondition { get; set; } = 0b0;
+        public int MountainsBpCondition { get; set; } = 0b0;
         // Playable info (will be in card)
-        public int cost { get; set; } = 0;
-        public int hp { get; set; } = 0;
-        public int movement { get; set; } = 0;
-        public int movementDenominator { get; set; } = 1;
-        public int attack { get; set; } = 0;
-        public int rarity { get; set; } = 0;
-        public ExpansionId expansion { get; set; } = ExpansionId.BASE;
-        public PlayerClassType classType { get; set; } = PlayerClassType.BASE;
-        public bool stealthPlay { get; set; } = false; // Whether card triggers a stealth case
+        public int Cost { get; set; } = 0;
+        public int Hp { get; set; } = 0;
+        public int Movement { get; set; } = 0;
+        public int MovementDenominator { get; set; } = 1;
+        public int Attack { get; set; } = 0;
+        public int Rarity { get; set; } = 0;
+        public ExpansionId Expansion { get; set; } = ExpansionId.BASE;
+        public PlayerClassType ClassType { get; set; } = PlayerClassType.BASE;
+        public bool StealthPlay { get; set; } = false; // Whether card triggers a stealth case
     }
 }
