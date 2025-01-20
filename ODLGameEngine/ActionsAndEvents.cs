@@ -47,19 +47,21 @@ namespace ODLGameEngine
         /// Transitions the state machine to next state
         /// </summary>
         STATE_TRANSITION,
+        PLAYER_TRANSITION,
     }
 
     public class Event
     {
         public EventType eventType;
+        public string description = "";
         public override string ToString()
         {
-            return ""; // Default (no info leaked)
+            return description; // Default is no info leaked
         }
     }
-    public class StateTransitionEvent : Event
+    public class TransitionEvent<T> : Event
     {
-        public States oldState;
-        public States newState;
+        public T oldValue;
+        public T newValue;
     }
 }
