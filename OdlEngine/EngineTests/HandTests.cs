@@ -22,8 +22,7 @@ namespace EngineTests
             hand.InsertCard(2, hand.GetHandSize());
             hand.InsertCard(3, hand.GetHandSize());
             Assert.AreEqual(hand.GetHandSize(), 3); // Verify correct number
-            string handString = hand.ToString();
-            List<int>? cards = JsonSerializer.Deserialize<List<int>>(handString) ?? throw new Exception("Deserialization of hand broke");
+            List<int> cards = hand.CardsInHand;
             for (int i = 0; i < 3; i++)
             {
                 Assert.AreEqual(cards[i], i+1); // Verify correct cards in correct order

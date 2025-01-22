@@ -34,6 +34,25 @@ namespace ODLGameEngine
             }
         }
         /// <summary>
+        /// Initializes deck copying a list from somewhere
+        /// </summary>
+        /// <param name="cardsList">A lsit with the cards</param>
+        public void InitializeDeck(List<int> cardsList)
+        {
+            Cards.Clear();
+            // Now I add string to the deck
+            foreach (int card in cardsList)
+            {
+                if (!CardHistogram.TryGetValue(card, out int value))
+                {
+                    value = 0;
+                    CardHistogram[card] = value;
+                }
+                CardHistogram[card] = ++value;
+                Cards.Add(card);
+            }
+        }
+        /// <summary>
         /// Request deck string for current deck
         /// </summary>
         /// <returns> Deck JSON string with count </returns>
@@ -56,8 +75,9 @@ namespace ODLGameEngine
             return Cards.Count;
         }
         /// <summary>
-        /// Gets last card of deck
+        /// Removes card in specific location of deck (default last)
         /// </summary>
+        /// <param name="position">Posiiton to remove (default last)</param>
         /// <returns>The card ID that was just popped</returns>
         public int PopCard(int position = -1)
         {
@@ -90,7 +110,20 @@ namespace ODLGameEngine
             }
             CardHistogram[card] = ++value;
         }
-        
+
+        /// <summary>
+        /// Swaps the cards specified in a deck. Useful dor Fischer-Yates Shuffling
+        /// </summary>
+        /// <param name="pos1">Position 1</param>
+        /// <param name="pos2">Position 2</param>
+        public void SwapCards(int pos1, int pos2)
+        {
+            int aux;
+            aux = Cards[pos1];
+            Cards[pos1] = Cards[pos2];
+            Cards[pos2] = aux;
+        }
+
         public override string ToString()
         {
             return GetDeckHistogramString();

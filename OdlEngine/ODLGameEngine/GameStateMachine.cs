@@ -23,7 +23,6 @@ namespace ODLGameEngine
                 _cardDb = value;
             }
         }
-        readonly Player[] _players = [null, null]; // Both players, this should be never null for a new game
         readonly List<StepResult> _stepHistory = new List<StepResult>();
         StepResult _currentStep = null;
 
@@ -54,11 +53,9 @@ namespace ODLGameEngine
                 case States.ACTION_PHASE:
                     return null;
                 case States.P1_INIT:
-                    InitializePlayer(PlayerId.PLAYER_1);
                     RequestNewState(States.P2_INIT);
                     break;
                 case States.P2_INIT:
-                    InitializePlayer(PlayerId.PLAYER_2);
                     TogglePlayer(); // Init finished, now begin game w P1 active
                     RequestNewState(States.DRAW_PHASE);
                     break;
@@ -78,14 +75,19 @@ namespace ODLGameEngine
             RequestNewState(_detailedState.CurrentState); // Asks to enter new state, will create next step too (new)
 
         }
-        public void StartNewGame(Player p1, Player p2)
+        /// <summary>
+        /// Starts new game from scratch
+        /// </summary>
+        /// <param name="p1">Initial data for player 1</param>
+        /// <param name="p2">Initial data for player 2</param>
+        public void StartNewGame(PlayerInitialData p1, PlayerInitialData p2)
         {
-            _players[0] = p1;
-            _players[1] = p2;
+            LoadInitialPlayerData(PlayerId.PLAYER_1, p1);
+            LoadInitialPlayerData(PlayerId.PLAYER_2, p2);
             RequestNewState(States.P1_INIT); // Switches to first actual state
         }
 
-        public void InitializePlayer(PlayerId player) // This function randomizes! Needs to restore seed after!
+        public void LoadInitialPlayerData(PlayerId player, PlayerInitialData playerData) // This function randomizes! Needs to restore seed after!
         {
             var playerId = player switch
             {
@@ -93,6 +95,9 @@ namespace ODLGameEngine
                 PlayerId.PLAYER_2 => 1,
                 _ => throw new InvalidOperationException("Can only be used when intiializing player!"),
             };
+            _detailedState.PlayerStates[playerId].Name = playerData.Name;
+            _detailedState.PlayerStates[playerId].PlayerClass = playerData.PlayerClass;
+            _detailedState.PlayerStates[playerId].Deck.InitializeDeck(playerData.InitialDecklist);
         }
 
         /// <summary>

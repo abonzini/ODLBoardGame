@@ -22,8 +22,7 @@ namespace EngineTests
         {
             Deck newDeck = new Deck();
             newDeck.InitializeDeck("1,2,3,4,5"); // Adds cards 1 2 3 4 5
-            string deckHistogram = newDeck.GetDeckHistogramString();
-            Dictionary<int, int>? histogram = JsonSerializer.Deserialize<Dictionary<int, int>>(deckHistogram) ?? throw new Exception("Deserialization of deck broke");
+            Dictionary<int, int> histogram = newDeck.CardHistogram;
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {
                 Assert.AreEqual(histogram[i], 1); // Verify 1 of each
@@ -67,16 +66,14 @@ namespace EngineTests
         {
             Deck newDeck = new Deck();
             newDeck.InitializeDeck("1,2,3,4,5"); // Adds cards 1 2 3 4 5
-            string deckHistogram = newDeck.GetDeckHistogramString();
-            Dictionary<int, int>? histogram = JsonSerializer.Deserialize<Dictionary<int, int>>(deckHistogram) ?? throw new Exception("Deserialization of deck broke");
+            Dictionary<int, int> histogram = newDeck.CardHistogram;
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {
                 Assert.AreEqual(histogram[i], 1); // Verify 1 of each
                 newDeck.InsertCard(0,i); // But also sneakily add another one
             }
             // Check again
-            deckHistogram = newDeck.GetDeckHistogramString();
-            histogram = JsonSerializer.Deserialize<Dictionary<int, int>>(deckHistogram);
+            histogram = newDeck.CardHistogram;
             if (histogram == null) throw new Exception("Deserialization of deck broke");
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {

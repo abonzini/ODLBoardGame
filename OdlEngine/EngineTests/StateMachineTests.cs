@@ -15,9 +15,12 @@ namespace EngineTests
         public void NewGameStates() // To make sure step by step, player 1, player 2
         {
             GameStateMachine sm = new GameStateMachine();
-            Player dummyPlayer = new Player();
+            PlayerInitialData dummyPlayer1 = new PlayerInitialData();
+            PlayerInitialData dummyPlayer2 = new PlayerInitialData();
+            dummyPlayer1.InitialDecklist.Add(1); dummyPlayer1.InitialDecklist.Add(2); dummyPlayer1.InitialDecklist.Add(3);
+            dummyPlayer2.InitialDecklist.Add(4); dummyPlayer2.InitialDecklist.Add(5); dummyPlayer2.InitialDecklist.Add(6);
             Assert.AreEqual(sm.GetDetailedState().CurrentState, States.START); // Ensure start in start state
-            sm.StartNewGame(dummyPlayer, dummyPlayer);
+            sm.StartNewGame(dummyPlayer1, dummyPlayer2);
             Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT); // Now should be about to init P1
             sm.Step();
             Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Now should be about to init P2

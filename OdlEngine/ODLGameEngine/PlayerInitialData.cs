@@ -9,7 +9,7 @@ namespace ODLGameEngine
     /// <summary>
     /// Defines a player who plays the game
     /// </summary>
-    public class Player
+    public class PlayerInitialData
     {
         /// <summary>
         /// Name of player
