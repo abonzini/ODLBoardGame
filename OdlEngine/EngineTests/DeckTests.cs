@@ -15,7 +15,7 @@ namespace EngineTests
         public void DeckCreation() // Deck construction and empty initial deck
         {
             Deck newDeck = new Deck();
-            Assert.AreEqual(newDeck.GetCardNumber(), 0);
+            Assert.AreEqual(newDeck.Cards.Count, 0);
         }
         [TestMethod]
         public void DeckInitialization() // Deck is initialized properly with 5 cards, can pop cards
@@ -48,7 +48,7 @@ namespace EngineTests
             {
                 for (int j = 0; j < i; j++)
                 {
-                    newDeck.InsertCard(0,i); // Added in reverse order for some reason
+                    newDeck.InsertCard(i, 0); // Added in reverse order for some reason
                 }
             }
             // Now I pop one by one, should get them in the order as I added (due to inserting at 0!)
@@ -70,7 +70,7 @@ namespace EngineTests
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {
                 Assert.AreEqual(histogram[i], 1); // Verify 1 of each
-                newDeck.InsertCard(0,i); // But also sneakily add another one
+                newDeck.InsertCard(i, 0); // But also sneakily add another one
             }
             // Check again
             histogram = newDeck.CardHistogram;

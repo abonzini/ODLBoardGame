@@ -12,14 +12,6 @@ namespace ODLGameEngine
         public List<int> CardsInHand { get; set; } = new List<int>();
 
         /// <summary>
-        /// Get hand size of player
-        /// </summary>
-        /// <returns>Number of cards in their hand</returns>
-        public int GetHandSize()
-        {
-            return CardsInHand.Count;
-        }
-        /// <summary>
         /// Inserts a card to the hand
         /// </summary>
         /// <param name="card">Card to insert</param>

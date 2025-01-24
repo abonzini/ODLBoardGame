@@ -67,14 +67,6 @@ namespace ODLGameEngine
             return retString;
         }
         /// <summary>
-        /// Gets the remaining number of cards in deck
-        /// </summary>
-        /// <returns>Number of cards in deck</returns>
-        public int GetCardNumber()
-        {
-            return Cards.Count;
-        }
-        /// <summary>
         /// Removes card in specific location of deck (default last)
         /// </summary>
         /// <param name="position">Posiiton to remove (default last)</param>
@@ -100,7 +92,7 @@ namespace ODLGameEngine
         /// Adds card back into last place
         /// </summary>
         /// <param name="card">The card to add to top of deck</param>
-        public void InsertCard(int position, int card)
+        public void InsertCard(int card, int position)
         {
             Cards.Insert(position, card);
             if (!CardHistogram.TryGetValue(card, out int value))
@@ -119,9 +111,12 @@ namespace ODLGameEngine
         public void SwapCards(int pos1, int pos2)
         {
             int aux;
-            aux = Cards[pos1];
-            Cards[pos1] = Cards[pos2];
-            Cards[pos2] = aux;
+            if (pos1 != pos2)
+            {
+                aux = Cards[pos1];
+                Cards[pos1] = Cards[pos2];
+                Cards[pos2] = aux;
+            }
         }
 
         public override string ToString()

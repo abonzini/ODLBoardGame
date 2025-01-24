@@ -48,6 +48,12 @@ namespace ODLGameEngine
         /// </summary>
         STATE_TRANSITION,
         PLAYER_TRANSITION,
+        RNG_TRANSITION,
+        PLAYER_HP_TRANSITION,
+        PLAYER_GOLD_TRANSITION,
+        MESSAGE,
+        CARD_DECK_SWAP,
+        DECK_DRAW
     }
 
     public class Event
@@ -63,5 +69,15 @@ namespace ODLGameEngine
     {
         public T oldValue;
         public T newValue;
+    }
+    public class PlayerValueEvent<T> : Event
+    {
+        public PlayerId playerId;
+        public T oldValue;
+        public T newValue;
+    }
+    public class PlayerEvent : Event
+    {
+        public PlayerId playerId;
     }
 }

@@ -1,2 +1,2 @@
-- P1, P2, shuffle and init
-- Tests for proper init, including reaching up to draw phase P1
+- Finish game state unit tests
+- Start working on actual game behaviour (first draw, then play, then EOT, then LOSS, then multiple mechanics)
