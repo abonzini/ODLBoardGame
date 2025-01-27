@@ -34,8 +34,14 @@ namespace ODLGameEngine
         /// </summary>
         public GameStateMachine()
         {
-            _detailedState = new GameStateStruct();
-            int seed = (int)DateTime.Now.Ticks;
+            initInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
+        }
+        /// <summary>
+        /// Initializes internal stuff
+        /// </summary>
+        void initInternal(GameStateStruct state, int seed)
+        {
+            _detailedState = state;
             _detailedState.Seed = seed;
             _rng = new Random(seed);
         }
@@ -76,7 +82,7 @@ namespace ODLGameEngine
         public void LoadGame(GameStateStruct initialState)
         {
             if (_detailedState.CurrentState != States.START) return; // Only works first thing
-            _detailedState = initialState; // Overrides state to whatever I wanted
+            initInternal(initialState, initialState.Seed); // Initializes game to this point
             RequestNewState(_detailedState.CurrentState); // Asks to enter new state, will create next step too (new)
         }
         /// <summary>

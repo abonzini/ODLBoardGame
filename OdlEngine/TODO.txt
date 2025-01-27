@@ -1,2 +1,20 @@
-- Finish game state unit tests
-- Start working on actual game behaviour (first draw, then play, then EOT, then LOSS, then multiple mechanics)
+Ongoing tasks in order of priority:
+
+- Draw Phase:
+	- Player draws at beginning of turn
+	- Player gets 2 gold at beginning of turn
+	- Transitions to action phase (no SOT or draw phase effects for now, so it's all good)
+- Action phase:
+	- Valid target request, determines how/when a card is playable (different cases)
+	- Design action request (play X card, target)
+	- Verify Card playable
+	- Return either success or incorrect action (bad target, no gold)
+	- Step, and return effect
+	- (Individual card effects, when, how, will added later card by card)
+- EOT phase:
+	- Transistion to next player (no EOT eff for now)
+- Implement rest of rulebook
+	- Todo...
+	- Lots of individual mechanics that will be polished as it goes
+- Play card
+	- The backend needed to be able to target and play a card
