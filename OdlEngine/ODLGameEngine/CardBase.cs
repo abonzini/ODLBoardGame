@@ -24,13 +24,18 @@ namespace ODLGameEngine
     }
 
     /// <summary>
-    /// Defines how the card is targeted to play. Some cards have lane choosing, some cards (buildings) are blueprinted, etc
+    /// Defines how/where card can be targeted, useful for giving options at a first glance to a player
     /// </summary>
     public enum TargetMode
     {
         NO_TARGET,
-        LANE_TARGET,
-        BLUEPRINT_TARGET
+        ANY_LANE,
+        PLAINS_ONLY,
+        FOREST_ONLY,
+        MOUNTAIN_ONLY,
+        PLAINS_FORBIDDEN,
+        FOREST_FORBIDDEN,
+        MOUNTAIN_FORBIDDEN
     }
 
     /// <summary>
@@ -38,8 +43,12 @@ namespace ODLGameEngine
     /// </summary>
     public enum TargetCondition
     {
-        NONE
-            /// Later, stuff like HAS_ENEMY_UNIT, HAS_ALLY_UNIT, etc
+        NONE, /// Can be played always
+        BLUEPRINT, /// Subject to blueprint
+        LANE_HAS_ENEMY_UNIT,
+        LANE_HAS_ENEMY_BUILDING,
+        LANE_HAS_FRIENDLY_UNIT,
+        LANE_HAS_FRIENDLY_BUILDING
     }
 
     /// <summary>
@@ -52,7 +61,7 @@ namespace ODLGameEngine
         public string Text { get; set; } = "";
         public CardType CardType { get; set; } = CardType.UNKNOWN;
         public TargetMode TargetMode { get; set; } = TargetMode.NO_TARGET;
-        public TargetCondition TargetCondition { get; set; } = TargetCondition.NONE;
+        public List<TargetCondition> TargetConditions { get; set; } = new List<TargetCondition>();
         // Which tiles would be available to build in each
         public int PlainsBpCondition { get; set; } = 0b0;
         public int ForestBpCondition { get; set; } = 0b0;
