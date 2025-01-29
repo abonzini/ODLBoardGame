@@ -161,11 +161,11 @@ namespace EngineTests
         /// <returns>If deck's shuffled</returns>
         public static bool IsDeckShuffled(PlayerState p)
         {
-            for (int i = 1; i <= GameConstants.DECK_SIZE; i++)
+            for (int i = 0; i < p.Deck.DeckSize; i++)
             {
-                if(p.Deck.Cards[i-1] != i)
+                if(p.Deck.Cards[i] != i + 1)
                 {
-                    return true;
+                    return true; // A single difference is all it takes
                 }
             }
             return false;
@@ -175,7 +175,7 @@ namespace EngineTests
             bool playerIsInit = true;
             playerIsInit = p.Hp == GameConstants.STARTING_HP;
             playerIsInit = p.Gold == GameConstants.STARTING_GOLD;
-            playerIsInit = p.Hand.CardsInHand.Count == GameConstants.STARTING_CARDS;
+            playerIsInit = p.Hand.HandSize == GameConstants.STARTING_CARDS;
             return playerIsInit;
         }
 

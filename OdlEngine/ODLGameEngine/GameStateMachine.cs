@@ -136,7 +136,7 @@ namespace ODLGameEngine
             AddMessageEvent($"P{GetPlayerIndexFromId(player) + 1}'s deck shuffled");
             int playerId = GetPlayerIndexFromId(player);
             // Fisher Yates Algorithm for Shuffling, mix starting from last, first card isn't swapped with itself
-            for (int i = _detailedState.PlayerStates[playerId].Deck.Cards.Count - 1; i > 0; i--)
+            for (int i = _detailedState.PlayerStates[playerId].Deck.DeckSize - 1; i > 0; i--)
             {
                 SwapCardsInDeck(player, i, _rng.Next(i+1));
             }
@@ -232,7 +232,7 @@ namespace ODLGameEngine
                     auxPlayerId = GetPlayerIndexFromId(((PlayerEvent)e).playerId);
                     _detailedState.PlayerStates[auxPlayerId].Hand.InsertCard(
                         _detailedState.PlayerStates[auxPlayerId].Deck.PopCard(),
-                        _detailedState.PlayerStates[auxPlayerId].Hand.CardsInHand.Count
+                        _detailedState.PlayerStates[auxPlayerId].Hand.HandSize
                         ); // Pop last card from deck and add to hand last
                     break;
                 default:
@@ -282,8 +282,8 @@ namespace ODLGameEngine
                     auxPlayerId = GetPlayerIndexFromId(((PlayerEvent)e).playerId);
                     _detailedState.PlayerStates[auxPlayerId].Deck.InsertCard(
                         _detailedState.PlayerStates[auxPlayerId].Hand.RemoveCardAt(
-                            _detailedState.PlayerStates[auxPlayerId].Hand.CardsInHand.Count-1),
-                        _detailedState.PlayerStates[auxPlayerId].Deck.Cards.Count);
+                            _detailedState.PlayerStates[auxPlayerId].Hand.HandSize-1),
+                        _detailedState.PlayerStates[auxPlayerId].Deck.DeckSize);
                     // Pop card from last place of hand and return to deck
                     break;
                 default:

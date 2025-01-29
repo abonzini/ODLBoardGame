@@ -11,6 +11,7 @@ namespace ODLGameEngine
     {
         public List<int> Cards { get; set; } = new List<int>(30);
         public Dictionary<int, int> CardHistogram { get; set; } = new Dictionary<int, int>();
+        public int DeckSize { get { return Cards.Count; } }
         /// <summary>
         /// Initializes deck given csv string of cards sequence
         /// </summary>
@@ -77,7 +78,7 @@ namespace ODLGameEngine
             if(position == -1)
             {
                 card = Cards.Last(); // Get card
-                Cards.RemoveAt(Cards.Count - 1); // Pop it
+                Cards.RemoveAt(DeckSize - 1); // Pop it
             }
             else
             {

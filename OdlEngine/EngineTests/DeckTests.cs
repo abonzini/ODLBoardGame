@@ -15,7 +15,7 @@ namespace EngineTests
         public void DeckCreation() // Deck construction and empty initial deck
         {
             Deck newDeck = new Deck();
-            Assert.AreEqual(newDeck.Cards.Count, 0);
+            Assert.AreEqual(newDeck.DeckSize, 0);
         }
         [TestMethod]
         public void DeckInitialization() // Deck is initialized properly with 5 cards, can pop cards

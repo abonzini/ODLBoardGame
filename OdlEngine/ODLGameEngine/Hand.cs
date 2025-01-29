@@ -10,7 +10,7 @@ namespace ODLGameEngine
     public class Hand
     {
         public List<int> CardsInHand { get; set; } = new List<int>();
-
+        public int HandSize { get { return CardsInHand.Count; } }
         /// <summary>
         /// Inserts a card to the hand
         /// </summary>
