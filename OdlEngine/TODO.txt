@@ -1,16 +1,13 @@
 Ongoing tasks in order of priority:
 
-- Draw Phase:
-	- Player draws at beginning of turn
-	- Player gets 2 gold at beginning of turn
-	- Transitions to action phase (no SOT or draw phase effects for now, so it's all good)
 - Action phase:
 	- Valid target request, determines how/when a card is playable (different cases)
-	- Design action request (play X card, target)
+	- Design action request (play X card, target), remake targets to flagged enum and make function that returns a flagged enum of valid targets
 	- Verify Card playable
 	- Return either success or incorrect action (bad target, no gold)
 	- Step, and return effect
 	- (Individual card effects, when, how, will added later card by card)
+	- Test case for all above
 - EOT phase:
 	- Transistion to next player (no EOT eff for now)
 - Implement rest of rulebook

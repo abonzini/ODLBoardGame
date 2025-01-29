@@ -53,7 +53,8 @@ namespace ODLGameEngine
         PLAYER_GOLD_TRANSITION,
         MESSAGE,
         CARD_DECK_SWAP,
-        DECK_DRAW
+        DECK_DRAW,
+        PLAYER_GOLD_CHANGE
     }
 
     public class Event
@@ -65,12 +66,17 @@ namespace ODLGameEngine
             return description; // Default is no info leaked
         }
     }
+    public class PlayerValueEvent<T> : Event
+    {
+        public PlayerId playerId;
+        public T value;
+    }
     public class TransitionEvent<T> : Event
     {
         public T oldValue;
         public T newValue;
     }
-    public class PlayerValueEvent<T> : Event
+    public class PlayerTransitionEvent<T> : Event
     {
         public PlayerId playerId;
         public T oldValue;

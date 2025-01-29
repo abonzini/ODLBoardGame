@@ -17,6 +17,8 @@ namespace ODLGameEngine
         public const int STARTING_GOLD = 5;
         public const int STARTING_CARDS = 4;
         public const int DECK_SIZE = 30;
+        public const int DRAW_PHASE_CARDS_DRAWN = 1;
+        public const int DRAW_PHASE_GOLD_OBTAINED = 2;
     }
 
 }
