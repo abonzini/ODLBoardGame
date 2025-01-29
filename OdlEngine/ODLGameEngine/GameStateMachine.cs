@@ -34,12 +34,12 @@ namespace ODLGameEngine
         /// </summary>
         public GameStateMachine()
         {
-            initInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
+            InitInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
         }
         /// <summary>
         /// Initializes internal stuff
         /// </summary>
-        void initInternal(GameStateStruct state, int seed)
+        void InitInternal(GameStateStruct state, int seed)
         {
             _detailedState = state;
             _detailedState.Seed = seed;
@@ -63,12 +63,16 @@ namespace ODLGameEngine
                     return null;
                 case States.P1_INIT:
                     InitializePlayer(PlayerId.PLAYER_1);
-                    RequestNewState(States.P2_INIT);
+                    ENGINE_ChangeState(States.P2_INIT);
                     break;
                 case States.P2_INIT:
                     InitializePlayer(PlayerId.PLAYER_2);
-                    TogglePlayer(); // Init finished, now begin game w P1 active
-                    RequestNewState(States.DRAW_PHASE);
+                    ENGINE_TogglePlayer(); // Init finished, now begin game w P1 active
+                    ENGINE_ChangeState(States.DRAW_PHASE);
+                    break;
+                case States.DRAW_PHASE:
+                    DrawPhase();
+                    ENGINE_ChangeState(States.ACTION_PHASE);
                     break;
                 default:
                     throw new NotImplementedException("State not yet implemented");
@@ -82,8 +86,8 @@ namespace ODLGameEngine
         public void LoadGame(GameStateStruct initialState)
         {
             if (_detailedState.CurrentState != States.START) return; // Only works first thing
-            initInternal(initialState, initialState.Seed); // Initializes game to this point
-            RequestNewState(_detailedState.CurrentState); // Asks to enter new state, will create next step too (new)
+            InitInternal(initialState, initialState.Seed); // Initializes game to this point
+            ENGINE_ChangeState(_detailedState.CurrentState); // Asks to enter new state, will create next step too (new)
         }
         /// <summary>
         /// Starts new game from scratch
@@ -94,7 +98,7 @@ namespace ODLGameEngine
         {
             LoadInitialPlayerData(PlayerId.PLAYER_1, p1);
             LoadInitialPlayerData(PlayerId.PLAYER_2, p2);
-            RequestNewState(States.P1_INIT); // Switches to first actual state
+            ENGINE_ChangeState(States.P1_INIT); // Switches to first actual state
         }
 
         void LoadInitialPlayerData(PlayerId player, PlayerInitialData playerData) // This function randomizes! Needs to restore seed after!
@@ -105,7 +109,7 @@ namespace ODLGameEngine
             _detailedState.PlayerStates[playerId].Deck.InitializeDeck(playerData.InitialDecklist);
         }
 
-        static int GetPlayerIndexFromId(PlayerId player)
+        static public int GetPlayerIndexFromId(PlayerId player)
         {
             return player switch
             {
@@ -121,11 +125,19 @@ namespace ODLGameEngine
         /// <param name="player">The player to init</param>
         void InitializePlayer(PlayerId player)
         {
-            SetPlayerHp(player, GameConstants.STARTING_HP);
-            SetPlayerGold(player, GameConstants.STARTING_GOLD);
+            ENGINE_SetPlayerHp(player, GameConstants.STARTING_HP);
+            ENGINE_SetPlayerGold(player, GameConstants.STARTING_GOLD);
             ShufflePlayerDeck(player);
             DeckDrawMultiple(player, GameConstants.STARTING_CARDS);
-            NewRngSeed(_rng.Next(int.MinValue, int.MaxValue));
+            ENGINE_NewRngSeed(_rng.Next(int.MinValue, int.MaxValue));
+        }
+        /// <summary>
+        /// Executes draw phase
+        /// </summary>
+        void DrawPhase()
+        {
+            DeckDrawMultiple(_detailedState.CurrentPlayer, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Current player draws
+            ENGINE_PlayerGoldChange(_detailedState.CurrentPlayer, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Current player gets gold
         }
         /// <summary>
         /// Shuffles a player deck
@@ -133,12 +145,12 @@ namespace ODLGameEngine
         /// <param name="player">Player</param>
         void ShufflePlayerDeck(PlayerId player)
         {
-            AddMessageEvent($"P{GetPlayerIndexFromId(player) + 1}'s deck shuffled");
+            ENGINE_AddMessageEvent($"P{GetPlayerIndexFromId(player) + 1}'s deck shuffled");
             int playerId = GetPlayerIndexFromId(player);
             // Fisher Yates Algorithm for Shuffling, mix starting from last, first card isn't swapped with itself
             for (int i = _detailedState.PlayerStates[playerId].Deck.DeckSize - 1; i > 0; i--)
             {
-                SwapCardsInDeck(player, i, _rng.Next(i+1));
+                ENGINE_SwapCardsInDeck(player, i, _rng.Next(i+1));
             }
         }
         /// <summary>
@@ -148,10 +160,10 @@ namespace ODLGameEngine
         /// <param name="n">Cards to draw</param>
         void DeckDrawMultiple(PlayerId player, int n)
         {
-            AddMessageEvent($"P{GetPlayerIndexFromId(player) + 1}'s draws {n}");
+            ENGINE_AddMessageEvent($"P{GetPlayerIndexFromId(player) + 1}'s draws {n}");
             for (int i  = 0; i < n; i++)
             {
-                DeckDrawSingle(player);
+                ENGINE_DeckDrawSingle(player);
             }
         }
 
@@ -210,22 +222,22 @@ namespace ODLGameEngine
                     _rng = new Random(_detailedState.Seed);
                     break;
                 case EventType.PLAYER_HP_TRANSITION:
-                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
-                    ((PlayerValueEvent<int>)e).oldValue = _detailedState.PlayerStates[auxPlayerId].Hp;
-                    _detailedState.PlayerStates[auxPlayerId].Hp = ((PlayerValueEvent<int>)e).newValue;
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerTransitionEvent<int>)e).playerId);
+                    ((PlayerTransitionEvent<int>)e).oldValue = _detailedState.PlayerStates[auxPlayerId].Hp;
+                    _detailedState.PlayerStates[auxPlayerId].Hp = ((PlayerTransitionEvent<int>)e).newValue;
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
-                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
-                    ((PlayerValueEvent<int>)e).oldValue = _detailedState.PlayerStates[auxPlayerId].Gold;
-                    _detailedState.PlayerStates[auxPlayerId].Gold = ((PlayerValueEvent<int>)e).newValue;
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerTransitionEvent<int>)e).playerId);
+                    ((PlayerTransitionEvent<int>)e).oldValue = _detailedState.PlayerStates[auxPlayerId].Gold;
+                    _detailedState.PlayerStates[auxPlayerId].Gold = ((PlayerTransitionEvent<int>)e).newValue;
                     break;
                 case EventType.MESSAGE:
                     break;
                 case EventType.CARD_DECK_SWAP:
-                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerTransitionEvent<int>)e).playerId);
                     _detailedState.PlayerStates[auxPlayerId].Deck.SwapCards(
-                        ((PlayerValueEvent<int>)e).newValue,
-                        ((PlayerValueEvent<int>)e).oldValue
+                        ((PlayerTransitionEvent<int>)e).newValue,
+                        ((PlayerTransitionEvent<int>)e).oldValue
                         );
                     break;
                 case EventType.DECK_DRAW:
@@ -234,6 +246,10 @@ namespace ODLGameEngine
                         _detailedState.PlayerStates[auxPlayerId].Deck.PopCard(),
                         _detailedState.PlayerStates[auxPlayerId].Hand.HandSize
                         ); // Pop last card from deck and add to hand last
+                    break;
+                case EventType.PLAYER_GOLD_CHANGE:
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
+                    _detailedState.PlayerStates[auxPlayerId].Gold += ((PlayerValueEvent<int>)e).value; // Add gold
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -262,20 +278,20 @@ namespace ODLGameEngine
                     _rng = new Random(_detailedState.Seed);
                     break;
                 case EventType.PLAYER_HP_TRANSITION:
-                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
-                    _detailedState.PlayerStates[auxPlayerId].Hp = ((PlayerValueEvent<int>)e).oldValue;
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerTransitionEvent<int>)e).playerId);
+                    _detailedState.PlayerStates[auxPlayerId].Hp = ((PlayerTransitionEvent<int>)e).oldValue;
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
-                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
-                    _detailedState.PlayerStates[auxPlayerId].Gold = ((PlayerValueEvent<int>)e).oldValue;
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerTransitionEvent<int>)e).playerId);
+                    _detailedState.PlayerStates[auxPlayerId].Gold = ((PlayerTransitionEvent<int>)e).oldValue;
                     break;
                 case EventType.MESSAGE:
                     break;
                 case EventType.CARD_DECK_SWAP:
-                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerTransitionEvent<int>)e).playerId);
                     _detailedState.PlayerStates[auxPlayerId].Deck.SwapCards(
-                        ((PlayerValueEvent<int>)e).newValue,
-                        ((PlayerValueEvent<int>)e).oldValue
+                        ((PlayerTransitionEvent<int>)e).newValue,
+                        ((PlayerTransitionEvent<int>)e).oldValue
                         );
                     break;
                 case EventType.DECK_DRAW:
@@ -286,6 +302,10 @@ namespace ODLGameEngine
                         _detailedState.PlayerStates[auxPlayerId].Deck.DeckSize);
                     // Pop card from last place of hand and return to deck
                     break;
+                case EventType.PLAYER_GOLD_CHANGE:
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
+                    _detailedState.PlayerStates[auxPlayerId].Gold -= ((PlayerValueEvent<int>)e).value; // Remove gold
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -294,11 +314,12 @@ namespace ODLGameEngine
         // --------------------------------------------------------------------------------------
         // -------------------------------  GAME ENGINE REQUESTS --------------------------------
         // --------------------------------------------------------------------------------------
+        // Use ENGINE_ in fn names, the more convoluted game mechanics (e.g. when player builds X, or when player draws card) need to be dealt here
         /// <summary>
         /// Advances state machine
         /// </summary>
         /// <param name="state">State to go to</param>
-        void RequestNewState(States state)
+        void ENGINE_ChangeState(States state)
         {
             ExecuteEvent(
                 new TransitionEvent<States>()
@@ -311,7 +332,7 @@ namespace ODLGameEngine
         /// <summary>
         /// Toggles active player
         /// </summary>
-        void TogglePlayer()
+        void ENGINE_TogglePlayer()
         {
             var nextPlayer = _detailedState.CurrentPlayer switch // Player is always 1 unless it goes from 1 -> 2
             {
@@ -330,7 +351,7 @@ namespace ODLGameEngine
         /// Next step will have a new rng seed, important to mantain determinism
         /// </summary>
         /// <param name="seed">Seed to adopt</param>
-        void NewRngSeed(int seed)
+        void ENGINE_NewRngSeed(int seed)
         {
             ExecuteEvent(
                 new TransitionEvent<int>()
@@ -344,10 +365,10 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="p">Which player</param>
         /// <param name="hp">Which value</param>
-        void SetPlayerHp(PlayerId p, int hp)
+        void ENGINE_SetPlayerHp(PlayerId p, int hp)
         {
             ExecuteEvent(
-                new PlayerValueEvent<int>()
+                new PlayerTransitionEvent<int>()
                 {
                     eventType = EventType.PLAYER_HP_TRANSITION,
                     playerId = p,
@@ -360,10 +381,10 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="p">Which player</param>
         /// <param name="gold">Which value</param>
-        void SetPlayerGold(PlayerId p, int gold)
+        void ENGINE_SetPlayerGold(PlayerId p, int gold)
         {
             ExecuteEvent(
-                new PlayerValueEvent<int>()
+                new PlayerTransitionEvent<int>()
                 {
                     eventType = EventType.PLAYER_GOLD_TRANSITION,
                     playerId = p,
@@ -371,7 +392,11 @@ namespace ODLGameEngine
                     description = $"P{GetPlayerIndexFromId(p) + 1} now has {gold} gold"
                 });
         }
-        void AddMessageEvent(string msg)
+        /// <summary>
+        /// Adds message that can be seen by player
+        /// </summary>
+        /// <param name="msg">Message</param>
+        void ENGINE_AddMessageEvent(string msg)
         {
             ExecuteEvent(
                 new Event()
@@ -380,10 +405,16 @@ namespace ODLGameEngine
                     description = msg
                 });
         }
-        void SwapCardsInDeck(PlayerId p, int card1, int card2)
+        /// <summary>
+        /// Swaps 2 cards in a player's deck, for shuffling
+        /// </summary>
+        /// <param name="p">Player</param>
+        /// <param name="card1">Card 1</param>
+        /// <param name="card2">Card 2</param>
+        void ENGINE_SwapCardsInDeck(PlayerId p, int card1, int card2)
         {
             ExecuteEvent(
-                new PlayerValueEvent<int>()
+                new PlayerTransitionEvent<int>()
                 {
                     eventType = EventType.CARD_DECK_SWAP,
                     playerId = p,
@@ -391,13 +422,33 @@ namespace ODLGameEngine
                     oldValue = card2
                 });
         }
-        void DeckDrawSingle(PlayerId p)
+        /// <summary>
+        /// Draws a single card for a player
+        /// </summary>
+        /// <param name="p">Player</param>
+        void ENGINE_DeckDrawSingle(PlayerId p)
         {
             ExecuteEvent(
                 new PlayerEvent()
                 {
                     eventType = EventType.DECK_DRAW,
                     playerId = p
+                });
+        }
+        /// <summary>
+        /// Change the gold of player (gain or loss)
+        /// </summary>
+        /// <param name="p">Player</param>
+        /// <param name="goldDelta">How much gold to gain/lose</param>
+        void ENGINE_PlayerGoldChange(PlayerId p, int goldDelta)
+        {
+            ExecuteEvent(
+                new PlayerValueEvent<int>()
+                {
+                    eventType = EventType.PLAYER_GOLD_CHANGE,
+                    playerId = p,
+                    value = goldDelta,
+                    description = $"P{GetPlayerIndexFromId(p) + 1} {((goldDelta>0)?"gains":"loses")} {Math.Abs(goldDelta)} gold"
                 });
         }
         public override string ToString()
