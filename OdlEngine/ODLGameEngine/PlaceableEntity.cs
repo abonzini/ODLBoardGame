@@ -24,11 +24,11 @@ namespace ODLGameEngine
         /// <summary>
         /// Unique ID that this entity has, no other one has it. Equivalent to the global order of play
         /// </summary>
-        public int UniqueId = 0;
+        public int UniqueId { get; set; } = 0;
         /// <summary>
-        /// Card for reference
+        /// Card id for reference
         /// </summary>
-        public Card Card;
+        public int Card { get; set; } = 0;
         /// <summary>
         /// Who owns this card
         /// </summary>
@@ -36,11 +36,11 @@ namespace ODLGameEngine
         /// <summary>
         /// Which lane is it on
         /// </summary>
-        public LaneID LaneCoordinate = LaneID.NO_LANE;
+        public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE;
         /// <summary>
         /// Which tile of lane (absolute to board)
         /// </summary>
-        public int TileCoordinate = -1;
+        public int TileCoordinate { get; set; } = -1;
         /// <summary>
         /// Hp of thing
         /// </summary>
