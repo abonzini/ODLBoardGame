@@ -29,14 +29,15 @@ namespace ODLGameEngine
     [Flags]
     public enum ValidTargets
     {
-        NO_TARGET = 0,
+        GLOBAL = 0,
         PLAINS = 1,
         FOREST = 2,
         MOUNTAIN = 4,
         ALL_BUT_MOUNTAIN = 3,
         ALL_BUT_FOREST = 5,
         ALL_BUT_PLAINS = 6,
-        ANY_LANE = 7
+        ANY_LANE = 7,
+        INVALID = 99
     }
 
     /// <summary>
@@ -62,18 +63,17 @@ namespace ODLGameEngine
         public string Name { get; set; } = "";
         public string Text { get; set; } = "";
         public CardType CardType { get; set; } = CardType.UNKNOWN;
-        public ValidTargets TargetMode { get; set; } = ValidTargets.NO_TARGET;
-        public List<TargetCondition> TargetConditions { get; set; } = new List<TargetCondition>();
+        public ValidTargets TargetMode { get; set; } = ValidTargets.GLOBAL; // Which lane(s) if any the card could work on
+        public List<TargetCondition> TargetConditions { get; set; } = new List<TargetCondition>(); // What needs to happen for a card to be "playable" in a lane
         // Which tiles would be available to build in each
         public int PlainsBpCondition { get; set; } = 0b0;
         public int ForestBpCondition { get; set; } = 0b0;
         public int MountainsBpCondition { get; set; } = 0b0;
         // Playable info (will be in card)
-        public int Cost { get; set; } = 0;
-        public int Hp { get; set; } = 0;
-        public int Movement { get; set; } = 0;
-        public int MovementDenominator { get; set; } = 1;
-        public int Attack { get; set; } = 0;
+        public string Cost { get; set; } = "";
+        public string Hp { get; set; } = "";
+        public string Movement { get; set; } = "";
+        public string Attack { get; set; } = "";
         public int Rarity { get; set; } = 0;
         public ExpansionId Expansion { get; set; } = ExpansionId.BASE;
         public PlayerClassType ClassType { get; set; } = PlayerClassType.BASE;

@@ -1,27 +1,25 @@
 [
 	{
-	  "cardData":
+	  "CardData":
 	  {
-		"id": 2,
-		"name": "PEASANT",
-		"text": "",
-		"cardType": 1,
-		"targetMode": 1,
-		"targetCondition": 0,
-		"cost": 0,
-		"hp": 2,
-		"movement": 1,
-		"attack": 2,
-		"rarity": 1,
-		"expansion": 0,
-		"classType": 0
+		"Id": 2,
+		"Name": "PEASANT",
+		"Text": "",
+		"CardType": 1,
+		"TargetMode": 0,
+		"Cost": "",
+		"Hp": "2",
+		"Movement": "1",
+		"Attack": "2",
+		"Rarity": 1,
+		"Expansion": 0,
+		"ClassType": 0
 	  },
-	  "unitData":
+	  "UnitData":
 	  {
-		"movement": 1,
-		"movementDenominator": 1,
-		"attack": 2,
-		"hp": 2
+		"Movement": 1,
+		"Attack": 2,
+		"Hp": 2
 	  }
 	}
 ]
