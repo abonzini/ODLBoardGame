@@ -6,6 +6,15 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
+    public enum PlayOutcome
+    {
+        OK,
+        CANT_AFFORD,
+        NO_TARGET_AVAILABLE,
+        INVALID_TARGET,
+        INVALID_CARD,
+        INVALID_GAME_STATE
+    }
     public partial class GameStateMachine
     {
         // --------------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 Ongoing tasks in order of priority:
 
-- Move the play outcomes to playability part of partial class
 - Unit playing:
 		- Proceed with units: Cards number -1000000 to -1999999 -> Playable token units, procedurally generated as 1-G-HP-ATK-MVT-DEN-TGT
 		- Units are summoned (copied) from card, and placed on board, stats are verified on board
