@@ -148,5 +148,22 @@ namespace ODLGameEngine
                     description = $"P{GetPlayerIndexFromId(p) + 1} {((goldDelta > 0) ? "gains" : "loses")} {Math.Abs(goldDelta)} gold"
                 });
         }
+        /// <summary>
+        /// Player has played a card from hand, so that card is not in hand anymore then
+        /// </summary>
+        /// <param name="p">Player</param>
+        /// <param name="cardInHandIndex">Card</param>
+        void ENGINE_PlayCardFromHand(PlayerId p, int cardInHandIndex)
+        {
+            int cardId = _detailedState.PlayerStates[GetPlayerIndexFromId(_detailedState.CurrentPlayer)].Hand.CardsInHand[cardInHandIndex];
+            ExecuteEvent(
+                new PlayerValueEvent<int>()
+                {
+                    eventType = EventType.CARD_PLAY_FROM_HAND,
+                    playerId = p,
+                    value = cardInHandIndex,
+                    description = $"P{GetPlayerIndexFromId(p) + 1} played {CardDb.GetCardData(cardId).Name}"
+                });
+        }
     }
 }

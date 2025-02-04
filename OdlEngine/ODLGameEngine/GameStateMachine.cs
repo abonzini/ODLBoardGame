@@ -10,7 +10,7 @@ namespace ODLGameEngine
     public enum PlayOutcome
     {
         OK,
-        NO_GOLD,
+        CANT_AFFORD,
         NO_TARGET_AVAILABLE,
         INVALID_TARGET,
         INVALID_CARD,
@@ -23,7 +23,7 @@ namespace ODLGameEngine
         GameStateStruct _detailedState = null; // State info, will work over this to advance game
         public GameStateStruct GetDetailedState() { return _detailedState; }
         CardFinder _cardDb = null;
-        CardFinder CardDb
+        public CardFinder CardDb
         {
             get
             {
@@ -198,7 +198,7 @@ namespace ODLGameEngine
         /// <param name="e">The event to add and excecute</param>
         void ExecuteEvent(Event e)
         {
-            int auxPlayerId;
+            int auxPlayerId, auxInt;
             _currentStep?.events.Add(e);
             switch (e.eventType)
             {
@@ -260,6 +260,11 @@ namespace ODLGameEngine
                     auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
                     _detailedState.PlayerStates[auxPlayerId].Gold += ((PlayerValueEvent<int>)e).value; // Add gold
                     break;
+                case EventType.CARD_PLAY_FROM_HAND:
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
+                    auxInt = _detailedState.PlayerStates[auxPlayerId].Hand.RemoveCardAt(((PlayerValueEvent<int>)e).value); // Card now popped from hand
+                    _detailedState.BoardState.DiscardPiles[auxPlayerId].Add(auxInt); // Add to discard pile
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -270,7 +275,7 @@ namespace ODLGameEngine
         /// <param name="e">Event to revert</param>
         void RevertEvent(Event e)
         {
-            int auxPlayerId;
+            int auxPlayerId, auxInt;
             switch (e.eventType)
             {
                 case EventType.STATE_TRANSITION:
@@ -314,6 +319,12 @@ namespace ODLGameEngine
                 case EventType.PLAYER_GOLD_CHANGE:
                     auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
                     _detailedState.PlayerStates[auxPlayerId].Gold -= ((PlayerValueEvent<int>)e).value; // Remove gold
+                    break;
+                case EventType.CARD_PLAY_FROM_HAND:
+                    auxPlayerId = GetPlayerIndexFromId(((PlayerValueEvent<int>)e).playerId);
+                    auxInt = _detailedState.BoardState.DiscardPiles[auxPlayerId].Last(); // Retrieve last
+                    _detailedState.BoardState.DiscardPiles[auxPlayerId].RemoveAt(_detailedState.BoardState.DiscardPiles[auxPlayerId].Count - 1); // Pop from discard pile
+                    _detailedState.PlayerStates[auxPlayerId].Hand.InsertCard(auxInt, ((PlayerValueEvent<int>)e).value); // Reinsert in hand
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");

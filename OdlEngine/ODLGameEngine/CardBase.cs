@@ -27,7 +27,7 @@ namespace ODLGameEngine
     /// Defines how/where card can be targeted, useful for giving options at a first glance to a player
     /// </summary>
     [Flags]
-    public enum ValidTargets
+    public enum CardTargets
     {
         GLOBAL = 0,
         PLAINS = 1,
@@ -63,7 +63,7 @@ namespace ODLGameEngine
         public string Name { get; set; } = "";
         public string Text { get; set; } = "";
         public CardType CardType { get; set; } = CardType.UNKNOWN;
-        public ValidTargets TargetMode { get; set; } = ValidTargets.GLOBAL; // Which lane(s) if any the card could work on
+        public CardTargets TargetOptions { get; set; } = CardTargets.GLOBAL; // Which lane(s) if any the card could work on
         public List<TargetCondition> TargetConditions { get; set; } = new List<TargetCondition>(); // What needs to happen for a card to be "playable" in a lane
         // Which tiles would be available to build in each
         public int PlainsBpCondition { get; set; } = 0b0;

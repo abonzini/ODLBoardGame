@@ -23,16 +23,16 @@ namespace ODLGameEngine
     /// </summary>
     public class CardFinder
     {
-        public Dictionary<int, Card> cardBasicData = new Dictionary<int, Card>();
-        public Dictionary<int, Unit> unitData = new Dictionary<int, Unit>();
-        public Dictionary<int, Building> buildingData = new Dictionary<int, Building>();
-        public Dictionary<int, Skill> skillData = new Dictionary<int, Skill>();
-        readonly string _baseDir;
+        protected Dictionary<int, Card> cardBasicData = new Dictionary<int, Card>();
+        protected Dictionary<int, Unit> unitData = new Dictionary<int, Unit>();
+        protected Dictionary<int, Building> buildingData = new Dictionary<int, Building>();
+        protected Dictionary<int, Skill> skillData = new Dictionary<int, Skill>();
+        protected readonly string _baseDir;
         public CardFinder(string baseDir)
         {
             _baseDir = baseDir;
         }
-        public void LoadCard(int id)
+        protected void LoadCard(int id)
         {
             if (cardBasicData.ContainsKey(id)) return; // Need to only parse data I yet didn't parse
 
@@ -69,6 +69,49 @@ namespace ODLGameEngine
                     }
                 }
             }
+        }
+        /// <summary>
+        /// Gets the card data from loaded collection
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Card data</returns>
+        public virtual Card GetCardData(int id)
+        {
+            LoadCard(id);
+            return cardBasicData[id];
+        }
+        /// <summary>
+        /// Gets skill data from card (to play skill)
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Skill data</returns>
+        /// <exception cref="InvalidDataException">If card id doesn't correspond to a skill</exception>
+        public virtual Skill GetSkillData(int id)
+        {
+            LoadCard(id);
+            return (cardBasicData[id].CardType == CardType.SKILL)? skillData[id] : throw new InvalidDataException($"Chosen card is not a skill!");
+        }
+        /// <summary>
+        /// Gets unit data from card (to play unit)
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Unit data</returns>
+        /// <exception cref="InvalidDataException">If card id doesn't correspond to an unit</exception>
+        public virtual Unit GetUnitData(int id)
+        {
+            LoadCard(id);
+            return (cardBasicData[id].CardType == CardType.UNIT) ? unitData[id] : throw new InvalidDataException($"Chosen card is not an unit!");
+        }
+        /// <summary>
+        /// Gets building data from card (to play building)
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Building data</returns>
+        /// <exception cref="InvalidDataException">If card id doesn't correspond to a building</exception>
+        public virtual Building GetBuildingData(int id)
+        {
+            LoadCard(id);
+            return (cardBasicData[id].CardType == CardType.BUILDING) ? buildingData[id] : throw new InvalidDataException($"Chosen card is not an building!");
         }
     }
 }

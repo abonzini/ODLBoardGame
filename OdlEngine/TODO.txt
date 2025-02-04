@@ -1,24 +1,27 @@
 Ongoing tasks in order of priority:
 
-- Action phase:
-		- Either override or extend CardGetter to be able to return test cards.
-			- Cards number 00 to -99 -> Playable bricks, procedurally created as G-TGT, gold cost and target, effect, none
-			- Cards number -01111 to -99999 -> Playable token units, procedurally generated as G-HP-ATK-MVT-DEN
-			- Cards number -100000000 to -199999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)
-		- New system tests, based on CardPlayabilityTest, checking if can afford, etc, use card getter override as test cases
-		- Do your best here to check many types of errors and so on, go function by function (verify and play), and ensure correct returns and correct states
-		- For valid play, also verify new step (non-null) and newest state is also action
-	- Then, need to implement the actual playing, including remove the card from hand (new ENGINE) and proper behaviour, step by step (slooooowly)
-	- Rush as special case, add rush flag, which secretly is playing a card, flag is cleaned at EOT as new event (or BOT/Draw? We'll see)
-- Play a card
-	- - Do Spell-Unit-Bldg, first effects are silly but they increase, once units are summoned, present in building and so on we can move on
-- Board:
-	- Implementing units and buildings as part of previous task, extend to basic board permanence
-	- Board test, eventually will become one of the main tests regarding combat and overall board state
-- EOT phase:
-	- Transistion to next player (no EOT eff for now)
-	- Start thinking about marching, and tiredness flags, attacking, stepping, starting march, etc
-- Implement cards, one by one, add tests
+- Move the play outcomes to playability part of partial class
+- Unit playing:
+		- Proceed with units: Cards number -1000000 to -1999999 -> Playable token units, procedurally generated as 1-G-HP-ATK-MVT-DEN-TGT
+		- Units are summoned (copied) from card, and placed on board, stats are verified on board
+		- Testing of board permanence, non-copying of units, ID uniqueness (ID COUNTER GLOBAL INCREMENTED VIA EVENT)
+		- Unit dies when summoned at 0 hp
+		- Test graveyard
+- End of turn
+		- Can test marching
+		- Implement battle
+- EOT
+		- Transition of stage
+- EOG
+- Rush
+		- Rush behaviour, flags
+- Buildings
+		- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
+			- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
+		- Bldg damage
+		- Tiredness
+- Implement cards, one by one, add tests, this involves more effects
 - Implement rest of rulebook
 	- Todo...
 	- Lots of individual mechanics that will be polished as it goes, individual card testing
+	- Rulebook edition

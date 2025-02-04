@@ -93,6 +93,7 @@ namespace ODLGameEngine
         public SortedList<int, Building>[] PlayerBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
         public SortedList<int, Unit>[] DeadUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
         public SortedList<int, Building>[] DeadBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
+        public List<int>[] DiscardPiles { get; set; } = [ new List<int>(), new List<int>() ];
         // Methods
         public int LaneCount { get; set; } = GameConstants.BOARD_LANES_NUMBER;
         public Lane GetLane(int i)
@@ -116,13 +117,13 @@ namespace ODLGameEngine
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
-        public Lane GetLane(ValidTargets laneTarget)
+        public Lane GetLane(CardTargets laneTarget)
         {
             return laneTarget switch
             {
-                ValidTargets.PLAINS => PlainsLane,
-                ValidTargets.FOREST => ForestLane,
-                ValidTargets.MOUNTAIN => MountainLane,
+                CardTargets.PLAINS => PlainsLane,
+                CardTargets.FOREST => ForestLane,
+                CardTargets.MOUNTAIN => MountainLane,
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }

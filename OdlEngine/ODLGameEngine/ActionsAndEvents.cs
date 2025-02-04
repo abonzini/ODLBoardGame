@@ -54,7 +54,8 @@ namespace ODLGameEngine
         MESSAGE,
         CARD_DECK_SWAP,
         DECK_DRAW,
-        PLAYER_GOLD_CHANGE
+        PLAYER_GOLD_CHANGE,
+        CARD_PLAY_FROM_HAND,
     }
 
     public class Event

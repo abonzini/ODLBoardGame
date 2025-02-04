@@ -17,97 +17,80 @@ namespace ODLGameEngine
         /// <summary>
         /// User selects this function to check if a specific card in their hand can be played, and when/where
         /// </summary>
-        /// <param name="cardInHand">Card index in hand</param>
+        /// <param name="cardInHandIndex">Card index in hand</param>
         /// <returns>If playable, and where (if playable)</returns>
-        public Tuple<PlayOutcome, ValidTargets> PLAYABLE_GetOptions(int cardInHand)
+        public Tuple<PlayOutcome, CardTargets> GetPlayableOptions(int cardInHandIndex)
         {
             // Check whether we're in the right place first (can only do this on play state)
             if(_detailedState.CurrentState != States.ACTION_PHASE)
             {
-                return new Tuple<PlayOutcome, ValidTargets>(PlayOutcome.INVALID_GAME_STATE, ValidTargets.INVALID); // Reutnr
+                return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_GAME_STATE, CardTargets.INVALID); // Reutnr
             }
             // An extra check first, whether card actually exists in hand
             Hand hand = _detailedState.PlayerStates[GetPlayerIndexFromId(_detailedState.CurrentPlayer)].Hand;
-            if (cardInHand >= hand.HandSize || cardInHand < 0) // Out of bounds!
+            if (cardInHandIndex >= hand.HandSize || cardInHandIndex < 0) // Out of bounds!
             {
-                return new Tuple<PlayOutcome, ValidTargets>(PlayOutcome.INVALID_CARD, ValidTargets.INVALID); // Return this (invalid card in hand!)
+                return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
             }
             // Now, no other option but to retrieve the actual card I'm attempting to play
-            cardInHand = hand.CardsInHand[cardInHand]; // Extract card id
-            CardDb.LoadCard(cardInHand); // Load if not loaded before
-            Card card = CardDb.cardBasicData[cardInHand];
+            cardInHandIndex = hand.CardsInHand[cardInHandIndex]; // Extract card id
+            Card card = CardDb.GetCardData(cardInHandIndex);
             return PLAYABLE_GetOptions(card);
         }
         /// <summary>
         /// Player choses card to play and where to play it.
         /// If not failed, this will change game state, function returns last step
         /// </summary>
-        /// <param name="cardInHand">Which card to play</param>
+        /// <param name="cardInHandIndex">Which card to play</param>
         /// <param name="chosenTarget">Where to play card</param>
         /// <returns>Outcome, and Step result (as in step() if successful</returns>
-        public Tuple<PlayOutcome, StepResult> PlayCard(int cardInHand, ValidTargets chosenTarget)
+        public Tuple<PlayOutcome, StepResult> PlayCard(int cardInHandIndex, CardTargets chosenTarget)
         {
-            // Check whether we're in the right place first (can only do this on play state)
-            if (_detailedState.CurrentState != States.ACTION_PHASE)
+            // First guard, make sure chosen target makes sense
+            if ((chosenTarget & chosenTarget - 1) != 0)
             {
-                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_GAME_STATE, null); // Return failure
+                // Invalid target, either 0 or a specific single lane, not multiple!
+                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
-            // An extra check first, whether card actually exists in hand
+            // If makes sense, then I need to verify whether chosen card is playable
+            Tuple<PlayOutcome, CardTargets> cardOptions = GetPlayableOptions(cardInHandIndex); // Does same checks as before, whether a card can be played, and where
+            if (cardOptions.Item1 != PlayOutcome.OK)
+            {
+                return new Tuple<PlayOutcome, StepResult>(cardOptions.Item1, null); // If failure, return type of failure, can't be played!
+            }
+            // Otherwise, card can be played somewhere, need to see if matches!            
             Hand hand = _detailedState.PlayerStates[GetPlayerIndexFromId(_detailedState.CurrentPlayer)].Hand;
-            if (cardInHand >= hand.HandSize || cardInHand < 0) // Out of bounds!
+            int cardId = hand.CardsInHand[cardInHandIndex]; // Extract card id
+            Card card = CardDb.GetCardData(cardId);
+            if((card.TargetOptions & chosenTarget) != 0 || (card.TargetOptions == chosenTarget)) // Then just need to verify tagets match
             {
-                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_CARD, null); // Return this (invalid card in hand!)
-            }
-            // Now, no other option but to retrieve the actual card I'm attempting to play
-            int cardId = hand.CardsInHand[cardInHand]; // Extract card id
-            CardDb.LoadCard(cardId); // Load if not loaded before
-            Card card = CardDb.cardBasicData[cardId];
-            // Otherwise, we can play stuff, but we'll need to verify...
-            PlayOutcome outcome = PLAYABLE_VerifyPlayable(card, chosenTarget);
-            if(outcome != PlayOutcome.OK)
-            {
-                return new Tuple<PlayOutcome, StepResult>(outcome, null); // If failure, return type of failure
+                // Ok shit is going down, card needs to be paid and played now, this will result in a step
+                PLAYABLE_PayCost(card);
+                ENGINE_PlayCardFromHand(_detailedState.CurrentPlayer, cardInHandIndex);
+                // Then the play effects
+                PLAYABLE_PlayCard(card, chosenTarget);
+                // Ends by transitioning to next action phase
+                ENGINE_ChangeState(States.ACTION_PHASE);
+
+                return new Tuple<PlayOutcome, StepResult> (PlayOutcome.OK, _stepHistory.Last() ); // Returns the thing
             }
             else
             {
-                // Ok shit is going down, card needs to be played now, this will result in a step
-                // Todo: remove from hand, check card type and execute effects (in new function that does more engine calls as needed)
-                // E.g. if skill, PlaySkill(skillcard) and that will be the one that does the switch of effect type, gets target, etc
-                // Ends by transitioning to next action phase
-                ENGINE_ChangeState(States.ACTION_PHASE);
+                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
-            return new Tuple<PlayOutcome, StepResult> ( outcome, _stepHistory.Last() ); // Returns the thing
         }
 
         // Back-end (private)
 
         /// <summary>
-        /// When player selects to play, needs to verify it's a valid selection.
-        /// Ideally stems from PLAYABLE_GetOptions result, but this filters out if multiple lanes are chosen or sth.
+        /// Plays a card effect on current player, play is verified and card not anymore in hand, but all effects need to be made
         /// </summary>
-        /// <param name="card">Which card to be played</param>
-        /// <param name="chosenTarget">What was the chosen target</param>
-        /// <returns>If OK or not</returns>
-        PlayOutcome PLAYABLE_VerifyPlayable(Card card, ValidTargets chosenTarget)
+        /// <param name="card"></param>
+        /// <param name="chosenTarget"></param>
+        void PLAYABLE_PlayCard(Card card, CardTargets chosenTarget)
         {
-            if (!PLAYABLE_PlayerCanAfford(card))
-            {
-                // Can't afford!
-                return PlayOutcome.NO_GOLD;
-            }
-            if ((chosenTarget & chosenTarget - 1) != 0)
-            {
-                // Invalid target, either 0 or a specific single lane, not multiple!
-                return PlayOutcome.INVALID_TARGET;
-            }
-            if (chosenTarget == ValidTargets.GLOBAL)
-            {
-                return PLAYABLE_IsPlayableGlobal(card) ? PlayOutcome.OK : PlayOutcome.NO_TARGET_AVAILABLE;
-            }
-            else
-            {
-                return PLAYABLE_IsPlayableLane(card, chosenTarget) ? PlayOutcome.OK : PlayOutcome.NO_TARGET_AVAILABLE;
-            }
+            // Todo: check card type and execute effects (in new function that does more engine calls as needed)
+            // E.g. if skill, PlaySkill(skillcard) and that will be the one that does the switch of effect type, gets target, etc
         }
 
         /// <summary>
@@ -115,43 +98,43 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Card they want to play</param>
         /// <returns>Whether the play outcome would be ok, and which targets could be picked</returns>
-        Tuple<PlayOutcome, ValidTargets> PLAYABLE_GetOptions(Card card)
+        Tuple<PlayOutcome, CardTargets> PLAYABLE_GetOptions(Card card)
         {
-            PlayOutcome outcome = PlayOutcome.NO_GOLD;
-            ValidTargets possibleTargets = ValidTargets.INVALID;
+            PlayOutcome outcome = PlayOutcome.CANT_AFFORD;
+            CardTargets possibleTargets = CardTargets.INVALID;
             // First check if player can afford
             if (!PLAYABLE_PlayerCanAfford(card))
             {
                 // Can't afford!
-                return new Tuple<PlayOutcome, ValidTargets>(outcome, possibleTargets);
+                return new Tuple<PlayOutcome, CardTargets>(outcome, possibleTargets);
             }
             // Otherwise I can def afford, check if playable
             outcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (card.TargetMode == ValidTargets.GLOBAL)
+            if (card.TargetOptions == CardTargets.GLOBAL)
             {
                 outcome = PLAYABLE_IsPlayableGlobal(card) ? PlayOutcome.OK : outcome;
-                possibleTargets = ValidTargets.GLOBAL;
+                possibleTargets = CardTargets.GLOBAL;
                 // If filled requirements, card playable
             }
-            else // Otherwise need to verify individual lanes
+            else if (card.TargetOptions <= CardTargets.ANY_LANE) // Otherwise need to verify individual VALID(!) lanes
             {
                 int laneCandidate;
-                ValidTargets validTargetsIfPossible = ValidTargets.GLOBAL;
+                CardTargets validTargetsIfPossible = CardTargets.GLOBAL;
                 for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
                 {
                     laneCandidate = 1 << i;
-                    if (card.TargetMode.HasFlag((ValidTargets)laneCandidate)) // If this lane is one of the possible ones
+                    if (card.TargetOptions.HasFlag((CardTargets)laneCandidate)) // If this lane is one of the possible ones
                     {
-                        if (PLAYABLE_IsPlayableLane(card, (ValidTargets)laneCandidate))
+                        if (PLAYABLE_IsPlayableLane(card, (CardTargets)laneCandidate))
                         {
                             outcome = PlayOutcome.OK; // Card is playable atleast somewhere!
-                            validTargetsIfPossible &= (ValidTargets)laneCandidate; // Add this option to list
+                            validTargetsIfPossible |= (CardTargets)laneCandidate; // Add this option to list
                         }
                     }
                 }
-                possibleTargets = (validTargetsIfPossible != ValidTargets.GLOBAL) ? validTargetsIfPossible : ValidTargets.INVALID;
+                possibleTargets = (validTargetsIfPossible != CardTargets.GLOBAL) ? validTargetsIfPossible : CardTargets.INVALID;
             }
-            return new Tuple<PlayOutcome, ValidTargets>(outcome, possibleTargets); // Return my findings
+            return new Tuple<PlayOutcome, CardTargets>(outcome, possibleTargets); // Return my findings
         }
         /// <summary>
         /// Checks if the player can afford to play a card
@@ -162,6 +145,15 @@ namespace ODLGameEngine
         {
             // May need to be made smarter if someone does variable cost cards
             return (_detailedState.PlayerStates[GetPlayerIndexFromId(_detailedState.CurrentPlayer)].Gold >= int.Parse(card.Cost));
+        }
+        /// <summary>
+        /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
+        /// </summary>
+        /// <param name="card">Card to check</param>
+        /// <returns>Cost in gold of card</returns>
+        void PLAYABLE_PayCost(Card card)
+        {
+            ENGINE_PlayerGoldChange(_detailedState.CurrentPlayer, -int.Parse(card.Cost));
         }
         /// <summary>
         /// Checks for a card with "global" tageting whether conditions are fulfilled
@@ -189,7 +181,7 @@ namespace ODLGameEngine
         /// <param name="card">Which card</param>
         /// <param name="lane">Which lane</param>
         /// <returns>True if can be played in this lane</returns>
-        bool PLAYABLE_IsPlayableLane(Card card, ValidTargets laneCandidate)
+        bool PLAYABLE_IsPlayableLane(Card card, CardTargets laneCandidate)
         {
             Lane laneToCheck = _detailedState.BoardState.GetLane(laneCandidate);
             bool playable = true; // By default playable unless something happens
