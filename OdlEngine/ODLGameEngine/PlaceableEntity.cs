@@ -19,7 +19,7 @@ namespace ODLGameEngine
         public PlaceableEntity corrEntity;
     }
 
-    public class PlaceableEntity
+    public class PlaceableEntity : ICloneable
     {
         /// <summary>
         /// Unique ID that this entity has, no other one has it. Equivalent to the global order of play
@@ -53,5 +53,12 @@ namespace ODLGameEngine
         protected bool IsHidden { get; set; } = false;
         protected bool IsTheRealOne { get; set; } = true;
         protected List<HiddenCorrelation> HiddenCorrelations { get; set; } = new List<HiddenCorrelation>(); // If stealth unit, need to define correlations for when they're discovered
+    
+        public object Clone()
+        {
+            object newEntity = MemberwiseClone();
+            ((PlaceableEntity)newEntity).HiddenCorrelations = new List<HiddenCorrelation>();
+            return newEntity;
+        }
     }
 }

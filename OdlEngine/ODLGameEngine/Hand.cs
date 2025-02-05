@@ -10,7 +10,7 @@ namespace ODLGameEngine
     public class Hand
     {
         public List<int> CardsInHand { get; set; } = new List<int>();
-        public int HandSize { get { return CardsInHand.Count; } }
+        public int HandSize { get; set; } = 0;
         /// <summary>
         /// Inserts a card to the hand
         /// </summary>
@@ -19,6 +19,7 @@ namespace ODLGameEngine
         public void InsertCard(int card, int i)
         {
             CardsInHand.Insert(i, card);
+            HandSize++;
         }
         /// <summary>
         /// Removes the card at specific position (pops). Used when playing a card, and when undoing a draw
@@ -29,6 +30,7 @@ namespace ODLGameEngine
         {
             int card = CardsInHand[i];
             CardsInHand.RemoveAt(i);
+            HandSize--;
             return card;
         }
 

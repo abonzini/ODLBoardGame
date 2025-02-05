@@ -11,7 +11,7 @@ namespace ODLGameEngine
     {
         public List<int> Cards { get; set; } = new List<int>(30);
         public Dictionary<int, int> CardHistogram { get; set; } = new Dictionary<int, int>();
-        public int DeckSize { get { return Cards.Count; } }
+        public int DeckSize { get; set; } = 0;
         /// <summary>
         /// Initializes deck given csv string of cards sequence
         /// </summary>
@@ -32,6 +32,7 @@ namespace ODLGameEngine
                 }
                 CardHistogram[cardId] = ++value;
                 Cards.Add(cardId);
+                DeckSize++;
             }
         }
         /// <summary>
@@ -51,6 +52,7 @@ namespace ODLGameEngine
                 }
                 CardHistogram[card] = ++value;
                 Cards.Add(card);
+                DeckSize++;
             }
         }
         /// <summary>
@@ -87,6 +89,7 @@ namespace ODLGameEngine
             }
             
             CardHistogram[card]--;
+            DeckSize--;
             return card; // Return what was in the last position
         }
         /// <summary>
@@ -102,6 +105,7 @@ namespace ODLGameEngine
                 CardHistogram[card] = value;
             }
             CardHistogram[card] = ++value;
+            DeckSize++;
         }
 
         /// <summary>

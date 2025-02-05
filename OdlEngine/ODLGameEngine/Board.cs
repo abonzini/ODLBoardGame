@@ -11,7 +11,7 @@ namespace ODLGameEngine
     {
         public string Tag { get; set; } = "";
         public int BuildingInTile { get; set; } = 0;
-        public SortedSet<int> UnitsInTile { get; set; } = new SortedSet<int>();
+        public SortedSet<int>[] UnitsInTile { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
         public int[] PlayerUnitCount { get; set; } = [0, 0];
     }
     /// <summary>
