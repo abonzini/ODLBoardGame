@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
-    public enum PlayerId
+    public enum CurrentPlayer
     {
-        SPECTATOR, // Meant for a spectator, lowest knowledge
         PLAYER_1,
         PLAYER_2,
-        OMNISCIENT // Highest knowledge
+        SPECTATOR, // Meant for a spectator, lowest knowledge
+        OMNISCIENT, // Highest knowledge
     }
     /// <summary>
     /// What state the machine is
@@ -63,7 +63,7 @@ namespace ODLGameEngine
         public States CurrentState {  get; set; } = States.START;
         public string StateHash { get; set; } = "";
         public int Seed { get; set; } = 0;
-        public PlayerId CurrentPlayer { get; set; } = PlayerId.OMNISCIENT;
+        public CurrentPlayer CurrentPlayer { get; set; } = CurrentPlayer.OMNISCIENT;
         public PlayerState[] PlayerStates { get; set; } = [new PlayerState(), new PlayerState()];
         public Board BoardState { get; set; } = new Board();
     }
@@ -82,5 +82,6 @@ namespace ODLGameEngine
         public int NUnits { get; set; } = 0;
         public Hand Hand { get; set; } = new Hand();
         public Deck Deck { get; set; } = new Deck();
+        public List<int> DiscardPile { get; set; } = new List<int>();
     }
 }

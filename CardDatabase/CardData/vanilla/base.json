@@ -17,6 +17,7 @@
 	  },
 	  "UnitData":
 	  {
+		"Name": "PEASANT",
 		"Movement": 1,
 		"Attack": 2,
 		"Hp": 2

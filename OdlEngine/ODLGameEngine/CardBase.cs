@@ -20,7 +20,7 @@ namespace ODLGameEngine
     /// </summary>
     public enum ExpansionId
     {
-        BASE
+        VANILLA
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ namespace ODLGameEngine
         public string Movement { get; set; } = "";
         public string Attack { get; set; } = "";
         public int Rarity { get; set; } = 0;
-        public ExpansionId Expansion { get; set; } = ExpansionId.BASE;
+        public ExpansionId Expansion { get; set; } = ExpansionId.VANILLA;
         public PlayerClassType ClassType { get; set; } = PlayerClassType.BASE;
         public bool StealthPlay { get; set; } = false; // Whether card triggers a stealth case
     }

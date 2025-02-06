@@ -3,7 +3,7 @@ This is where card behaviour is modified easily.
 To find something, the tree is the following:
 **\[expansion\]** -> **\[class\].json**
 
-For example, first expansion base class would be Base/Base.json, if there's X class, look for Base/X.json
+For example, first expansion base class would be Vanilla/Base.json, if there's X class, look for Vanilla/X.json
 
 The json file is somewhat complex, describes the elements of how a card is printed (i.e. what the user sees),
 and the actual thing that is played. The structure is the following:
@@ -57,7 +57,7 @@ Multiple conditions need to be put carefully to avoid weird states.
 - ```Attack:``` String for attack
 - ```Rarity:``` Rarity between 1-3 stars (0 if no rarity string)
 - ```Expansion:``` Expansion number
-    - ```BASE=0```
+    - ```VANILLA=0```
 - ```ClassType:``` If card is a class card...
     - ```BASE=0```
 - ```StealthPlay:``` If card is a stealth card, it is represented differently by the engine.

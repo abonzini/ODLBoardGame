@@ -8,6 +8,155 @@ namespace ODLGameEngine
 {
     public partial class GameStateMachine
     {
+        /// <summary>
+        /// Executes an event to change game state, adds to current queue and moves state
+        /// </summary>
+        /// <param name="e">The event to add and excecute</param>
+        void ENGINE_ExecuteEvent(Event e)
+        {
+            int auxInt1, auxInt2;
+            Unit auxUnit;
+            _currentStep?.events.Add(e);
+            switch (e.eventType)
+            {
+                case EventType.STATE_TRANSITION:
+                    // Requested a transition to new state, which implies ending this step and creating a new one
+                    bool firstStep = false;
+                    if (_currentStep == null)
+                    {
+                        firstStep = true;
+                    }
+                    else
+                    {
+                        ((TransitionEvent<States>)e).oldValue = _detailedState.CurrentState;
+                        _stepHistory.Add(_currentStep);
+                    }
+                    _detailedState.CurrentState = ((TransitionEvent<States>)e).newValue;
+                    _currentStep = new StepResult();
+                    if (firstStep) _currentStep.tag = Tag.FIRST_STATE; // Tag it as first if needed (step can't be reverted)
+                    // State transition complete!
+                    break;
+                case EventType.PLAYER_TRANSITION:
+                    // Requested a transition to new state, which implies ending this step and creating a new one
+                    ((TransitionEvent<CurrentPlayer>)e).oldValue = _detailedState.CurrentPlayer;
+                    _detailedState.CurrentPlayer = ((TransitionEvent<CurrentPlayer>)e).newValue; // Player transition complete!
+                    break;
+                case EventType.RNG_TRANSITION:
+                    // Requested a transition to new rng seed
+                    ((TransitionEvent<int>)e).oldValue = _detailedState.Seed;
+                    _detailedState.Seed = ((TransitionEvent<int>)e).newValue; // Player transition complete!
+                    _rng = new Random(_detailedState.Seed);
+                    break;
+                case EventType.PLAYER_HP_TRANSITION:
+                    auxInt1 = ((EntityTransitionEvent<int,int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Hp = ((EntityTransitionEvent<int, int>)e).newValue;
+                    break;
+                case EventType.PLAYER_GOLD_TRANSITION:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    ((EntityTransitionEvent<int, int>)e).oldValue = _detailedState.PlayerStates[auxInt1].Gold;
+                    _detailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int,int>)e).newValue;
+                    break;
+                case EventType.MESSAGE:
+                    break;
+                case EventType.CARD_DECK_SWAP:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Deck.SwapCards(
+                        ((EntityTransitionEvent<int, int>)e).newValue,
+                        ((EntityTransitionEvent<int, int>)e).oldValue
+                        );
+                    break;
+                case EventType.DECK_DRAW:
+                    auxInt1 = ((EntityEvent<int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Hand.InsertCard(
+                        _detailedState.PlayerStates[auxInt1].Deck.PopCard(),
+                        _detailedState.PlayerStates[auxInt1].Hand.HandSize
+                        ); // Pop last card from deck and add to hand last
+                    break;
+                case EventType.PLAYER_GOLD_CHANGE:
+                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Gold += ((EntityValueEvent<int, int>)e).value; // Add gold
+                    break;
+                case EventType.CARD_PLAY_FROM_HAND:
+                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
+                    auxInt2 = _detailedState.PlayerStates[auxInt1].Hand.RemoveCardAt(((EntityValueEvent<int, int>)e).value); // Card now popped from hand
+                    _detailedState.PlayerStates[auxInt1].DiscardPile.Add(auxInt2); // Add to discard pile
+                    break;
+                case EventType.INIT_UNIT:
+                    auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
+                    auxUnit = ((EntityValueEvent<int, Unit>)e).value;
+                    _detailedState.BoardState.PlayerUnits[auxInt1].Add(auxUnit.UniqueId, auxUnit); // Adds unit
+                    break;
+                default:
+                    throw new NotImplementedException("Not a handled state rn");
+            }
+        }
+        /// <summary>
+        /// Performs the opposite action of an event. Doesn't remove from step! Just opposite
+        /// </summary>
+        /// <param name="e">Event to revert</param>
+        void ENGINE_RevertEvent(Event e)
+        {
+            int auxInt1, auxInt2;
+            Unit auxUnit;
+            switch (e.eventType)
+            {
+                case EventType.STATE_TRANSITION:
+                    // Requested a transition to new state, which implies ending this step and creating a new one
+                    _detailedState.CurrentState = ((TransitionEvent<States>)e).oldValue; // Just retrieves the prev state
+                    break;
+                case EventType.PLAYER_TRANSITION:
+                    // Requested a transition to new state, which implies ending this step and creating a new one
+                    _detailedState.CurrentPlayer = ((TransitionEvent<CurrentPlayer>)e).oldValue; // Player transition complete!
+                    break;
+                case EventType.RNG_TRANSITION:
+                    // Requested a transition to new rng seed
+                    _detailedState.Seed = ((TransitionEvent<int>)e).oldValue; // Player transition complete!
+                    _rng = new Random(_detailedState.Seed);
+                    break;
+                case EventType.PLAYER_HP_TRANSITION:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Hp = ((EntityTransitionEvent<int, int>)e).oldValue;
+                    break;
+                case EventType.PLAYER_GOLD_TRANSITION:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int, int>)e).oldValue;
+                    break;
+                case EventType.MESSAGE:
+                    break;
+                case EventType.CARD_DECK_SWAP:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Deck.SwapCards(
+                        ((EntityTransitionEvent<int, int>)e).newValue,
+                        ((EntityTransitionEvent<int, int>)e).oldValue
+                        );
+                    break;
+                case EventType.DECK_DRAW:
+                    auxInt1 = ((EntityEvent<int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Deck.InsertCard(
+                        _detailedState.PlayerStates[auxInt1].Hand.RemoveCardAt(
+                            _detailedState.PlayerStates[auxInt1].Hand.HandSize - 1),
+                        _detailedState.PlayerStates[auxInt1].Deck.DeckSize);
+                    // Pop card from last place of hand and return to deck
+                    break;
+                case EventType.PLAYER_GOLD_CHANGE:
+                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Gold -= ((EntityValueEvent<int, int>)e).value; // Remove gold
+                    break;
+                case EventType.CARD_PLAY_FROM_HAND:
+                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
+                    auxInt2 = _detailedState.PlayerStates[auxInt1].DiscardPile.Last(); // Retrieve last
+                    _detailedState.PlayerStates[auxInt1].DiscardPile.RemoveAt(_detailedState.PlayerStates[auxInt1].DiscardPile.Count - 1); // Pop from discard pile
+                    _detailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2, ((EntityValueEvent<int, int>)e).value); // Reinsert in hand
+                    break;
+                case EventType.INIT_UNIT:
+                    auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
+                    auxUnit = ((EntityValueEvent<int, Unit>)e).value;
+                    _detailedState.BoardState.PlayerUnits[auxInt1].Remove(auxUnit.UniqueId); // Just removes the unit
+                    break;
+                default:
+                    throw new NotImplementedException("Not a handled state rn");
+            }
+        }
         // --------------------------------------------------------------------------------------
         // -------------------------------  GAME ENGINE REQUESTS --------------------------------
         // --------------------------------------------------------------------------------------
@@ -18,7 +167,7 @@ namespace ODLGameEngine
         /// <param name="state">State to go to</param>
         void ENGINE_ChangeState(States state)
         {
-            ExecuteEvent(
+            ENGINE_ExecuteEvent(
                 new TransitionEvent<States>()
                 {
                     eventType = EventType.STATE_TRANSITION,
@@ -33,11 +182,11 @@ namespace ODLGameEngine
         {
             var nextPlayer = _detailedState.CurrentPlayer switch // Player is always 1 unless it goes from 1 -> 2
             {
-                PlayerId.PLAYER_1 => PlayerId.PLAYER_2,
-                _ => PlayerId.PLAYER_1,
+                CurrentPlayer.PLAYER_1 => CurrentPlayer.PLAYER_2,
+                _ => CurrentPlayer.PLAYER_1,
             };
-            ExecuteEvent(
-                new TransitionEvent<PlayerId>()
+            ENGINE_ExecuteEvent(
+                new TransitionEvent<CurrentPlayer>()
                 {
                     eventType = EventType.PLAYER_TRANSITION,
                     newValue = nextPlayer,
@@ -50,7 +199,7 @@ namespace ODLGameEngine
         /// <param name="seed">Seed to adopt</param>
         void ENGINE_NewRngSeed(int seed)
         {
-            ExecuteEvent(
+            ENGINE_ExecuteEvent(
                 new TransitionEvent<int>()
                 {
                     eventType = EventType.RNG_TRANSITION,
@@ -62,15 +211,15 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="p">Which player</param>
         /// <param name="hp">Which value</param>
-        void ENGINE_SetPlayerHp(PlayerId p, int hp)
+        void ENGINE_SetPlayerHp(int p, int hp)
         {
-            ExecuteEvent(
-                new PlayerTransitionEvent<int>()
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<int, int>()
                 {
                     eventType = EventType.PLAYER_HP_TRANSITION,
-                    playerId = p,
+                    entity = p,
                     newValue = hp,
-                    description = $"P{GetPlayerIndexFromId(p) + 1} now has {hp} HP"
+                    description = $"P{p + 1} now has {hp} HP"
                 });
         }
         /// <summary>
@@ -78,15 +227,15 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="p">Which player</param>
         /// <param name="gold">Which value</param>
-        void ENGINE_SetPlayerGold(PlayerId p, int gold)
+        void ENGINE_SetPlayerGold(int p, int gold)
         {
-            ExecuteEvent(
-                new PlayerTransitionEvent<int>()
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<int, int>()
                 {
                     eventType = EventType.PLAYER_GOLD_TRANSITION,
-                    playerId = p,
+                    entity = p,
                     newValue = gold,
-                    description = $"P{GetPlayerIndexFromId(p) + 1} now has {gold} gold"
+                    description = $"P{p + 1} now has {gold} gold"
                 });
         }
         /// <summary>
@@ -95,7 +244,7 @@ namespace ODLGameEngine
         /// <param name="msg">Message</param>
         void ENGINE_AddMessageEvent(string msg)
         {
-            ExecuteEvent(
+            ENGINE_ExecuteEvent(
                 new Event()
                 {
                     eventType = EventType.MESSAGE,
@@ -108,13 +257,13 @@ namespace ODLGameEngine
         /// <param name="p">Player</param>
         /// <param name="card1">Card 1</param>
         /// <param name="card2">Card 2</param>
-        void ENGINE_SwapCardsInDeck(PlayerId p, int card1, int card2)
+        void ENGINE_SwapCardsInDeck(int p, int card1, int card2)
         {
-            ExecuteEvent(
-                new PlayerTransitionEvent<int>()
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<int, int>()
                 {
                     eventType = EventType.CARD_DECK_SWAP,
-                    playerId = p,
+                    entity = p,
                     newValue = card1,
                     oldValue = card2
                 });
@@ -123,13 +272,13 @@ namespace ODLGameEngine
         /// Draws a single card for a player
         /// </summary>
         /// <param name="p">Player</param>
-        void ENGINE_DeckDrawSingle(PlayerId p)
+        void ENGINE_DeckDrawSingle(int p)
         {
-            ExecuteEvent(
-                new PlayerEvent()
+            ENGINE_ExecuteEvent(
+                new EntityEvent<int>()
                 {
                     eventType = EventType.DECK_DRAW,
-                    playerId = p
+                    entity = p
                 });
         }
         /// <summary>
@@ -137,15 +286,15 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="p">Player</param>
         /// <param name="goldDelta">How much gold to gain/lose</param>
-        void ENGINE_PlayerGoldChange(PlayerId p, int goldDelta)
+        void ENGINE_PlayerGoldChange(int p, int goldDelta)
         {
-            ExecuteEvent(
-                new PlayerValueEvent<int>()
+            ENGINE_ExecuteEvent(
+                new EntityValueEvent<int, int>()
                 {
                     eventType = EventType.PLAYER_GOLD_CHANGE,
-                    playerId = p,
+                    entity = p,
                     value = goldDelta,
-                    description = $"P{GetPlayerIndexFromId(p) + 1} {((goldDelta > 0) ? "gains" : "loses")} {Math.Abs(goldDelta)} gold"
+                    description = $"P{p + 1} {((goldDelta > 0) ? "gains" : "loses")} {Math.Abs(goldDelta)} gold"
                 });
         }
         /// <summary>
@@ -153,16 +302,33 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="p">Player</param>
         /// <param name="cardInHandIndex">Card</param>
-        void ENGINE_PlayCardFromHand(PlayerId p, int cardInHandIndex)
+        void ENGINE_PlayCardFromHand(int p, int cardInHandIndex)
         {
-            int cardId = _detailedState.PlayerStates[GetPlayerIndexFromId(_detailedState.CurrentPlayer)].Hand.CardsInHand[cardInHandIndex];
-            ExecuteEvent(
-                new PlayerValueEvent<int>()
+            int cardId = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand.CardsInHand[cardInHandIndex];
+            ENGINE_ExecuteEvent(
+                new EntityValueEvent<int, int>()
                 {
                     eventType = EventType.CARD_PLAY_FROM_HAND,
-                    playerId = p,
+                    entity = p,
                     value = cardInHandIndex,
-                    description = $"P{GetPlayerIndexFromId(p) + 1} played {CardDb.GetCardData(cardId).Name}"
+                    description = $"P{p + 1} played {CardDb.GetCardData(cardId).Name}"
+                });
+        }
+        /// <summary>
+        /// Creates unit for first time and applies ownership to player
+        /// </summary>
+        /// <param name="p">Player who owns the unit</param>
+        /// <param name="unit">Unit</param>
+
+        void ENGINE_InitializeUnit(int p, Unit unit)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityValueEvent<int, Unit>()
+                {
+                    eventType = EventType.INIT_UNIT,
+                    entity = p,
+                    value = unit,
+                    description = $"P{p + 1} now has a {unit.Name}"
                 });
         }
     }

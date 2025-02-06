@@ -56,6 +56,7 @@ namespace ODLGameEngine
         DECK_DRAW,
         PLAYER_GOLD_CHANGE,
         CARD_PLAY_FROM_HAND,
+        INIT_UNIT,
     }
 
     public class Event
@@ -67,9 +68,9 @@ namespace ODLGameEngine
             return description; // Default is no info leaked
         }
     }
-    public class PlayerValueEvent<T> : Event
+    public class EntityValueEvent<E,T> : Event
     {
-        public PlayerId playerId;
+        public E entity;
         public T value;
     }
     public class TransitionEvent<T> : Event
@@ -77,14 +78,14 @@ namespace ODLGameEngine
         public T oldValue;
         public T newValue;
     }
-    public class PlayerTransitionEvent<T> : Event
+    public class EntityTransitionEvent<E,T> : Event
     {
-        public PlayerId playerId;
+        public E entity;
         public T oldValue;
         public T newValue;
     }
-    public class PlayerEvent : Event
+    public class EntityEvent<E> : Event
     {
-        public PlayerId playerId;
+        public E entity;
     }
 }

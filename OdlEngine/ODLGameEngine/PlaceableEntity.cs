@@ -30,9 +30,13 @@ namespace ODLGameEngine
         /// </summary>
         public int Card { get; set; } = 0;
         /// <summary>
-        /// Who owns this card
+        /// Name of placeable (usually same as card)?
         /// </summary>
-        public PlayerId Owner { get; set; } = PlayerId.SPECTATOR;
+        public string Name { get; set; } = "";
+        /// <summary>
+        /// Player owner of unit
+        /// </summary>
+        public int Owner { get; set; } = 0;
         /// <summary>
         /// Which lane is it on
         /// </summary>
@@ -45,10 +49,6 @@ namespace ODLGameEngine
         /// Hp of thing
         /// </summary>
         public int Hp { get; set; } = 0;
-        /// <summary>
-        /// Damage taken
-        /// </summary>
-        public int Damage { get; set; } = 0;
         // Stealth shenanigans
         protected bool IsHidden { get; set; } = false;
         protected bool IsTheRealOne { get; set; } = true;

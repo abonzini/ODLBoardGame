@@ -25,7 +25,7 @@ namespace EngineTests
             Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Now should be about to init P2
             sm.Step();
             Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE); // Now game should be started
-            Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, PlayerId.PLAYER_1); // And P1 should be active
+            Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, CurrentPlayer.PLAYER_1); // And P1 should be active
             // Now assert states of players
             AuxStateVerify.VerifyPlayerInitialised(sm.GetDetailedState().PlayerStates[0]);
             Assert.IsTrue(AuxStateVerify.IsDeckShuffled(sm.GetDetailedState().PlayerStates[0]));
@@ -34,7 +34,7 @@ namespace EngineTests
             // Now the undo
             sm.UndoPreviousStep(); // Goes back to P2 Init
             Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Now game should be started
-            Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, PlayerId.OMNISCIENT); // And P1 should be active
+            Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, CurrentPlayer.OMNISCIENT); // And P1 should be active
             Assert.IsFalse(AuxStateVerify.IsDeckShuffled(sm.GetDetailedState().PlayerStates[1]));
             sm.UndoPreviousStep();
             Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT);
@@ -45,12 +45,12 @@ namespace EngineTests
         [TestMethod]
         public void GameStatesLoadPlayers() // Loads from P1, does init but loading a game state, does whole test procedure as test#1
         {
-            PlayerId[] ids = [PlayerId.PLAYER_1, PlayerId.PLAYER_2];
-            foreach (PlayerId id in ids)
+            CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
+            foreach (CurrentPlayer id in ids)
             {
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(id, (int)DateTime.Now.Ticks)); // Don't care about seed in this test
-                if(id == PlayerId.PLAYER_1)
+                if(id == CurrentPlayer.PLAYER_1)
                 {
                     Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT); // Now should be about to init P1
                     sm.Step();
@@ -58,13 +58,13 @@ namespace EngineTests
                 Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Now should be about to init P2
                 sm.Step();
                 Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE); // Now game should be started
-                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, PlayerId.PLAYER_1); // And P1 should be active
+                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, CurrentPlayer.PLAYER_1); // And P1 should be active
                 // Now the undo
                 sm.UndoPreviousStep(); // Goes back to P2 Init
                 Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Now game should be started
-                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, PlayerId.OMNISCIENT); // And P1 should be reverted
+                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, CurrentPlayer.OMNISCIENT); // And P1 should be reverted
                 sm.UndoPreviousStep();
-                if (id == PlayerId.PLAYER_1)
+                if (id == CurrentPlayer.PLAYER_1)
                 {
                     Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT);
                     sm.UndoPreviousStep(); // Should stop going back here
@@ -107,14 +107,14 @@ namespace EngineTests
             const int p1Seed = 24601;
             const int p2Seed = -1572819080;
             const int drawSeed = 1304835662;
-            PlayerId[] ids = [PlayerId.PLAYER_1, PlayerId.PLAYER_2];
-            foreach (PlayerId id in ids)
+            CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
+            foreach (CurrentPlayer id in ids)
             {
                 // Seeds pre-loaded already
                 GameStateMachine sm = new GameStateMachine();
-                int seed = (id == PlayerId.PLAYER_2) ? p2Seed : p1Seed;
+                int seed = (id == CurrentPlayer.PLAYER_2) ? p2Seed : p1Seed;
                 sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(id, seed));
-                if(id  == PlayerId.PLAYER_1)
+                if(id  == CurrentPlayer.PLAYER_1)
                 {
                     sm.Step();
                 }
@@ -124,7 +124,7 @@ namespace EngineTests
                 // Good, now I go back and check that seeds are correct
                 sm.UndoPreviousStep(); // Goes back to P2 Init
                 Assert.AreEqual(p2Seed, sm.GetDetailedState().Seed);
-                if(id == PlayerId.PLAYER_1)
+                if(id == CurrentPlayer.PLAYER_1)
                 {
                     sm.UndoPreviousStep(); // Back to P1
                     Assert.AreEqual(p1Seed, sm.GetDetailedState().Seed);
@@ -136,14 +136,14 @@ namespace EngineTests
         {
             // Test that draw phase occurs, draws cards and gold, then goes to action phase
             GameStateMachine sm = new GameStateMachine();
-            sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(PlayerId.PLAYER_2, (int)DateTime.Now.Ticks));
+            sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(CurrentPlayer.PLAYER_2, (int)DateTime.Now.Ticks));
             Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT);// In P2 init phase
             // Now advance step and check data pre draw
             sm.Step();
             AuxStateVerify.VerifyDrawPhaseResult(sm); // Checks the draw step passes well
             // Quick trick, from here do the same but from P2 draw phase
             GameStateStruct testState = sm.GetDetailedState();
-            testState.CurrentPlayer = PlayerId.PLAYER_2;
+            testState.CurrentPlayer = CurrentPlayer.PLAYER_2;
             sm = new GameStateMachine();
             sm.LoadGame(testState);
             AuxStateVerify.VerifyDrawPhaseResult(sm); // Checks the draw step passes well again
@@ -186,15 +186,15 @@ namespace EngineTests
         {
             GameStateStruct testState = sm.GetDetailedState();
             Assert.AreEqual(testState.CurrentState, States.DRAW_PHASE); // Am I in draw phase
-            int preCards = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Hand.HandSize;
-            int preGold = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Gold;
-            int preDeck = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Deck.DeckSize;
+            int preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.HandSize;
+            int preGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
+            int preDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
             // Now draw!
             sm.Step();
             testState = sm.GetDetailedState();
-            int postCards = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Hand.HandSize;
-            int postGold = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Gold;
-            int postDeck = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Deck.DeckSize;
+            int postCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.HandSize;
+            int postGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
+            int postDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
             Assert.AreEqual(testState.CurrentState, States.ACTION_PHASE); // Am I in next phase
             Assert.AreEqual(postCards - preCards, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player draw exact amount of cards
             Assert.AreEqual(postGold - preGold, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Did player gain exact amount of gold
@@ -202,9 +202,9 @@ namespace EngineTests
             // Now revert
             sm.UndoPreviousStep(); // Go back to beginning of drawphase
             testState = sm.GetDetailedState();
-            preCards = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Hand.HandSize;
-            preGold = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Gold;
-            preDeck = testState.PlayerStates[GameStateMachine.GetPlayerIndexFromId(testState.CurrentPlayer)].Deck.DeckSize;
+            preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.HandSize;
+            preGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
+            preDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
             Assert.AreEqual(testState.CurrentState, States.DRAW_PHASE); // Am I in draw phase again
             Assert.AreEqual(postCards - preCards, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player restore cards
             Assert.AreEqual(postGold - preGold, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Did player restore gold
@@ -219,7 +219,7 @@ namespace EngineTests
         /// <param name="p">Player</param>
         /// <param name="seed">Seed</param>
         /// <returns></returns>
-        public static GameStateStruct GetInitialPlayerState(PlayerId p, int seed) /// Returns a game state consisting of initialization of a desired player
+        public static GameStateStruct GetInitialPlayerState(CurrentPlayer p, int seed) /// Returns a game state consisting of initialization of a desired player
         {
             GameStateStruct ret = new GameStateStruct();
             List<int> decc = new List<int>();
@@ -232,8 +232,8 @@ namespace EngineTests
             ret.PlayerStates[1].Deck.InitializeDeck(decc);
             ret.CurrentState = p switch
             {
-                PlayerId.PLAYER_1 => States.P1_INIT,
-                PlayerId.PLAYER_2 => States.P2_INIT,
+                CurrentPlayer.PLAYER_1 => States.P1_INIT,
+                CurrentPlayer.PLAYER_2 => States.P2_INIT,
                 _ => States.START,
             };
             return ret;

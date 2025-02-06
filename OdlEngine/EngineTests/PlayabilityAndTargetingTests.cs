@@ -17,10 +17,10 @@ namespace EngineTests
         [TestMethod]
         public void VerifyAffordability() // Generate costs 0-9, half can be afforable, half can't
         {
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 GameStateStruct state = new GameStateStruct();
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
@@ -49,10 +49,10 @@ namespace EngineTests
         [TestMethod]
         public void VerifyTargetability() // Generate targets 0-9, verify targetability is same
         {
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 GameStateStruct state = new GameStateStruct();
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
@@ -82,10 +82,10 @@ namespace EngineTests
         [TestMethod]
         public void VerifyCorrectPlayabilityState() // Verifies if card playable in incorrect phase
         {
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 List<States> ls = Enum.GetValues<States>().ToList();
                 foreach(States st in ls)
                 {
@@ -108,10 +108,10 @@ namespace EngineTests
         [TestMethod]
         public void VerifyCardIndexValid() // Generate targets 0-4, verify i can only access valid cards
         {
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 GameStateStruct state = new GameStateStruct();
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
@@ -140,10 +140,10 @@ namespace EngineTests
         [TestMethod]
         public void PlayInIncorrectState() // Tries to play a card in incorrect phase
         {
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 List<States> ls = Enum.GetValues<States>().ToList();
                 foreach (States st in ls)
                 {
@@ -166,10 +166,10 @@ namespace EngineTests
         [TestMethod]
         public void PlayInvalidIndex() // Generate targets 0-4, verify i can only play valid cards
         {
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 GameStateStruct state = new GameStateStruct();
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
@@ -194,10 +194,10 @@ namespace EngineTests
         [TestMethod]
         public void PlayAllTargets() // Play absolutely all targets for all cards!
         {
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 GameStateStruct state = new GameStateStruct();
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
@@ -253,10 +253,10 @@ namespace EngineTests
         [TestMethod]
         public void PlayAffordability() // Generate costs 0-9, half can be afforable, half can't
         {
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 GameStateStruct state = new GameStateStruct();
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
@@ -289,10 +289,10 @@ namespace EngineTests
         public void PlayCosts() // Verifies card cost is paid and card is discarded
         {
             Random rng = new Random(); // Random costs just for fun
-            PlayerId[] players = [PlayerId.PLAYER_1, PlayerId.PLAYER_2]; // Will test both
-            foreach (PlayerId player in players)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
             {
-                int playerIndex = GameStateMachine.GetPlayerIndexFromId(player);
+                int playerIndex = (int)player;
                 GameStateStruct state = new GameStateStruct();
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
@@ -315,7 +315,7 @@ namespace EngineTests
                     Tuple <PlayOutcome, StepResult> res = sm.PlayCard(cardIndexToPlay, CardTargets.GLOBAL);
                     Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
                     Assert.IsNotNull(res.Item2); // Sth happened
-                    Assert.AreEqual(sm.GetDetailedState().BoardState.DiscardPiles[playerIndex].Last(), cardIdToPlay); // Card was discarded
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.Last(), cardIdToPlay); // Card was discarded
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize, handSize-1); // One less card in hand
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Gold, currentGold - int.Parse(cardToPlay.Cost)); // Spent the money
                     Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, player); // Player still in command

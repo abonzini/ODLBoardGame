@@ -36,7 +36,7 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_GAME_STATE, CardTargets.INVALID); // Reutnr
             }
             // An extra check first, whether card actually exists in hand
-            Hand hand = _detailedState.PlayerStates[GetPlayerIndexFromId(_detailedState.CurrentPlayer)].Hand;
+            Hand hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
             if (cardInHandIndex >= hand.HandSize || cardInHandIndex < 0) // Out of bounds!
             {
                 return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
@@ -68,14 +68,14 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, StepResult>(cardOptions.Item1, null); // If failure, return type of failure, can't be played!
             }
             // Otherwise, card can be played somewhere, need to see if matches!            
-            Hand hand = _detailedState.PlayerStates[GetPlayerIndexFromId(_detailedState.CurrentPlayer)].Hand;
+            Hand hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
             int cardId = hand.CardsInHand[cardInHandIndex]; // Extract card id
             Card card = CardDb.GetCardData(cardId);
             if((card.TargetOptions & chosenTarget) != 0 || (card.TargetOptions == chosenTarget)) // Then just need to verify tagets match
             {
                 // Ok shit is going down, card needs to be paid and played now, this will result in a step
                 PLAYABLE_PayCost(card);
-                ENGINE_PlayCardFromHand(_detailedState.CurrentPlayer, cardInHandIndex);
+                ENGINE_PlayCardFromHand((int)_detailedState.CurrentPlayer, cardInHandIndex);
                 // Then the play effects
                 PLAYABLE_PlayCard(card, chosenTarget);
                 // Ends by transitioning to next action phase
@@ -98,8 +98,18 @@ namespace ODLGameEngine
         /// <param name="chosenTarget"></param>
         void PLAYABLE_PlayCard(Card card, CardTargets chosenTarget)
         {
-            // Todo: check card type and execute effects (in new function that does more engine calls as needed)
-            // E.g. if skill, PlaySkill(skillcard) and that will be the one that does the switch of effect type, gets target, etc
+            switch (card.CardType)
+            {
+                case CardType.UNIT:
+                    UNIT_PlayUnit((int)_detailedState.CurrentPlayer, CardDb.GetUnitData(card.Id), chosenTarget); // Plays the unit in corresponding place
+                    break;
+                case CardType.SKILL:
+                case CardType.BUILDING:
+                    // TODO!
+                    break;
+                default:
+                    throw new NotImplementedException("Trying to play a non-supported type!");
+            }
         }
 
         /// <summary>
@@ -153,7 +163,7 @@ namespace ODLGameEngine
         bool PLAYABLE_PlayerCanAfford(Card card)
         {
             // May need to be made smarter if someone does variable cost cards
-            return (_detailedState.PlayerStates[GetPlayerIndexFromId(_detailedState.CurrentPlayer)].Gold >= int.Parse(card.Cost));
+            return (_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Gold >= int.Parse(card.Cost));
         }
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
@@ -162,7 +172,7 @@ namespace ODLGameEngine
         /// <returns>Cost in gold of card</returns>
         void PLAYABLE_PayCost(Card card)
         {
-            ENGINE_PlayerGoldChange(_detailedState.CurrentPlayer, -int.Parse(card.Cost));
+            ENGINE_PlayerGoldChange((int)_detailedState.CurrentPlayer, -int.Parse(card.Cost));
         }
         /// <summary>
         /// Checks for a card with "global" tageting whether conditions are fulfilled

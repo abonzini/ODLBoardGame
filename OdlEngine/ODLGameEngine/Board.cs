@@ -36,11 +36,11 @@ namespace ODLGameEngine
             Tiles = new List<Tile>(n);
         }
 
-        public IEnumerable<Tile> GetTiles(PlayerId player, bool ascending = true) /// Returns tile one by one relative to desired player
+        public IEnumerable<Tile> GetTiles(CurrentPlayer player, bool ascending = true) /// Returns tile one by one relative to desired player
         {
             int start, end, increment; 
             // calculate order depending if I want ascending or descending
-            if(PlayerId.PLAYER_2 != player ^ !ascending) // All use the reference of 0 = beginning except player 2
+            if(CurrentPlayer.PLAYER_2 != player ^ !ascending) // All use the reference of 0 = beginning except player 2
             {
                 start = 0;
                 end = Len-1;
@@ -59,23 +59,28 @@ namespace ODLGameEngine
             }
         }
 
-        public Tile GetTile(PlayerId player, int index)
+        public Tile GetTile(CurrentPlayer player, int index)
         {
             if(0 <= index && index < Len)
             {
                 throw new IndexOutOfRangeException("Desired index out of bounds for this lane");
             }
             // If player is p2, reverse the desired index
-            if(PlayerId.PLAYER_2 == player)
+            if(CurrentPlayer.PLAYER_2 == player)
             {
                 index = Len - 1 - index;
             }
             return Tiles[index];
         }
-
-        public int GetLastTile(PlayerId player) /// Returns the edge of the tile (to decide if advance or damage castle)
+        public int GetFirstTile(CurrentPlayer player) /// Returns the first tile of the lane (to spawn units)
         {
-            if (player != PlayerId.PLAYER_2) return Len - 1;
+            if (player != CurrentPlayer.PLAYER_1) return Len - 1;
+            else return 0;
+        }
+
+        public int GetLastTile(CurrentPlayer player) /// Returns the edge of the lane (to decide if advance or damage castle)
+        {
+            if (player != CurrentPlayer.PLAYER_2) return Len - 1;
             else return 0;
         }
     }
@@ -93,9 +98,7 @@ namespace ODLGameEngine
         public SortedList<int, Building>[] PlayerBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
         public SortedList<int, Unit>[] DeadUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
         public SortedList<int, Building>[] DeadBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
-        public List<int>[] DiscardPiles { get; set; } = [ new List<int>(), new List<int>() ];
         // Methods
-        public int LaneCount { get; set; } = GameConstants.BOARD_LANES_NUMBER;
         public Lane GetLane(int i)
         {
             return i switch
