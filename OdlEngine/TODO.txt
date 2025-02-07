@@ -1,14 +1,12 @@
 Ongoing tasks in order of priority:
 
 - Unit playing:
-		- Proceed with units: Cards number -1000000 to -1999999 -> Playable token units, procedurally generated as 1-G-HP-ATK-MVT-DEN-TGT
-		- Units are summoned (copied) from card, and placed on board, stats are verified on board
-		- Testing of board permanence, non-copying of units, ID uniqueness (ID COUNTER GLOBAL INCREMENTED VIA EVENT)
+		- Testing of board prescence/permanence, non-copying of units, ID uniqueness (ID COUNTER GLOBAL INCREMENTED VIA EVENT)
 		- Unit dies when summoned at 0 hp
 		- Test graveyard
 - End of turn
-		- Can test marching
-		- Implement battle
+		- Implement marching
+		- Implement unit battle and damage
 - EOT
 		- Transition of stage
 - EOG

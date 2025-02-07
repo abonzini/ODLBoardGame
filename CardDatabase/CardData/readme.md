@@ -63,7 +63,13 @@ Multiple conditions need to be put carefully to avoid weird states.
 - ```StealthPlay:``` If card is a stealth card, it is represented differently by the engine.
 
 # UnitData
-Will write as I implement
+When card is a unit, the unit needs to contain the following data. This will create a unit with the correct values and effects:
+- ```Card:``` The card id number, this matches it with the card data from above in case of needing extra info.
+- ```Name:``` Name of unit as it shows once in the field.
+- ```Hp:``` Hp number of unit
+- ```Attack:``` Attack value
+- ```Movement:``` Movement value
+- ```MovementDenominator:``` Denominator of movement stats, 1 by default if not defined here.
 
 # SkillData
 Will write as I implement

@@ -41,6 +41,17 @@ namespace EngineTests
                     Cost = ((id/10)%10).ToString() // Second digit is gold, 0-9
                 };
             }
+            if(id >= 1000000 && id < 1999999)
+            {
+                return new Card() // Returns "token" card
+                {
+                    Id = -id,
+                    Name = "TOKEN",
+                    CardType = CardType.UNIT,
+                    TargetOptions = ((id % 10) <= 7) ? (CardTargets)(id % 10) : CardTargets.INVALID,
+                    Cost = ((id / 100000) % 10).ToString() // First digit is gold, 0-9
+                };
+            }
             throw new NotImplementedException("Not implemented yet");
         }
         public override Skill GetSkillData(int id)
@@ -49,6 +60,7 @@ namespace EngineTests
             {
                 return base.GetSkillData(id);
             }
+            id *= -1; // Remove negative sign
             if (id >= 100 && id <= 199) // Attempting to generate brick skill (does nothing but can be played)
             {
                 return new Skill(); // No effect no nothing
@@ -60,6 +72,19 @@ namespace EngineTests
             if (id >= 0) // Normal card then
             {
                 return base.GetUnitData(id);
+            }
+            id *= -1; // Remove negative sign
+            if (id >= 1000000 && id < 1999999)
+            {
+                return new Unit() // Returns "token" card
+                {
+                    Card = -id,
+                    Name = "TOKEN",
+                    Hp = (id / 10000) % 10, // Second digit is hp, 0-9
+                    Attack = (id / 1000) % 10, // Third, attack
+                    Movement = (id / 100) % 10, // Third, attack
+                    MovementDenominator = (id / 10) % 10, // Third, attack
+                };
             }
             throw new NotImplementedException("Not implemented yet");
         }
