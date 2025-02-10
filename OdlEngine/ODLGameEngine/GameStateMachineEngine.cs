@@ -65,18 +65,20 @@ namespace ODLGameEngine
                         ((EntityTransitionEvent<int, int>)e).oldValue
                         );
                     break;
-                case EventType.DECK_DRAW:
-                    auxInt1 = ((EntityEvent<int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Hand.InsertCard(
-                        _detailedState.PlayerStates[auxInt1].Deck.PopCard(),
-                        _detailedState.PlayerStates[auxInt1].Hand.HandSize
-                        ); // Pop last card from deck and add to hand last
+                case EventType.REMOVE_TOPDECK:
+                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
+                    ((EntityValueEvent<int, int>)e).value = _detailedState.PlayerStates[auxInt1].Deck.PopCard(); // Pop last card from deck
+                    break;
+                case EventType.ADD_CARD_TO_HAND:
+                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
+                    auxInt2 = ((EntityValueEvent<int, int>)e).value;
+                    _detailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2);
                     break;
                 case EventType.PLAYER_GOLD_CHANGE:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     _detailedState.PlayerStates[auxInt1].Gold += ((EntityValueEvent<int, int>)e).value; // Add gold
                     break;
-                case EventType.CARD_PLAY_FROM_HAND:
+                case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = _detailedState.PlayerStates[auxInt1].Hand.RemoveCardAt(((EntityValueEvent<int, int>)e).value); // Card now popped from hand
                     _detailedState.PlayerStates[auxInt1].DiscardPile.Add(auxInt2); // Add to discard pile
@@ -134,19 +136,21 @@ namespace ODLGameEngine
                         ((EntityTransitionEvent<int, int>)e).oldValue
                         );
                     break;
-                case EventType.DECK_DRAW:
-                    auxInt1 = ((EntityEvent<int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Deck.InsertCard(
-                        _detailedState.PlayerStates[auxInt1].Hand.RemoveCardAt(
-                            _detailedState.PlayerStates[auxInt1].Hand.HandSize - 1),
-                        _detailedState.PlayerStates[auxInt1].Deck.DeckSize);
-                    // Pop card from last place of hand and return to deck
+                case EventType.REMOVE_TOPDECK:
+                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
+                    auxInt2 = ((EntityValueEvent<int, int>)e).value;
+                    _detailedState.PlayerStates[auxInt1].Deck.InsertCard(auxInt2);
+                    // Return to deck
+                    break;
+                case EventType.ADD_CARD_TO_HAND:
+                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
+                    _detailedState.PlayerStates[auxInt1].Hand.RemoveCardAt();
                     break;
                 case EventType.PLAYER_GOLD_CHANGE:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     _detailedState.PlayerStates[auxInt1].Gold -= ((EntityValueEvent<int, int>)e).value; // Remove gold
                     break;
-                case EventType.CARD_PLAY_FROM_HAND:
+                case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = _detailedState.PlayerStates[auxInt1].DiscardPile.Last(); // Retrieve last
                     _detailedState.PlayerStates[auxInt1].DiscardPile.RemoveAt(_detailedState.PlayerStates[auxInt1].DiscardPile.Count - 1); // Pop from discard pile
@@ -279,14 +283,29 @@ namespace ODLGameEngine
         /// <summary>
         /// Draws a single card for a player
         /// </summary>
-        /// <param name="p">Player</param>
-        void ENGINE_DeckDrawSingle(int p)
+        /// <param name="player">Player</param>
+        void ENGINE_DeckDrawSingle(int player)
         {
             ENGINE_ExecuteEvent(
-                new EntityEvent<int>()
+                new EntityValueEvent<int, int>() // Will store also the card if need to reverse
                 {
-                    eventType = EventType.DECK_DRAW,
-                    entity = p
+                    eventType = EventType.REMOVE_TOPDECK,
+                    entity = player
+                });
+        }
+        /// <summary>
+        /// Adds a (new) card to a player hand in right pile location
+        /// </summary>
+        /// <param name="player">Which player</param>
+        /// <param name="card">Which card</param>
+        void ENGINE_AddCardToHand(int player, int card)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityValueEvent<int, int>() // Will store also the card if need to reverse
+                {
+                    eventType = EventType.ADD_CARD_TO_HAND,
+                    value = card,
+                    entity = player
                 });
         }
         /// <summary>
@@ -316,7 +335,7 @@ namespace ODLGameEngine
             ENGINE_ExecuteEvent(
                 new EntityValueEvent<int, int>()
                 {
-                    eventType = EventType.CARD_PLAY_FROM_HAND,
+                    eventType = EventType.DISCARD_FROM_HAND,
                     entity = p,
                     value = cardInHandIndex,
                     description = $"P{p + 1} played {CardDb.GetCardData(cardId).Name}"

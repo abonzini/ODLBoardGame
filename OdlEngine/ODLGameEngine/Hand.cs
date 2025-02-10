@@ -15,19 +15,27 @@ namespace ODLGameEngine
         /// Inserts a card to the hand
         /// </summary>
         /// <param name="card">Card to insert</param>
-        /// <param name="i">Position to insert at</param>
-        public void InsertCard(int card, int i)
+        /// <param name="i">Position to insert at, default is to beginning of</param>
+        public void InsertCard(int card, int i = -1)
         {
+            if(i == -1)
+            {
+                i = HandSize;
+            }
             CardsInHand.Insert(i, card);
             HandSize++;
         }
         /// <summary>
         /// Removes the card at specific position (pops). Used when playing a card, and when undoing a draw
         /// </summary>
-        /// <param name="i">Position</param>
+        /// <param name="i">Position, default removes the last drawn</param>
         /// <returns>The card that was removed</returns>
-        public int RemoveCardAt(int i)
+        public int RemoveCardAt(int i=-1)
         {
+            if (i == -1)
+            {
+                i = HandSize - 1;
+            }
             int card = CardsInHand[i];
             CardsInHand.RemoveAt(i);
             HandSize--;

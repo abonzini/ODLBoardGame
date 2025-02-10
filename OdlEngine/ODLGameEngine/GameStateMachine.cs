@@ -151,7 +151,10 @@ namespace ODLGameEngine
             ENGINE_AddMessageEvent($"P{player + 1}'s draws {n}");
             for (int i  = 0; i < n; i++)
             {
-                ENGINE_DeckDrawSingle(player);
+                int card = _detailedState.PlayerStates[player].Deck.Peep(); // Found card in deck
+                ENGINE_DeckDrawSingle(player); // Removes from deck
+                // Nothing happens for now "when drawn"
+                ENGINE_AddCardToHand(player, card); // Therefore adds to hand
             }
         }
 

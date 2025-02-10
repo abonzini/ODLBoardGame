@@ -96,8 +96,12 @@ namespace ODLGameEngine
         /// Adds card back into last place
         /// </summary>
         /// <param name="card">The card to add to top of deck</param>
-        public void InsertCard(int card, int position)
+        public void InsertCard(int card, int position=-1)
         {
+            if(position == -1)
+            {
+                position = DeckSize;
+            }
             Cards.Insert(position, card);
             if (!CardHistogram.TryGetValue(card, out int value))
             {
@@ -123,7 +127,14 @@ namespace ODLGameEngine
                 Cards[pos2] = aux;
             }
         }
-
+        /// <summary>
+        /// Looks at next card drawn
+        /// </summary>
+        /// <returns>The next card in deck (doesn't remove)</returns>
+        public int Peep()
+        {
+            return Cards.Last();
+        }
         public override string ToString()
         {
             return GetDeckHistogramString();

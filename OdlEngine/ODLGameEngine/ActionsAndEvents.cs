@@ -27,6 +27,7 @@ namespace ODLGameEngine
             bool first = true;
             foreach (Event e in events)
             {
+                if (e.description == "") continue; // Not print if empty
                 ret += "\n";
                 if (first)
                 {
@@ -53,9 +54,10 @@ namespace ODLGameEngine
         PLAYER_GOLD_TRANSITION,
         MESSAGE,
         CARD_DECK_SWAP,
-        DECK_DRAW,
+        REMOVE_TOPDECK,
+        ADD_CARD_TO_HAND,
         PLAYER_GOLD_CHANGE,
-        CARD_PLAY_FROM_HAND,
+        DISCARD_FROM_HAND,
         INIT_UNIT,
         INCREMENT_PLACEABLE_COUNTER
     }
