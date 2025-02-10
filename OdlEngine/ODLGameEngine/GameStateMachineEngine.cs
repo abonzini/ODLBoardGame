@@ -85,6 +85,10 @@ namespace ODLGameEngine
                     auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
                     auxUnit = ((EntityValueEvent<int, Unit>)e).value;
                     _detailedState.BoardState.PlayerUnits[auxInt1].Add(auxUnit.UniqueId, auxUnit); // Adds unit
+                    _detailedState.PlayerStates[auxInt1].NUnits++;
+                    break;
+                case EventType.INCREMENT_PLACEABLE_COUNTER:
+                    _detailedState.PlaceableTotalCount++;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -152,6 +156,10 @@ namespace ODLGameEngine
                     auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
                     auxUnit = ((EntityValueEvent<int, Unit>)e).value;
                     _detailedState.BoardState.PlayerUnits[auxInt1].Remove(auxUnit.UniqueId); // Just removes the unit
+                    _detailedState.PlayerStates[auxInt1].NUnits--; 
+                    break;
+                case EventType.INCREMENT_PLACEABLE_COUNTER:
+                    _detailedState.PlaceableTotalCount--;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -329,6 +337,17 @@ namespace ODLGameEngine
                     entity = p,
                     value = unit,
                     description = $"P{p + 1} now has a {unit.Name}"
+                });
+        }
+        /// <summary>
+        /// System increments placeable counter to keep track of units
+        /// </summary>
+        void ENGINE_IncrementPlaceableCounter()
+        {
+            ENGINE_ExecuteEvent(
+                new Event()
+                {
+                    eventType = EventType.INCREMENT_PLACEABLE_COUNTER
                 });
         }
     }

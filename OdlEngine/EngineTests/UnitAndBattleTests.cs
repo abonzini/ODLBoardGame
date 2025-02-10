@@ -37,20 +37,20 @@ namespace EngineTests
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 // Make sure now there's a unit in the list
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 1); // Player now has 1 unit summoned
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize, 9); // Player spent a card
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1); // Player now has 1 unit summoned
+                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 1); // Check also back end for now
+
                 // Now I revert!
                 sm.UndoPreviousStep();
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 0); // Player now has 1 unit summoned
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize, 10); // Player spent a card
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Reverted
+                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 0);
+
             }
         }
         [TestMethod]
         public void UnitsAreIndependent() // Manually modify a unit, and check if next unit s independent of modified
-        // THIS IS A SANITY TEST not actual gameplay that would happen as it
+        // THIS IS A SANITY TEST not actual gameplay that would happen like this
         {
-            Assert.Fail();
-            /*
             Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
@@ -70,30 +70,46 @@ namespace EngineTests
                 // Will play a random card (they all cost 0)
                 int cardPlayed = _rng.Next(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize);
                 CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Also choose a random lane as target
+                int unitCounter1 = sm.GetDetailedState().PlaceableTotalCount;
                 Tuple<PlayOutcome, StepResult> res = sm.PlayCard(cardPlayed, chosenTarget); // Play it
+                int unitCounter2 = sm.GetDetailedState().PlaceableTotalCount;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 // Make sure now there's a unit in the list
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 1); // Player now has 1 unit summoned
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize, 9); // Player spent a card
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1); // Player now has 1 unit summoned
+                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 1); // Also check back end, list of units content (may be different in real gameplay due to mechanics)
                 // Modify unit (shady)
                 sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][0].Attack += 5; // Add 5 to attack, whatever
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
                 chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
                 // Play new one
                 res = sm.PlayCard(cardPlayed, chosenTarget); // Play it
+                int futureUnitCounter = sm.GetDetailedState().PlaceableTotalCount;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 2); // Player now has 2 units summoned
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize, 8); // Player spent a card
-                // Finally check they're 
-                
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 2); // Player now has 2 units summoned
+                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 2); // Also check back end, list of units content (may be different in real gameplay due to mechanics)
+                // Finally check they're different
+                Assert.AreNotEqual(unitCounter1, unitCounter2);
+                Assert.AreEqual(futureUnitCounter - unitCounter2, 1); // have a diff of 1 too
+                Assert.AreEqual(unitCounter2 - unitCounter1, 1); // have a diff of 1 too
+                // Finally, some stats should be similar, some should be different
+                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][unitCounter2].Hp, sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][unitCounter1].Hp);
+                Assert.AreNotEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][unitCounter2].Attack, sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][unitCounter1].Attack);
+                // Finally, roll back!
+                sm.UndoPreviousStep();
+                Assert.AreEqual(unitCounter2, sm.GetDetailedState().PlaceableTotalCount); // And reverts properly
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 1);
+                sm.UndoPreviousStep();
+                Assert.AreEqual(unitCounter1, sm.GetDetailedState().PlaceableTotalCount); // And reverts properly
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 0);
+
             }
-            */
         }
-        // TODO: Create more tests as unit behaviour improves. When unique id is implemented, check that stats and id are different (in above test)
         // Then, check Coordinate too, and eventually battle tests
     }
 }

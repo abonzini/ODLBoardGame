@@ -29,8 +29,6 @@ namespace ODLGameEngine
         readonly List<StepResult> _stepHistory = new List<StepResult>();
         StepResult _currentStep = null;
 
-        int _nextPlayableId = 0; // Id of next playable in board
-
         /// <summary>
         /// Initializes an empty game state, and will create a random seed unless overwritten later
         /// </summary>

@@ -1,7 +1,7 @@
 Ongoing tasks in order of priority:
 
 - Unit playing:
-		- Testing of board prescence/permanence, non-copying of units, ID uniqueness (ID COUNTER GLOBAL INCREMENTED VIA EVENT)
+		- Test placement
 		- Unit dies when summoned at 0 hp
 		- Test graveyard
 - End of turn

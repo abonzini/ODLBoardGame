@@ -16,13 +16,15 @@ namespace ODLGameEngine
             // "Change" the coordinate of unit to right place
             // Add unit to board, this adds to tile, increases the counters in board and such
             // Finally, playable ID is incremented for next playable
-            int unitId = _nextPlayableId;
+            int unitId = _detailedState.PlaceableTotalCount;
             Unit newSpawnedUnit = (Unit)unit.Clone(); // Clone in order to not break the same species
             newSpawnedUnit.UniqueId = unitId;
             // Unit ready to be added
             ENGINE_InitializeUnit(player, newSpawnedUnit); // Now player has the unit
             // Locates unit to right place
             // TODO TODO
+            // Finally, need to increment playable counter
+            ENGINE_IncrementPlaceableCounter();
         }
     }
 }

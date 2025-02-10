@@ -57,6 +57,7 @@ namespace ODLGameEngine
         PLAYER_GOLD_CHANGE,
         CARD_PLAY_FROM_HAND,
         INIT_UNIT,
+        INCREMENT_PLACEABLE_COUNTER
     }
 
     public class Event

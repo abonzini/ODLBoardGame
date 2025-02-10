@@ -63,6 +63,7 @@ namespace ODLGameEngine
         public States CurrentState {  get; set; } = States.START;
         public string StateHash { get; set; } = "";
         public int Seed { get; set; } = 0;
+        public int PlaceableTotalCount { get; set; } = 0;
         public CurrentPlayer CurrentPlayer { get; set; } = CurrentPlayer.OMNISCIENT;
         public PlayerState[] PlayerStates { get; set; } = [new PlayerState(), new PlayerState()];
         public Board BoardState { get; set; } = new Board();
