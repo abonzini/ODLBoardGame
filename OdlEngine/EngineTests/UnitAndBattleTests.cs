@@ -84,6 +84,7 @@ namespace EngineTests
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
                 chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
                 // Play new one
+                cardPlayed = _rng.Next(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize);
                 res = sm.PlayCard(cardPlayed, chosenTarget); // Play it
                 int futureUnitCounter = sm.GetDetailedState().PlaceableTotalCount;
                 // Make sure card was played ok
@@ -91,11 +92,11 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 2); // Player now has 2 units summoned
                 Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 2); // Also check back end, list of units content (may be different in real gameplay due to mechanics)
-                // Finally check they're different
+                // Check they're different
                 Assert.AreNotEqual(unitCounter1, unitCounter2);
                 Assert.AreEqual(futureUnitCounter - unitCounter2, 1); // have a diff of 1 too
                 Assert.AreEqual(unitCounter2 - unitCounter1, 1); // have a diff of 1 too
-                // Finally, some stats should be similar, some should be different
+                // Some stats should be similar, some should be different
                 Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][unitCounter2].Hp, sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][unitCounter1].Hp);
                 Assert.AreNotEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][unitCounter2].Attack, sm.GetDetailedState().BoardState.PlayerUnits[playerIndex][unitCounter1].Attack);
                 // Finally, roll back!
@@ -107,7 +108,6 @@ namespace EngineTests
                 Assert.AreEqual(unitCounter1, sm.GetDetailedState().PlaceableTotalCount); // And reverts properly
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0);
                 Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[playerIndex].Count, 0);
-
             }
         }
         // Then, check Coordinate too, and eventually battle tests
