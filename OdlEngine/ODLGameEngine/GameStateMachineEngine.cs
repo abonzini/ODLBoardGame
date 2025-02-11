@@ -86,7 +86,7 @@ namespace ODLGameEngine
                 case EventType.INIT_UNIT:
                     auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
                     auxUnit = ((EntityValueEvent<int, Unit>)e).value;
-                    _detailedState.BoardState.PlayerUnits[auxInt1].Add(auxUnit.UniqueId, auxUnit); // Adds unit
+                    _detailedState.BoardState.PlayerUnits.Add(auxUnit.UniqueId, auxUnit); // Adds unit
                     _detailedState.PlayerStates[auxInt1].NUnits++;
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
@@ -159,7 +159,7 @@ namespace ODLGameEngine
                 case EventType.INIT_UNIT:
                     auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
                     auxUnit = ((EntityValueEvent<int, Unit>)e).value;
-                    _detailedState.BoardState.PlayerUnits[auxInt1].Remove(auxUnit.UniqueId); // Just removes the unit
+                    _detailedState.BoardState.PlayerUnits.Remove(auxUnit.UniqueId); // Just removes the unit
                     _detailedState.PlayerStates[auxInt1].NUnits--; 
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:

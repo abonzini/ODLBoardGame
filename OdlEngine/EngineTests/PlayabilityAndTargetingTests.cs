@@ -18,16 +18,20 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(-(100+i*10), i); // Insert test cards (brick) in hand costs 0-9
                 }
                 state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
-                GameStateMachine sm = new GameStateMachine();
-                sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
                 sm.LoadGame(state); // Start from here
                 for(int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
                 {
@@ -50,15 +54,19 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i), i); // Insert test cards (brick) in hand all targets
                 }
-                GameStateMachine sm = new GameStateMachine();
-                sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
                 {
@@ -83,15 +91,19 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                List<States> ls = Enum.GetValues<States>().ToList();
+                List<States> ls = [.. Enum.GetValues<States>()];
                 foreach(States st in ls)
                 {
-                    GameStateStruct state = new GameStateStruct();
-                    state.CurrentState = st;
-                    state.CurrentPlayer = player;
+                    GameStateStruct state = new GameStateStruct
+                    {
+                        CurrentState = st,
+                        CurrentPlayer = player
+                    };
                     state.PlayerStates[playerIndex].Hand.InsertCard(-100, 0); // Insert only one card, I don't care
-                    GameStateMachine sm = new GameStateMachine();
-                    sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                    GameStateMachine sm = new GameStateMachine
+                    {
+                        CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                    };
                     sm.LoadGame(state); // Start from here
                     if(st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests
                     {
@@ -109,15 +121,19 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
                 for (int i = 0; i < 5; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(-100, i); // Insert test card (brick) in hand all targets 5 times
                 }
-                GameStateMachine sm = new GameStateMachine();
-                sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < 10; i++) // Check for each card
                 {
@@ -141,15 +157,19 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                List<States> ls = Enum.GetValues<States>().ToList();
+                List<States> ls = [.. Enum.GetValues<States>()];
                 foreach (States st in ls)
                 {
-                    GameStateStruct state = new GameStateStruct();
-                    state.CurrentState = st;
-                    state.CurrentPlayer = player;
+                    GameStateStruct state = new GameStateStruct
+                    {
+                        CurrentState = st,
+                        CurrentPlayer = player
+                    };
                     state.PlayerStates[playerIndex].Hand.InsertCard(-100, 0); // Insert only one card, I don't care
-                    GameStateMachine sm = new GameStateMachine();
-                    sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                    GameStateMachine sm = new GameStateMachine
+                    {
+                        CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                    };
                     sm.LoadGame(state); // Start from here
                     if (st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests
                     {
@@ -167,15 +187,19 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
                 for (int i = 0; i < 5; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(-100, i); // Insert test card (brick) in hand all targets 5 times
                 }
-                GameStateMachine sm = new GameStateMachine();
-                sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < 10; i++) // Check for each card
                 {
@@ -195,15 +219,19 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
                 for (int i = 0; i <= 7; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i), i); // Insert test cards (brick) in hand all targets, but only valids because invalids test already performed
                 }
-                GameStateMachine sm = new GameStateMachine();
-                sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
                 {
@@ -254,16 +282,20 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i * 10), i); // Insert test cards (brick) in hand costs 0-9
                 }
                 state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
-                GameStateMachine sm = new GameStateMachine();
-                sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
                 {
@@ -290,16 +322,20 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + rng.Next(10) * 10), i); // Insert test cards (brick) in hand with random cost 0-9
                 }
                 state.PlayerStates[playerIndex].Gold = rng.Next(1000,10000); // Set gold to random but high value
-                GameStateMachine sm = new GameStateMachine();
-                sm.CardDb = TestCardGenerator.GenerateTestCardGenerator(); // Add test cardDb
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < 5; i++) // Will play 5 random cards
                 {

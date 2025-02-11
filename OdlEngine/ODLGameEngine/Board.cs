@@ -9,9 +9,8 @@ namespace ODLGameEngine
 {
     public class Tile
     {
-        public string Tag { get; set; } = "";
         public int BuildingInTile { get; set; } = 0;
-        public SortedSet<int>[] UnitsInTile { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
+        public SortedSet<int> UnitsInTile { get; set; } = new SortedSet<int>();
         public int[] PlayerUnitCount { get; set; } = [0, 0];
     }
     /// <summary>
@@ -35,53 +34,32 @@ namespace ODLGameEngine
             Len = n;
             Tiles = new List<Tile>(n);
         }
-
-        public IEnumerable<Tile> GetTiles(CurrentPlayer player, bool ascending = true) /// Returns tile one by one relative to desired player
+        /// <summary>
+        /// Gets the tile instance given the index
+        /// </summary>
+        /// <param name="index">The index</param>
+        /// <returns>The actual instance of a tile to place units</returns>
+        public Tile GetTile(int index)
         {
-            int start, end, increment; 
-            // calculate order depending if I want ascending or descending
-            if(CurrentPlayer.PLAYER_2 != player ^ !ascending) // All use the reference of 0 = beginning except player 2
-            {
-                start = 0;
-                end = Len-1;
-                increment = 1;
-            }
-            else
-            {
-                start = Len-1;
-                end = 0;
-                increment = -1;
-            }
-
-            for (int i = start; increment * i <= increment * end; i += increment)
-            {
-                yield return Tiles[i];
-            }
-        }
-
-        public Tile GetTile(CurrentPlayer player, int index)
-        {
-            if(0 <= index && index < Len)
-            {
-                throw new IndexOutOfRangeException("Desired index out of bounds for this lane");
-            }
-            // If player is p2, reverse the desired index
-            if(CurrentPlayer.PLAYER_2 == player)
-            {
-                index = Len - 1 - index;
-            }
             return Tiles[index];
         }
-        public int GetFirstTile(CurrentPlayer player) /// Returns the first tile of the lane (to spawn units)
+        /// <summary>
+        /// Returns the index of the first tile, but relative to a player
+        /// </summary>
+        /// <param name="player">Player</param>
+        /// <returns>Tile index</returns>
+        public int GetFirstTileCoord(int player) /// Returns the first tile of the lane (to spawn units)
         {
-            if (player != CurrentPlayer.PLAYER_1) return Len - 1;
-            else return 0;
+            return (player != 0) ? Len - 1 : 0;
         }
-
-        public int GetLastTile(CurrentPlayer player) /// Returns the edge of the lane (to decide if advance or damage castle)
+        /// <summary>
+        /// Returns the index of the last tile, but relative to a player
+        /// </summary>
+        /// <param name="player">Player</param>
+        /// <returns>Tile index</returns>
+        public int GetLastTileCoord(int player) /// Returns the edge of the lane (to decide if advance or damage castle)
         {
-            if (player != CurrentPlayer.PLAYER_2) return Len - 1;
-            else return 0;
+            return (player != 1) ? Len - 1 : 0;
         }
     }
 
@@ -94,10 +72,10 @@ namespace ODLGameEngine
         public Lane ForestLane { get; set; } = new Lane(GameConstants.FOREST_TILES_NUMBER);
         public Lane MountainLane { get; set; } = new Lane(GameConstants.MOUNTAIN_TILES_NUMBER);
         // Units
-        public SortedList<int, Unit>[] PlayerUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
-        public SortedList<int, Building>[] PlayerBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
-        public SortedList<int, Unit>[] DeadUnits { get; set; } = [new SortedList<int, Unit>(), new SortedList<int, Unit>()];
-        public SortedList<int, Building>[] DeadBuildings { get; set; } = [new SortedList<int, Building>(), new SortedList<int, Building>()];
+        public SortedList<int, Unit> PlayerUnits { get; set; } = new SortedList<int, Unit>();
+        public SortedList<int, Building> PlayerBuildings { get; set; } = new SortedList<int, Building>();
+        public SortedList<int, Unit> DeadUnits { get; set; } = new SortedList<int, Unit>();
+        public SortedList<int, Building> DeadBuildings { get; set; } = new SortedList<int, Building>();
         // Methods
         public Lane GetLane(int i)
         {
