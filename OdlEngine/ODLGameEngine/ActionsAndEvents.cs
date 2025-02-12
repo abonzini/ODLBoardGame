@@ -59,7 +59,9 @@ namespace ODLGameEngine
         PLAYER_GOLD_CHANGE,
         DISCARD_FROM_HAND,
         INIT_UNIT,
-        INCREMENT_PLACEABLE_COUNTER
+        INCREMENT_PLACEABLE_COUNTER,
+        UNIT_LANE_TRANSITION,
+        UNIT_TILE_TRANSITION
     }
 
     public class Event

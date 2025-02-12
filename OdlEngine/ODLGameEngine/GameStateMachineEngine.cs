@@ -92,6 +92,36 @@ namespace ODLGameEngine
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     _detailedState.PlaceableTotalCount++;
                     break;
+                case EventType.UNIT_LANE_TRANSITION:
+                    auxInt1 = ((EntityTransitionEvent<int, LaneID>)e).entity;
+                    auxUnit = _detailedState.BoardState.PlayerUnits[auxInt1];
+                    ((EntityTransitionEvent<int, LaneID>)e).oldValue = auxUnit.LaneCoordinate; // Store old value first
+                    if(auxUnit.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
+                    {
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).PlayerUnitCount[auxUnit.Owner]--;
+                    }
+                    auxUnit.LaneCoordinate = ((EntityTransitionEvent<int, LaneID>)e).newValue; // unit now has new value
+                    // Finally, update count in lane(s)
+                    if (auxUnit.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
+                    {
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).PlayerUnitCount[auxUnit.Owner]++;
+                    }
+                    break;
+                case EventType.UNIT_TILE_TRANSITION:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    auxUnit = _detailedState.BoardState.PlayerUnits[auxInt1];
+                    ((EntityTransitionEvent<int, int>)e).oldValue = auxUnit.TileCoordinate; // Store old value first
+                    if (auxUnit.TileCoordinate >= 0) // Remove count from old tile if applicable
+                    {
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]--;
+                    }
+                    auxUnit.TileCoordinate = ((EntityTransitionEvent<int, int>)e).newValue; // unit now has new value
+                    // Finally, update count in tile
+                    if (auxUnit.TileCoordinate >= 0) // Adds count to new tile if applicable
+                    {
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
+                    }
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -164,6 +194,34 @@ namespace ODLGameEngine
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     _detailedState.PlaceableTotalCount--;
+                    break;
+                case EventType.UNIT_LANE_TRANSITION:
+                    auxInt1 = ((EntityTransitionEvent<int, LaneID>)e).entity;
+                    auxUnit = _detailedState.BoardState.PlayerUnits[auxInt1];
+                    // Update count in lane(s)
+                    if (auxUnit.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
+                    {
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).PlayerUnitCount[auxUnit.Owner]--;
+                    }
+                    auxUnit.LaneCoordinate = ((EntityTransitionEvent<int, LaneID>)e).oldValue; // Restore prev value
+                    if (auxUnit.LaneCoordinate != LaneID.NO_LANE) // Restore the prev. lane
+                    {
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).PlayerUnitCount[auxUnit.Owner]++;
+                    }
+                    break;
+                case EventType.UNIT_TILE_TRANSITION:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    auxUnit = _detailedState.BoardState.PlayerUnits[auxInt1];
+                    // Update count of tile
+                    if (auxUnit.TileCoordinate >= 0) // Adds count to new tile if applicable
+                    {
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]--;
+                    }
+                    auxUnit.TileCoordinate = ((EntityTransitionEvent<int, int>)e).oldValue; // unit now has prev value
+                    if (auxUnit.TileCoordinate >= 0) // Update its count if applicable
+                    {
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
+                    }
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -367,6 +425,36 @@ namespace ODLGameEngine
                 new Event()
                 {
                     eventType = EventType.INCREMENT_PLACEABLE_COUNTER
+                });
+        }
+        /// <summary>
+        /// Moves unit to new lane
+        /// </summary>
+        /// <param name="unit">Which unit (needs to be initialized)</param>
+        /// <param name="lane">Which lane</param>
+        void ENGINE_UnitLaneTransition(int unit, LaneID lane)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<int, LaneID>()
+                {
+                    eventType = EventType.UNIT_LANE_TRANSITION,
+                    entity = unit,
+                    newValue = lane,
+                });
+        }
+        /// <summary>
+        /// Moves unit to new tile in lane
+        /// </summary>
+        /// <param name="unit">Which unit (needs to be initialized in a lane)</param>
+        /// <param name="lane">Which tile</param>
+        void ENGINE_UnitTileTransition(int unit, int tile)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<int, int>()
+                {
+                    eventType = EventType.UNIT_TILE_TRANSITION,
+                    entity = unit,
+                    newValue = tile,
                 });
         }
     }

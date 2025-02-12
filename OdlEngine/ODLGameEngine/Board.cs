@@ -12,6 +12,10 @@ namespace ODLGameEngine
         public int BuildingInTile { get; set; } = 0;
         public SortedSet<int> UnitsInTile { get; set; } = new SortedSet<int>();
         public int[] PlayerUnitCount { get; set; } = [0, 0];
+        public override string ToString()
+        {
+            return $"P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
+        }
     }
     /// <summary>
     /// Lanes
@@ -19,9 +23,9 @@ namespace ODLGameEngine
     public enum LaneID
     {
         NO_LANE,
-        LANE_PLAINS,
-        LANE_FOREST,
-        LANE_MOUNTAIN
+        PLAINS,
+        FOREST,
+        MOUNTAIN
     }
     public class Lane /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
     {
@@ -29,10 +33,15 @@ namespace ODLGameEngine
         public int Len { get; set; } = 0;
         public List<Tile> Tiles { get; set; }
         public int[] PlayerUnitCount { get; set; } = [0, 0];
-        public Lane(int n)
+        public Lane(LaneID id, int n)
         {
+            Id = id;
             Len = n;
             Tiles = new List<Tile>(n);
+            for(int i = 0; i < Len; i++)
+            {
+                Tiles.Add(new Tile());
+            }
         }
         /// <summary>
         /// Gets the tile instance given the index
@@ -61,6 +70,11 @@ namespace ODLGameEngine
         {
             return (player != 1) ? Len - 1 : 0;
         }
+
+        public override string ToString()
+        {
+            return Id.ToString() + $", P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
+        }
     }
 
     /// <summary>
@@ -68,9 +82,9 @@ namespace ODLGameEngine
     /// </summary>
     public class Board
     {
-        public Lane PlainsLane { get; set; } = new Lane(GameConstants.PLAINS_TILES_NUMBER);
-        public Lane ForestLane { get; set; } = new Lane(GameConstants.FOREST_TILES_NUMBER);
-        public Lane MountainLane { get; set; } = new Lane(GameConstants.MOUNTAIN_TILES_NUMBER);
+        public Lane PlainsLane { get; set; } = new Lane(LaneID.PLAINS, GameConstants.PLAINS_TILES_NUMBER);
+        public Lane ForestLane { get; set; } = new Lane(LaneID.FOREST, GameConstants.FOREST_TILES_NUMBER);
+        public Lane MountainLane { get; set; } = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_TILES_NUMBER);
         // Units
         public SortedList<int, Unit> PlayerUnits { get; set; } = new SortedList<int, Unit>();
         public SortedList<int, Building> PlayerBuildings { get; set; } = new SortedList<int, Building>();
@@ -92,9 +106,9 @@ namespace ODLGameEngine
             return laneID switch
             {
                 LaneID.NO_LANE => null,
-                LaneID.LANE_PLAINS => PlainsLane,
-                LaneID.LANE_FOREST => ForestLane,
-                LaneID.LANE_MOUNTAIN => MountainLane,
+                LaneID.PLAINS => PlainsLane,
+                LaneID.FOREST => ForestLane,
+                LaneID.MOUNTAIN => MountainLane,
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }

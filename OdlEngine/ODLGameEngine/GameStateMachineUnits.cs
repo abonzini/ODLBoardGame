@@ -19,13 +19,14 @@ namespace ODLGameEngine
             int unitId = _detailedState.PlaceableTotalCount;
             Unit newSpawnedUnit = (Unit)unit.Clone(); // Clone in order to not break the same species
             newSpawnedUnit.UniqueId = unitId;
+            newSpawnedUnit.Owner = player;
             // Unit ready to be added
             ENGINE_InitializeUnit(player, newSpawnedUnit); // Now player has the unit
             // Locates unit to right place. Get the lane where unit is played, and place it in first tile
             Lane unitLane = _detailedState.BoardState.GetLane(chosenTarget);
-            /// TODO: ASSIGN LANE TO UNIT
-            /// THEN FIND PROPER TILE
-            /// ETC
+            ENGINE_UnitLaneTransition(unitId, unitLane.Id);
+            int tileCoord = unitLane.GetFirstTileCoord(player); // Get tile coord
+            ENGINE_UnitTileTransition(unitId, tileCoord);
             // Finally, need to increment playable counter
             ENGINE_IncrementPlaceableCounter();
         }
