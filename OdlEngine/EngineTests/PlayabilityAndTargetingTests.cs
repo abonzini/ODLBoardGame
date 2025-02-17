@@ -25,7 +25,7 @@ namespace EngineTests
                 };
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100+i*10), i); // Insert test cards (brick) in hand costs 0-9
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100+i*10)); // Insert test cards (brick) in hand costs 0-9
                 }
                 state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine
@@ -35,7 +35,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for(int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(i);
+                    Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-(100 + i * 10));
                     if(i <= 4)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
@@ -61,7 +61,7 @@ namespace EngineTests
                 };
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i), i); // Insert test cards (brick) in hand all targets
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i)); // Insert test cards (brick) in hand all targets
                 }
                 GameStateMachine sm = new GameStateMachine
                 {
@@ -70,7 +70,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(i); // Ok in all cases with valid target
+                    Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-(100 + i)); // Ok in all cases with valid target
                     if (i <= 7)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // OK
@@ -99,7 +99,7 @@ namespace EngineTests
                         CurrentState = st,
                         CurrentPlayer = player
                     };
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-100, 0); // Insert only one card, I don't care
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-100); // Insert only one card, I don't care
                     GameStateMachine sm = new GameStateMachine
                     {
                         CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
@@ -107,7 +107,7 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     if(st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests
                     {
-                        Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(0);
+                        Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-100);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_GAME_STATE);
                         Assert.AreEqual(res.Item2, CardTargets.INVALID);
                     }
@@ -128,18 +128,19 @@ namespace EngineTests
                 };
                 for (int i = 0; i < 5; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-100, i); // Insert test card (brick) in hand all targets 5 times
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-100); // Insert test card (brick) in hand all targets 5 times
                 }
                 GameStateMachine sm = new GameStateMachine
                 {
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                for (int i = 0; i < 10; i++) // Check for each card
+                List<int> possibleCards = [-100, -100, -100, -100, -100, -110, -110, -110, -110, -110]; // First 5 are ok, last 5 are not
+                for (int i = 0; i < possibleCards.Count; i++) // Check for each card
                 {
                     if (i > 4) // Only test incorrect ones as correct ones are in another test
                     {
-                        Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(i);
+                        Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(possibleCards[i]);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_CARD); // Would be an error!
                         Assert.AreEqual(res.Item2, CardTargets.INVALID); // Also this invalid...
                     }
@@ -165,7 +166,7 @@ namespace EngineTests
                         CurrentState = st,
                         CurrentPlayer = player
                     };
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-100, 0); // Insert only one card, I don't care
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-100); // Insert only one card, I don't care
                     GameStateMachine sm = new GameStateMachine
                     {
                         CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
@@ -173,7 +174,7 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     if (st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(0, CardTargets.GLOBAL); // Should break every single time and nothing should happen (TODO hash verify?)
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-100, CardTargets.GLOBAL); // Should break every single time and nothing should happen (TODO hash verify?)
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_GAME_STATE);
                         Assert.IsNull(res.Item2);
                     }
@@ -194,18 +195,19 @@ namespace EngineTests
                 };
                 for (int i = 0; i < 5; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-100, i); // Insert test card (brick) in hand all targets 5 times
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-100); // Insert test card (brick) in hand all targets 5 times
                 }
                 GameStateMachine sm = new GameStateMachine
                 {
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                for (int i = 0; i < 10; i++) // Check for each card
+                List<int> possibleCards = [-100, -100, -100, -100, -100, -110, -110, -110, -110, -110]; // First 5 are ok, last 5 are not
+                for (int i = 0; i < possibleCards.Count; i++) // Check for each card
                 {
                     if (i > 4) // Just test wrong case as other cases are tested elsewhere in detail
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(i,CardTargets.GLOBAL);
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(possibleCards[i],CardTargets.GLOBAL);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_CARD); // Would be an error!
                         Assert.IsNull(res.Item2); // Also this invalid...
                     }
@@ -226,7 +228,7 @@ namespace EngineTests
                 };
                 for (int i = 0; i <= 7; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i), i); // Insert test cards (brick) in hand all targets, but only valids because invalids test already performed
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i)); // Insert test cards (brick) in hand all targets, but only valid ones because invalids test already performed
                 }
                 GameStateMachine sm = new GameStateMachine
                 {
@@ -237,7 +239,7 @@ namespace EngineTests
                 {
                     for(int j = 0; j < 10; j++) // Try and target absolutely all ways (many should break!)
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(i, (CardTargets)j); // Try to target card
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-(100 + i), (CardTargets)j); // Try to target card
                         if((j > 7) || (j&(j-1)) != 0) // Implying invalid targets no matter what! (Either non power of 2 or high target enum)
                         {
                             Assert.AreEqual(res.Item1, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
@@ -289,7 +291,7 @@ namespace EngineTests
                 };
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i * 10), i); // Insert test cards (brick) in hand costs 0-9
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + i * 10)); // Insert test cards (brick) in hand costs 0-9
                 }
                 state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine
@@ -299,7 +301,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayCard(i, CardTargets.GLOBAL);
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-(100 + i * 10), CardTargets.GLOBAL);
                     if (i <= 4)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
@@ -327,9 +329,12 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = player
                 };
+                List<int> possibleCards = new List<int>();
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-(100 + rng.Next(10) * 10), i); // Insert test cards (brick) in hand with random cost 0-9
+                    int randomCard = -(100 + rng.Next(10) * 10);
+                    state.PlayerStates[playerIndex].Hand.InsertCard(randomCard); // Insert test cards (brick) in hand with random cost 0-9
+                    possibleCards.Add(randomCard); // Add it also to one of my choices
                 }
                 state.PlayerStates[playerIndex].Gold = rng.Next(1000,10000); // Set gold to random but high value
                 GameStateMachine sm = new GameStateMachine
@@ -341,11 +346,12 @@ namespace EngineTests
                 {
                     // Know everything I'll do beforehand
                     int handSize = sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize;
-                    int cardIndexToPlay = rng.Next(handSize); // which random index I take next
-                    int cardIdToPlay = sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardsInHand[cardIndexToPlay];
+                    int cardIndexToPlay = rng.Next(handSize);
+                    int cardIdToPlay = possibleCards[cardIndexToPlay]; // Get random card of the ones I generated
                     Card cardToPlay = sm.CardDb.GetCardData(cardIdToPlay);
                     int currentGold = sm.GetDetailedState().PlayerStates[playerIndex].Gold;
-                    Tuple <PlayOutcome, StepResult> res = sm.PlayCard(cardIndexToPlay, CardTargets.GLOBAL);
+                    Tuple <PlayOutcome, StepResult> res = sm.PlayCard(cardIdToPlay, CardTargets.GLOBAL);
+                    possibleCards.RemoveAt(cardIndexToPlay); // Remove this one
                     Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
                     Assert.IsNotNull(res.Item2); // Sth happened
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.Last(), cardIdToPlay); // Card was discarded

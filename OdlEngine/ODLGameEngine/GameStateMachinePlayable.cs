@@ -26,9 +26,9 @@ namespace ODLGameEngine
         /// <summary>
         /// User selects this function to check if a specific card in their hand can be played, and when/where
         /// </summary>
-        /// <param name="cardInHandIndex">Card index in hand</param>
+        /// <param name="card">Card to play</param>
         /// <returns>If playable, and where (if playable)</returns>
-        public Tuple<PlayOutcome, CardTargets> GetPlayableOptions(int cardInHandIndex)
+        public Tuple<PlayOutcome, CardTargets> GetPlayableOptions(int card)
         {
             // Check whether we're in the right place first (can only do this on play state)
             if(_detailedState.CurrentState != States.ACTION_PHASE)
@@ -37,23 +37,22 @@ namespace ODLGameEngine
             }
             // An extra check first, whether card actually exists in hand
             Hand hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
-            if (cardInHandIndex >= hand.HandSize || cardInHandIndex < 0) // Out of bounds!
+            if (!hand.CardsInHand.ContainsKey(card)) // Card not in hand!
             {
                 return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
             }
             // Now, no other option but to retrieve the actual card I'm attempting to play
-            cardInHandIndex = hand.CardsInHand[cardInHandIndex]; // Extract card id
-            Card card = CardDb.GetCardData(cardInHandIndex);
-            return PLAYABLE_GetOptions(card);
+            Card cardData = CardDb.GetCardData(card);
+            return PLAYABLE_GetOptions(cardData);
         }
         /// <summary>
         /// Player choses card to play and where to play it.
         /// If not failed, this will change game state, function returns last step
         /// </summary>
-        /// <param name="cardInHandIndex">Which card to play</param>
+        /// <param name="card">Which card to play</param>
         /// <param name="chosenTarget">Where to play card</param>
         /// <returns>Outcome, and Step result (as in step() if successful</returns>
-        public Tuple<PlayOutcome, StepResult> PlayCard(int cardInHandIndex, CardTargets chosenTarget)
+        public Tuple<PlayOutcome, StepResult> PlayCard(int card, CardTargets chosenTarget)
         {
             // First guard, make sure chosen target makes sense
             if ((chosenTarget & chosenTarget - 1) != 0)
@@ -62,22 +61,20 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
             // If makes sense, then I need to verify whether chosen card is playable
-            Tuple<PlayOutcome, CardTargets> cardOptions = GetPlayableOptions(cardInHandIndex); // Does same checks as before, whether a card can be played, and where
+            Tuple<PlayOutcome, CardTargets> cardOptions = GetPlayableOptions(card); // Does same checks as before, whether a card can be played, and where
             if (cardOptions.Item1 != PlayOutcome.OK)
             {
                 return new Tuple<PlayOutcome, StepResult>(cardOptions.Item1, null); // If failure, return type of failure, can't be played!
             }
-            // Otherwise, card can be played somewhere, need to see if matches!            
-            Hand hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
-            int cardId = hand.CardsInHand[cardInHandIndex]; // Extract card id
-            Card card = CardDb.GetCardData(cardId);
-            if((card.TargetOptions & chosenTarget) != 0 || (card.TargetOptions == chosenTarget)) // Then just need to verify tagets match
+            // Otherwise, card can be played somewhere, need to see if user option is valid!            
+            Card cardData = CardDb.GetCardData(card);
+            if((cardData.TargetOptions & chosenTarget) != 0 || (cardData.TargetOptions == chosenTarget)) // Then just need to verify tagets match
             {
                 // Ok shit is going down, card needs to be paid and played now, this will result in a step
-                PLAYABLE_PayCost(card);
-                ENGINE_PlayCardFromHand((int)_detailedState.CurrentPlayer, cardInHandIndex);
+                PLAYABLE_PayCost(cardData);
+                ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
                 // Then the play effects
-                PLAYABLE_PlayCard(card, chosenTarget);
+                PLAYABLE_PlayCard(cardData, chosenTarget);
                 // Ends by transitioning to next action phase
                 ENGINE_ChangeState(States.ACTION_PHASE);
 

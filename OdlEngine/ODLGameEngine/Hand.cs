@@ -9,37 +9,36 @@ namespace ODLGameEngine
 {
     public class Hand
     {
-        public List<int> CardsInHand { get; set; } = new List<int>();
+        public Dictionary<int,int> CardsInHand { get; set; } = new Dictionary<int, int>();
         public int HandSize { get; set; } = 0;
         /// <summary>
-        /// Inserts a card to the hand
+        /// Adds card to hand
         /// </summary>
-        /// <param name="card">Card to insert</param>
-        /// <param name="i">Position to insert at, default is to beginning of</param>
-        public void InsertCard(int card, int i = -1)
+        /// <param name="card">Which card to add</param>
+        public void InsertCard(int card)
         {
-            if(i == -1)
+            if (CardsInHand.TryGetValue(card, out int value))
             {
-                i = HandSize;
+                CardsInHand[card] = ++value;
             }
-            CardsInHand.Insert(i, card);
+            else
+            {
+                CardsInHand.Add(card, 1);
+            }
             HandSize++;
         }
         /// <summary>
-        /// Removes the card at specific position (pops). Used when playing a card, and when undoing a draw
+        /// Removes card from hand
         /// </summary>
-        /// <param name="i">Position, default removes the last drawn</param>
-        /// <returns>The card that was removed</returns>
-        public int RemoveCardAt(int i=-1)
+        /// <param name="card">Card to remove</param>
+        public void RemoveCard(int card)
         {
-            if (i == -1)
-            {
-                i = HandSize - 1;
-            }
-            int card = CardsInHand[i];
-            CardsInHand.RemoveAt(i);
+            CardsInHand[card]--;
             HandSize--;
-            return card;
+            if (CardsInHand[card] == 0)
+            {
+                CardsInHand.Remove(card);
+            }
         }
 
         public override string ToString()

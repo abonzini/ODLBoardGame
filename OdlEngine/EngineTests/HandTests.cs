@@ -17,28 +17,43 @@ namespace EngineTests
         public void HandInsertion()
         {
             Hand hand = new Hand();
-            // Add 3 cards
-            hand.InsertCard(1, hand.HandSize);
-            hand.InsertCard(2, hand.HandSize);
-            hand.InsertCard(3, hand.HandSize);
-            Assert.AreEqual(hand.HandSize, 3); // Verify correct number
-            List<int> cards = hand.CardsInHand;
-            for (int i = 0; i < 3; i++)
+            // Add 6 cards, 1, 2, 2, 3, 3, 3
+            hand.InsertCard(1);
+            hand.InsertCard(2);
+            hand.InsertCard(2);
+            hand.InsertCard(3);
+            hand.InsertCard(3);
+            hand.InsertCard(3);
+            Assert.AreEqual(hand.HandSize, 6); // Verify correct number
+            for (int i = 1; i <= 3; i++)
             {
-                Assert.AreEqual(cards[i], i+1); // Verify correct cards in correct order
+                Assert.IsTrue(hand.CardsInHand.ContainsKey(i)); // In dict
+                Assert.AreEqual(hand.CardsInHand[i], i); // Verify correct card ammount
             }
         }
         [TestMethod]
         public void HandRemoval()
         {
             Hand hand = new Hand();
-            // Add 3 cards
-            hand.InsertCard(1, hand.HandSize);
-            hand.InsertCard(2, hand.HandSize);
-            hand.InsertCard(3, hand.HandSize);
+            // Add 6 cards as before
+            hand.InsertCard(1);
+            hand.InsertCard(2);
+            hand.InsertCard(2);
+            hand.InsertCard(3);
+            hand.InsertCard(3);
+            hand.InsertCard(3);
             for (int i = 1; i <= 3; i++)
             {
-                Assert.AreEqual(hand.RemoveCardAt(0), i); // Remove 1 by 1 and verify
+                Assert.IsTrue(hand.CardsInHand.ContainsKey(i));
+                hand.RemoveCard(i); // Remove the card
+                if(i == 1)
+                {
+                    Assert.IsFalse(hand.CardsInHand.ContainsKey(i));
+                }
+                else
+                {
+                    Assert.AreEqual(hand.CardsInHand[i], i - 1);
+                }
             }
         }
     }

@@ -25,7 +25,7 @@ namespace EngineTests
                 };
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-1011117, i); // Insert token cards, 1 in all stats, summonable in any lane 
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-1011117); // Insert token cards, 1 in all stats, summonable in any lane 
                 }
                 state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine
@@ -33,10 +33,9 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                // Will play a random card (they all cost 0)
-                int cardPlayed = _rng.Next(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize);
-                CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Also choose a random lane as target
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(cardPlayed, chosenTarget); // Play it
+                // Will play one of them
+                CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
+                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play it
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -67,7 +66,7 @@ namespace EngineTests
                 };
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-1011117, i); // Insert token cards, 1 in all stats, summonable in any lane 
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-1011117); // Insert token cards, 1 in all stats, summonable in any lane 
                 }
                 state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine
@@ -75,11 +74,10 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                // Will play a random card (they all cost 0)
-                int cardPlayed = _rng.Next(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize);
-                CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Also choose a random lane as target
+                // Will play one of them
+                CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
                 int unitCounter1 = sm.GetDetailedState().PlaceableTotalCount;
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(cardPlayed, chosenTarget); // Play it
+                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play it
                 int unitCounter2 = sm.GetDetailedState().PlaceableTotalCount;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -89,8 +87,7 @@ namespace EngineTests
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
                 chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
                 // Play new one
-                cardPlayed = _rng.Next(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize);
-                res = sm.PlayCard(cardPlayed, chosenTarget); // Play it
+                res = sm.PlayCard(-1011117, chosenTarget); // Play it
                 int futureUnitCounter = sm.GetDetailedState().PlaceableTotalCount;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -128,7 +125,7 @@ namespace EngineTests
                 };
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(-1011117, i); // Insert token cards, 1 in all stats, summonable in any lane 
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-1011117); // Insert token cards, 1 in all stats, summonable in any lane 
                 }
                 state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine
@@ -136,16 +133,16 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Also choose a random lane as target
+                CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
                 bool plainsInit = false, forestInit = false, mountainInit = false;
                 plainsInit |= chosenTarget == CardTargets.PLAINS;
                 forestInit |= chosenTarget == CardTargets.FOREST;
                 mountainInit |= chosenTarget == CardTargets.MOUNTAIN;
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(0, chosenTarget); // Play first card in a lane
+                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play card in some lane
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
-                void verifyLaneStates(int player, bool plainsInit, bool forestInit, bool mountainInit)
+                void verifyLaneStates(int playerIndex, bool plainsInit, bool forestInit, bool mountainInit)
                 {
                     Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.PLAINS).PlayerUnitCount[playerIndex], plainsInit?1:0);
                     Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.FOREST).PlayerUnitCount[playerIndex], forestInit?1:0);
@@ -171,7 +168,7 @@ namespace EngineTests
                 plainsInit |= chosenTarget == CardTargets.PLAINS;
                 forestInit |= chosenTarget == CardTargets.FOREST;
                 mountainInit |= chosenTarget == CardTargets.MOUNTAIN;
-                res = sm.PlayCard(0, chosenTarget);
+                res = sm.PlayCard(-1011117, chosenTarget);
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -182,7 +179,7 @@ namespace EngineTests
                 plainsInit |= chosenTarget == CardTargets.PLAINS;
                 forestInit |= chosenTarget == CardTargets.FOREST;
                 mountainInit |= chosenTarget == CardTargets.MOUNTAIN;
-                res = sm.PlayCard(0, chosenTarget);
+                res = sm.PlayCard(-1011117, chosenTarget);
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
