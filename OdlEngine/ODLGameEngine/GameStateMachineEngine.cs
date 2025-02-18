@@ -86,7 +86,7 @@ namespace ODLGameEngine
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value; // Card now popped from hand
                     _detailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2); // Remove from hand...
-                    _detailedState.PlayerStates[auxInt1].DiscardPile.Add(auxInt2); // Abd add to discard pile
+                    _detailedState.PlayerStates[auxInt1].DiscardPile.InsertCard(auxInt2); // And add to discard pile
                     break;
                 case EventType.INIT_UNIT:
                     auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
@@ -188,9 +188,8 @@ namespace ODLGameEngine
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    auxInt2 = _detailedState.PlayerStates[auxInt1].DiscardPile.Last(); // Retrieve last
-                    if(((EntityValueEvent<int, int>)e).value != auxInt2) throw new StateMismatchException("MISMATCH: Last card in pile is not the same as the card played!");
-                    _detailedState.PlayerStates[auxInt1].DiscardPile.RemoveAt(_detailedState.PlayerStates[auxInt1].DiscardPile.Count - 1); // Pop from discard pile
+                    auxInt2 = ((EntityValueEvent<int, int>)e).value;
+                    _detailedState.PlayerStates[auxInt1].DiscardPile.RemoveCard(auxInt2); // Pop from discard pile
                     _detailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2); // Reinsert in hand
                     break;
                 case EventType.INIT_UNIT:

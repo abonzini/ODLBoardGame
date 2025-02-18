@@ -83,6 +83,6 @@ namespace ODLGameEngine
         public int NUnits { get; set; } = 0;
         public Hand Hand { get; set; } = new Hand();
         public Deck Deck { get; set; } = new Deck();
-        public List<int> DiscardPile { get; set; } = new List<int>();
+        public DiscardPile DiscardPile { get; set; } = new DiscardPile();
     }
 }

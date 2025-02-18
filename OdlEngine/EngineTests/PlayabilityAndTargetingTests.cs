@@ -354,7 +354,8 @@ namespace EngineTests
                     possibleCards.RemoveAt(cardIndexToPlay); // Remove this one
                     Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
                     Assert.IsNotNull(res.Item2); // Sth happened
-                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.Last(), cardIdToPlay); // Card was discarded
+                    Assert.IsTrue(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.CardsInPile.ContainsKey(cardIdToPlay)); // Card was discarded
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.PileSize, i+1); // Discard pile has correct number of cards
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize, handSize-1); // One less card in hand
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Gold, currentGold - int.Parse(cardToPlay.Cost)); // Spent the money
                     Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, player); // Player still in command
