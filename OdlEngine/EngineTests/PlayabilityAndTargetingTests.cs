@@ -33,7 +33,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                for(int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
+                for(int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
                     Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-(100 + i * 10));
                     if(i <= 4)
@@ -68,7 +68,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
+                for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
                     Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-(100 + i)); // Ok in all cases with valid target
                     if (i <= 7)
@@ -235,7 +235,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
+                for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
                     for(int j = 0; j < 10; j++) // Try and target absolutely all ways (many should break!)
                     {
@@ -299,7 +299,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize; i++) // Check for each card
+                for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
                     Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-(100 + i * 10), CardTargets.GLOBAL);
                     if (i <= 4)
@@ -345,7 +345,7 @@ namespace EngineTests
                 for (int i = 0; i < 5; i++) // Will play 5 random cards
                 {
                     // Know everything I'll do beforehand
-                    int handSize = sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize;
+                    int handSize = sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount;
                     int cardIndexToPlay = rng.Next(handSize);
                     int cardIdToPlay = possibleCards[cardIndexToPlay]; // Get random card of the ones I generated
                     Card cardToPlay = sm.CardDb.GetCardData(cardIdToPlay);
@@ -354,9 +354,9 @@ namespace EngineTests
                     possibleCards.RemoveAt(cardIndexToPlay); // Remove this one
                     Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
                     Assert.IsNotNull(res.Item2); // Sth happened
-                    Assert.IsTrue(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.CardsInPile.ContainsKey(cardIdToPlay)); // Card was discarded
-                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.PileSize, i+1); // Discard pile has correct number of cards
-                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.HandSize, handSize-1); // One less card in hand
+                    Assert.IsTrue(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.HasCard(cardIdToPlay)); // Card was discarded
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.CardCount, i+1); // Discard pile has correct number of cards
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount, handSize-1); // One less card in hand
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Gold, currentGold - int.Parse(cardToPlay.Cost)); // Spent the money
                     Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, player); // Player still in command
                     Assert.AreEqual(sm.GetDetailedState().CurrentState, States.ACTION_PHASE); // Still in action phase

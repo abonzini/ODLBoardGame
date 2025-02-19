@@ -1,14 +1,12 @@
 Ongoing tasks in order of priority:
-
 - Unit playing:
-		- Test placement
 		- Unit dies when summoned at 0 hp
 		- Test graveyard
-- End of turn
-		- Implement marching
-		- Implement unit battle and damage
 - EOT
 		- Transition of stage
+		- Transition of player
+- Rulebook revision, BOT and shared cells
+- Marching, attack
 - EOG
 - Rush
 		- Rush behaviour, flags
@@ -21,4 +19,3 @@ Ongoing tasks in order of priority:
 - Implement rest of rulebook
 	- Todo...
 	- Lots of individual mechanics that will be polished as it goes, individual card testing
-	- Rulebook edition

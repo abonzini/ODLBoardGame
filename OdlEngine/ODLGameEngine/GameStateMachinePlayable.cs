@@ -36,8 +36,8 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_GAME_STATE, CardTargets.INVALID); // Reutnr
             }
             // An extra check first, whether card actually exists in hand
-            Hand hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
-            if (!hand.CardsInHand.ContainsKey(card)) // Card not in hand!
+            AssortedCardCollection hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
+            if (!hand.HasCard(card)) // Card not in hand!
             {
                 return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
             }

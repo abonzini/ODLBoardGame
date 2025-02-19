@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.Xml.Linq;
 
 namespace ODLGameEngine
 {
@@ -51,6 +53,19 @@ namespace ODLGameEngine
     }
 
     /// <summary>
+    /// Hashable stuff can give you a hash which attempts to guarantee hash uniqueness and so on
+    /// </summary>
+    public interface IHashable
+    {
+        public int GetHash();
+        /// <summary>
+        /// Whether hash has to be changed
+        /// </summary>
+        /// <returns></returns>
+        public bool IsHashDirty();
+    }
+
+    /// <summary>
     /// Contains all data about a game state, copyable and small, no methods.
     /// The "moving parts" (actions, full board stste, decks, hands) are stored elsewhere
     /// Can be serialized to clients to render full game state.
@@ -58,31 +73,116 @@ namespace ODLGameEngine
     /// The amount of info given to players and spectators is limited depending on their privileges to avoid cheating
     /// With this, a game state can be completely retrieved and any game can be started from any point (as well as from scratch)
     /// </summary>
-    public class GameStateStruct
+    [JsonObject(MemberSerialization.OptIn)]
+    public class GameStateStruct : IHashable
     {
-        public States CurrentState {  get; set; } = States.START;
-        public string StateHash { get; set; } = "";
+        [JsonProperty]
+        public States CurrentState { get; set; } = States.START;
+        [JsonProperty]
+        public int StateHash { get { return GetHash(); } }
+        [JsonProperty]
         public int Seed { get; set; } = 0;
-        public int PlaceableTotalCount { get; set; } = 0;
-        public CurrentPlayer CurrentPlayer { get; set; } = CurrentPlayer.OMNISCIENT;
+        [JsonProperty]
+        public int NextUnitIndex { get; set; } = 0;
+        [JsonProperty]
+        public CurrentPlayer CurrentPlayer { get; set; } =CurrentPlayer.OMNISCIENT;
+        [JsonProperty]
         public PlayerState[] PlayerStates { get; set; } = [new PlayerState(), new PlayerState()];
+        [JsonProperty]
         public Board BoardState { get; set; } = new Board();
+
+        public int GetHash()
+        {
+            HashCode hash = new HashCode();
+            hash.Add(CurrentState);
+            hash.Add(Seed);
+            hash.Add(NextUnitIndex);
+            hash.Add(CurrentPlayer);
+            hash.Add(PlayerStates[0].GetHash());
+            hash.Add(PlayerStates[1].GetHash());
+            hash.Add(BoardState.GetHash());
+            return hash.ToHashCode();
+        }
+        public bool IsHashDirty()
+        {
+            return true; // Needs to be recalculated always to avoid observer pattern
+        }
     }
 
     /// <summary>
     /// State of a player, to be contained in game state
     /// </summary>
-    public class PlayerState
+    [JsonObject(MemberSerialization.OptIn)]
+    public class PlayerState : IHashable
     {
+        /// <summary>
+        /// Name of player
+        /// </summary>
+        [JsonProperty] 
         public string Name { get; set; } = "";
+        /// <summary>
+        /// Class (for later class-specific mechanics)
+        /// </summary>
+        [JsonProperty]
         public PlayerClassType PlayerClass { get; set; } = PlayerClassType.BASE;
+
+        /// <summary>
+        /// Current Hp
+        /// </summary>
+        [JsonProperty]
         public int Hp { get; set; } = 0;
+        /// <summary>
+        /// Gold
+        /// </summary>
+        [JsonProperty]
         public int Gold { get; set; } = 0;
-        public bool RushActive { get; set; } = true;
+        /// <summary>
+        /// If player can rush this turn
+        /// </summary>
+        [JsonProperty]
+        public bool RushAvailable { get; set; } = true;
+        /// <summary>
+        /// Number of buildings the player has
+        /// </summary>
+        [JsonProperty]
         public int NBuildings { get; set; } = 0;
+        /// <summary>
+        /// Number of units the player has
+        /// </summary>
+        [JsonProperty]
         public int NUnits { get; set; } = 0;
-        public Hand Hand { get; set; } = new Hand();
+        /// <summary>
+        /// Player Hand
+        /// </summary>
+        [JsonProperty]
+        public AssortedCardCollection Hand { get; set; } = new AssortedCardCollection();
+        /// <summary>
+        /// Player Deck
+        /// </summary>
+        [JsonProperty]
         public Deck Deck { get; set; } = new Deck();
-        public DiscardPile DiscardPile { get; set; } = new DiscardPile();
+        /// <summary>
+        /// Player Discard Pile
+        /// </summary>
+        [JsonProperty]
+        public AssortedCardCollection DiscardPile { get; set; } = new AssortedCardCollection();
+
+        public int GetHash()
+        {
+            HashCode hash = new HashCode();
+            hash.Add(Name);
+            hash.Add(PlayerClass);
+            hash.Add(Hp);
+            hash.Add(Gold);
+            hash.Add(RushAvailable);
+            hash.Add(Hand.GetHash());
+            hash.Add(Deck.GetHash());
+            hash.Add(DiscardPile.GetHash());
+            return hash.ToHashCode();
+        }
+        public bool IsHashDirty()
+        {
+            return true; // Needs to be recalculated always to avoid observer pattern
+        }
     }
 }

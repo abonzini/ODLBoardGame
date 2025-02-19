@@ -4,36 +4,45 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace ODLGameEngine
 {
-    public class Deck
+    [JsonObject(MemberSerialization.OptIn)]
+    public class Deck : IHashable
     {
-        public List<int> Cards { get; set; } = new List<int>(30);
-        public Dictionary<int, int> CardHistogram { get; set; } = new Dictionary<int, int>();
-        public int DeckSize { get; set; } = 0;
+        private bool _dirtyHash = true;
+        private int _hash;
+        [JsonProperty]
+        private readonly List<int> _cards = new List<int>(30);
+        [JsonProperty]
+        private readonly Dictionary<int, int> _cardHistogram = new Dictionary<int, int>();
+        [JsonProperty]
+        private int _deckSize = 0;
+        public int DeckSize { get { return _deckSize; } }
         /// <summary>
         /// Initializes deck given csv string of cards sequence
         /// </summary>
         /// <param name="deckString">A csv string with each int id of the cards</param>
         public void InitializeDeck(string deckString)
         {
-            Cards.Clear();
+            _cards.Clear();
 
             // Now I add string to the deck
             string[] cardStrings = deckString.Split(',');
             foreach(string card in cardStrings)
             {
                 int cardId = int.Parse(card);
-                if (!CardHistogram.TryGetValue(cardId, out int value))
+                if (!_cardHistogram.TryGetValue(cardId, out int value))
                 {
                     value = 0;
-                    CardHistogram[cardId] = value;
+                    _cardHistogram[cardId] = value;
                 }
-                CardHistogram[cardId] = ++value;
-                Cards.Add(cardId);
-                DeckSize++;
+                _cardHistogram[cardId] = ++value;
+                _cards.Add(cardId);
+                _deckSize++;
             }
+            _dirtyHash = true;
         }
         /// <summary>
         /// Initializes deck copying a list from somewhere
@@ -41,19 +50,20 @@ namespace ODLGameEngine
         /// <param name="cardsList">A lsit with the cards</param>
         public void InitializeDeck(List<int> cardsList)
         {
-            Cards.Clear();
+            _cards.Clear();
             // Now I add string to the deck
             foreach (int card in cardsList)
             {
-                if (!CardHistogram.TryGetValue(card, out int value))
+                if (!_cardHistogram.TryGetValue(card, out int value))
                 {
                     value = 0;
-                    CardHistogram[card] = value;
+                    _cardHistogram[card] = value;
                 }
-                CardHistogram[card] = ++value;
-                Cards.Add(card);
-                DeckSize++;
+                _cardHistogram[card] = ++value;
+                _cards.Add(card);
+                _deckSize++;
             }
+            _dirtyHash = true;
         }
         /// <summary>
         /// Request deck string for current deck
@@ -66,7 +76,7 @@ namespace ODLGameEngine
             {
                 WriteIndented = true
             };
-            retString = JsonSerializer.Serialize(CardHistogram, options);
+            retString = System.Text.Json.JsonSerializer.Serialize(_cardHistogram, options);
             return retString;
         }
         /// <summary>
@@ -79,17 +89,18 @@ namespace ODLGameEngine
             int card;
             if(position == -1)
             {
-                card = Cards.Last(); // Get card
-                Cards.RemoveAt(DeckSize - 1); // Pop it
+                card = _cards.Last(); // Get card
+                _cards.RemoveAt(DeckSize - 1); // Pop it
             }
             else
             {
-                card = Cards[position]; // Get card
-                Cards.RemoveAt(position); // Pop it
+                card = _cards[position]; // Get card
+                _cards.RemoveAt(position); // Pop it
             }
             
-            CardHistogram[card]--;
-            DeckSize--;
+            _cardHistogram[card]--;
+            _deckSize--;
+            _dirtyHash = true;
             return card; // Return what was in the last position
         }
         /// <summary>
@@ -102,14 +113,15 @@ namespace ODLGameEngine
             {
                 position = DeckSize;
             }
-            Cards.Insert(position, card);
-            if (!CardHistogram.TryGetValue(card, out int value))
+            _cards.Insert(position, card);
+            if (!_cardHistogram.TryGetValue(card, out int value))
             {
                 value = 0;
-                CardHistogram[card] = value;
+                _cardHistogram[card] = value;
             }
-            CardHistogram[card] = ++value;
-            DeckSize++;
+            _cardHistogram[card] = ++value;
+            _deckSize++;
+            _dirtyHash = true;
         }
 
         /// <summary>
@@ -122,19 +134,60 @@ namespace ODLGameEngine
             int aux;
             if (pos1 != pos2)
             {
-                aux = Cards[pos1];
-                Cards[pos1] = Cards[pos2];
-                Cards[pos2] = aux;
+                aux = _cards[pos1];
+                _cards[pos1] = _cards[pos2];
+                _cards[pos2] = aux;
             }
+            _dirtyHash = true;
         }
         /// <summary>
         /// Looks at next card drawn
         /// </summary>
+        /// /// <param name="i">Position to peep, last by default</param>
         /// <returns>The next card in deck (doesn't remove)</returns>
-        public int Peep()
+        public int PeepAt(int i = -1)
         {
-            return Cards.Last();
+            if(i == -1)
+            {
+                return _cards.Last();
+            }
+            else
+            {
+                return _cards[i];
+            }
         }
+        /// <summary>
+        /// Check how many copies of a specific card in deck
+        /// </summary>
+        /// <param name="card">Which card</param>
+        /// <returns>How many</returns>
+        public int CheckAmount(int card)
+        {
+            if(_cardHistogram.TryGetValue(card,out int value))
+            {
+                return value;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        public int GetHash()
+        {
+            if (_dirtyHash) // Recalculates only when dirty
+            {
+                HashCode hash = new HashCode();
+                foreach (int card in _cards)
+                {
+                    hash.Add(card);
+                } // Histogram is not needed as it would be just the sum of _cards anyway (correlated!)
+                _hash = hash.ToHashCode();
+                _dirtyHash = false; // Currently updated hash
+            }
+            return _hash;
+        }
+        public bool IsHashDirty()
+        { return _dirtyHash; }
         public override string ToString()
         {
             return GetDeckHistogramString();

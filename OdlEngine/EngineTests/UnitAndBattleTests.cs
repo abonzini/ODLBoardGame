@@ -18,6 +18,7 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
+                int boardHash;
                 GameStateStruct state = new GameStateStruct
                 {
                     CurrentState = States.ACTION_PHASE,
@@ -33,6 +34,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
+                boardHash = sm.GetDetailedState().BoardState.GetHash(); // Store hash
                 // Will play one of them
                 CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
                 Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play it
@@ -41,13 +43,17 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 // Make sure now there's a unit in the list
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1); // Player now has 1 unit summoned
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits.Count, 1); // Check also back end for now
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 1); // Check also back end for now
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 1); // Lane also contains 1 unit
+                // Check board hash has changed
+                Assert.AreNotEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
                 // Now I revert!
                 sm.UndoPreviousStep();
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Reverted
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits.Count, 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 0);
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 0);
+                // Check board hash has been properly reverted
+                Assert.AreEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
             }
         }
         [TestMethod]
@@ -76,19 +82,19 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Will play one of them
                 CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
-                int unitCounter1 = sm.GetDetailedState().PlaceableTotalCount;
+                int unitCounter1 = sm.GetDetailedState().NextUnitIndex;
                 Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play it
-                int unitCounter2 = sm.GetDetailedState().PlaceableTotalCount;
+                int unitCounter2 = sm.GetDetailedState().NextUnitIndex;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 // Modify unit (shady)
-                sm.GetDetailedState().BoardState.PlayerUnits[0].Attack += 5; // Add 5 to attack, whatever
+                sm.GetDetailedState().BoardState.GetUnitContainer()[0].Attack += 5; // Add 5 to attack, whatever
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
                 chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
                 // Play new one
                 res = sm.PlayCard(-1011117, chosenTarget); // Play it
-                int futureUnitCounter = sm.GetDetailedState().PlaceableTotalCount;
+                int futureUnitCounter = sm.GetDetailedState().NextUnitIndex;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -97,17 +103,17 @@ namespace EngineTests
                 Assert.AreEqual(futureUnitCounter - unitCounter2, 1); // have a diff of 1 too
                 Assert.AreEqual(unitCounter2 - unitCounter1, 1); // have a diff of 1 too
                 // Some stats should be similar, some should be different
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits[unitCounter2].Hp, sm.GetDetailedState().BoardState.PlayerUnits[unitCounter1].Hp);
-                Assert.AreNotEqual(sm.GetDetailedState().BoardState.PlayerUnits[unitCounter2].Attack, sm.GetDetailedState().BoardState.PlayerUnits[unitCounter1].Attack);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false)[unitCounter2].Hp, sm.GetDetailedState().BoardState.GetUnitContainer(false)[unitCounter1].Hp);
+                Assert.AreNotEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false)[unitCounter2].Attack, sm.GetDetailedState().BoardState.GetUnitContainer(false)[unitCounter1].Attack);
                 // Finally, roll back!
                 sm.UndoPreviousStep();
-                Assert.AreEqual(unitCounter2, sm.GetDetailedState().PlaceableTotalCount); // And reverts properly
+                Assert.AreEqual(unitCounter2, sm.GetDetailedState().NextUnitIndex); // And reverts properly
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits.Count, 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 1);
                 sm.UndoPreviousStep();
-                Assert.AreEqual(unitCounter1, sm.GetDetailedState().PlaceableTotalCount); // And reverts properly
+                Assert.AreEqual(unitCounter1, sm.GetDetailedState().NextUnitIndex); // And reverts properly
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.PlayerUnits.Count, 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 0);
             }
         }
         [TestMethod]
@@ -191,6 +197,66 @@ namespace EngineTests
                 verifyLaneStates(playerIndex, false, false, false);
             }
         }
+        [TestMethod]
+        public void HashTest()
+        {
+            Unit u1, u2;
+            u1 = new Unit()
+            {
+                UniqueId = 1,
+                Card = 100,
+                Owner = 0,
+                LaneCoordinate = LaneID.PLAINS,
+                TileCoordinate = 2,
+                Hp = 10,
+                Movement = 10,
+                MovementDenominator = 10,
+                Attack = 10,
+                MvtCooldownTimer = 10
+            };
+            u2 = (Unit)u1.Clone();
+            Assert.AreEqual(u1.GetHash(), u2.GetHash());
+            // Now change a few things
+            u2.TileCoordinate = 3;
+            Assert.AreNotEqual(u1.GetHash(), u2.GetHash());
+            // Revert
+            u2.TileCoordinate = u1.TileCoordinate;
+            Assert.AreEqual(u1.GetHash(), u2.GetHash());
+        }
+        //[TestMethod]
+        //public void HashStressTest()
+        //{
+        //    HashSet<int> hashes = new HashSet<int>();
+        //    float total = 0;
+        //    float collisions = 0;
+        //    Random _rng = new Random();
+        //    for (int i=0; i<1000000; i++) // Test 1000000 times, create unique units and verify few collisions
+        //    {
+        //        Unit unit = new Unit()
+        //        {
+        //            UniqueId = _rng.Next(100),
+        //            Card = _rng.Next(100),
+        //            Owner = _rng.Next(3),
+        //            LaneCoordinate = (LaneID)_rng.Next(1,4),
+        //            TileCoordinate = _rng.Next(8),
+        //            Hp = _rng.Next(11),
+        //            Movement = _rng.Next(11),
+        //            MovementDenominator = _rng.Next(11),
+        //            Attack = _rng.Next(11),
+        //            MvtCooldownTimer = _rng.Next(11)
+        //        };
+        //        total++;
+        //        if(hashes.Contains(unit.GetHash()))
+        //        {
+        //            collisions++;
+        //        }
+        //        else
+        //        {
+        //            hashes.Add(unit.GetHash());
+        //        }
+        //    }
+        //    Assert.IsTrue(collisions / total < 0.01); // Try for 1% or less of collisions
+        //}
         // TODO when end of turn implemented add 2 simultaneously.
         // TODO eventually battle tests
     }

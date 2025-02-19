@@ -91,15 +91,15 @@ namespace ODLGameEngine
                 case EventType.INIT_UNIT:
                     auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
                     auxUnit = ((EntityValueEvent<int, Unit>)e).value;
-                    _detailedState.BoardState.PlayerUnits.Add(auxUnit.UniqueId, auxUnit); // Adds unit
+                    _detailedState.BoardState.GetUnitContainer().Add(auxUnit.UniqueId, auxUnit); // Adds unit
                     _detailedState.PlayerStates[auxInt1].NUnits++;
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
-                    _detailedState.PlaceableTotalCount++;
+                    _detailedState.NextUnitIndex++;
                     break;
                 case EventType.UNIT_LANE_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, LaneID>)e).entity;
-                    auxUnit = _detailedState.BoardState.PlayerUnits[auxInt1];
+                    auxUnit = _detailedState.BoardState.GetUnitContainer()[auxInt1];
                     ((EntityTransitionEvent<int, LaneID>)e).oldValue = auxUnit.LaneCoordinate; // Store old value first
                     if(auxUnit.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
                     {
@@ -114,7 +114,7 @@ namespace ODLGameEngine
                     break;
                 case EventType.UNIT_TILE_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    auxUnit = _detailedState.BoardState.PlayerUnits[auxInt1];
+                    auxUnit = _detailedState.BoardState.GetUnitContainer()[auxInt1];
                     ((EntityTransitionEvent<int, int>)e).oldValue = auxUnit.TileCoordinate; // Store old value first
                     if (auxUnit.TileCoordinate >= 0) // Remove count from old tile if applicable
                     {
@@ -195,15 +195,15 @@ namespace ODLGameEngine
                 case EventType.INIT_UNIT:
                     auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
                     auxUnit = ((EntityValueEvent<int, Unit>)e).value;
-                    _detailedState.BoardState.PlayerUnits.Remove(auxUnit.UniqueId); // Just removes the unit
+                    _detailedState.BoardState.GetUnitContainer().Remove(auxUnit.UniqueId); // Just removes the unit
                     _detailedState.PlayerStates[auxInt1].NUnits--; 
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
-                    _detailedState.PlaceableTotalCount--;
+                    _detailedState.NextUnitIndex--;
                     break;
                 case EventType.UNIT_LANE_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, LaneID>)e).entity;
-                    auxUnit = _detailedState.BoardState.PlayerUnits[auxInt1];
+                    auxUnit = _detailedState.BoardState.GetUnitContainer()[auxInt1];
                     // Update count in lane(s)
                     if (auxUnit.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
                     {
@@ -217,7 +217,7 @@ namespace ODLGameEngine
                     break;
                 case EventType.UNIT_TILE_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    auxUnit = _detailedState.BoardState.PlayerUnits[auxInt1];
+                    auxUnit = _detailedState.BoardState.GetUnitContainer()[auxInt1];
                     // Update count of tile
                     if (auxUnit.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {

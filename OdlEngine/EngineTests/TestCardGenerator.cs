@@ -82,8 +82,8 @@ namespace EngineTests
                     Name = "TOKEN",
                     Hp = (id / 10000) % 10, // Second digit is hp, 0-9
                     Attack = (id / 1000) % 10, // Third, attack
-                    Movement = (id / 100) % 10, // Third, attack
-                    MovementDenominator = (id / 10) % 10, // Third, attack
+                    Movement = (id / 100) % 10, // 4th, movement
+                    MovementDenominator = (id / 10) % 10, // 5th, mov denominator
                 };
             }
             throw new NotImplementedException("Not implemented yet");
