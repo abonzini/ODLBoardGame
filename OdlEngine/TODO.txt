@@ -5,16 +5,14 @@ Ongoing tasks in order of priority:
 - EOT
 		- Transition of stage
 		- Transition of player
-- Rulebook revision, BOT and shared cells
 - Marching, attack
 - EOG
 - Rush
-		- Rush behaviour, flags
+		- Rush behaviour, flags and flag clean at beginning of turn
 - Buildings
 		- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
 			- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
 		- Bldg damage
-		- Tiredness
 - Implement cards, one by one, add tests, this involves more effects
 - Implement rest of rulebook
 	- Todo...
