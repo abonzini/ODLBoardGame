@@ -61,7 +61,8 @@ namespace ODLGameEngine
         INIT_UNIT,
         INCREMENT_PLACEABLE_COUNTER,
         UNIT_LANE_TRANSITION,
-        UNIT_TILE_TRANSITION
+        UNIT_TILE_TRANSITION,
+        UNIT_FIELD_TO_GRAVEYARD,
     }
 
     public class Event

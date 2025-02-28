@@ -57,5 +57,9 @@ namespace ODLGameEngine
             }
             return _hash;
         }
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

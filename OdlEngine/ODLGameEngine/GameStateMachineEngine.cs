@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,7 @@ namespace ODLGameEngine
         {
             int auxInt1, auxInt2;
             Unit auxUnit;
+            SortedList<int, Unit> auxLivingUnits, auxDeadUnits;
             _currentStep?.events.Add(e);
             switch (e.eventType)
             {
@@ -127,6 +129,18 @@ namespace ODLGameEngine
                         _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
                     }
                     break;
+                case EventType.UNIT_FIELD_TO_GRAVEYARD: // Unit is simply sent from field to GY and user loses the unit
+                    auxInt1 = ((EntityEvent<int>)e).entity;
+                    // Gets both containers
+                    auxLivingUnits = _detailedState.BoardState.GetUnitContainer(true, true);
+                    auxDeadUnits = _detailedState.BoardState.GetUnitContainer(true, false);
+                    auxUnit = auxLivingUnits[auxInt1];
+                    // Now, remove from living (and from player's)
+                    auxLivingUnits.Remove(auxInt1);
+                    _detailedState.PlayerStates[auxUnit.Owner].NUnits--;
+                    // Add to deads, but no need to count anything yet
+                    auxDeadUnits.Add(auxInt1, auxUnit);
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -139,6 +153,7 @@ namespace ODLGameEngine
         {
             int auxInt1, auxInt2;
             Unit auxUnit;
+            SortedList<int, Unit> auxLivingUnits, auxDeadUnits;
             switch (e.eventType)
             {
                 case EventType.STATE_TRANSITION:
@@ -228,6 +243,18 @@ namespace ODLGameEngine
                     {
                         _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
                     }
+                    break;
+                case EventType.UNIT_FIELD_TO_GRAVEYARD: // Unit is simply sent from GY to field and user regains the unit (no positioning handled here)
+                    auxInt1 = ((EntityEvent<int>)e).entity;
+                    // Gets both containers
+                    auxLivingUnits = _detailedState.BoardState.GetUnitContainer(true, true);
+                    auxDeadUnits = _detailedState.BoardState.GetUnitContainer(true, false);
+                    auxUnit = auxDeadUnits[auxInt1];
+                    // Now, remove from GY
+                    auxDeadUnits.Remove(auxInt1);
+                    // Add to field and to player
+                    _detailedState.PlayerStates[auxUnit.Owner].NUnits++;
+                    auxLivingUnits.Add(auxInt1, auxUnit);
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -460,6 +487,19 @@ namespace ODLGameEngine
                     eventType = EventType.UNIT_TILE_TRANSITION,
                     entity = unit,
                     newValue = tile,
+                });
+        }
+        /// <summary>
+        /// Moves a unit from the field (alive) to graveyard (dead)
+        /// </summary>
+        /// <param name="unit">Unit to be sent to graveyard</param>
+        void ENGINE_UnitFieldToGraveyard(int unit)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityEvent<int>()
+                {
+                    eventType = EventType.UNIT_FIELD_TO_GRAVEYARD,
+                    entity = unit
                 });
         }
     }

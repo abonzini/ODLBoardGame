@@ -198,6 +198,55 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void SummonDeadUnit()
+        {
+            // Summons dead unit and verifies that the unit properly died
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int boardHash;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                for (int i = 0; i < 10; i++)
+                {
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-1001117); // Insert token cards, 1 in all stats but 0 HP, summonable in any lane 
+                }
+                state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                boardHash = sm.GetDetailedState().BoardState.GetHash(); // Store hash
+                // Will play one of them
+                CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
+                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1001117, chosenTarget); // Play it
+                // Make sure card was played ok
+                Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                Assert.IsNotNull(res.Item2);
+                // Make sure unit has insta-died (nothing in field, 1 card in GY
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Player has no units
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false,true).Count, 0); // Field has no units
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false, false).Count, 1); // GY has 1 unit tho
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 0); // Lane doesn't have the unit
+                // Check board hash has changed
+                Assert.AreNotEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
+                // Now I revert!
+                sm.UndoPreviousStep();
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Player still has no units
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false, true).Count, 0); // And field has no units
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false, false).Count, 0); // GY has 0 units again tho
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 0); // Lane doesn't have the unit
+                // Check board hash has been properly reverted
+                Assert.AreEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
+            }
+        }
+        [TestMethod]
         public void HashTest()
         {
             Unit u1, u2;
