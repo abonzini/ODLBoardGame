@@ -82,7 +82,7 @@ namespace EngineTests
             Deck deck1 = new Deck();
             Deck deck2 = new Deck();
             Random _rng = new Random();
-            for (int i = 0; i < 30; i++) // Add 30 random hands between 0-99
+            for (int i = 0; i < 30; i++) // Add 30 random cards between 0-99
             {
                 int rn = _rng.Next(100);
                 deck1.InsertCard(rn);
@@ -92,8 +92,12 @@ namespace EngineTests
             // Now swap 2 random cards
             int swap1 = _rng.Next(30);
             // Ensure it's another random card
-            int swap2 = swap1 + _rng.Next(1,30);
-            swap2 %= 30;
+            int swap2;
+            do
+            {
+                swap2 = swap1 + _rng.Next(1, 30);
+                swap2 %= 30;
+            } while (deck2.PeepAt(swap1) == deck2.PeepAt(swap2)); // But ensure cards are actually distinct otherwise this won't work
             deck2.SwapCards(swap1, swap2);
             Assert.AreNotEqual(deck1.GetHash(), deck2.GetHash());
             // Revert this, should be back to equal
