@@ -54,17 +54,17 @@ namespace ODLGameEngine
         /// <returns>Outcome, and Step result (as in step() if successful</returns>
         public Tuple<PlayOutcome, StepResult> PlayCard(int card, CardTargets chosenTarget)
         {
-            // First guard, make sure chosen target makes sense
-            if ((chosenTarget & chosenTarget - 1) != 0)
-            {
-                // Invalid target, either 0 or a specific single lane, not multiple!
-                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
-            }
-            // If makes sense, then I need to verify whether chosen card is playable
+            // I need to verify whether chosen card is playable
             Tuple<PlayOutcome, CardTargets> cardOptions = GetPlayableOptions(card); // Does same checks as before, whether a card can be played, and where
             if (cardOptions.Item1 != PlayOutcome.OK)
             {
                 return new Tuple<PlayOutcome, StepResult>(cardOptions.Item1, null); // If failure, return type of failure, can't be played!
+            }
+            // Then, make sure chosen target makes sense
+            if ((chosenTarget & chosenTarget - 1) != 0)
+            {
+                // Invalid target, either 0 or a specific single lane, not multiple!
+                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
             // Otherwise, card can be played somewhere, need to see if user option is valid!            
             Card cardData = CardDb.GetCardData(card);
