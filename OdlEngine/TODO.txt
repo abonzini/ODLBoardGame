@@ -1,4 +1,9 @@
 Ongoing tasks in order of priority:
+- Rework graveyard:
+	- It is not needed as coordinates are not stored anyway.
+	- Just de-instantiate the same way a Unit is Instantiated.
+	- If there's a need for reviving or keeping track, it can be added into player/board stats with a smaller overhead, just card or whatever.
+	- Will need to modify GY test and reduce board and hash. Overall a positive change
 - Combat
 	- Resolve combat stage by obtaining first target of enemy
 	- If a unit dies, HP check and board clean-up (kill unit)
