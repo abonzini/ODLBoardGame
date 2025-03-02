@@ -1,16 +1,33 @@
 Ongoing tasks in order of priority:
-- EOT
-		- Transition of stage
-		- Transition of player
 - Marching, attack
-- EOG
+	- Define march unit function, unit stays in lane but advances or changes counter of advance. decide better order later prob advance if 0 or increment and etc
+	- Adv tiles until in last or there's an enemy there, if enemy there's a damage phase
+	- Damage phase of unit, later damage phase of enemy HP too
+	- Unit dies, HP check and board clean-up (kill unit)
+	- Tests:
+		- Unit advanced exact amount
+		- Unit advanced until enemy last tile
+		- Unit advanced and stopped at enemy unit
+		- Unit cooldown test, intialize with cooldown in different levels and check e.g. ready to move, about to expire, midway
+		- Combat:
+			- Unit clash but no death
+			- Unit Attackign kills
+			- Unit defending kills
+			- Both units die
+- Player damage and EOG
+	- Having left the space for unit damaging enemy, implement it
+	- Add the HP check as for unit
+	- And if action results in game end, should we stop remaining state advancement? (e.g. end game flag or current state, and skip all?) Probably only important with ongoing effects such as full marches or sth
+	- ... Think about this, maybe just continue or hard stop, need to decide
+	- Most importantly, need to EOG, and stay in this state
 - Rush
-		- Rush behaviour, flags and flag clean at beginning of turn
+	- Rush behaviour, flags and flag clean at beginning of turn
 - Buildings
-		- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
-			- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
-		- Bldg damage
-- Implement cards, one by one, add tests, this involves more effects
+	- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
+		- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
+	- Bldg damage
+- Stealth
+- Implement cards, one by one, add tests, this involves more effects, implement an effect/auras/buff/token system, if/when and so on
 - Implement rest of rulebook
 	- Todo...
 	- Lots of individual mechanics that will be polished as it goes, individual card testing

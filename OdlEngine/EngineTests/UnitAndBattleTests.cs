@@ -198,7 +198,97 @@ namespace EngineTests
             }
         }
         [TestMethod]
-        public void SummonDeadUnit()
+        public void UnitsOnBothSides()
+        {
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                HashSet<int> boardHashes = new HashSet<int>();
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert token cards, 1 in all stats, summonable in any lane 
+                    // Insert to both players hands and decks
+                    state.PlayerStates[playerIndex].Hand.InsertCard(-1011117);
+                    state.PlayerStates[playerIndex].Deck.InsertCard(-1011117);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(-1011117);
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(-1011117);
+                }
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, false); // Also ensure hashes are unique for board here
+                CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
+                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play card in some lane
+                // Make sure card was played ok
+                Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                Assert.IsNotNull(res.Item2);
+                // Check also for the lane, unit is in the correct place
+                Lane lane = sm.GetDetailedState().BoardState.GetLane(chosenTarget);
+                Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1); // Lane has 1 unit of player and 0 units of other one
+                Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 0);
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1); // Same with tiles, first and last check
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(otherPlayerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                Assert.AreEqual(lane.GetTile(lane.GetLastTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0); // Also check if first-last is coherent
+                Assert.AreEqual(lane.GetTile(lane.GetLastTileCoord(otherPlayerIndex)).PlayerUnitCount[playerIndex], 1);
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, false); // Also ensure hashes are unique for board here
+                // Ok! Now I end turn, do the draw phase
+                sm.EndTurn();
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true); // Hash should be here as board didn't change!
+                sm.Step();
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.ACTION_PHASE);
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true); // Hash should be here as board didn't change!
+                // Ok now other player plays card...
+                res = sm.PlayCard(-1011117, chosenTarget); // Play card in exactly the same lane
+                Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                Assert.IsNotNull(res.Item2);
+                // Check also for the lane, unit is in the correct place for the other player
+                lane = sm.GetDetailedState().BoardState.GetLane(chosenTarget);
+                Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1); // Lane has 1 unit of each now
+                Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1); // Same with tiles, first and last check
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(otherPlayerIndex)).PlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTile(lane.GetLastTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 1); // Also check if first-last is coherent
+                Assert.AreEqual(lane.GetTile(lane.GetLastTileCoord(otherPlayerIndex)).PlayerUnitCount[playerIndex], 1);
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, false); // Also ensure hashes are unique for board here
+                // Finally do reversions
+                // Revert playing and draw
+                sm.UndoPreviousStep(); // Unplay p2
+                lane = sm.GetDetailedState().BoardState.GetLane(chosenTarget);
+                Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1); // Lane has 1 unit of player and 0 units of other one
+                Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 0);
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1); // Same with tiles, first and last check
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(otherPlayerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                Assert.AreEqual(lane.GetTile(lane.GetLastTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0); // Also check if first-last is coherent
+                Assert.AreEqual(lane.GetTile(lane.GetLastTileCoord(otherPlayerIndex)).PlayerUnitCount[playerIndex], 1);
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true); // Hash should be present
+                sm.UndoPreviousStep(); // Undraw
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true); // Hash should be present
+                sm.UndoPreviousStep(); // Un-end p1 turn
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true); // Hash should be present
+                sm.UndoPreviousStep(); // Unplay p1
+                lane = sm.GetDetailedState().BoardState.GetLane(chosenTarget);
+                Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 0); // Lane has 1 unit of player and 0 units of other one
+                Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 0);
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0); // Same with tiles, first and last check
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(otherPlayerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                Assert.AreEqual(lane.GetTile(lane.GetLastTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0); // Also check if first-last is coherent
+                Assert.AreEqual(lane.GetTile(lane.GetLastTileCoord(otherPlayerIndex)).PlayerUnitCount[playerIndex], 0);
+                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true); // Hash should be present
+            }
+        }
+        [TestMethod]
+        public void SummonedUnitDiesIf0Hp()
         {
             // Summons dead unit and verifies that the unit properly died
             Random _rng = new Random();

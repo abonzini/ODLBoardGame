@@ -100,6 +100,17 @@ namespace ODLGameEngine
             LoadInitialPlayerData(1, p2);
             ENGINE_ChangeState(States.P1_INIT); // Switches to first actual state
         }
+        /// <summary>
+        /// Ends turn of current player, will potentially call EOT effects, then switch to draw phase of next player (e.g. toggles player and transitions to DP)
+        /// </summary>
+        /// <returns>Actions occurring during EOT</returns>
+        public StepResult EndTurn()
+        {
+            // HERE BE EOT EFFECTS
+            ENGINE_TogglePlayer(); // Swap player
+            ENGINE_ChangeState(States.DRAW_PHASE); // Next is draw phase
+            return _stepHistory.Last(); // Returns everything that happened in this
+        }
 
         void LoadInitialPlayerData(int player, PlayerInitialData playerData) // This function randomizes! Needs to restore seed after!
         {
