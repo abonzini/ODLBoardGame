@@ -136,8 +136,25 @@ namespace ODLGameEngine
         /// </summary>
         void DrawPhase()
         {
-            DeckDrawMultiple((int)_detailedState.CurrentPlayer, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Current player draws
-            ENGINE_PlayerGoldChange((int)_detailedState.CurrentPlayer, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Current player gets gold
+            int playerId = (int)_detailedState.CurrentPlayer;
+            // Advance all units of that player
+            if (_detailedState.PlayerStates[playerId].NUnits > 0) // Only advance if player has units
+            {
+                SortedList<int, Unit> liveUnits = _detailedState.BoardState.GetUnitContainer();
+                List<int> liveUnitsIds = liveUnits.Keys.ToList(); // Obtain all elements in list to iterate on
+                foreach (int unitId in liveUnitsIds) // Obtain unit one by one in order of play, need to do it like this in case units are deleted in the meanwhile
+                {
+                    if(liveUnits.TryGetValue(unitId, out Unit unit)) // Check if unit is still alive, if not, no need to march
+                    {
+                        if(unit.Owner == playerId) // This unit needs to march
+                        {
+                            UNIT_AdvanceUnit(unit); // Then the unit advances!
+                        }
+                    }
+                }
+            }
+            DeckDrawMultiple(playerId, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Current player draws
+            ENGINE_PlayerGoldChange(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Current player gets gold
         }
         /// <summary>
         /// Shuffles a player deck

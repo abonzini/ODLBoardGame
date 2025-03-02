@@ -141,6 +141,13 @@ namespace ODLGameEngine
                     // Add to deads, but no need to count anything yet
                     auxDeadUnits.Add(auxInt1, auxUnit);
                     break;
+                case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    auxInt2 = ((EntityTransitionEvent<int, int>)e).newValue;
+                    auxUnit = _detailedState.BoardState.GetUnitContainer()[auxInt1];
+                    ((EntityTransitionEvent<int, int>)e).oldValue = auxUnit.MvtCooldownTimer; // Store old value first
+                    auxUnit.MvtCooldownTimer = auxInt2;
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -255,6 +262,12 @@ namespace ODLGameEngine
                     // Add to field and to player
                     _detailedState.PlayerStates[auxUnit.Owner].NUnits++;
                     auxLivingUnits.Add(auxInt1, auxUnit);
+                    break;
+                case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
+                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
+                    auxInt2 = ((EntityTransitionEvent<int, int>)e).oldValue;
+                    auxUnit = _detailedState.BoardState.GetUnitContainer()[auxInt1];
+                    auxUnit.MvtCooldownTimer = auxInt2;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -500,6 +513,21 @@ namespace ODLGameEngine
                 {
                     eventType = EventType.UNIT_FIELD_TO_GRAVEYARD,
                     entity = unit
+                });
+        }
+        /// <summary>
+        /// When a unit changes the movement cooldown, incorporate it here
+        /// </summary>
+        /// <param name="unit">Unit ID</param>
+        /// <param name="cooldown">New cooldown</param>
+        void ENGINE_UnitMovementCooldownChange(int unit, int cooldown)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<int,int>()
+                {
+                    eventType = EventType.UNIT_MOVEMENT_COOLDOWN_VALUE,
+                    entity = unit,
+                    newValue = cooldown
                 });
         }
     }

@@ -81,7 +81,10 @@ namespace ODLGameEngine
         {
             return (player != 1) ? Len - 1 : 0;
         }
-
+        public static int GetAdvanceDirection(int player)
+        {
+            return (player == 0) ? 1 : -1;
+        }
         public override string ToString()
         {
             return Id.ToString() + $", P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";

@@ -24,20 +24,20 @@ In their turn, players can choose to:
 
 Units are played by paying their gold cost (top left of the card). The units stats are:
 - ![](./../Pictures/Icons/HP.png) **Health:** Damage that the unit can take. When it reaches 0, unit dies.
-- ![](./../Pictures/Icons/Movement.png) **Movement:** How many **tiles** the unit advances when marching.
-- ![](./../Pictures/Icons/Attack.png) **Attack:** Damage that the unit does to enemies when **marching**.
+- ![](./../Pictures/Icons/Movement.png) **Movement:** How many **tiles** the unit advances when advancing.
+- ![](./../Pictures/Icons/Attack.png) **Attack:** Damage that the unit does to enemies when **advancing**.
 
 When a unit is played, the player chooses in which **lane** to place it (plains, forest or mountains).
 Unit is then placed on the first square of that **lane**.
 
-# March
+# Advance
 
-Units **march** when issued a **marching** command (by the effects of some cards, etc).
-When marching, all units from that player (in the order they were played) will move to the next tile by their respective **movement** stats.
+Units **advance** as the result of a **advance** effect (caused by the effects of some cards, etc).
+When advancing, the unit will move to the next tile by their respective **movement** stats.
 
 ![](./../Pictures/Icons/March1.png)
 
-If unit shares the **tile** with an enemy unit, the marching unit instead will attack it.
+If unit shares the **tile** with an enemy unit, the advancing unit instead will attack it.
 Both units will receive HP damage simultaneously depending on the enemies attack.
 
 ![](./../Pictures/Icons/March2.png)
@@ -46,9 +46,9 @@ Both units will receive HP damage simultaneously depending on the enemies attack
 
 ![](./../Pictures/Icons/March4.png)
 
-- If the advancing unit kills the opposing enemy while marching, it can continue its march if it's movement stat allows it.
-- If unit is in the last **tile** (in front of the opponent) it damages the player when marching, but doesn't advance further.
-- If multiple defending units are in a **tile**, then they are attacked 1-by-1 in the order they were spawned on the board.
+- If a combat between units occur, the unit finishes their advance, regardless of outcome of battle and the movement stat of the unit.
+- If unit is in the last **tile** (in front of the opponent) it will instead damage the opposing player when advancing, but doesn't advance further, this can only happen once per advance step regardless of the movement stat.
+- If multiple defending units are in a **tile**, the first unit spawned is the one targeted for the attack.
 
 # Skills
 
@@ -89,11 +89,13 @@ When the game begins:
 - Each player starts with **4 cards and 5 gold**
 
 Each turn there's the following phases:
-- Marching phase: First, the units from that player **march** forward
-- Draw phase: Player **draws a card and gets 2 gold**
+- Beggining of turn:
+    - First, all of the units from that player **advance**, in order they were played
+    - Player then **draws a card**
+    - Also, player **gets 2 gold**
 - Play phase: Player can use their gold to play units, skills, buildings or the **RUSH** skill (**RUSH** only once per turn)
 - End of turn: Player ends their turn
-- Turn begins for the next player
+- Beginnint of turn for the next player
 
 Game continues until one player loses
 

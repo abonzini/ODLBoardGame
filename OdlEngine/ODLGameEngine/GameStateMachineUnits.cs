@@ -61,5 +61,50 @@ namespace ODLGameEngine
             // Moves unit from living space to dead space
             ENGINE_UnitFieldToGraveyard(unitId);            
         }
+        /// <summary>
+        /// Found unit starts a march (initial march checks and march modifiers already applied)
+        /// </summary>
+        /// <param name="unit">Unit object that will advance</param>
+        void UNIT_AdvanceUnit(Unit unit)
+        {
+            int unitOwnerId = unit.Owner;
+            int opponentId = 1 - unitOwnerId;
+            int cooldown = unit.MvtCooldownTimer;
+            // TODO LATER: Good place for the stone road buff token, and remove after ending function
+            if (cooldown == 0)
+            {
+                ENGINE_AddMessageEvent($"P{unitOwnerId + 1}'s {unit.Name} advances");
+                int n = unit.Movement; // How much to advance
+                Lane lane = _detailedState.BoardState.GetLane(unit.LaneCoordinate); // Which lane
+                while(n > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
+                {
+                    // Exiting current tile
+                    if (lane.GetTile(unit.TileCoordinate).PlayerUnitCount[opponentId] > 0) // If enemy unit in tile, will stop march here (and also attack)
+                    {
+                        n = 0;
+                        // TODO BATTLE!
+                    }
+                    else if (lane.GetLastTileCoord(unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
+                    {
+                        n = 0;
+                        // TODO Player damage!
+                    }
+                    else // Unit then can advance normally here, perform it
+                    {
+                        // Request unit advancement a tile
+                        ENGINE_UnitTileTransition(unit.UniqueId, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
+                        // Entering new tile
+                        // TODO: Building damage, building effects
+                        n--;
+                    }
+                }
+            }
+            cooldown++; // Cycle the timer so that next advance it's updated!
+            cooldown %= unit.MovementDenominator;
+            if(unit.MvtCooldownTimer != cooldown) // If unit has changed cooldown, need to activate this
+            {
+                ENGINE_UnitMovementCooldownChange(unit.UniqueId, cooldown);
+            }
+        }
     }
 }
