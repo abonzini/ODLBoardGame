@@ -787,13 +787,13 @@ namespace EngineTests
         [TestMethod]
         public void TestUnitCombatNoDeath()
         {
-            // Units clash, receive damage but both stay in lane
+            // Units clash, receive damage but both stay in lane. Damages are different to ensure token calculations are also ok
             Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
-                int attack = _rng.Next(1,9); // Attack between 1-8
-                int hp = attack + 1; // So that both units survive
+                int attack = _rng.Next(1,8); // Attack between 1-7
+                int hp = attack + 2; // So that both units survive
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
@@ -803,7 +803,7 @@ namespace EngineTests
                 };
                 // Will try this in mountain as there's space!
                 int fastCard = -(1000917 + attack * 1000 + hp * 10000); // Gets to the end so it clashes
-                int slowCard = -(1000317 + attack * 1000 + hp * 10000); // Gets to the middle and waits there
+                int slowCard = -(1000317 + (attack + 1) * 1000 + hp * 10000); // Gets to the middle and waits there
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -853,7 +853,7 @@ namespace EngineTests
                 Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 1);
                 Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 2); // 2 units total
                 Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, attack); // They have damage!
-                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, attack);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, attack + 1);
                 // Now unit is not in advance anymore and instead moved to intersect
                 Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0);
                 Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[playerIndex], 1);

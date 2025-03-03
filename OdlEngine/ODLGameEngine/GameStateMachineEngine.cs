@@ -134,16 +134,16 @@ namespace ODLGameEngine
                     _detailedState.PlayerStates[auxUnit.Owner].NUnits--;
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
-                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    auxInt2 = ((EntityTransitionEvent<int, int>)e).newValue;
-                    auxUnit = _detailedState.BoardState.Units[auxInt1];
-                    ((EntityTransitionEvent<int, int>)e).oldValue = auxUnit.MvtCooldownTimer; // Store old value first
-                    auxUnit.MvtCooldownTimer = auxInt2;
+                    auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
+                    auxInt1 = ((EntityTransitionEvent<Unit, int>)e).newValue;
+                    ((EntityTransitionEvent<Unit, int>)e).oldValue = auxUnit.MvtCooldownTimer; // Store old value first
+                    auxUnit.MvtCooldownTimer = auxInt1;
                     break;
-                case EventType.UNIT_DAMAGE_CHANGE:
-                    auxUnit = ((EntityValueEvent<Unit, int>)e).entity;
-                    auxInt1 = ((EntityValueEvent<Unit, int>)e).value;
-                    auxUnit.DamageTokens += auxInt1;
+                case EventType.UNIT_DAMAGE_COUNTER_CHANGE:
+                    auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
+                    auxInt1 = ((EntityTransitionEvent<Unit, int>)e).newValue;
+                    ((EntityTransitionEvent<Unit, int>)e).oldValue = auxUnit.DamageTokens;
+                    auxUnit.DamageTokens = auxInt1;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -252,15 +252,14 @@ namespace ODLGameEngine
                     _detailedState.PlayerStates[auxUnit.Owner].NUnits++;
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
-                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    auxInt2 = ((EntityTransitionEvent<int, int>)e).oldValue;
-                    auxUnit = _detailedState.BoardState.Units[auxInt1];
-                    auxUnit.MvtCooldownTimer = auxInt2;
+                    auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
+                    auxInt1 = ((EntityTransitionEvent<Unit, int>)e).oldValue;
+                    auxUnit.MvtCooldownTimer = auxInt1;
                     break;
-                case EventType.UNIT_DAMAGE_CHANGE:
-                    auxUnit = ((EntityValueEvent<Unit, int>)e).entity;
-                    auxInt1 = ((EntityValueEvent<Unit, int>)e).value;
-                    auxUnit.DamageTokens -= auxInt1;
+                case EventType.UNIT_DAMAGE_COUNTER_CHANGE:
+                    auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
+                    auxInt1 = ((EntityTransitionEvent<Unit, int>)e).oldValue;
+                    auxUnit.DamageTokens = auxInt1;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -513,10 +512,10 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="unit">Unit ID</param>
         /// <param name="cooldown">New cooldown</param>
-        void ENGINE_UnitMovementCooldownChange(int unit, int cooldown)
+        void ENGINE_UnitMovementCooldownChange(Unit unit, int cooldown)
         {
             ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<int,int>()
+                new EntityTransitionEvent<Unit,int>()
                 {
                     eventType = EventType.UNIT_MOVEMENT_COOLDOWN_VALUE,
                     entity = unit,
@@ -527,17 +526,17 @@ namespace ODLGameEngine
         /// Damage a unit, adds damage tokens
         /// </summary>
         /// <param name="unit">Unit to damage</param>
-        /// <param name="dmg">How much damage</param>
-        void ENGINE_UnitDamageChange(Unit unit, int dmg)
+        /// <param name="newDamageCounters">How much damage</param>
+        void ENGINE_UnitDamageChange(Unit unit, int newDamageCounters)
         {
-            if (dmg == 0) return; // No need to do anything if there's no damage...
+            int delta = newDamageCounters - unit.DamageTokens;
             ENGINE_ExecuteEvent(
-                new EntityValueEvent<Unit, int>()
+                new EntityTransitionEvent<Unit, int>()
                 {
-                    eventType = EventType.UNIT_DAMAGE_CHANGE,
+                    eventType = EventType.UNIT_DAMAGE_COUNTER_CHANGE,
                     entity = unit,
-                    value = dmg,
-                    description = $"P{unit.Owner + 1}'s {unit.Name} receives {dmg} damage"
+                    newValue = newDamageCounters,
+                    description = $"P{unit.Owner + 1}'s {unit.Name} {((delta > 0) ? "received" : "healed")} {Math.Abs(delta)} damage"
                 });
         }
     }

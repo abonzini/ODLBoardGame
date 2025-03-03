@@ -64,7 +64,7 @@ namespace ODLGameEngine
         UNIT_TILE_TRANSITION,
         DEINIT_UNIT,
         UNIT_MOVEMENT_COOLDOWN_VALUE,
-        UNIT_DAMAGE_CHANGE
+        UNIT_DAMAGE_COUNTER_CHANGE
     }
 
     public class Event

@@ -109,7 +109,7 @@ namespace ODLGameEngine
             cooldown %= unit.MovementDenominator;
             if(unit.MvtCooldownTimer != cooldown) // If unit has changed cooldown, need to activate this
             {
-                ENGINE_UnitMovementCooldownChange(unit.UniqueId, cooldown);
+                ENGINE_UnitMovementCooldownChange(unit, cooldown);
             }
         }
         /// <summary>
@@ -119,10 +119,22 @@ namespace ODLGameEngine
         /// <param name="defender">Defending unit</param>
         void UNIT_Combat(Unit attacker, Unit defender)
         {
-            ENGINE_UnitDamageChange(defender, attacker.Attack); // First, the defender receives damage
+            ENGINE_AddMessageEvent($"Combat between P{attacker.Owner + 1}'s {attacker.Name} and P{defender.Owner + 1}'s {defender.Name}");
+            ENGINE_UnitDamageChange(defender, UNIT_CalculateDamageTokens(defender, attacker.Attack)); // First, the defender receives damage
             UNIT_VerifyUnitHpChange(defender);
-            ENGINE_UnitDamageChange(attacker, defender.Attack); // First, the defender receives damage
+            ENGINE_UnitDamageChange(attacker, UNIT_CalculateDamageTokens(attacker, defender.Attack)); // First, the defender receives damage
             UNIT_VerifyUnitHpChange(attacker);
+        }
+        /// <summary>
+        /// Calculates remaining damage tokens from a damage/heal action. Has to clamp to 0 tokens if overhealed
+        /// </summary>
+        /// <param name="unit">Unit to calculate</param>
+        /// <param name="tokens">Tokens to add/remove</param>
+        /// <returns></returns>
+        int UNIT_CalculateDamageTokens(Unit unit, int tokens)
+        {
+            int ret = unit.DamageTokens + tokens;
+            return (ret >= 0) ? ret : 0;
         }
     }
 }
