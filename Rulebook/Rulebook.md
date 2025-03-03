@@ -38,7 +38,7 @@ When advancing, the unit will move to the next tile by their respective **moveme
 ![](./../Pictures/Icons/March1.png)
 
 If unit shares the **tile** with an enemy unit, the advancing unit instead will attack it.
-Both units will receive HP damage simultaneously depending on the enemies attack.
+Both units will receive HP damage "simultaneously" depending on the enemies attack.
 
 ![](./../Pictures/Icons/March2.png)
 
@@ -49,6 +49,7 @@ Both units will receive HP damage simultaneously depending on the enemies attack
 - If a combat between units occur, the unit finishes their advance, regardless of outcome of battle and the movement stat of the unit.
 - If unit is in the last **tile** (in front of the opponent) it will instead damage the opposing player when advancing, but doesn't advance further, this can only happen once per advance step regardless of the movement stat.
 - If multiple defending units are in a **tile**, the first unit spawned is the one targeted for the attack.
+- For most purposes, units are damaged simultaneously, and may even die at the same time. However in the fine grain, the attacker (marching unit) will attack and deal damage (and possibly kill) first, and the defender will deal damage (and possibly kill) after. For example, cards that activate when damage is dealt may trigger their effects mid combat.
 
 # Skills
 

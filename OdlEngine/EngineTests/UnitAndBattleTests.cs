@@ -159,12 +159,18 @@ namespace EngineTests
                         Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.PLAINS).GetTile(0).PlayerUnitCount[playerIndex], plainsInit ? 1 : 0);
                         Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.FOREST).GetTile(0).PlayerUnitCount[playerIndex], forestInit ? 1 : 0);
                         Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN).GetTile(0).PlayerUnitCount[playerIndex], mountainInit ? 1 : 0);
+                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.PLAINS).GetTile(0).UnitsInTile.Count, plainsInit ? 1 : 0);
+                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.FOREST).GetTile(0).UnitsInTile.Count, forestInit ? 1 : 0);
+                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN).GetTile(0).UnitsInTile.Count, mountainInit ? 1 : 0);
                     }
                     else
                     {
                         Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.PLAINS).GetTile(GameConstants.PLAINS_TILES_NUMBER-1).PlayerUnitCount[playerIndex], plainsInit ? 1 : 0);
                         Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.FOREST).GetTile(GameConstants.FOREST_TILES_NUMBER - 1).PlayerUnitCount[playerIndex], forestInit ? 1 : 0);
                         Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN).GetTile(GameConstants.MOUNTAIN_TILES_NUMBER - 1).PlayerUnitCount[playerIndex], mountainInit ? 1 : 0);
+                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.PLAINS).GetTile(GameConstants.PLAINS_TILES_NUMBER-1).UnitsInTile.Count, plainsInit ? 1 : 0);
+                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.FOREST).GetTile(GameConstants.FOREST_TILES_NUMBER - 1).UnitsInTile.Count, forestInit ? 1 : 0);
+                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN).GetTile(GameConstants.MOUNTAIN_TILES_NUMBER - 1).UnitsInTile.Count, mountainInit ? 1 : 0);
                     }
                 }
                 // And check all lanes and tiles for both players
@@ -775,6 +781,462 @@ namespace EngineTests
                 TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, true);
                 TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, true);
                 TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, true);
+            }
+        }
+        // Unit battle test
+        [TestMethod]
+        public void TestUnitCombatNoDeath()
+        {
+            // Units clash, receive damage but both stay in lane
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int attack = _rng.Next(1,9); // Attack between 1-8
+                int hp = attack + 1; // So that both units survive
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = (CurrentPlayer)otherPlayerIndex
+                };
+                // Will try this in mountain as there's space!
+                int fastCard = -(1000917 + attack * 1000 + hp * 10000); // Gets to the end so it clashes
+                int slowCard = -(1000317 + attack * 1000 + hp * 10000); // Gets to the middle and waits there
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                    state.PlayerStates[playerIndex].Hand.InsertCard(fastCard);
+                    state.PlayerStates[playerIndex].Deck.InsertCard(fastCard);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(slowCard);
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(slowCard);
+                }
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                sm.PlayCard(slowCard, CardTargets.MOUNTAIN); // Opp plays in mountain and skips turn
+                // Ok! Now i need to do the sequence to advance...
+                sm.EndTurn(); // End opponent's
+                sm.Step(); // Finish draw phase of main player
+                // Now I summon unit:
+                sm.PlayCard(fastCard, CardTargets.MOUNTAIN);
+                // Now I end turn and opponent will advance!
+                sm.EndTurn();
+                sm.Step();
+                sm.EndTurn();
+                // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
+                Lane lane = sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN);
+                // Both players have a unit
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 1);
+                Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 2); // 2 units total
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, 0); // No damage
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, 0); // No damage
+                // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
+                int intersectionCoordinate = lane.GetFirstTileCoord(otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 1);
+                Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTile(intersectionCoordinate).UnitsInTile.Count, 1);
+                // Advance...
+                sm.Step();
+                // Verify
+                lane = sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN);
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1); // Players still have their dudes
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 1);
+                Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 2); // 2 units total
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, attack); // They have damage!
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, attack);
+                // Now unit is not in advance anymore and instead moved to intersect
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTile(intersectionCoordinate).UnitsInTile.Count, 2); // 2 Now
+                // Undo advance and verify again
+                sm.UndoPreviousStep();
+                lane = sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN);
+                // Both players have a unit
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 1);
+                Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 2); // 2 units total
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, 0); // No damage
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, 0); // No damage
+                // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 1);
+                Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTile(intersectionCoordinate).UnitsInTile.Count, 1);
+            }
+        }
+        [TestMethod]
+        public void TestUnitCombatWithDeath()
+        {
+            Random _rng = new Random();
+            List<int> attackerExtraDmg = [-1, -1, -1, 0, 0, 0, 1, 1, 1]; // All combos of mutual kill, mutual death, mutual overkill
+            List<int> defenderExtraDmg = [-1, 0, 1, -1, 0, 1, -1, 0, 1];
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            for (int i = 0; i < attackerExtraDmg.Count; i++)
+            {
+                int hp = _rng.Next(1, 9); // Hp between 1-8 so units can under and overkill
+                foreach (CurrentPlayer player in players)
+                {
+                    int attackerStat = hp + attackerExtraDmg[i];
+                    int defenderStat = hp + defenderExtraDmg[i];
+                    int playerIndex = (int)player;
+                    int otherPlayerIndex = 1 - playerIndex;
+                    GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
+                    {
+                        CurrentState = States.ACTION_PHASE,
+                        CurrentPlayer = (CurrentPlayer)otherPlayerIndex
+                    };
+                    // Will try this in mountain as there's space!
+                    int fastCard = -(1000917 + attackerStat * 1000 + hp * 10000); // Gets to the end so it clashes
+                    int slowCard = -(1000317 + defenderStat * 1000 + hp * 10000); // Gets to the middle and waits there
+                    for (int j = 0; j < 5; j++)
+                    {
+                        // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                        state.PlayerStates[playerIndex].Hand.InsertCard(fastCard);
+                        state.PlayerStates[playerIndex].Deck.InsertCard(fastCard);
+                        state.PlayerStates[otherPlayerIndex].Hand.InsertCard(slowCard);
+                        state.PlayerStates[otherPlayerIndex].Deck.InsertCard(slowCard);
+                    }
+                    GameStateMachine sm = new GameStateMachine
+                    {
+                        CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                    };
+                    sm.LoadGame(state); // Start from here
+                    sm.PlayCard(slowCard, CardTargets.MOUNTAIN); // Opp plays in mountain and skips turn
+                                                                 // Ok! Now i need to do the sequence to advance...
+                    sm.EndTurn(); // End opponent's
+                    sm.Step(); // Finish draw phase of main player
+                               // Now I summon unit:
+                    sm.PlayCard(fastCard, CardTargets.MOUNTAIN);
+                    // Now I end turn and opponent will advance!
+                    sm.EndTurn();
+                    sm.Step();
+                    sm.EndTurn();
+                    // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
+                    Lane lane = sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN);
+                    // Both players have a unit
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 1);
+                    Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 2); // 2 units total
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, 0); // No damage
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, 0); // No damage
+                    // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
+                    int intersectionCoordinate = lane.GetFirstTileCoord(otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
+                    Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 1);
+                    Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(lane.GetTile(intersectionCoordinate).UnitsInTile.Count, 1);
+                    // Advance...
+                    sm.Step();
+                    // Verify
+                    int attackerCount = (defenderExtraDmg[i] < 0) ? 1 : 0; // Attacker is there only if defender's weak
+                    int defenderCount = (attackerExtraDmg[i] < 0) ? 1 : 0; // Defender is there only if attacker's weak
+                    lane = sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, attackerCount); // Players still have their dudes
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, defenderCount);
+                    Assert.AreEqual(lane.PlayerUnitCount[playerIndex], attackerCount);
+                    Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], defenderCount);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, attackerCount + defenderCount); // 2 units total
+                    if (defenderCount > 0)
+                    {
+                        Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, attackerStat); // Unit alive but damaged
+                    }
+                    else
+                    {
+                        Assert.IsFalse(sm.GetDetailedState().BoardState.Units.ContainsKey(0)); // unit ded
+                    }
+                    if (attackerCount > 0)
+                    {
+                        Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, defenderStat); // Unit alive but damaged
+                    }
+                    else
+                    {
+                        Assert.IsFalse(sm.GetDetailedState().BoardState.Units.ContainsKey(1)); // unit ded
+                    }
+                    // Now unit is not in advance anymore and instead moved to intersect
+                    Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0);
+                    Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[playerIndex], attackerCount);
+                    Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], defenderCount);
+                    Assert.AreEqual(lane.GetTile(intersectionCoordinate).UnitsInTile.Count, attackerCount + defenderCount); // 2 Now
+                    // Undo advance and verify again
+                    sm.UndoPreviousStep();
+                    lane = sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN);
+                    // Both players have a unit
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 1);
+                    Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 2); // 2 units total
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, 0); // No damage
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, 0); // No damage
+                    // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
+                    Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 1);
+                    Assert.AreEqual(lane.GetTile(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(lane.GetTile(intersectionCoordinate).UnitsInTile.Count, 1);
+                }
+            }
+        }
+        [TestMethod]
+        public void TestMultipleWithoutBreakingAdvance()
+        {
+            Random _rng = new Random();
+            List<CardTargets> lanes = [CardTargets.PLAINS, CardTargets.FOREST, CardTargets.MOUNTAIN]; // Test interaction in all orders
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CardTargets lane in lanes)
+            {
+                int stat = _rng.Next(1, 10); // any Hp between 1-9
+                var movt = lane switch
+                {
+                    CardTargets.PLAINS => GameConstants.PLAINS_TILES_NUMBER - 1,
+                    CardTargets.FOREST => GameConstants.FOREST_TILES_NUMBER - 1,
+                    CardTargets.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER - 1,
+                    _ => throw new Exception("Wrong lane!"),
+                };
+                foreach (CurrentPlayer player in players)
+                {
+                    int playerIndex = (int)player;
+                    int otherPlayerIndex = 1 - playerIndex;
+                    GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
+                    {
+                        CurrentState = States.ACTION_PHASE,
+                        CurrentPlayer = (CurrentPlayer)otherPlayerIndex
+                    };
+                    // Will try this in mountain as there's space!
+                    int attackerCard = -(1000117 + stat * 1000 + stat * 10000); // Will just advance 1, whatever
+                    int defenderCard = -(1000017 + stat * 1000 + stat * 10000 + movt * 100); // Gets to the end and waits there
+                    for (int j = 0; j < 5; j++)
+                    {
+                        // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                        state.PlayerStates[playerIndex].Hand.InsertCard(attackerCard);
+                        state.PlayerStates[playerIndex].Deck.InsertCard(attackerCard);
+                        state.PlayerStates[otherPlayerIndex].Hand.InsertCard(defenderCard);
+                        state.PlayerStates[otherPlayerIndex].Deck.InsertCard(defenderCard);
+                    }
+                    GameStateMachine sm = new GameStateMachine
+                    {
+                        CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                    };
+                    sm.LoadGame(state); // Start from here
+                    sm.PlayCard(defenderCard, lane); // Opp plays in lane and skips turn
+                    // Ok! Now i need to do the sequence to advance...
+                    sm.EndTurn(); // End opponent's
+                    sm.Step(); // Finish draw phase of main player
+                    // Now I summon all units in all lanes:
+                    sm.PlayCard(attackerCard, CardTargets.PLAINS);
+                    sm.PlayCard(attackerCard, CardTargets.FOREST);
+                    sm.PlayCard(attackerCard, CardTargets.MOUNTAIN);
+                    // Now I end turn and opponent will advance!
+                    sm.EndTurn();
+                    sm.Step();
+                    sm.EndTurn();
+                    // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
+                    Lane theLane = sm.GetDetailedState().BoardState.GetLane(lane);
+                    CardTargets nextTgt = (CardTargets)((((int)lane << 1) > 4) ? 1: ((int)lane << 1));
+                    Lane other1 = sm.GetDetailedState().BoardState.GetLane(nextTgt);
+                    nextTgt = (CardTargets)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
+                    Lane other2 = sm.GetDetailedState().BoardState.GetLane(nextTgt);
+                    // Check unit counts
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 3);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 1);
+                    // Check the right amount in all lanes
+                    Assert.AreEqual(theLane.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(theLane.PlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(other1.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(other2.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 4); // 4 units total
+                    // Verify position of units. One tile has 2 things and the others 1
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 2);
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 1);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 1);
+                    // Advance...
+                    sm.Step();
+                    // Verify
+                    theLane = sm.GetDetailedState().BoardState.GetLane(lane);
+                    nextTgt = (CardTargets)((((int)lane << 1) > 4) ? 1 : ((int)lane << 1));
+                    other1 = sm.GetDetailedState().BoardState.GetLane(nextTgt);
+                    nextTgt = (CardTargets)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
+                    other2 = sm.GetDetailedState().BoardState.GetLane(nextTgt);
+                    // Check unit counts, similar but both players lost the unit in "the lane", the others advanced
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 2);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 0);
+                    Assert.AreEqual(theLane.PlayerUnitCount[playerIndex], 0);
+                    Assert.AreEqual(theLane.PlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other1.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(other2.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 2);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 0);
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex) + 1 * Lane.GetAdvanceDirection(playerIndex)).PlayerUnitCount[playerIndex], 1); // Make sure the others displaced properly
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0);
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex) + 1 * Lane.GetAdvanceDirection(playerIndex)).UnitsInTile.Count, 1);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex) + 1 * Lane.GetAdvanceDirection(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex) + 1 * Lane.GetAdvanceDirection(playerIndex)).UnitsInTile.Count, 1);
+                    // Undo advance and verify again
+                    sm.UndoPreviousStep();
+                    theLane = sm.GetDetailedState().BoardState.GetLane(lane);
+                    nextTgt = (CardTargets)((((int)lane << 1) > 4) ? 1 : ((int)lane << 1));
+                    other1 = sm.GetDetailedState().BoardState.GetLane(nextTgt);
+                    nextTgt = (CardTargets)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
+                    other2 = sm.GetDetailedState().BoardState.GetLane(nextTgt);
+                    // Check unit counts
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 3);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 1);
+                    // Check the right amount in all lanes
+                    Assert.AreEqual(theLane.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(theLane.PlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(other1.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(other2.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 4); // 4 units total
+                    // Verify position of units. One tile has 2 things and the others 1
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 2);
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other1.GetTile(other1.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 1);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other2.GetTile(other2.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 1);
+                }
+            }
+        }
+        [TestMethod]
+        public void TestMultipleTradesInTile()
+        {
+            Random _rng = new Random();
+            List<CardTargets> lanes = [CardTargets.PLAINS, CardTargets.FOREST, CardTargets.MOUNTAIN]; // Test interaction in all orders
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CardTargets lane in lanes)
+            {
+                int stat = _rng.Next(1, 10); // any Hp between 1-9
+                var movt = lane switch
+                {
+                    CardTargets.PLAINS => GameConstants.PLAINS_TILES_NUMBER - 1,
+                    CardTargets.FOREST => GameConstants.FOREST_TILES_NUMBER - 1,
+                    CardTargets.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER - 1,
+                    _ => throw new Exception("Wrong lane!"),
+                };
+                foreach (CurrentPlayer player in players)
+                {
+                    int playerIndex = (int)player;
+                    int otherPlayerIndex = 1 - playerIndex;
+                    GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
+                    {
+                        CurrentState = States.ACTION_PHASE,
+                        CurrentPlayer = (CurrentPlayer)otherPlayerIndex
+                    };
+                    // Will try this in mountain as there's space!
+                    int attackerCard = -(1000117 + stat * 1000 + stat * 10000); // Will just advance 1, whatever
+                    int defenderCard = -(1000017 + stat * 1000 + stat * 10000 + movt * 100); // Gets to the end and waits there
+                    for (int j = 0; j < 5; j++)
+                    {
+                        // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                        state.PlayerStates[playerIndex].Hand.InsertCard(attackerCard);
+                        state.PlayerStates[playerIndex].Deck.InsertCard(attackerCard);
+                        state.PlayerStates[otherPlayerIndex].Hand.InsertCard(defenderCard);
+                        state.PlayerStates[otherPlayerIndex].Deck.InsertCard(defenderCard);
+                    }
+                    GameStateMachine sm = new GameStateMachine
+                    {
+                        CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                    };
+                    sm.LoadGame(state); // Start from here
+                    sm.PlayCard(defenderCard, lane); // Opp plays 2 of same, 0 and 1
+                    sm.PlayCard(defenderCard, lane);
+                    // Ok! Now i need to do the sequence to advance...
+                    sm.EndTurn(); // End opponent's
+                    sm.Step(); // Finish draw phase of main player
+                    // Now I summon 3 units: 2,3,4
+                    sm.PlayCard(attackerCard, lane);
+                    sm.PlayCard(attackerCard, lane);
+                    sm.PlayCard(attackerCard, lane);
+                    // Now I end turn and opponent will advance!
+                    sm.EndTurn();
+                    sm.Step();
+                    sm.EndTurn();
+                    // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
+                    Lane theLane = sm.GetDetailedState().BoardState.GetLane(lane);
+                    // Check unit counts
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 3);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 2);
+                    // Check the right amount in all lanes
+                    Assert.AreEqual(theLane.PlayerUnitCount[playerIndex], 3);
+                    Assert.AreEqual(theLane.PlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 5); // 5 units total
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 3);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 5);
+                    // Only for this, also check ids
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(0));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(1));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(2));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(3));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(4));
+                    // Advance...
+                    sm.Step();
+                    // Verify
+                    theLane = sm.GetDetailedState().BoardState.GetLane(lane);
+                    // Check unit counts
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 0);
+                    // Check the right amount in all lanes
+                    Assert.AreEqual(theLane.PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(theLane.PlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 1); // 1 unit total
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex) + 1*Lane.GetAdvanceDirection(playerIndex)).PlayerUnitCount[playerIndex], 1); // in the next tile!
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 0);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex) + 1 * Lane.GetAdvanceDirection(playerIndex)).UnitsInTile.Count, 1);
+                    Assert.IsFalse(sm.GetDetailedState().BoardState.Units.ContainsKey(0));
+                    Assert.IsFalse(sm.GetDetailedState().BoardState.Units.ContainsKey(1));
+                    Assert.IsFalse(sm.GetDetailedState().BoardState.Units.ContainsKey(2));
+                    Assert.IsFalse(sm.GetDetailedState().BoardState.Units.ContainsKey(3));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(4)); // Only one that remains
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units[4].DamageTokens, 0); // undamaged too
+                    // Undo advance and verify again
+                    sm.UndoPreviousStep();
+                    theLane = sm.GetDetailedState().BoardState.GetLane(lane);
+                    // Check unit counts
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 3);
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[otherPlayerIndex].NUnits, 2);
+                    // Check the right amount in all lanes
+                    Assert.AreEqual(theLane.PlayerUnitCount[playerIndex], 3);
+                    Assert.AreEqual(theLane.PlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 5); // 5 units total
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 3);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(theLane.GetTile(theLane.GetFirstTileCoord(playerIndex)).UnitsInTile.Count, 5);
+                    // Only for this, also check ids
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(0));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(1));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(2));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(3));
+                    Assert.IsTrue(sm.GetDetailedState().BoardState.Units.ContainsKey(4));
+                }
             }
         }
     }

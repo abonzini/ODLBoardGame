@@ -1,14 +1,4 @@
 Ongoing tasks in order of priority:
-- Combat
-	- Decision: Hp is decided with damage tokens, same as buffs/debuffs in the future (if/when apply), Hp needs to be calculated then as HP stat (unchanged for now) - token > 0
-	- Resolve combat stage by obtaining first target of enemy
-	- If a unit dies, HP check and board clean-up (kill unit)
-	- Tests:
-		- Unit clash but no death
-		- Unit Attackign kills
-		- Unit defending kills
-		- Both units die
-		- Tests regarding dead units in advancement list, such as middle unit dies, rest advances or stuff like that. Try to break unit list and see if all works
 - Player damage and EOG
 	- Having left the space for unit damaging enemy, implement it
 	- Add the HP check as for unit

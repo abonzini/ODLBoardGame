@@ -40,6 +40,8 @@ namespace ODLGameEngine
         public int TileCoordinate { get; set; } = -1;
         [JsonProperty]
         public int Hp { get; set; } = 0;
+        [JsonProperty]
+        public int DamageTokens { get; set; } = 0;
         // Stealth shenanigans
         [JsonProperty]
         public bool IsHidden { get; set; } = false;
@@ -65,6 +67,7 @@ namespace ODLGameEngine
             hash.Add(Card);
             hash.Add(Owner);
             hash.Add(Hp);
+            hash.Add(DamageTokens);
             hash.Add(IsHidden);
             hash.Add(IsTheRealOne);
             return hash.ToHashCode();

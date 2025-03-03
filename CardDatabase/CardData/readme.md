@@ -67,6 +67,7 @@ When card is a unit, the unit needs to contain the following data. This will cre
 - ```Card:``` The card id number, this matches it with the card data from above in case of needing extra info.
 - ```Name:``` Name of unit as it shows once in the field.
 - ```Hp:``` Hp number of unit
+- ```DamageTokens:``` How many damage tokens the unit has. Default value is naturally 0 unless unit needs to start damaged for some weird reason.
 - ```Attack:``` Attack value
 - ```Movement:``` Movement value
 - ```MovementDenominator:``` Denominator of movement stats, 1 by default if not defined here.

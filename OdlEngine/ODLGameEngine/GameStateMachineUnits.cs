@@ -25,39 +25,34 @@ namespace ODLGameEngine
             // Locates unit to right place. Get the lane where unit is played, and place it in first tile
             Lane unitLane = _detailedState.BoardState.GetLane(chosenTarget);
             int tileCoord = unitLane.GetFirstTileCoord(player); // Get tile coord
-            ENGINE_UnitLaneTransition(unitId, unitLane.Id);
-            ENGINE_UnitTileTransition(unitId, tileCoord);
+            ENGINE_UnitLaneTransition(newSpawnedUnit, unitLane.Id);
+            ENGINE_UnitTileTransition(newSpawnedUnit, tileCoord);
             // Finally, need to increment playable counter
             ENGINE_IncrementPlaceableCounter();
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
-            UNIT_VerifyUnitHpChange(unitId);
+            UNIT_VerifyUnitHpChange(newSpawnedUnit);
         }
         /// <summary>
         /// Verifies if unit HP has changed and unit is ready to die, or some other effect that triggers
         /// </summary>
         /// <param name="unitId">Which unit</param>
-        void UNIT_VerifyUnitHpChange(int unitId)
+        void UNIT_VerifyUnitHpChange(Unit unit)
         {
-            // Get the unit, if still existing and alive. This action just checks and doesn't modiy game step
-            if (_detailedState.BoardState.Units.TryGetValue(unitId, out Unit unit))
+            if(unit.Hp - unit.DamageTokens <= 0) // Unit is dead, move to graveyard
             {
-                if(unit.Hp <= 0) // Unit is dead, move to graveyard
-                {
-                    UNIT_KillUnit(unitId);
-                }
+                UNIT_KillUnit(unit);
             }
         }
         /// <summary>
         /// Unit needs to be killed for whatever reason, this process executes the action
         /// </summary>
         /// <param name="unitId">Which unit</param>
-        void UNIT_KillUnit(int unitId)
+        void UNIT_KillUnit(Unit unit)
         {
-            Unit unit = _detailedState.BoardState.Units[unitId];
             ENGINE_AddMessageEvent($"P{unit.Owner+1}'s {unit.Name} has been killed");
             // Removes unit from its space, first from tile and then from lane!
-            ENGINE_UnitTileTransition(unitId, -1);
-            ENGINE_UnitLaneTransition(unitId, LaneID.NO_LANE);
+            ENGINE_UnitTileTransition(unit, -1);
+            ENGINE_UnitLaneTransition(unit, LaneID.NO_LANE);
             // Moves unit from living space to dead space
             ENGINE_DeinitializeUnit(unit);            
         }
@@ -82,7 +77,18 @@ namespace ODLGameEngine
                     if (lane.GetTile(unit.TileCoordinate).PlayerUnitCount[opponentId] > 0) // If enemy unit in tile, will stop march here (and also attack)
                     {
                         n = 0;
-                        // TODO BATTLE!
+                        Unit enemyUnit = null;
+                        foreach(int enemyCandidateId in lane.GetTile(unit.TileCoordinate).UnitsInTile) // Check all units in tile
+                        {
+                            Unit enemyUnitCandidate = _detailedState.BoardState.Units[enemyCandidateId]; // Check next unit
+                            if(enemyUnitCandidate.Owner == opponentId) // Check if belongs to opponent
+                            {
+                                enemyUnit = enemyUnitCandidate; // Found the candidate! End search
+                                break;
+                            }
+                        }
+                        if (enemyUnit == null) throw new Exception("There was no enemy unit in this tile! Something broke!");
+                        UNIT_Combat(unit, enemyUnit); // Let them fight.
                     }
                     else if (lane.GetLastTileCoord(unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
                     {
@@ -92,7 +98,7 @@ namespace ODLGameEngine
                     else // Unit then can advance normally here, perform it
                     {
                         // Request unit advancement a tile
-                        ENGINE_UnitTileTransition(unit.UniqueId, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
+                        ENGINE_UnitTileTransition(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
                         // Entering new tile
                         // TODO: Building damage, building effects
                         n--;
@@ -105,6 +111,18 @@ namespace ODLGameEngine
             {
                 ENGINE_UnitMovementCooldownChange(unit.UniqueId, cooldown);
             }
+        }
+        /// <summary>
+        /// Performs combat of units
+        /// </summary>
+        /// <param name="attacker">Attackign unit</param>
+        /// <param name="defender">Defending unit</param>
+        void UNIT_Combat(Unit attacker, Unit defender)
+        {
+            ENGINE_UnitDamageChange(defender, attacker.Attack); // First, the defender receives damage
+            UNIT_VerifyUnitHpChange(defender);
+            ENGINE_UnitDamageChange(attacker, defender.Attack); // First, the defender receives damage
+            UNIT_VerifyUnitHpChange(attacker);
         }
     }
 }
