@@ -330,18 +330,16 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 // Make sure unit has insta-died (nothing in field, 1 card in GY
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Player has no units
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false,true).Count, 0); // Field has no units
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false, false).Count, 1); // GY has 1 unit tho
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 0); // Field has no units
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 0); // Lane doesn't have the unit
-                // Check board hash has changed
-                Assert.AreNotEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
+                // Check board hash has not changed (as there's no GY)
+                Assert.AreEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
                 // Now I revert!
                 sm.UndoPreviousStep();
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Player still has no units
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false, true).Count, 0); // And field has no units
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false, false).Count, 0); // GY has 0 units again tho
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 0); // And field has no units
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 0); // Lane doesn't have the unit
-                // Check board hash has been properly reverted
+                // Check board hash is still same
                 Assert.AreEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
             }
         }
@@ -645,11 +643,11 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Play units and also store them for evil illegal modifications
                 sm.PlayCard(card, CardTargets.PLAINS);
-                Unit plainsUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false, true).Last().Value;
+                Unit plainsUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false).Last().Value;
                 sm.PlayCard(card, CardTargets.FOREST);
-                Unit forestUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false, true).Last().Value;
+                Unit forestUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false).Last().Value;
                 sm.PlayCard(card, CardTargets.MOUNTAIN);
-                Unit mountainsUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false, true).Last().Value;
+                Unit mountainsUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false).Last().Value;
                 // Verify...
                 Lane plains = sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS);
                 Lane forest = sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST);

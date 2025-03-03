@@ -115,10 +115,6 @@ namespace ODLGameEngine
         private readonly SortedList<int, Unit> _units = new SortedList<int, Unit>();
         [JsonProperty]
         private readonly SortedList<int, Building> _buildings = new SortedList<int, Building>();
-        [JsonProperty]
-        private readonly SortedList<int, Unit> _deadUnits = new SortedList<int, Unit>();
-        [JsonProperty]
-        private readonly SortedList<int, Building> _deadBuildings = new SortedList<int, Building>();
         // Methods
         /// <summary>
         /// Returns the unit dictionary, can retrieve both the current and dead units. Can also be used when just looking for somethign without editing
@@ -126,10 +122,10 @@ namespace ODLGameEngine
         /// <param name="edit">Whether a unit may be modified by this process (may need to update hash)</param>
         /// <param name="alive">Do I want the live units or the dead (past) units?</param>
         /// <returns>The corresponding sorted list to do operations with</returns>
-        public SortedList<int, Unit> GetUnitContainer(bool edit = true, bool alive = true)
+        public SortedList<int, Unit> GetUnitContainer(bool edit = true)
         {
             if (edit) _dirtyHash = true;
-            return alive ? _units : _deadUnits;
+            return _units;
         }
         /// <summary>
         /// Returns the building dictionary, can retrieve both the current and dead building. Can also be used when just looking for somethign without editing
@@ -137,10 +133,10 @@ namespace ODLGameEngine
         /// <param name="edit">Whether a building may be modified by this process (may need to update hash)</param>
         /// <param name="alive">Do I want the live building or the dead (past) building?</param>
         /// <returns>The corresponding sorted list to do operations with</returns>
-        public SortedList<int, Building> GetBuildingContainer(bool edit = true, bool alive = true)
+        public SortedList<int, Building> GetBuildingContainer(bool edit = true)
         {
             if (edit) _dirtyHash = true;
-            return alive ? _buildings : _deadBuildings;
+            return _buildings;
         }
         public Lane GetLane(int i)
         {
@@ -183,17 +179,7 @@ namespace ODLGameEngine
                     hash.Add(kvp.Key);
                     hash.Add(kvp.Value.GetHash());
                 }
-                foreach (KeyValuePair<int, Unit> kvp in _deadUnits)
-                {
-                    hash.Add(kvp.Key);
-                    hash.Add(kvp.Value.GetHash());
-                }
                 foreach (KeyValuePair<int, Building> kvp in _buildings)
-                {
-                    hash.Add(kvp.Key);
-                    hash.Add(kvp.Value.GetHash());
-                }
-                foreach (KeyValuePair<int, Building> kvp in _deadBuildings)
                 {
                     hash.Add(kvp.Key);
                     hash.Add(kvp.Value.GetHash());

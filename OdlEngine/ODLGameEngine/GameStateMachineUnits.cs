@@ -21,7 +21,7 @@ namespace ODLGameEngine
             newSpawnedUnit.UniqueId = unitId;
             newSpawnedUnit.Owner = player;
             // Unit ready to be added
-            ENGINE_InitializeUnit(player, newSpawnedUnit); // Now player has the unit
+            ENGINE_InitializeUnit(newSpawnedUnit); // Now player has the unit
             // Locates unit to right place. Get the lane where unit is played, and place it in first tile
             Lane unitLane = _detailedState.BoardState.GetLane(chosenTarget);
             int tileCoord = unitLane.GetFirstTileCoord(player); // Get tile coord
@@ -39,7 +39,7 @@ namespace ODLGameEngine
         void UNIT_VerifyUnitHpChange(int unitId)
         {
             // Get the unit, if still existing and alive. This action just checks and doesn't modiy game step
-            if (_detailedState.BoardState.GetUnitContainer(false, true).TryGetValue(unitId, out Unit unit))
+            if (_detailedState.BoardState.GetUnitContainer(false).TryGetValue(unitId, out Unit unit))
             {
                 if(unit.Hp <= 0) // Unit is dead, move to graveyard
                 {
@@ -53,13 +53,13 @@ namespace ODLGameEngine
         /// <param name="unitId">Which unit</param>
         void UNIT_KillUnit(int unitId)
         {
-            Unit unit = _detailedState.BoardState.GetUnitContainer(false, true)[unitId];
+            Unit unit = _detailedState.BoardState.GetUnitContainer(false)[unitId];
             ENGINE_AddMessageEvent($"P{unit.Owner+1}'s {unit.Name} has been killed");
             // Removes unit from its space, first from tile and then from lane!
             ENGINE_UnitTileTransition(unitId, -1);
             ENGINE_UnitLaneTransition(unitId, LaneID.NO_LANE);
             // Moves unit from living space to dead space
-            ENGINE_UnitFieldToGraveyard(unitId);            
+            ENGINE_DeinitializeUnit(unit);            
         }
         /// <summary>
         /// Found unit starts a march (initial march checks and march modifiers already applied)

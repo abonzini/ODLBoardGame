@@ -21,7 +21,6 @@ namespace ODLGameEngine
         {
             int auxInt1, auxInt2;
             Unit auxUnit;
-            SortedList<int, Unit> auxLivingUnits, auxDeadUnits;
             _currentStep?.events.Add(e);
             switch (e.eventType)
             {
@@ -91,10 +90,9 @@ namespace ODLGameEngine
                     _detailedState.PlayerStates[auxInt1].DiscardPile.InsertCard(auxInt2); // And add to discard pile
                     break;
                 case EventType.INIT_UNIT:
-                    auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
-                    auxUnit = ((EntityValueEvent<int, Unit>)e).value;
+                    auxUnit = ((EntityEvent<Unit>)e).entity;
                     _detailedState.BoardState.GetUnitContainer().Add(auxUnit.UniqueId, auxUnit); // Adds unit
-                    _detailedState.PlayerStates[auxInt1].NUnits++;
+                    _detailedState.PlayerStates[auxUnit.Owner].NUnits++;
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     _detailedState.NextUnitIndex++;
@@ -129,17 +127,11 @@ namespace ODLGameEngine
                         _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
                     }
                     break;
-                case EventType.UNIT_FIELD_TO_GRAVEYARD: // Unit is simply sent from field to GY and user loses the unit
-                    auxInt1 = ((EntityEvent<int>)e).entity;
-                    // Gets both containers
-                    auxLivingUnits = _detailedState.BoardState.GetUnitContainer(true, true);
-                    auxDeadUnits = _detailedState.BoardState.GetUnitContainer(true, false);
-                    auxUnit = auxLivingUnits[auxInt1];
-                    // Now, remove from living (and from player's)
-                    auxLivingUnits.Remove(auxInt1);
+                case EventType.DEINIT_UNIT: // Unit simply leaves field and user loses the unit
+                    auxUnit = ((EntityEvent<Unit>)e).entity;
+                    _detailedState.BoardState.GetUnitContainer().Remove(auxUnit.UniqueId);
+                    // Now, remove from player's
                     _detailedState.PlayerStates[auxUnit.Owner].NUnits--;
-                    // Add to deads, but no need to count anything yet
-                    auxDeadUnits.Add(auxInt1, auxUnit);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
@@ -160,7 +152,6 @@ namespace ODLGameEngine
         {
             int auxInt1, auxInt2;
             Unit auxUnit;
-            SortedList<int, Unit> auxLivingUnits, auxDeadUnits;
             switch (e.eventType)
             {
                 case EventType.STATE_TRANSITION:
@@ -215,10 +206,9 @@ namespace ODLGameEngine
                     _detailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2); // Reinsert in hand
                     break;
                 case EventType.INIT_UNIT:
-                    auxInt1 = ((EntityValueEvent<int, Unit>)e).entity;
-                    auxUnit = ((EntityValueEvent<int, Unit>)e).value;
+                    auxUnit = ((EntityEvent<Unit>)e).entity;
                     _detailedState.BoardState.GetUnitContainer().Remove(auxUnit.UniqueId); // Just removes the unit
-                    _detailedState.PlayerStates[auxInt1].NUnits--; 
+                    _detailedState.PlayerStates[auxUnit.Owner].NUnits--; 
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     _detailedState.NextUnitIndex--;
@@ -251,17 +241,10 @@ namespace ODLGameEngine
                         _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
                     }
                     break;
-                case EventType.UNIT_FIELD_TO_GRAVEYARD: // Unit is simply sent from GY to field and user regains the unit (no positioning handled here)
-                    auxInt1 = ((EntityEvent<int>)e).entity;
-                    // Gets both containers
-                    auxLivingUnits = _detailedState.BoardState.GetUnitContainer(true, true);
-                    auxDeadUnits = _detailedState.BoardState.GetUnitContainer(true, false);
-                    auxUnit = auxDeadUnits[auxInt1];
-                    // Now, remove from GY
-                    auxDeadUnits.Remove(auxInt1);
-                    // Add to field and to player
+                case EventType.DEINIT_UNIT: // Unit is simply sent from GY to field and user regains the unit (no positioning handled here)
+                    auxUnit = ((EntityEvent<Unit>)e).entity;
+                    _detailedState.BoardState.GetUnitContainer().Add(auxUnit.UniqueId, auxUnit);
                     _detailedState.PlayerStates[auxUnit.Owner].NUnits++;
-                    auxLivingUnits.Add(auxInt1, auxUnit);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
@@ -450,15 +433,14 @@ namespace ODLGameEngine
         /// <param name="p">Player who owns the unit</param>
         /// <param name="unit">Unit</param>
 
-        void ENGINE_InitializeUnit(int p, Unit unit)
+        void ENGINE_InitializeUnit(Unit unit)
         {
             ENGINE_ExecuteEvent(
-                new EntityValueEvent<int, Unit>()
+                new EntityEvent<Unit>()
                 {
                     eventType = EventType.INIT_UNIT,
-                    entity = p,
-                    value = unit,
-                    description = $"P{p + 1} now has a {unit.Name}"
+                    entity = unit,
+                    description = $"P{unit.Owner + 1} now has a {unit.Name}"
                 });
         }
         /// <summary>
@@ -506,12 +488,12 @@ namespace ODLGameEngine
         /// Moves a unit from the field (alive) to graveyard (dead)
         /// </summary>
         /// <param name="unit">Unit to be sent to graveyard</param>
-        void ENGINE_UnitFieldToGraveyard(int unit)
+        void ENGINE_DeinitializeUnit(Unit unit)
         {
             ENGINE_ExecuteEvent(
-                new EntityEvent<int>()
+                new EntityEvent<Unit>()
                 {
-                    eventType = EventType.UNIT_FIELD_TO_GRAVEYARD,
+                    eventType = EventType.DEINIT_UNIT,
                     entity = unit
                 });
         }
