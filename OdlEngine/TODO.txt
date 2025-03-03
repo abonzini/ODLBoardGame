@@ -21,7 +21,13 @@ Ongoing tasks in order of priority:
 		- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
 	- Bldg damage
 - Stealth
-- Implement cards, one by one, add tests, this involves more effects, implement an effect/auras/buff/token system, if/when and so on
+- Implement complex effects:
+	- Buff tokens
+	- Interactions (when placeable has absolute control of what's going on)
+	- Events (when an effect occurs globally and triggers a unit, e.g. EOT)
+	- Buff tok is multiple extra fields (hashable and serializable) on the placeable
+	- Interactions are present in the unit, (hashable, serializable) also on placeable, will have a grammar-style description
+	- Events too (hashable, serializable). THEY ARE IMPLEMENTED THROUGH AN EVENT HANDLER IN THE STATE MACHINE, WHICH IS PROPERLY FILLED/EMPTIED WHEN PLACEABLE ENTERS/LEAVES !!!BUT!!! THEY'RE NOT SERIALIZED IN STATE MACHINE, INSTEAD GENERATED IN A LOADED GAME OR AS THINGS ARE PLACED
 - Implement rest of rulebook
 	- Todo...
 	- Lots of individual mechanics that will be polished as it goes, individual card testing
