@@ -44,14 +44,14 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 // Make sure now there's a unit in the list
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1); // Player now has 1 unit summoned
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 1); // Check also back end for now
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 1); // Check also back end for now
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 1); // Lane also contains 1 unit
                 // Check board hash has changed
                 Assert.AreNotEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
                 // Now I revert!
                 sm.UndoPreviousStep();
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Reverted
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 0);
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 0);
                 // Check board hash has been properly reverted
                 Assert.AreEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
@@ -90,7 +90,7 @@ namespace EngineTests
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 // Modify unit (shady)
-                sm.GetDetailedState().BoardState.GetUnitContainer()[0].Attack += 5; // Add 5 to attack, whatever
+                sm.GetDetailedState().BoardState.Units[0].Attack += 5; // Add 5 to attack, whatever
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
                 chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
                 // Play new one
@@ -104,17 +104,17 @@ namespace EngineTests
                 Assert.AreEqual(futureUnitCounter - unitCounter2, 1); // have a diff of 1 too
                 Assert.AreEqual(unitCounter2 - unitCounter1, 1); // have a diff of 1 too
                 // Some stats should be similar, some should be different
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false)[unitCounter2].Hp, sm.GetDetailedState().BoardState.GetUnitContainer(false)[unitCounter1].Hp);
-                Assert.AreNotEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false)[unitCounter2].Attack, sm.GetDetailedState().BoardState.GetUnitContainer(false)[unitCounter1].Attack);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[unitCounter2].Hp, sm.GetDetailedState().BoardState.Units[unitCounter1].Hp);
+                Assert.AreNotEqual(sm.GetDetailedState().BoardState.Units[unitCounter2].Attack, sm.GetDetailedState().BoardState.Units[unitCounter1].Attack);
                 // Finally, roll back!
                 sm.UndoPreviousStep();
                 Assert.AreEqual(unitCounter2, sm.GetDetailedState().NextUnitIndex); // And reverts properly
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 1);
                 sm.UndoPreviousStep();
                 Assert.AreEqual(unitCounter1, sm.GetDetailedState().NextUnitIndex); // And reverts properly
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 0);
             }
         }
         [TestMethod]
@@ -330,14 +330,14 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 // Make sure unit has insta-died (nothing in field, 1 card in GY
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Player has no units
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 0); // Field has no units
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 0); // Field has no units
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 0); // Lane doesn't have the unit
                 // Check board hash has not changed (as there's no GY)
                 Assert.AreEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
                 // Now I revert!
                 sm.UndoPreviousStep();
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0); // Player still has no units
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetUnitContainer(false).Count, 0); // And field has no units
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 0); // And field has no units
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(chosenTarget).PlayerUnitCount[playerIndex], 0); // Lane doesn't have the unit
                 // Check board hash is still same
                 Assert.AreEqual(boardHash, sm.GetDetailedState().BoardState.GetHash());
@@ -363,10 +363,10 @@ namespace EngineTests
             u2 = (Unit)u1.Clone();
             Assert.AreEqual(u1.GetHash(), u2.GetHash());
             // Now change a few things
-            u2.TileCoordinate = 3;
+            u2.Attack = 0;
             Assert.AreNotEqual(u1.GetHash(), u2.GetHash());
             // Revert
-            u2.TileCoordinate = u1.TileCoordinate;
+            u2.Attack = u1.Attack;
             Assert.AreEqual(u1.GetHash(), u2.GetHash());
         }
         //[TestMethod]
@@ -448,7 +448,8 @@ namespace EngineTests
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
                 Assert.AreEqual(lane.PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
-                int preAdvanceHash = sm.GetDetailedState().GetHash();
+                int UnitHash = sm.GetDetailedState().BoardState.Units[0].GetHash(); // Get Hash of unit
+                int preAdvanceHash = sm.GetDetailedState().GetHash(); // Hash of game overall
                 // Now advance! Ensure result of basic advance
                 sm.Step();
                 lane = sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN);
@@ -457,7 +458,8 @@ namespace EngineTests
                 Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 0);
                 // Ensures the unit moved the right number of tiles in the right direction
                 Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex) + movement * Lane.GetAdvanceDirection(playerIndex)).PlayerUnitCount[playerIndex], 1);
-                Assert.AreNotEqual(preAdvanceHash, sm.GetDetailedState().GetHash()); // Hash has changed
+                Assert.AreNotEqual(preAdvanceHash, sm.GetDetailedState().GetHash()); // Hash of board has changed
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].GetHash(), UnitHash); // However, the unit should be the same!
                 // Finally revert the advance
                 sm.UndoPreviousStep();
                 lane = sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN);
@@ -466,6 +468,7 @@ namespace EngineTests
                 Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(lane.GetTile(lane.GetFirstTileCoord(playerIndex) + movement * Lane.GetAdvanceDirection(playerIndex)).PlayerUnitCount[playerIndex], 0);
                 Assert.AreEqual(preAdvanceHash, sm.GetDetailedState().GetHash());
+                Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].GetHash(), UnitHash);
             }
         }
         [TestMethod]
@@ -619,6 +622,7 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 HashSet<int> boardHashes = new HashSet<int>();
+                HashSet<int> unitHashes = new HashSet<int>();
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = new GameStateStruct
@@ -643,11 +647,11 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Play units and also store them for evil illegal modifications
                 sm.PlayCard(card, CardTargets.PLAINS);
-                Unit plainsUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false).Last().Value;
+                Unit plainsUnit = sm.GetDetailedState().BoardState.Units.Last().Value;
                 sm.PlayCard(card, CardTargets.FOREST);
-                Unit forestUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false).Last().Value;
+                Unit forestUnit = sm.GetDetailedState().BoardState.Units.Last().Value;
                 sm.PlayCard(card, CardTargets.MOUNTAIN);
-                Unit mountainsUnit = sm.GetDetailedState().BoardState.GetUnitContainer(false).Last().Value;
+                Unit mountainsUnit = sm.GetDetailedState().BoardState.Units.Last().Value;
                 // Verify...
                 Lane plains = sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS);
                 Lane forest = sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST);
@@ -667,6 +671,10 @@ namespace EngineTests
                 plainsUnit.MvtCooldownTimer = 0; // Will advance now
                 forestUnit.MvtCooldownTimer = 8; // Won't advance but will do so in the following one
                 mountainsUnit.MvtCooldownTimer = 1; // Not advancing in this test
+                // Regarding hashes, hashes will change constantly because of the denominator, only repeat after 9 turns...
+                TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, false);
+                TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, false);
+                TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, false);
                 int direction = Lane.GetAdvanceDirection(playerIndex); // Also get the overall direction for tests
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, false);
                 sm.Step(); // Advance
@@ -683,6 +691,9 @@ namespace EngineTests
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex) + direction).PlayerUnitCount[playerIndex], 0);
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, false);
+                TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, false);
+                TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, false);
+                TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, false);
                 // Another advance sequence, only forest moves in this case
                 sm.EndTurn();
                 sm.Step();
@@ -699,6 +710,9 @@ namespace EngineTests
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex) + direction).PlayerUnitCount[playerIndex], 0);
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, false);
+                TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, false);
+                TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, false);
+                TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, false);
                 // And the last one should remain the same...
                 sm.EndTurn();
                 sm.Step();
@@ -715,6 +729,9 @@ namespace EngineTests
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex) + direction).PlayerUnitCount[playerIndex], 0);
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, false); // BUT HASH SHOULD CHANGE AS IT IS A DIFFERENT STATE!
+                TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, false);
+                TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, false);
+                TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, false);
                 // Undo!
                 sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep();
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 3);
@@ -728,6 +745,9 @@ namespace EngineTests
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex) + direction).PlayerUnitCount[playerIndex], 0);
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true);
+                TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, true);
+                TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, true);
+                TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, true);
                 sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep();
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 3);
                 Assert.AreEqual(plains.PlayerUnitCount[playerIndex], 1);
@@ -740,6 +760,9 @@ namespace EngineTests
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex) + direction).PlayerUnitCount[playerIndex], 0);
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true);
+                TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, true);
+                TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, true);
+                TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, true); 
                 sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep();
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 3);
                 Assert.AreEqual(plains.PlayerUnitCount[playerIndex], 1);
@@ -749,6 +772,9 @@ namespace EngineTests
                 Assert.AreEqual(forest.GetTile(forest.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(mountain.GetTile(mountain.GetFirstTileCoord(playerIndex)).PlayerUnitCount[playerIndex], 1);
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true);
+                TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, true);
+                TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, true);
+                TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, true);
             }
         }
     }

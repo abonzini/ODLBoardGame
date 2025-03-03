@@ -6,6 +6,8 @@ dotnet_diagnostic.IDE0090.severity = none
 dotnet_diagnostic.IDE0028.severity = none
 # Disable IDE0290 - Normal constructor sintax only
 dotnet_diagnostic.IDE0290.severity = none
+# Disable IDE0305 - I don't like the sintax of new ToList
+dotnet_diagnostic.IDE0305.severity = none
 
 #### Naming styles ####
 

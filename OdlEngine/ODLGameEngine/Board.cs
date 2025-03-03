@@ -10,7 +10,7 @@ using System.Xml;
 namespace ODLGameEngine
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class Tile
+    public class Tile : IHashable
     {
         [JsonProperty]
         public int BuildingInTile { get; set; } = 0;
@@ -18,6 +18,20 @@ namespace ODLGameEngine
         public SortedSet<int> UnitsInTile { get; set; } = new SortedSet<int>();
         [JsonProperty]
         public int[] PlayerUnitCount { get; set; } = [0, 0];
+
+        public int GetHash()
+        {
+            HashCode hash = new HashCode();
+            hash.Add(BuildingInTile);
+            hash.Add(PlayerUnitCount[0]);
+            hash.Add(PlayerUnitCount[1]);
+            foreach(int unit in UnitsInTile)
+            {
+                hash.Add(unit);
+            }
+            return hash.ToHashCode();
+        }
+
         public override string ToString()
         {
             return $"P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
@@ -34,7 +48,7 @@ namespace ODLGameEngine
         MOUNTAIN
     }
     [JsonObject(MemberSerialization.OptIn)]
-    public class Lane /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
+    public class Lane : IHashable /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
     {
         [JsonProperty]
         public LaneID Id {get; set;} = LaneID.NO_LANE;
@@ -89,6 +103,19 @@ namespace ODLGameEngine
         {
             return Id.ToString() + $", P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
         }
+
+        public int GetHash()
+        {
+            HashCode hash = new HashCode();
+            hash.Add(Len); // So that different lanes have different hashes even if empty
+            hash.Add(PlayerUnitCount[0]);
+            hash.Add(PlayerUnitCount[1]);
+            foreach (Tile tile in Tiles)
+            {
+                hash.Add(tile.GetHash());
+            }
+            return hash.ToHashCode();
+        }
     }
 
     /// <summary>
@@ -102,8 +129,6 @@ namespace ODLGameEngine
     [JsonObject(MemberSerialization.OptIn)]
     public class Board : IHashable
     {
-        protected bool _dirtyHash = true; // To see if hash needs to be recalculated
-        protected int _hash;
         [JsonProperty]
         public Lane PlainsLane { get; set; } = new Lane(LaneID.PLAINS, GameConstants.PLAINS_TILES_NUMBER);
         [JsonProperty]
@@ -112,32 +137,10 @@ namespace ODLGameEngine
         public Lane MountainLane { get; set; } = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_TILES_NUMBER);
         // Units
         [JsonProperty]
-        private readonly SortedList<int, Unit> _units = new SortedList<int, Unit>();
+        public readonly SortedList<int, Unit> Units = new SortedList<int, Unit>();
         [JsonProperty]
-        private readonly SortedList<int, Building> _buildings = new SortedList<int, Building>();
+        public readonly SortedList<int, Building> Buildings = new SortedList<int, Building>();
         // Methods
-        /// <summary>
-        /// Returns the unit dictionary, can retrieve both the current and dead units. Can also be used when just looking for somethign without editing
-        /// </summary>
-        /// <param name="edit">Whether a unit may be modified by this process (may need to update hash)</param>
-        /// <param name="alive">Do I want the live units or the dead (past) units?</param>
-        /// <returns>The corresponding sorted list to do operations with</returns>
-        public SortedList<int, Unit> GetUnitContainer(bool edit = true)
-        {
-            if (edit) _dirtyHash = true;
-            return _units;
-        }
-        /// <summary>
-        /// Returns the building dictionary, can retrieve both the current and dead building. Can also be used when just looking for somethign without editing
-        /// </summary>
-        /// <param name="edit">Whether a building may be modified by this process (may need to update hash)</param>
-        /// <param name="alive">Do I want the live building or the dead (past) building?</param>
-        /// <returns>The corresponding sorted list to do operations with</returns>
-        public SortedList<int, Building> GetBuildingContainer(bool edit = true)
-        {
-            if (edit) _dirtyHash = true;
-            return _buildings;
-        }
         public Lane GetLane(int i)
         {
             return i switch
@@ -171,27 +174,18 @@ namespace ODLGameEngine
         }
         public virtual int GetHash()
         {
-            if (_dirtyHash) // Recalculates only when dirty
+            HashCode hash = new HashCode();
+            foreach (KeyValuePair<int, Unit> kvp in Units)
             {
-                HashCode hash = new HashCode();
-                foreach (KeyValuePair<int, Unit> kvp in _units)
-                {
-                    hash.Add(kvp.Key);
-                    hash.Add(kvp.Value.GetHash());
-                }
-                foreach (KeyValuePair<int, Building> kvp in _buildings)
-                {
-                    hash.Add(kvp.Key);
-                    hash.Add(kvp.Value.GetHash());
-                }
-                _hash = hash.ToHashCode();
-                _dirtyHash = false; // Currently updated hash
+                hash.Add(kvp.Key);
+                hash.Add(kvp.Value.GetHash());
             }
-            return _hash;
-        }
-        public bool IsHashDirty()
-        {
-            return _dirtyHash;
+            foreach (KeyValuePair<int, Building> kvp in Buildings)
+            {
+                hash.Add(kvp.Key);
+                hash.Add(kvp.Value.GetHash());
+            }
+            return hash.ToHashCode();
         }
     }
 }

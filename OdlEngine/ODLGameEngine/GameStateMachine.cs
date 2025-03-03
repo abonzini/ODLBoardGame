@@ -140,7 +140,7 @@ namespace ODLGameEngine
             // Advance all units of that player
             if (_detailedState.PlayerStates[playerId].NUnits > 0) // Only advance if player has units
             {
-                SortedList<int, Unit> liveUnits = _detailedState.BoardState.GetUnitContainer();
+                SortedList<int, Unit> liveUnits = _detailedState.BoardState.Units;
                 List<int> liveUnitsIds = liveUnits.Keys.ToList(); // Obtain all elements in list to iterate on
                 foreach (int unitId in liveUnitsIds) // Obtain unit one by one in order of play, need to do it like this in case units are deleted in the meanwhile
                 {

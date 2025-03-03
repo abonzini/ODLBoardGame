@@ -39,7 +39,7 @@ namespace ODLGameEngine
         void UNIT_VerifyUnitHpChange(int unitId)
         {
             // Get the unit, if still existing and alive. This action just checks and doesn't modiy game step
-            if (_detailedState.BoardState.GetUnitContainer(false).TryGetValue(unitId, out Unit unit))
+            if (_detailedState.BoardState.Units.TryGetValue(unitId, out Unit unit))
             {
                 if(unit.Hp <= 0) // Unit is dead, move to graveyard
                 {
@@ -53,7 +53,7 @@ namespace ODLGameEngine
         /// <param name="unitId">Which unit</param>
         void UNIT_KillUnit(int unitId)
         {
-            Unit unit = _detailedState.BoardState.GetUnitContainer(false)[unitId];
+            Unit unit = _detailedState.BoardState.Units[unitId];
             ENGINE_AddMessageEvent($"P{unit.Owner+1}'s {unit.Name} has been killed");
             // Removes unit from its space, first from tile and then from lane!
             ENGINE_UnitTileTransition(unitId, -1);

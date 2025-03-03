@@ -259,7 +259,6 @@ namespace EngineTests
             // HASH CHECK
             int emptyBoardHash = sm.GetDetailedState().BoardState.GetHash();
             int emptyBoardStateHash = sm.GetDetailedState().GetHash();
-            sm.GetDetailedState().BoardState.GetUnitContainer(); // Will pretend im editing something although im not
             Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetHash()); // Hash would be recalculated but still the same
             Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetHash()); // Hash would be recalculated but still the same
             // Will play card now
@@ -272,11 +271,10 @@ namespace EngineTests
             int stateWUnitHash = sm.GetDetailedState().GetHash();
             Assert.AreNotEqual(emptyBoardHash, boardWUnitHash);
             Assert.AreNotEqual(emptyBoardStateHash, stateWUnitHash);
-            sm.GetDetailedState().BoardState.GetUnitContainer(); // Will pretend im editing something although im not
             Assert.AreEqual(boardWUnitHash, sm.GetDetailedState().BoardState.GetHash()); // Hash would be recalculated but still the same
             Assert.AreEqual(stateWUnitHash, sm.GetDetailedState().GetHash()); // Hash would be recalculated but still the same
             // Modify unit (shady)
-            sm.GetDetailedState().BoardState.GetUnitContainer()[0].Attack += 5; // Add 5 to attack, whatever
+            sm.GetDetailedState().BoardState.Units[0].Attack += 5; // Add 5 to attack, whatever
             Assert.AreNotEqual(boardWUnitHash, sm.GetDetailedState().BoardState.GetHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
             Assert.AreNotEqual(stateWUnitHash, sm.GetDetailedState().GetHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
             sm.UndoPreviousStep();

@@ -58,11 +58,6 @@ namespace ODLGameEngine
     public interface IHashable
     {
         public int GetHash();
-        /// <summary>
-        /// Whether hash has to be changed
-        /// </summary>
-        /// <returns></returns>
-        public bool IsHashDirty();
     }
 
     /// <summary>
@@ -102,10 +97,6 @@ namespace ODLGameEngine
             hash.Add(PlayerStates[1].GetHash());
             hash.Add(BoardState.GetHash());
             return hash.ToHashCode();
-        }
-        public bool IsHashDirty()
-        {
-            return true; // Needs to be recalculated always to avoid observer pattern
         }
     }
 
@@ -179,10 +170,6 @@ namespace ODLGameEngine
             hash.Add(Deck.GetHash());
             hash.Add(DiscardPile.GetHash());
             return hash.ToHashCode();
-        }
-        public bool IsHashDirty()
-        {
-            return true; // Needs to be recalculated always to avoid observer pattern
         }
     }
 }

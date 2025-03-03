@@ -1,5 +1,6 @@
 Ongoing tasks in order of priority:
 - Combat
+	- Decision: Hp is decided with damage tokens, same as buffs/debuffs in the future (if/when apply), Hp needs to be calculated then as HP stat (unchanged for now) - token > 0
 	- Resolve combat stage by obtaining first target of enemy
 	- If a unit dies, HP check and board clean-up (kill unit)
 	- Tests:

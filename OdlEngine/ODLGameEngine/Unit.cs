@@ -15,47 +15,26 @@ namespace ODLGameEngine
     {
         // Stats
         [JsonProperty]
-        protected int _movement = 0;
-        /// <summary>
-        /// The movement stat of the unit
-        /// </summary>
-        public int Movement { get { return _movement; } set { _dirtyHash = true; _movement = value; } }
+        public int Movement { get; set; } = 0;
         [JsonProperty]
-        protected int _movementDenominator = 1;
-        /// <summary>
-        /// The movement denominator stat
-        /// </summary>
-        public int MovementDenominator { get { return _movementDenominator; } set { _dirtyHash = true; _movementDenominator = value; } }
+        public int MovementDenominator { get; set; } = 1;
         [JsonProperty]
-        protected int _attack = 0;
-        /// <summary>
-        /// Attack stat
-        /// </summary>
-        public int Attack { get { return _attack; } set { _dirtyHash = true; _attack = value; } }
+        public int Attack { get; set; } = 0;
         [JsonProperty]
-        protected int _mvtCooldownTimer = 0;
-        /// <summary>
-        /// Count to check when unit can move again
-        /// </summary>
-        public int MvtCooldownTimer { get { return _mvtCooldownTimer; } set { _dirtyHash = true; _mvtCooldownTimer= value; } }
+        public int MvtCooldownTimer { get; set; } = 0;
         /// <summary>
         /// Gets the hash of the entity
         /// </summary>
         /// <returns>Hash code</returns>
         public override int GetHash()
         {
-            if (_dirtyHash) // Recalculates only when dirty
-            {
-                HashCode hash = new HashCode();
-                hash.Add(base.GetHash());
-                hash.Add(_movement);
-                hash.Add(_movementDenominator);
-                hash.Add(_attack);
-                hash.Add(_mvtCooldownTimer);
-                _hash = hash.ToHashCode();
-                _dirtyHash = false; // Currently updated hash
-            }
-            return _hash;
+            HashCode hash = new HashCode();
+            hash.Add(base.GetHash());
+            hash.Add(Movement);
+            hash.Add(MovementDenominator);
+            hash.Add(Attack);
+            hash.Add(MvtCooldownTimer);
+            return hash.ToHashCode();
         }
         public override string ToString()
         {
