@@ -1,9 +1,14 @@
 Ongoing tasks in order of priority:
 - Player damage and EOG
-	- Having left the space for unit damaging enemy, implement it
-	- Add the HP check as for unit
-	- Create an "End of game exception" with proper handling in marching stage and card playing, process properly
-	- Most importantly, need to EOG, and stay in this state
+	- Tests, for now all in advance:
+		- Player is damaged but doesn't die
+		- Unit reaches end but is interrupted by unit and doesn't hurt enemy
+		- Player kills
+		- Player overkills
+		- 3 Separate units move towards, ABC:
+			- If A kills, BC don't advance
+			- If A doesn't, B does, C doesn't advance
+			- Finally, C does, check all advanced 
 - Rush
 	- Rush behaviour, flags and flag clean at beginning of turn
 - Buildings

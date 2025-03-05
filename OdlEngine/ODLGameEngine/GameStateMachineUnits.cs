@@ -93,7 +93,7 @@ namespace ODLGameEngine
                     else if (lane.GetLastTileCoord(unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
                     {
                         n = 0;
-                        // TODO Player damage!
+                        UNIT_DirectDamage(unit); // Deal direct damage!
                     }
                     else // Unit then can advance normally here, perform it
                     {
@@ -115,7 +115,7 @@ namespace ODLGameEngine
         /// <summary>
         /// Performs combat of units
         /// </summary>
-        /// <param name="attacker">Attackign unit</param>
+        /// <param name="attacker">Attacking unit</param>
         /// <param name="defender">Defending unit</param>
         void UNIT_Combat(Unit attacker, Unit defender)
         {
@@ -135,6 +135,24 @@ namespace ODLGameEngine
         {
             int ret = unit.DamageTokens + tokens;
             return (ret >= 0) ? ret : 0;
+        }
+        /// <summary>
+        /// Unit deals direct damage to opponent
+        /// </summary>
+        /// <param name="attacker">Who deals the damage</param>
+        void UNIT_DirectDamage(Unit attacker)
+        {
+            ENGINE_AddMessageEvent($"P{attacker.Owner + 1}'s {attacker.Name} deals direct damage to opponent");
+            // For now, assume unit always damages opponent player (?????)
+            int opponent = 1- attacker.Owner; // Get opponent
+            int opponentHp = _detailedState.PlayerStates[opponent].Hp;
+            // For now, assume direct damage and no modifiers, in the future, there may be checks here to modify attack stats
+            int newOpponentHp = opponentHp - attacker.Attack;
+            if(opponentHp != newOpponentHp)
+            {
+                ENGINE_SetPlayerHp(opponent, newOpponentHp);
+                STATE_VerifyPlayerHpChange(opponent);
+            }
         }
     }
 }

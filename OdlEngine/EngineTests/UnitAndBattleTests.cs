@@ -568,6 +568,8 @@ namespace EngineTests
                 };
                 int card = -1010917;
                 // Will try this in all lanes!
+                state.PlayerStates[playerIndex].Hp = 30;
+                state.PlayerStates[otherPlayerIndex].Hp = 30;
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. All 0 attack so they can't damage stuff

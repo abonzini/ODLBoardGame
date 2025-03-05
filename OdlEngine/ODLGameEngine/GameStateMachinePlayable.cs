@@ -68,17 +68,23 @@ namespace ODLGameEngine
             }
             // Otherwise, card can be played somewhere, need to see if user option is valid!            
             Card cardData = CardDb.GetCardData(card);
-            if((cardData.TargetOptions & chosenTarget) != 0 || (cardData.TargetOptions == chosenTarget)) // Then just need to verify tagets match
+            if ((cardData.TargetOptions & chosenTarget) != 0 || (cardData.TargetOptions == chosenTarget)) // Then just need to verify tagets match
             {
-                // Ok shit is going down, card needs to be paid and played now, this will result in a step
-                PLAYABLE_PayCost(cardData);
-                ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
-                // Then the play effects
-                PLAYABLE_PlayCard(cardData, chosenTarget);
-                // Ends by transitioning to next action phase
-                ENGINE_ChangeState(States.ACTION_PHASE);
-
-                return new Tuple<PlayOutcome, StepResult> (PlayOutcome.OK, _stepHistory.Last() ); // Returns the thing
+                // Ok shit is going down, card needs to be paid and played now, this will result in a step and change of game state
+                try // Also, a player may die!
+                {
+                    PLAYABLE_PayCost(cardData);
+                    ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
+                    // Then the play effects
+                    PLAYABLE_PlayCard(cardData, chosenTarget);
+                    // Ends by transitioning to next action phase
+                    ENGINE_ChangeState(States.ACTION_PHASE);
+                }
+                catch (EndOfGameException e)
+                {
+                    STATE_TriggerEndOfGame(e.PlayerWhoWon);
+                }
+                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.OK, _stepHistory.Last()); // Returns the thing
             }
             else
             {

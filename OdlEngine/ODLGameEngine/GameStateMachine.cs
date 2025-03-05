@@ -7,10 +7,21 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
+    /// <summary>
+    /// Occurs when game ends and someone loses the game
+    /// </summary>
+    public class EndOfGameException : Exception
+    {
+        public int PlayerWhoWon;
+        public EndOfGameException(string message, int playerWhoWon) : base(message)
+        {
+            PlayerWhoWon = playerWhoWon;
+        }
+    }
+
     public partial class GameStateMachine
     {
         Random _rng;
-
         GameStateStruct _detailedState = null; // State info, will work over this to advance game
         public GameStateStruct GetDetailedState() { return _detailedState; }
         CardFinder _cardDb = null;
@@ -34,12 +45,12 @@ namespace ODLGameEngine
         /// </summary>
         public GameStateMachine()
         {
-            InitInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
+            STATE_InitInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
         }
         /// <summary>
         /// Initializes internal stuff
         /// </summary>
-        void InitInternal(GameStateStruct state, int seed)
+        void STATE_InitInternal(GameStateStruct state, int seed)
         {
             _detailedState = state;
             _detailedState.Seed = seed;
@@ -56,28 +67,48 @@ namespace ODLGameEngine
         /// <returns>The new state action, null if nothing happened</returns>
         public StepResult Step()
         {
-            switch(_detailedState.CurrentState)
+            try // Something here may make the game end so I need to catch!
             {
-                case States.START:
-                case States.ACTION_PHASE:
-                    return null;
-                case States.P1_INIT:
-                    InitializePlayer(0);
-                    ENGINE_ChangeState(States.P2_INIT);
-                    break;
-                case States.P2_INIT:
-                    InitializePlayer(1);
-                    ENGINE_TogglePlayer(); // Init finished, now begin game w P1 active
-                    ENGINE_ChangeState(States.DRAW_PHASE);
-                    break;
-                case States.DRAW_PHASE:
-                    DrawPhase();
-                    ENGINE_ChangeState(States.ACTION_PHASE);
-                    break;
-                default:
-                    throw new NotImplementedException("State not yet implemented");
+                switch(_detailedState.CurrentState)
+                {
+                    case States.START:
+                    case States.ACTION_PHASE:
+                    case States.EOG:
+                        return null;
+                    case States.P1_INIT:
+                        STATE_InitializePlayer(0);
+                        ENGINE_ChangeState(States.P2_INIT);
+                        break;
+                    case States.P2_INIT:
+                        STATE_InitializePlayer(1);
+                        ENGINE_SetNextPlayer(GetNextPlayer()); // Init finished, now begin game w P1 active
+                        ENGINE_ChangeState(States.DRAW_PHASE);
+                        break;
+                    case States.DRAW_PHASE:
+                        STATE_DrawPhase();
+                        ENGINE_ChangeState(States.ACTION_PHASE);
+                        break;
+                    default:
+                        throw new NotImplementedException("State not yet implemented");
+                }
+            }
+            catch (EndOfGameException e)
+            {
+                STATE_TriggerEndOfGame(e.PlayerWhoWon);
             }
             return _stepHistory.Last();
+        }
+        /// <summary>
+        /// Returns the next player that'd play (by default toggles between 1-2 but may get more complex)
+        /// </summary>
+        /// <returns>Next active player</returns>
+        private CurrentPlayer GetNextPlayer()
+        {
+            return _detailedState.CurrentPlayer switch // Player is always 1 unless it goes from 1 -> 2
+            {
+                CurrentPlayer.PLAYER_1 => CurrentPlayer.PLAYER_2,
+                _ => CurrentPlayer.PLAYER_1,
+            };
         }
         /// <summary>
         /// Starts a game from loading a state. Only works in very beginning
@@ -86,7 +117,7 @@ namespace ODLGameEngine
         public void LoadGame(GameStateStruct initialState)
         {
             if (_detailedState.CurrentState != States.START) return; // Only works first thing
-            InitInternal(initialState, initialState.Seed); // Initializes game to this point
+            STATE_InitInternal(initialState, initialState.Seed); // Initializes game to this point
             ENGINE_ChangeState(_detailedState.CurrentState); // Asks to enter new state, will create next step too (new)
         }
         /// <summary>
@@ -96,8 +127,8 @@ namespace ODLGameEngine
         /// <param name="p2">Initial data for player 2</param>
         public void StartNewGame(PlayerInitialData p1, PlayerInitialData p2)
         {
-            LoadInitialPlayerData(0, p1);
-            LoadInitialPlayerData(1, p2);
+            STATE_LoadInitialPlayerData(0, p1);
+            STATE_LoadInitialPlayerData(1, p2);
             ENGINE_ChangeState(States.P1_INIT); // Switches to first actual state
         }
         /// <summary>
@@ -107,34 +138,37 @@ namespace ODLGameEngine
         public StepResult EndTurn()
         {
             // HERE BE EOT EFFECTS
-            ENGINE_TogglePlayer(); // Swap player
+            ENGINE_SetNextPlayer(GetNextPlayer()); // Swap player
             ENGINE_ChangeState(States.DRAW_PHASE); // Next is draw phase
             return _stepHistory.Last(); // Returns everything that happened in this
         }
-
-        void LoadInitialPlayerData(int player, PlayerInitialData playerData) // This function randomizes! Needs to restore seed after!
+        /// <summary>
+        /// Loads the initial player data including deck sizes name and class
+        /// </summary>
+        /// <param name="player">Which player</param>
+        /// <param name="playerData">Container with initial data needed to start the game</param>
+        void STATE_LoadInitialPlayerData(int player, PlayerInitialData playerData)
         {
             _detailedState.PlayerStates[player].Name = playerData.Name;
             _detailedState.PlayerStates[player].PlayerClass = playerData.PlayerClass;
             _detailedState.PlayerStates[player].Deck.InitializeDeck(playerData.InitialDecklist);
         }
-
         /// <summary>
         /// Initializes player HP, gold, shuffles deck and draws cards. Needs to use correct RNG
         /// </summary>
         /// <param name="player">The player to init</param>
-        void InitializePlayer(int player)
+        void STATE_InitializePlayer(int player)
         {
             ENGINE_SetPlayerHp(player, GameConstants.STARTING_HP);
             ENGINE_SetPlayerGold(player, GameConstants.STARTING_GOLD);
-            ShufflePlayerDeck(player);
-            DeckDrawMultiple(player, GameConstants.STARTING_CARDS);
+            STATE_ShufflePlayerDeck(player);
+            STATE_DeckDrawMultiple(player, GameConstants.STARTING_CARDS);
             ENGINE_NewRngSeed(_rng.Next(int.MinValue, int.MaxValue));
         }
         /// <summary>
         /// Executes draw phase
         /// </summary>
-        void DrawPhase()
+        void STATE_DrawPhase()
         {
             int playerId = (int)_detailedState.CurrentPlayer;
             // Advance all units of that player
@@ -153,14 +187,14 @@ namespace ODLGameEngine
                     }
                 }
             }
-            DeckDrawMultiple(playerId, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Current player draws
+            STATE_DeckDrawMultiple(playerId, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Current player draws
             ENGINE_PlayerGoldChange(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Current player gets gold
         }
         /// <summary>
         /// Shuffles a player deck
         /// </summary>
         /// <param name="player">Player</param>
-        void ShufflePlayerDeck(int player)
+        void STATE_ShufflePlayerDeck(int player)
         {
             ENGINE_AddMessageEvent($"P{player + 1}'s deck shuffled");
             // Fisher Yates Algorithm for Shuffling, mix starting from last, first card isn't swapped with itself
@@ -174,7 +208,7 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="player">Player</param>
         /// <param name="n">Cards to draw</param>
-        void DeckDrawMultiple(int player, int n)
+        void STATE_DeckDrawMultiple(int player, int n)
         {
             ENGINE_AddMessageEvent($"P{player + 1}'s draws {n}");
             for (int i  = 0; i < n; i++)
@@ -185,7 +219,6 @@ namespace ODLGameEngine
                 ENGINE_AddCardToHand(player, card); // Therefore adds to hand
             }
         }
-
         /// <summary>
         /// Goes back to beggining of previous step (i.e. undoes the last thing that happened)
         /// </summary>
@@ -201,6 +234,24 @@ namespace ODLGameEngine
                 ENGINE_RevertEvent(_currentStep.events[i]); // Revert the event
             }
             _currentStep.events.Clear(); // Clear list as all events have been reverted
+        }
+        void STATE_VerifyPlayerHpChange(int player)
+        {
+            PlayerState ps = _detailedState.PlayerStates[player];
+            if (ps.Hp <= 0) // Player is dead, trigger end of times
+            {
+                throw new EndOfGameException($"{ps.Name} dead by HP", 1 - player); // Other player wins!
+            }
+        }
+        /// <summary>
+        /// To be called by an action to signal the end of the game!
+        /// </summary>
+        /// <param name="playerWhoWon">Which player won?</param>
+        private void STATE_TriggerEndOfGame(int playerWhoWon) // Gets stuck in EOG forever for now
+        {
+            ENGINE_AddMessageEvent($"GAME OVER, {_detailedState.PlayerStates[playerWhoWon].Name} WON");
+            ENGINE_SetNextPlayer((CurrentPlayer)playerWhoWon); // The "current player" in this status is also the one who won the game
+            ENGINE_ChangeState(States.EOG); // Switches to EOG and the game then gets stuck here
         }
 
         // --------------------------------------------------------------------------------------

@@ -286,13 +286,8 @@ namespace ODLGameEngine
         /// <summary>
         /// Toggles active player
         /// </summary>
-        void ENGINE_TogglePlayer()
+        void ENGINE_SetNextPlayer(CurrentPlayer nextPlayer)
         {
-            var nextPlayer = _detailedState.CurrentPlayer switch // Player is always 1 unless it goes from 1 -> 2
-            {
-                CurrentPlayer.PLAYER_1 => CurrentPlayer.PLAYER_2,
-                _ => CurrentPlayer.PLAYER_1,
-            };
             ENGINE_ExecuteEvent(
                 new TransitionEvent<CurrentPlayer>()
                 {

@@ -80,7 +80,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public int NextUnitIndex { get; set; } = 0;
         [JsonProperty]
-        public CurrentPlayer CurrentPlayer { get; set; } =CurrentPlayer.OMNISCIENT;
+        public CurrentPlayer CurrentPlayer { get; set; } = CurrentPlayer.OMNISCIENT;
         [JsonProperty]
         public PlayerState[] PlayerStates { get; set; } = [new PlayerState(), new PlayerState()];
         [JsonProperty]
