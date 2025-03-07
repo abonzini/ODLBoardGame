@@ -54,7 +54,9 @@ namespace ODLGameEngine
                     break;
                 case EventType.PLAYER_HP_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int,int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Hp = ((EntityTransitionEvent<int, int>)e).newValue;
+                    auxInt2 = ((EntityTransitionEvent<int, int>)e).newValue;
+                    ((EntityTransitionEvent<int, int>)e).oldValue = _detailedState.PlayerStates[auxInt1].Hp;
+                    _detailedState.PlayerStates[auxInt1].Hp = auxInt2;
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;

@@ -1229,5 +1229,417 @@ namespace EngineTests
                 }
             }
         }
+        // Direct damage tests
+        [TestMethod]
+        public void TestNonlethalDirectDamage()
+        {
+            // A unit advances, and will damage enemy
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int attack = _rng.Next(1, 10); // Attack between 1-9
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = (CurrentPlayer)playerIndex
+                };
+                state.PlayerStates[playerIndex].Hp = GameConstants.STARTING_HP; // It's important to set this
+                state.PlayerStates[otherPlayerIndex].Hp = GameConstants.STARTING_HP;
+                // Will try this in any lane
+                int card = -(1010917 + attack * 1000); // Give the unit max speed so it always reaches
+                CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                    state.PlayerStates[playerIndex].Hand.InsertCard(card);
+                    state.PlayerStates[playerIndex].Deck.InsertCard(card);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(card);
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(card);
+                }
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                sm.PlayCard(card, target); // Play the unit
+                // Ok! Now i need to do the sequence to advance...
+                sm.EndTurn(); // End turn
+                sm.Step(); // Finish draw phase of opp
+                sm.EndTurn(); // End opp turn
+                // Now the unit is ready to advance, check before and after
+                PlayerState ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                int ps1Hash = ps1.GetGameStateHash();
+                PlayerState ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                int ps2Hash = ps2.GetGameStateHash();
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1); // 1 unit in tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1); // From correct player
+                // Player's unit will advance!
+                sm.Step();
+                // Post advance check of same things
+                ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP - attack); // Now player 2 has less Hp
+                Assert.AreNotEqual(ps1Hash, ps1.GetGameStateHash()); // Because they drew card
+                Assert.AreNotEqual(ps2Hash, ps2.GetGameStateHash());
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.ACTION_PHASE); // Still in action phase, not EOG
+                // Unit positioning is coherent
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 0); // No more unit in first tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 1); // 1 unit in last tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[playerIndex], 1); // From correct player
+                // Undo advance and verify again
+                sm.UndoPreviousStep();
+                ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps1Hash, ps1.GetGameStateHash());
+                Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1); // Unit back at beginning
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[playerIndex], 0);
+            }
+        }
+        [TestMethod]
+        public void UnitBlockedFromDirectDamage()
+        {
+            // A unit advances, and will damage enemy
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = (CurrentPlayer)playerIndex
+                };
+                state.PlayerStates[playerIndex].Hp = GameConstants.STARTING_HP; // It's important to set this
+                state.PlayerStates[otherPlayerIndex].Hp = GameConstants.STARTING_HP;
+                // Will try this in any lane
+                int card = -(1021917); // Unit has 1atk 2 hp
+                CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                    state.PlayerStates[playerIndex].Hand.InsertCard(card);
+                    state.PlayerStates[playerIndex].Deck.InsertCard(card);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(card);
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(card);
+                }
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                sm.PlayCard(card, target); // Play the unit
+                // Ok! Now i need to do the sequence to advance...
+                sm.EndTurn(); // End turn
+                sm.Step(); // Finish draw phase of opp
+                sm.PlayCard(card, target); // Play the unit for opp
+                sm.EndTurn(); // End opp turn
+                // Now the unit is ready to advance, will collide with enemy tho
+                PlayerState ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                int ps1Hash = ps1.GetGameStateHash();
+                PlayerState ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                int ps2Hash = ps2.GetGameStateHash();
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP); // Because they drew card
+                Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP); // However, this one didn't get any change
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1); // Check both units
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 1); // Ensure enemy blocks last tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[otherPlayerIndex], 1);
+                // Player's unit will advance!
+                sm.Step();
+                // Post advance check of same things
+                ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP); // This time the opp is undamaged
+                Assert.AreNotEqual(ps1Hash, ps1.GetGameStateHash()); // Players should have the same hash as their situation hasn't changed? (No draw cards etc)
+                Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.ACTION_PHASE); // Still in action phase, not EOG
+                // Unit positioning is coherent
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 0); // No more unit in first tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 2); // 2 now in last tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[playerIndex], 1); // From both players
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[otherPlayerIndex], 1); // From both players
+                // Undo advance and verify again
+                sm.UndoPreviousStep();
+                ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps1Hash, ps1.GetGameStateHash());
+                Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[otherPlayerIndex], 1);
+            }
+        }
+        [TestMethod]
+        public void ExactDirectDamageKill()
+        {
+            // A unit advances, and will kill enemy exactly
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int attack = _rng.Next(1, 10); // Attack between 1-9
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = (CurrentPlayer)playerIndex
+                };
+                state.PlayerStates[playerIndex].Hp = GameConstants.STARTING_HP; // It's important to set this
+                state.PlayerStates[otherPlayerIndex].Hp = attack; // Opp has less HP this time
+                // Will try this in any lane
+                int card = -(1010917 + attack * 1000); // Give the unit max speed so it always reaches
+                CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                    state.PlayerStates[playerIndex].Hand.InsertCard(card);
+                    state.PlayerStates[playerIndex].Deck.InsertCard(card);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(card);
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(card);
+                }
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                sm.PlayCard(card, target); // Play the unit
+                // Ok! Now i need to do the sequence to advance...
+                sm.EndTurn(); // End turn
+                sm.Step(); // Finish draw phase of opp
+                sm.EndTurn(); // End opp turn
+                // Now the unit is ready to advance, check before and after
+                PlayerState ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                int ps1Hash = ps1.GetGameStateHash();
+                PlayerState ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                int ps2Hash = ps2.GetGameStateHash();
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, attack);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1); // 1 unit in tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1); // From correct player
+                // Player's unit will advance!
+                sm.Step();
+                // Post advance check of same things
+                ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, 0); // Now player 2 is dead
+                Assert.AreEqual(ps1Hash, ps1.GetGameStateHash()); // Because the game ends during advance without drawing card!!!!
+                Assert.AreNotEqual(ps2Hash, ps2.GetGameStateHash()); // Because they are dead
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
+                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, player); // Indicates player who won (player for now can only win in their turn so this is pointless)
+                // Unit positioning is coherent
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 0); // No more unit in first tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 1); // 1 unit in last tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[playerIndex], 1); // From correct player
+                // Undo advance and verify again
+                sm.UndoPreviousStep();
+                ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, attack);
+                Assert.AreEqual(ps1Hash, ps1.GetGameStateHash());
+                Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1); // Unit back at beginning
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[playerIndex], 0);
+            }
+        }
+        [TestMethod]
+        public void DirectDamageOverkill()
+        {
+            // A unit advances, and will kill enemy with extra damage which doesnt matter
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int attack = _rng.Next(1, 10); // Attack between 1-9
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = (CurrentPlayer)playerIndex
+                };
+                state.PlayerStates[playerIndex].Hp = GameConstants.STARTING_HP; // It's important to set this
+                state.PlayerStates[otherPlayerIndex].Hp = attack - 1; // Opp has less HP this time
+                // Will try this in any lane
+                int card = -(1010917 + attack * 1000); // Give the unit max speed so it always reaches
+                CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                    state.PlayerStates[playerIndex].Hand.InsertCard(card);
+                    state.PlayerStates[playerIndex].Deck.InsertCard(card);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(card);
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(card);
+                }
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                sm.PlayCard(card, target); // Play the unit
+                // Ok! Now i need to do the sequence to advance...
+                sm.EndTurn(); // End turn
+                sm.Step(); // Finish draw phase of opp
+                sm.EndTurn(); // End opp turn
+                // Now the unit is ready to advance, check before and after
+                PlayerState ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                int ps1Hash = ps1.GetGameStateHash();
+                PlayerState ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                int ps2Hash = ps2.GetGameStateHash();
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, attack - 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1); // 1 unit in tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1); // From correct player
+                // Player's unit will advance!
+                sm.Step();
+                // Post advance check of same things
+                ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, 0); // Now player 2 is dead
+                Assert.AreEqual(ps1Hash, ps1.GetGameStateHash()); // Because the game ends during advance without drawing card!!!!
+                Assert.AreNotEqual(ps2Hash, ps2.GetGameStateHash()); // Because they are dead
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
+                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, player); // Indicates player who won (player for now can only win in their turn so this is pointless)
+                // Unit positioning is coherent
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 0); // No more unit in first tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 1); // 1 unit in last tile
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[playerIndex], 1); // From correct player
+                // Undo advance and verify again
+                sm.UndoPreviousStep();
+                ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                Assert.AreEqual(ps2.Hp, attack - 1);
+                Assert.AreEqual(ps1Hash, ps1.GetGameStateHash());
+                Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1); // Unit back at beginning
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).UnitsInTile.Count, 0);
+                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnitCount[playerIndex], 0);
+            }
+        }
+        [TestMethod]
+        public void MultiUnitTest()
+        {
+            // Tests coherence, where game will stop as soon as player dies mid-advance, so units fill be frozen
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            for (int unitThatKills = 1; unitThatKills <= 3; unitThatKills++)
+            {
+                foreach (CurrentPlayer player in players)
+                {
+                    int attack = 6 / unitThatKills; // That way the unit that kills, kills
+                    int playerIndex = (int)player;
+                    int otherPlayerIndex = 1 - playerIndex;
+                    GameStateStruct state = new GameStateStruct
+                    {
+                        CurrentState = States.ACTION_PHASE,
+                        CurrentPlayer = (CurrentPlayer)playerIndex
+                    };
+                    state.PlayerStates[playerIndex].Hp = GameConstants.STARTING_HP; // It's important to set this
+                    state.PlayerStates[otherPlayerIndex].Hp = 6; // Opp has 6HP which is pretty handy for this test
+                    int card = -(1010917 + attack * 1000); // Give the units max speed so it always reaches
+                    for (int i = 0; i < 5; i++)
+                    {
+                        // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                        state.PlayerStates[playerIndex].Hand.InsertCard(card);
+                        state.PlayerStates[playerIndex].Deck.InsertCard(card);
+                        state.PlayerStates[otherPlayerIndex].Hand.InsertCard(card);
+                        state.PlayerStates[otherPlayerIndex].Deck.InsertCard(card);
+                    }
+                    GameStateMachine sm = new GameStateMachine
+                    {
+                        CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                    };
+                    sm.LoadGame(state); // Start from here
+                    sm.PlayCard(card, CardTargets.PLAINS); // Play all units, one per lane
+                    sm.PlayCard(card, CardTargets.FOREST);
+                    sm.PlayCard(card, CardTargets.MOUNTAIN);
+                    // Ok! Now i need to do the sequence to advance...
+                    sm.EndTurn(); // End turn
+                    sm.Step(); // Finish draw phase of opp
+                    sm.EndTurn(); // End opp turn
+                    // Now untis are ready to advance, check before and after
+                    PlayerState ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                    int ps1Hash = ps1.GetGameStateHash();
+                    PlayerState ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                    int ps2Hash = ps2.GetGameStateHash();
+                    Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                    Assert.AreEqual(ps2.Hp, 6);
+                    // Get units in all lanes
+                    int plainsHash = sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetGameStateHash();
+                    int forestHash = sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetGameStateHash();
+                    int mountainHash = sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetGameStateHash();
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                    // Player's unit will advance!
+                    sm.Step();
+                    // Post advance check of same things, this will end game and units will be frozen in time
+                    ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                    ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                    Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                    Assert.AreEqual(ps2.Hp, 0); // Now player 2 is dead
+                    Assert.AreEqual(ps1Hash, ps1.GetGameStateHash()); // Because the game ends during advance without drawing card!!!!
+                    Assert.AreNotEqual(ps2Hash, ps2.GetGameStateHash()); // Because they are dead
+                    Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
+                    Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, player); // Indicates player who won (player for now can only win in their turn so this is pointless)
+                    // Unit positioning is coherent and hashes are. This depends on the unit that kills
+                    Assert.AreEqual(unitThatKills < 1, plainsHash == sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetGameStateHash()); // Hash unchanged if unit doesn't advance
+                    Assert.AreEqual(unitThatKills < 2, forestHash == sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetGameStateHash());
+                    Assert.AreEqual(unitThatKills < 3, mountainHash == sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetGameStateHash());
+                    // Unit will be in first tile or in last depending advance
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetTileRelative((unitThatKills >= 1)?-1:0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetTileRelative((unitThatKills >= 1) ? -1 : 0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetTileRelative((unitThatKills >= 2) ? -1 : 0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetTileRelative((unitThatKills >= 2) ? -1 : 0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative((unitThatKills >= 3) ? -1 : 0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative((unitThatKills >= 3) ? -1 : 0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                    // Undo advance and verify again
+                    sm.UndoPreviousStep();
+                    ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
+                    ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
+                    Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
+                    Assert.AreEqual(ps2.Hp, 6);
+                    // Get units in all lanes
+                    Assert.AreEqual(plainsHash, sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetGameStateHash());
+                    Assert.AreEqual(forestHash, sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetGameStateHash());
+                    Assert.AreEqual(mountainHash, sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetGameStateHash());
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
+                    Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
+                }
+            }
+        }
     }
 }

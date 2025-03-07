@@ -148,6 +148,7 @@ namespace ODLGameEngine
             int opponentHp = _detailedState.PlayerStates[opponent].Hp;
             // For now, assume direct damage and no modifiers, in the future, there may be checks here to modify attack stats
             int newOpponentHp = opponentHp - attacker.Attack;
+            if (newOpponentHp < 0) newOpponentHp = 0;
             if(opponentHp != newOpponentHp)
             {
                 ENGINE_SetPlayerHp(opponent, newOpponentHp);
