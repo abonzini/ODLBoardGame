@@ -172,7 +172,7 @@ namespace ODLGameEngine
                 return 0;
             }
         }
-        public int GetHash()
+        public int GetGameStateHash()
         {
             if (_dirtyHash) // Recalculates only when dirty
             {

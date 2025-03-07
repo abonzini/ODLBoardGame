@@ -116,15 +116,15 @@ namespace ODLGameEngine
                     ((EntityTransitionEvent<Unit, int>)e).oldValue = auxUnit.TileCoordinate; // Store old value first
                     if (auxUnit.TileCoordinate >= 0) // Remove count from old tile if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]--;
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).UnitsInTile.Remove(auxUnit.UniqueId);
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]--;
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).UnitsInTile.Remove(auxUnit.UniqueId);
                     }
                     auxUnit.TileCoordinate = ((EntityTransitionEvent<Unit, int>)e).newValue; // unit now has new value
                     // Finally, update count in tile
                     if (auxUnit.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).UnitsInTile.Add(auxUnit.UniqueId);
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).UnitsInTile.Add(auxUnit.UniqueId);
                     }
                     break;
                 case EventType.DEINIT_UNIT: // Unit simply leaves field and user loses the unit
@@ -236,14 +236,14 @@ namespace ODLGameEngine
                     // Update count of tile
                     if (auxUnit.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]--;
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).UnitsInTile.Remove(auxUnit.UniqueId);
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]--;
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).UnitsInTile.Remove(auxUnit.UniqueId);
                     }
                     auxUnit.TileCoordinate = ((EntityTransitionEvent<Unit, int>)e).oldValue; // unit now has prev value
                     if (auxUnit.TileCoordinate >= 0) // Update its count if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTile(auxUnit.TileCoordinate).UnitsInTile.Add(auxUnit.UniqueId);
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
+                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).UnitsInTile.Add(auxUnit.UniqueId);
                     }
                     break;
                 case EventType.DEINIT_UNIT: // Unit is simply sent from GY to field and user regains the unit (no positioning handled here)

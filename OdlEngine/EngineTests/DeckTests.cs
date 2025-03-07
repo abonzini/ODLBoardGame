@@ -88,7 +88,7 @@ namespace EngineTests
                 deck1.InsertCard(rn);
                 deck2.InsertCard(rn);
             }
-            Assert.AreEqual(deck1.GetHash(), deck2.GetHash());
+            Assert.AreEqual(deck1.GetGameStateHash(), deck2.GetGameStateHash());
             // Now swap 2 random cards
             int swap1 = _rng.Next(30);
             // Ensure it's another random card
@@ -99,10 +99,10 @@ namespace EngineTests
                 swap2 %= 30;
             } while (deck2.PeepAt(swap1) == deck2.PeepAt(swap2)); // But ensure cards are actually distinct otherwise this won't work
             deck2.SwapCards(swap1, swap2);
-            Assert.AreNotEqual(deck1.GetHash(), deck2.GetHash());
+            Assert.AreNotEqual(deck1.GetGameStateHash(), deck2.GetGameStateHash());
             // Revert this, should be back to equal
             deck2.SwapCards(swap1, swap2);
-            Assert.AreEqual(deck1.GetHash(), deck2.GetHash());
+            Assert.AreEqual(deck1.GetGameStateHash(), deck2.GetGameStateHash());
         }
         //[TestMethod]
         //public void HashStressTest()

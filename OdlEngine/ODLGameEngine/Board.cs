@@ -19,7 +19,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public int[] PlayerUnitCount { get; set; } = [0, 0];
 
-        public int GetHash()
+        public int GetGameStateHash()
         {
             HashCode hash = new HashCode();
             hash.Add(BuildingInTile);
@@ -73,9 +73,28 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="index">The index</param>
         /// <returns>The actual instance of a tile to place units</returns>
-        public Tile GetTile(int index)
+        public Tile GetTileAbsolute(int index)
         {
             return Tiles[index];
+        }
+        /// <summary>
+        /// Gets tile relative to player, so 1,2,3,4 etc from player's POV. Negative indices work like in python, starting from beginning
+        /// </summary>
+        /// <param name="index">Tile index</param>
+        /// <param name="player">Relative to what?</param>
+        /// <returns></returns>
+        public Tile GetTileRelative(int index, int player)
+        {
+            if(index < 0) // Pyhton notation, need to add n, so that -1 -> n-1 and -n becomes 0
+            {
+                index += Len;
+            }
+            if(player == 1) // Next, for player, I need to flip, so that first is last and vice versa. This involves n-1 complement
+            {
+                index = Len - 1 - index;
+            }
+            // Now that I got the right index, return correct value...
+            return GetTileAbsolute(index);
         }
         /// <summary>
         /// Returns the index of the first tile, but relative to a player
@@ -104,7 +123,7 @@ namespace ODLGameEngine
             return Id.ToString() + $", P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
         }
 
-        public int GetHash()
+        public int GetGameStateHash()
         {
             HashCode hash = new HashCode();
             hash.Add(Len); // So that different lanes have different hashes even if empty
@@ -112,7 +131,7 @@ namespace ODLGameEngine
             hash.Add(PlayerUnitCount[1]);
             foreach (Tile tile in Tiles)
             {
-                hash.Add(tile.GetHash());
+                hash.Add(tile.GetGameStateHash());
             }
             return hash.ToHashCode();
         }
@@ -172,18 +191,18 @@ namespace ODLGameEngine
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
-        public virtual int GetHash()
+        public virtual int GetGameStateHash()
         {
             HashCode hash = new HashCode();
             foreach (KeyValuePair<int, Unit> kvp in Units)
             {
                 hash.Add(kvp.Key);
-                hash.Add(kvp.Value.GetHash());
+                hash.Add(kvp.Value.GetGameStateHash());
             }
             foreach (KeyValuePair<int, Building> kvp in Buildings)
             {
                 hash.Add(kvp.Key);
-                hash.Add(kvp.Value.GetHash());
+                hash.Add(kvp.Value.GetGameStateHash());
             }
             return hash.ToHashCode();
         }

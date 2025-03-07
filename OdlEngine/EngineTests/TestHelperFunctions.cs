@@ -17,10 +17,10 @@ namespace EngineTests
         /// <param name="shouldBe">Should it be present?</param>
         public static void HashSetVerification(IHashable st, HashSet<int> set, bool shouldBe)
         {
-            Assert.IsTrue(shouldBe == set.Contains(st.GetHash()));
-            if (!set.Contains(st.GetHash()))
+            Assert.IsTrue(shouldBe == set.Contains(st.GetGameStateHash()));
+            if (!set.Contains(st.GetGameStateHash()))
             {
-                set.Add(st.GetHash());
+                set.Add(st.GetGameStateHash());
             }
         }
         /// <summary>

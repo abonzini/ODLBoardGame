@@ -60,7 +60,7 @@ namespace ODLGameEngine
         /// Gets the hash of the entity
         /// </summary>
         /// <returns>Hash code</returns>
-        public virtual int GetHash()
+        public virtual int GetGameStateHash()
         {
             HashCode hash = new HashCode();
             hash.Add(UniqueId);

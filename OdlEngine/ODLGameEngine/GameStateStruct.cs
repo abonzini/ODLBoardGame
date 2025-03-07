@@ -57,7 +57,7 @@ namespace ODLGameEngine
     /// </summary>
     public interface IHashable
     {
-        public int GetHash();
+        public int GetGameStateHash();
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public States CurrentState { get; set; } = States.START;
         [JsonProperty]
-        public int StateHash { get { return GetHash(); } }
+        public int StateHash { get { return GetGameStateHash(); } }
         [JsonProperty]
         public int Seed { get; set; } = 0;
         [JsonProperty]
@@ -86,16 +86,16 @@ namespace ODLGameEngine
         [JsonProperty]
         public Board BoardState { get; set; } = new Board();
 
-        public int GetHash()
+        public int GetGameStateHash()
         {
             HashCode hash = new HashCode();
             hash.Add(CurrentState);
             hash.Add(Seed);
             hash.Add(NextUnitIndex);
             hash.Add(CurrentPlayer);
-            hash.Add(PlayerStates[0].GetHash());
-            hash.Add(PlayerStates[1].GetHash());
-            hash.Add(BoardState.GetHash());
+            hash.Add(PlayerStates[0].GetGameStateHash());
+            hash.Add(PlayerStates[1].GetGameStateHash());
+            hash.Add(BoardState.GetGameStateHash());
             return hash.ToHashCode();
         }
     }
@@ -158,7 +158,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public AssortedCardCollection DiscardPile { get; set; } = new AssortedCardCollection();
 
-        public int GetHash()
+        public int GetGameStateHash()
         {
             HashCode hash = new HashCode();
             hash.Add(Name);
@@ -166,9 +166,9 @@ namespace ODLGameEngine
             hash.Add(Hp);
             hash.Add(Gold);
             hash.Add(RushAvailable);
-            hash.Add(Hand.GetHash());
-            hash.Add(Deck.GetHash());
-            hash.Add(DiscardPile.GetHash());
+            hash.Add(Hand.GetGameStateHash());
+            hash.Add(Deck.GetGameStateHash());
+            hash.Add(DiscardPile.GetGameStateHash());
             return hash.ToHashCode();
         }
     }

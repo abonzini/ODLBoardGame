@@ -74,11 +74,11 @@ namespace ODLGameEngine
                 while(n > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
                     // Exiting current tile
-                    if (lane.GetTile(unit.TileCoordinate).PlayerUnitCount[opponentId] > 0) // If enemy unit in tile, will stop march here (and also attack)
+                    if (lane.GetTileAbsolute(unit.TileCoordinate).PlayerUnitCount[opponentId] > 0) // If enemy unit in tile, will stop march here (and also attack)
                     {
                         n = 0;
                         Unit enemyUnit = null;
-                        foreach(int enemyCandidateId in lane.GetTile(unit.TileCoordinate).UnitsInTile) // Check all units in tile
+                        foreach(int enemyCandidateId in lane.GetTileAbsolute(unit.TileCoordinate).UnitsInTile) // Check all units in tile
                         {
                             Unit enemyUnitCandidate = _detailedState.BoardState.Units[enemyCandidateId]; // Check next unit
                             if(enemyUnitCandidate.Owner == opponentId) // Check if belongs to opponent

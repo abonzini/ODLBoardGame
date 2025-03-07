@@ -26,10 +26,10 @@ namespace ODLGameEngine
         /// Gets the hash of the entity
         /// </summary>
         /// <returns>Hash code</returns>
-        public override int GetHash()
+        public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetHash());
+            hash.Add(base.GetGameStateHash());
             hash.Add(Movement);
             hash.Add(MovementDenominator);
             hash.Add(Attack);

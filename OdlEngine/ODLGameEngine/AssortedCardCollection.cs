@@ -71,7 +71,7 @@ namespace ODLGameEngine
         /// Gets the hash of hand
         /// </summary>
         /// <returns>Hash code</returns>
-        public int GetHash()
+        public int GetGameStateHash()
         {
             if (_dirtyHash) // Recalculates only when dirty
             {

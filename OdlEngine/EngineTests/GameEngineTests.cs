@@ -221,20 +221,20 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Ensure all in order before EOT
                 GameStateStruct preEotState = sm.GetDetailedState();
-                int preEotHash = preEotState.GetHash(); // Keep hash
+                int preEotHash = preEotState.GetGameStateHash(); // Keep hash
                 Assert.AreEqual(preEotState.CurrentState, States.ACTION_PHASE); // in action phase
                 Assert.AreEqual(preEotState.CurrentPlayer, id); // Current player
                 // Now I activate end of turn!
                 sm.EndTurn();
                 GameStateStruct postEotState = sm.GetDetailedState();
-                int postEotHash = preEotState.GetHash(); // Keep hash
+                int postEotHash = preEotState.GetGameStateHash(); // Keep hash
                 Assert.AreEqual(postEotState.CurrentState, States.DRAW_PHASE); // in draw phase now!
                 Assert.AreEqual(postEotState.CurrentPlayer, (CurrentPlayer)otherPlayerIndex); // Current player has changed and will soon initialize drawing (draw phase already tested)
                 Assert.AreNotEqual(preEotHash, postEotHash); // Hope hash are different (only because new current player)
                 // Reversion should also apply
                 sm.UndoPreviousStep();
                 postEotState = sm.GetDetailedState();
-                postEotHash = preEotState.GetHash();
+                postEotHash = preEotState.GetGameStateHash();
                 Assert.AreEqual(postEotState.CurrentState, States.ACTION_PHASE); // Back to action
                 Assert.AreEqual(postEotState.CurrentPlayer, id); // Current player back to original
                 Assert.AreEqual(preEotHash, postEotHash); // Hash repeatability check
@@ -257,29 +257,29 @@ namespace EngineTests
             };
             sm.LoadGame(state); // Start from here
             // HASH CHECK
-            int emptyBoardHash = sm.GetDetailedState().BoardState.GetHash();
-            int emptyBoardStateHash = sm.GetDetailedState().GetHash();
-            Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetHash()); // Hash would be recalculated but still the same
-            Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetHash()); // Hash would be recalculated but still the same
+            int emptyBoardHash = sm.GetDetailedState().BoardState.GetGameStateHash();
+            int emptyBoardStateHash = sm.GetDetailedState().GetGameStateHash();
+            Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
+            Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetGameStateHash()); // Hash would be recalculated but still the same
             // Will play card now
             Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, CardTargets.PLAINS); // Play it
             // Make sure card was played ok
             Assert.AreEqual(res.Item1, PlayOutcome.OK);
             Assert.IsNotNull(res.Item2);
             // And check hash again
-            int boardWUnitHash = sm.GetDetailedState().BoardState.GetHash();
-            int stateWUnitHash = sm.GetDetailedState().GetHash();
+            int boardWUnitHash = sm.GetDetailedState().BoardState.GetGameStateHash();
+            int stateWUnitHash = sm.GetDetailedState().GetGameStateHash();
             Assert.AreNotEqual(emptyBoardHash, boardWUnitHash);
             Assert.AreNotEqual(emptyBoardStateHash, stateWUnitHash);
-            Assert.AreEqual(boardWUnitHash, sm.GetDetailedState().BoardState.GetHash()); // Hash would be recalculated but still the same
-            Assert.AreEqual(stateWUnitHash, sm.GetDetailedState().GetHash()); // Hash would be recalculated but still the same
+            Assert.AreEqual(boardWUnitHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
+            Assert.AreEqual(stateWUnitHash, sm.GetDetailedState().GetGameStateHash()); // Hash would be recalculated but still the same
             // Modify unit (shady)
             sm.GetDetailedState().BoardState.Units[0].Attack += 5; // Add 5 to attack, whatever
-            Assert.AreNotEqual(boardWUnitHash, sm.GetDetailedState().BoardState.GetHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
-            Assert.AreNotEqual(stateWUnitHash, sm.GetDetailedState().GetHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
+            Assert.AreNotEqual(boardWUnitHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
+            Assert.AreNotEqual(stateWUnitHash, sm.GetDetailedState().GetGameStateHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
             sm.UndoPreviousStep();
-            Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetHash()); // Finally hash should've reverted and known
-            Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetHash()); // Finally hash should've reverted and known
+            Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Finally hash should've reverted and known
+            Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetGameStateHash()); // Finally hash should've reverted and known
         }
     }
     public static class InitialStatesGenerator // Generates a game state for test
