@@ -137,6 +137,10 @@ namespace ODLGameEngine
         /// <returns>Actions occurring during EOT</returns>
         public StepResult EndTurn()
         {
+            if (_detailedState.CurrentState != States.ACTION_PHASE) // Need to be in action phase!
+            {
+                return null;
+            }
             // HERE BE EOT EFFECTS
             ENGINE_SetNextPlayer(GetNextPlayer()); // Swap player
             ENGINE_ChangeState(States.DRAW_PHASE); // Next is draw phase

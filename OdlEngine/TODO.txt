@@ -1,5 +1,4 @@
 Ongoing tasks in order of priority:
-- BUG: Forgot to check for "end turn" (and possibly other user access functions) to ensure the right state before doing stuff!. In the case of EOT, make sure to be in ACTION_PHASE!!!!!
 - Player damage and EOG
 	- Tests, for now all in advance:
 		- Player is damaged but doesn't die
