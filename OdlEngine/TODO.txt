@@ -1,18 +1,30 @@
 Ongoing tasks in order of priority:
+- Action & Event refactoring
+	- Rename, game engine event 
+	- Remove string, add tag instead. Does tag need extra param? Like draw#, or unit ID for anim? This is only useful in such cases unfortunately. Leave space for tag but don't go crazy, will return when doing UI
+- Implement Effects
+	- Description of an effect, effect handler
+	- Serialization and de-serialization of effects, EffectHandler (new state machine element with EFFECT_ ?
+	- Skills: Cards with an effect list. Rundimentary filter too. Rest is defined by targetability.
 - Rush
 	- Rush behaviour, flags and flag clean at beginning of turn
+	- Rush "card" as a skill card of cost 5 with effect list of (summon X lane 1) (summon X lane 2) (summon X lane 3)
 - Buildings
 	- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
 		- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
 	- Bldg damage
 - Stealth
 - Implement complex effects:
-	- Buff tokens
 	- Interactions (when placeable has absolute control of what's going on)
 	- Events (when an effect occurs globally and triggers a unit, e.g. EOT)
-	- Buff tok is multiple extra fields (hashable and serializable) on the placeable
 	- Interactions are present in the unit, (hashable, serializable) also on placeable, will have a grammar-style description
-	- Events too (hashable, serializable). THEY ARE IMPLEMENTED THROUGH AN EVENT HANDLER IN THE STATE MACHINE, WHICH IS PROPERLY FILLED/EMPTIED WHEN PLACEABLE ENTERS/LEAVES !!!BUT!!! THEY'RE NOT SERIALIZED IN STATE MACHINE, INSTEAD GENERATED IN A LOADED GAME OR AS THINGS ARE PLACED
+	- Events too (hashable, serializable in unit but not on main). THEY ARE IMPLEMENTED THROUGH AN EVENT HANDLER IN THE STATE MACHINE, WHICH IS PROPERLY FILLED/EMPTIED WHEN PLACEABLE ENTERS/LEAVES
+	- Filters	
+	- Resulting action. Can this be done in a smooth way? Proposal: new class with Enum + <T1,T2,etc>. Idea is that similar to event handler, but with different enum, is processed where corresponds, and launched by event. By the time we reach unit effect, we run the effect, description of effect can also be fine tuned. E.g. effect, summons X (in lane), summons X (in lane), summons X (in lane), etc. 3 events. Skill card then also is simply a list of effects (when played). While playables have interrups.
+	---
+	- Buff tokens
+	- Buff tok is multiple extra fields (hashable and serializable) on the placeable
+MACHINE, INSTEAD GENERATED IN A LOADED GAME OR AS THINGS ARE PLACED
 - Implement rest of rulebook
 	- Todo...
 	- Lots of individual mechanics that will be polished as it goes, individual card testing
