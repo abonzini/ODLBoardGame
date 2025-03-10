@@ -17,7 +17,7 @@ namespace ODLGameEngine
         /// Executes an event to change game state, adds to current queue and moves state
         /// </summary>
         /// <param name="e">The event to add and excecute</param>
-        void ENGINE_ExecuteEvent(Event e)
+        void ENGINE_ExecuteEvent(GameEngineEvent e)
         {
             int auxInt1, auxInt2;
             Unit auxUnit;
@@ -155,7 +155,7 @@ namespace ODLGameEngine
         /// Performs the opposite action of an event. Doesn't remove from step! Just opposite
         /// </summary>
         /// <param name="e">Event to revert</param>
-        void ENGINE_RevertEvent(Event e)
+        void ENGINE_RevertEvent(GameEngineEvent e)
         {
             int auxInt1, auxInt2;
             Unit auxUnit;
@@ -350,7 +350,7 @@ namespace ODLGameEngine
         void ENGINE_AddMessageEvent(string msg)
         {
             ENGINE_ExecuteEvent(
-                new Event()
+                new GameEngineEvent()
                 {
                     eventType = EventType.MESSAGE,
                     description = msg
@@ -456,7 +456,7 @@ namespace ODLGameEngine
         void ENGINE_IncrementPlaceableCounter()
         {
             ENGINE_ExecuteEvent(
-                new Event()
+                new GameEngineEvent()
                 {
                     eventType = EventType.INCREMENT_PLACEABLE_COUNTER
                 });

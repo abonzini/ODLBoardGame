@@ -1,7 +1,4 @@
 Ongoing tasks in order of priority:
-- Action & Event refactoring
-	- Rename, game engine event 
-	- Remove string, add tag instead. Does tag need extra param? Like draw#, or unit ID for anim? This is only useful in such cases unfortunately. Leave space for tag but don't go crazy, will return when doing UI
 - JSON card deserialization cleanup. Make cards have a custom deserializer for sanity purposes. Result is human-readable and extensible cards. However JSON deserializing may be a bit annoying, may ask copilot
 - Implement Effects
 	- Description of an effect, effect handler

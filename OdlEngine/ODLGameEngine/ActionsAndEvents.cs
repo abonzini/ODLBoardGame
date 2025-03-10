@@ -20,12 +20,12 @@ namespace ODLGameEngine
     public class StepResult
     {
         public Tag tag = Tag.NO_TAG;
-        public List<Event> events = new List<Event>(); // Contains list of events
+        public List<GameEngineEvent> events = new List<GameEngineEvent>(); // Contains list of events
         public override string ToString()
         {
             string ret = "";
             bool first = true;
-            foreach (Event e in events)
+            foreach (GameEngineEvent e in events)
             {
                 if (e.description == "") continue; // Not print if empty
                 ret += "\n";
@@ -67,7 +67,7 @@ namespace ODLGameEngine
         UNIT_DAMAGE_COUNTER_CHANGE
     }
 
-    public class Event
+    public class GameEngineEvent
     {
         public EventType eventType;
         public string description = "";
@@ -76,23 +76,23 @@ namespace ODLGameEngine
             return description; // Default is no info leaked
         }
     }
-    public class EntityValueEvent<E,T> : Event
+    public class EntityValueEvent<E,T> : GameEngineEvent
     {
         public E entity;
         public T value;
     }
-    public class TransitionEvent<T> : Event
+    public class TransitionEvent<T> : GameEngineEvent
     {
         public T oldValue;
         public T newValue;
     }
-    public class EntityTransitionEvent<E,T> : Event
+    public class EntityTransitionEvent<E,T> : GameEngineEvent
     {
         public E entity;
         public T oldValue;
         public T newValue;
     }
-    public class EntityEvent<E> : Event
+    public class EntityEvent<E> : GameEngineEvent
     {
         public E entity;
     }
