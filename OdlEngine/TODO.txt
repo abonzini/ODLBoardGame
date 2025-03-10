@@ -7,9 +7,16 @@ Ongoing tasks in order of priority:
 		- Need to define a pre-placeable id, with playedCard, w owner, and then branch skill with targeted option
 		- Skills are cards only with an interaction, defined in the card itself. They all inherit now from a common card ancestor. Will remove the triple Data container and instead will put in this common ancestor class, which will then clone itself as needed (except spell)
 		- Serialization and de-serialization of effects will be done as a master enum and then the context will be a bag of stuff
+		- Interaction handler with Entity passed, additional bag of data (e.g. damaged entity, damage amount, overflow, etc), and obviously a context info to operate with (e.g. how much damage I deal when I play, how many cards I'll draw)
 	- TODO:
-		- Unify all 3 card types into single common ancestor besides placeable
-		- Json Deserializer unifying all 3 also, no need to define 3...
+		- Unify all 3 card types and player into single common ancestor besides placeable.
+			Entity (all), have interactions) -> Skill
+													 -> BoardEntity (Have HP) -> Player (Deck, etc)
+																			  -> BoardPlaceable (Stealth) -> Unit (Mvmt)
+																										  -> Building (Idk)
+		- Json Deserializer unifying all 4 also, no need to define 4...
+		- Re-unify dealing of damage
+		- Implement tokenized system and overkill counter (eventually may be pushed and it's an easy insert)
 		- Change readme and peasant
 		- Define effect struct, bag of context and yolo, why optimize it... (readonly!)
 		- Implement interaction as interaction type and ctx elem
