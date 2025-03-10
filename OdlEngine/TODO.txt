@@ -1,9 +1,64 @@
 Ongoing tasks in order of priority:
-- JSON card deserialization cleanup. Make cards have a custom deserializer for sanity purposes. Result is human-readable and extensible cards. However JSON deserializing may be a bit annoying, may ask copilot
 - Implement Effects
-	- Description of an effect, effect handler
-	- Serialization and de-serialization of effects, EffectHandler (new state machine element with EFFECT_ ?
-	- Skills: Cards with an effect list. Rundimentary filter too. Rest is defined by targetability.
+	- Decided the following structure:
+		- Define an effect class with an ENUM tag and any parameters needed
+		- Only interactions and events. Spells are only interactions when played
+		- All interactions and events have effect handlers, pass the user of such effect. Also pass a ctx when applies
+		- Need to define a pre-placeable id, with playedCard, w owner, and then branch skill with targeted option
+		- Skills are cards only with an interaction, defined in the card itself. They all inherit now from a common card ancestor. Will remove the triple Data container and instead will put in this common ancestor class, which will then clone itself as needed (except spell)
+		- Serialization and de-serialization of effects will be done as a master enum and then the context will be a bag of stuff
+	- TODO:
+		- Unify all 3 card types into single common ancestor besides placeable
+		- Json Deserializer unifying all 3 also, no need to define 3...
+		- Change readme and peasant
+		- Define effect struct, bag of context and yolo, why optimize it... (readonly!)
+		- Implement interaction as interaction type and ctx elem
+		- Interaction handler with Card base, gets Ctx bag. For now they don't clone but instead use the original one? Unless interactions are added later but dealt later.
+		  Only card base needed, interaction type will decode the rest. E.g. when combat, implies I'm unit, so on.
+		  When march starts on my same tile, that's a placeable, regardless of what.
+	- Brainstorm results:
+			class:
+			list[] effects [effect1, effect2];
+			foreach I switch eff type and perform it, in order
+			interactions may ensue of course
+			
+			Finally, other cards reuse the effect type and triggered through interactions. "When played" is an interaction, and so it's easily defined here.
+			CARD
+			{
+				dict{interaction, effects[]}: [[effs1][effs2]]
+			}
+			PLAYABLE
+			{
+				dict{event,effects[]}: [[effs1][effs2]]
+			}
+			In each case, when effect is called:
+			effect_handler(user, effect_ctx)
+			{
+				switch:
+				{
+				case A:
+					var as A
+					lanedmg(spell, ctx)
+				}
+			}
+			problem is, need an inbetween stage of card for spell? Before placeable? when this "thing" kills or whatever,
+			Needs to contain lanetarget, owner (bump above!), in future may have extra stuff I guess
+
+			summon, card, laneTarget (multi), mode = etc
+
+			deal lane, first, 2
+
+			deal lane, first, 1 (interactions)
+
+			(eot)
+			deal direct, 2
+
+			on INTERACTION, has interaction unit, combat, stepin, being step on, etc
+			interaction, begin combat, end combat, etc, has ctx and user
+
+			=> Define an effect type which inside has the id only
+			=> Then a specific effect which inside has all params I need
+			& then, 
 - Rush
 	- Rush behaviour, flags and flag clean at beginning of turn
 	- Rush "card" as a skill card of cost 5 with effect list of (summon X lane 1) (summon X lane 2) (summon X lane 3)
@@ -13,15 +68,13 @@ Ongoing tasks in order of priority:
 	- Bldg damage
 - Stealth
 - Implement complex effects:
-	- Interactions (when placeable has absolute control of what's going on)
 	- Events (when an effect occurs globally and triggers a unit, e.g. EOT)
-	- Interactions are present in the unit, (hashable, serializable) also on placeable, will have a grammar-style description
-	- Events too (hashable, serializable in unit but not on main). THEY ARE IMPLEMENTED THROUGH AN EVENT HANDLER IN THE STATE MACHINE, WHICH IS PROPERLY FILLED/EMPTIED WHEN PLACEABLE ENTERS/LEAVES
+	- Events (hashable, serializable in unit but not on main). THEY ARE IMPLEMENTED THROUGH AN EVENT HANDLER IN THE STATE MACHINE, WHICH IS PROPERLY FILLED/EMPTIED WHEN PLACEABLE ENTERS/LEAVES
 	- Filters	
 	- Resulting action. Can this be done in a smooth way? Proposal: new class with Enum + <T1,T2,etc>. Idea is that similar to event handler, but with different enum, is processed where corresponds, and launched by event. By the time we reach unit effect, we run the effect, description of effect can also be fine tuned. E.g. effect, summons X (in lane), summons X (in lane), summons X (in lane), etc. 3 events. Skill card then also is simply a list of effects (when played). While playables have interrups.
 	---
 	- Buff tokens
-	- Buff tok is multiple extra fields (hashable and serializable) on the placeable
+	- Buff tok is just extra fields (hashable and serializable) on the placeable
 MACHINE, INSTEAD GENERATED IN A LOADED GAME OR AS THINGS ARE PLACED
 - Implement rest of rulebook
 	- Todo...

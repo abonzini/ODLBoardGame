@@ -44,28 +44,25 @@ namespace ODLGameEngine
                 {
                     string expa = splitLines[1];
                     string cardClass = splitLines[2];
-                    // Found all I need from card dir, now I import absolutely everything
-                    string cardInfoFile = Path.Combine(_baseDir, "CardData", expa, cardClass + ".json");
-                    List<CardDataContainer> allTheseCards = JsonSerializer.Deserialize<List<CardDataContainer>>(File.ReadAllText(cardInfoFile));
-                    foreach(CardDataContainer cardInfo in allTheseCards)
+                    // Found all I need from card dir, now I import the card json
+                    string cardInfoFile = Path.Combine(_baseDir, "CardData", expa, cardClass + $"{id.ToString()}.json");
+                    CardDataContainer cardInfo = JsonSerializer.Deserialize<CardDataContainer>(File.ReadAllText(cardInfoFile));
+                    // Loaded data, add one card to right places
+                    Card card = cardInfo.CardData;
+                    cardBasicData[id] = card;
+                    switch (card.CardType)
                     {
-                        // Loaded data, add one by one to right places
-                        Card card = cardInfo.CardData;
-                        cardBasicData[id] = card;
-                        switch (card.CardType)
-                        {
-                            case CardType.UNIT:
-                                unitData[id] = cardInfo.UnitData;
-                                break;
-                            case CardType.SKILL:
-                                skillData[id] = cardInfo.SkillData;
-                                break;
-                            case CardType.BUILDING:
-                                buildingData[id] = cardInfo.BuildingData;
-                                break;
-                            default:
-                                throw new InvalidDataException($"Card doesn't have proper info, in card document {cardInfoFile} id {card.Id}");
-                        }
+                        case CardType.UNIT:
+                            unitData[id] = cardInfo.UnitData;
+                            break;
+                        case CardType.SKILL:
+                            skillData[id] = cardInfo.SkillData;
+                            break;
+                        case CardType.BUILDING:
+                            buildingData[id] = cardInfo.BuildingData;
+                            break;
+                        default:
+                            throw new InvalidDataException($"Card doesn't have proper info, in card document {cardInfoFile} id {card.Id}");
                     }
                 }
             }

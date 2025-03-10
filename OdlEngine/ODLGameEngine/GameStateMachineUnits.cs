@@ -69,14 +69,14 @@ namespace ODLGameEngine
             if (cooldown == 0)
             {
                 ENGINE_AddMessageEvent($"P{unitOwnerId + 1}'s {unit.Name} advances");
-                int n = unit.Movement; // How much to advance
+                unit.CurrentRemainingAdvance = unit.Movement; // How much to advance
                 Lane lane = _detailedState.BoardState.GetLane(unit.LaneCoordinate); // Which lane
-                while(n > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
+                while(unit.CurrentRemainingAdvance > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
                     // Exiting current tile
                     if (lane.GetTileAbsolute(unit.TileCoordinate).PlayerUnitCount[opponentId] > 0) // If enemy unit in tile, will stop march here (and also attack)
                     {
-                        n = 0;
+                        unit.CurrentRemainingAdvance = 0;
                         Unit enemyUnit = null;
                         foreach(int enemyCandidateId in lane.GetTileAbsolute(unit.TileCoordinate).UnitsInTile) // Check all units in tile
                         {
@@ -92,7 +92,7 @@ namespace ODLGameEngine
                     }
                     else if (lane.GetLastTileCoord(unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
                     {
-                        n = 0;
+                        unit.CurrentRemainingAdvance = 0;
                         UNIT_DirectDamage(unit); // Deal direct damage!
                     }
                     else // Unit then can advance normally here, perform it
@@ -101,7 +101,7 @@ namespace ODLGameEngine
                         ENGINE_UnitTileTransition(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
                         // Entering new tile
                         // TODO: Building damage, building effects
-                        n--;
+                        unit.CurrentRemainingAdvance--;
                     }
                 }
             }

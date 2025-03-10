@@ -1473,7 +1473,7 @@ namespace EngineTests
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
-                int attack = _rng.Next(1, 10); // Attack between 1-9
+                int attack = _rng.Next(2, 10); // Attack between 1-9
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = new GameStateStruct

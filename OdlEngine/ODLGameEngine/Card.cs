@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace ODLGameEngine
 {
@@ -62,8 +64,11 @@ namespace ODLGameEngine
         public int Id { get; set; } = 0;
         public string Name { get; set; } = "";
         public string Text { get; set; } = "";
+        [JsonConverter(typeof(StringEnumConverter))]
         public CardType CardType { get; set; } = CardType.UNKNOWN;
+        [JsonConverter(typeof(StringEnumConverter))]
         public CardTargets TargetOptions { get; set; } = CardTargets.GLOBAL; // Which lane(s) if any the card could work on
+        [JsonConverter(typeof(StringEnumConverter))]
         public List<TargetCondition> TargetConditions { get; set; } = new List<TargetCondition>(); // What needs to happen for a card to be "playable" in a lane
         // Which tiles would be available to build in each
         public int PlainsBpCondition { get; set; } = 0b0;
@@ -75,7 +80,9 @@ namespace ODLGameEngine
         public string Movement { get; set; } = "";
         public string Attack { get; set; } = "";
         public int Rarity { get; set; } = 0;
+        [JsonConverter(typeof(StringEnumConverter))]
         public ExpansionId Expansion { get; set; } = ExpansionId.VANILLA;
+        [JsonConverter(typeof(StringEnumConverter))]
         public PlayerClassType ClassType { get; set; } = PlayerClassType.BASE;
         public bool StealthPlay { get; set; } = false; // Whether card triggers a stealth case
     }

@@ -1,33 +1,33 @@
-This is where card behaviour is modified easily.
+This is where card behaviour is added and modified easily.
 
-To find something, the tree is the following:
-**\[expansion\]** -> **\[class\].json**
+To find a specific card, the tree is the following:
+**\[expansion\]** -> **\[class\]** -> **\[number\].json**
 
-For example, first expansion base class would be Vanilla/Base.json, if there's X class, look for Vanilla/X.json
+For example, first expansion base class would be Vanilla/Base, if there's X class, look for Vanilla/X.
+Then, you'd look for the specific card.
+The path is deduced by the index.txt previously mentioned.
 
 The json file is somewhat complex, describes the elements of how a card is printed (i.e. what the user sees),
 and the actual thing that is played. The structure is the following:
 
 ```
-[
-	{
-	  "CardData":
-	  {
-	  },
-	  "UnitData":
-	  {
-	  },
-      "SkillData":
-	  {
-	  },
-      "BuildingData":
-	  {
-	  }
-	}
-]
+{
+    "CardData":
+    {
+    },
+    "UnitData":
+    {
+    },
+    "SkillData":
+    {
+    },
+    "BuildingData":
+    {
+    }
+}
 ```
-Where [] is the whole collection of all cards in this json file.
-The first {} is each card.
+
+The first {} is the card.
 **Every** card has ```CardData```, which describes both how the card looks to a player, and also when/how can it be played.
 Then, depending on whether the card is Unit/Skill/Building (& etc if new kinds appear later!), just describe the corresponding json, the rest wouldn't be used.
 
@@ -37,16 +37,24 @@ Basic data of how a card looks, imagine it as printing a card but also containin
 - ```Id:``` The unique card id, no other card can have this ID
 - ```Name:``` Name string of the card
 - ```Text:``` Text that describes the card effect loosely
-- ```CardType:``` Card type, whether spell, unit, etc
-    - ```UNKNOWN=0```
-    - ```UNIT=1```
-    - ```BUILDING=2```
-    - ```SKILL=3```
-- ```TargetMode:``` A number of where the card could potentially be played. 0 if not played in any lane (e.g. rush), 1, 2, 4 for respective lanes (plains, forest, mountains).
-It has been made like this so you can also have combined binary lanes, e.g. lane 3 means only exclude mountains.  
+- ```CardType:``` Card type
+    - ```UNKNOWN```
+    - ```UNIT```
+    - ```BUILDING```
+    - ```SKILL```
+- ```TargetMode:``` Where the card can be targeted. Options:
+    - ```GLOBAL```
+    - ```PLAINS```
+    - ```FOREST```
+    - ```MOUNTAIN```
+    - ```ALL_BUT_MOUNTAIN```
+    - ```ALL_BUT_FOREST```
+    - ```ALL_BUT_PLAINS```
+    - ```ANY_LANE```
+    - ```INVALID```
 - ```TargetConditions:``` Some cards are unable to be played without target, e.g. a skill that damages an enemy needs an enemy to be present (maybe in a specific lane), or similar. This is a collection (i.e. need to define with a []) and however many conditions we need.
 Multiple conditions need to be put carefully to avoid weird states.
-    - ```NONE=0``` No condition. Card would be played anytime unless other conditions also present. Technically this condition is unnecessary.
+    - ```NONE```
 - ```Bp conditions:``` only relevant for buildings, it's 3 separate integers that describe if the tiles (each bit = each tile) are available to be built on, depending on each building.
     - ```PlainsBpCondition```
     - ```ForestBpCondition```
@@ -57,10 +65,10 @@ Multiple conditions need to be put carefully to avoid weird states.
 - ```Attack:``` String for attack
 - ```Rarity:``` Rarity between 1-3 stars (0 if no rarity string)
 - ```Expansion:``` Expansion number
-    - ```VANILLA=0```
+    - ```VANILLA```
 - ```ClassType:``` If card is a class card...
-    - ```BASE=0```
-- ```StealthPlay:``` If card is a stealth card, it is represented differently by the engine.
+    - ```BASE```
+- ```StealthPlay:``` (true/false) if card is a stealth card.
 
 # UnitData
 When card is a unit, the unit needs to contain the following data. This will create a unit with the correct values and effects:

@@ -23,6 +23,10 @@ namespace ODLGameEngine
         [JsonProperty]
         public int MvtCooldownTimer { get; set; } = 0;
         /// <summary>
+        /// NON HASHED, NON SERIALIZED. Local count for a unit currently in march, to dynamically modify march if needed.
+        /// </summary>
+        public int CurrentRemainingAdvance { get; set; } = 0;
+        /// <summary>
         /// Gets the hash of the entity
         /// </summary>
         /// <returns>Hash code</returns>
