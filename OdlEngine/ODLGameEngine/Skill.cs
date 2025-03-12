@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
-    public class Skill
+    public class Skill : EntityBase
     {
-        // TODO: IMPLEMENT
+        // TODO: IMPLEMENT? For now just contains target type and it's not globally instantiated (i.e. not remembered in event stack)
     }
 }

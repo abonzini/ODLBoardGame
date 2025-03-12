@@ -18,6 +18,7 @@ namespace ODLGameEngine
             // Finally, playable ID is incremented for next playable
             int unitId = _detailedState.NextUnitIndex;
             Unit newSpawnedUnit = (Unit)unit.Clone(); // Clone in order to not break the same species
+            if(newSpawnedUnit.Name == "") { newSpawnedUnit.Name = newSpawnedUnit.CardPrintInfo.Title; }
             newSpawnedUnit.UniqueId = unitId;
             newSpawnedUnit.Owner = player;
             // Unit ready to be added

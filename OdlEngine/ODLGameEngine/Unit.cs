@@ -11,7 +11,7 @@ namespace ODLGameEngine
     /// Defines a unit that was placed on the board
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class Unit : PlaceableEntity
+    public class Unit : PlacedEntity
     {
         // Stats
         [JsonProperty]

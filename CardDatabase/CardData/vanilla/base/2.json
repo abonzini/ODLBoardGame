@@ -1,24 +1,23 @@
 {
-  "CardData":
-  {
-	"Id": 2,
-	"Name": "PEASANT",
-	"Text": "",
-	"CardType": 1,
-	"TargetMode": 0,
-	"Cost": "",
-	"Hp": "2",
-	"Movement": "1",
-	"Attack": "2",
-	"Rarity": 0,
-	"Expansion": 0,
-	"ClassType": 0
-  },
-  "UnitData":
-  {
-	"Name": "PEASANT",
+	"CardPrintInfo":
+	{
+		"Id": 2,
+		"Title": "PEASANT",
+		"Cost": "0",
+		"Hp": "2",
+		"Movement": "1",
+		"Attack": "2",
+		"Expansion": "VANILLA",
+		"ClassType": "BASE"
+	}
+	"CardPlayInfo":
+	{
+		"CardType": "UNIT",
+		"TargetOptions": "ANY_LANE",
+		"TargetConditions": [],
+		"StealthPlay": false
+	}
 	"Movement": 1,
 	"Attack": 2,
 	"Hp": 2
-  }
 }

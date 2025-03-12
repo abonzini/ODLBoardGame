@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
-    public class Building : PlaceableEntity
+    public class Building : PlacedEntity
     {
     }
 }

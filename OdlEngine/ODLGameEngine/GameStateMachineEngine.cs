@@ -431,7 +431,7 @@ namespace ODLGameEngine
                     eventType = EventType.DISCARD_FROM_HAND,
                     entity = p,
                     value = cardPlayed,
-                    description = $"P{p + 1} played {CardDb.GetCardData(cardPlayed).Name}"
+                    description = $"P{p + 1} played {CardDb.GetCard(cardPlayed).CardPrintInfo.Title}"
                 });
         }
         /// <summary>

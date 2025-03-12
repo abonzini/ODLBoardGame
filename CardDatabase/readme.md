@@ -4,4 +4,4 @@ To find something, the tree is the following:
 
 CardData/CardPictures -> **\[expansion\]** -> **\[class\]**
 
-There's also an *index.csv* file in base directory that correlates the card number (id) with the corresponding expansion/class for the program to easily find the desired card (not too much use for users).
+There's also an *index.csv* file in base directory that correlates the card number (id) with the corresponding card type and expansion/class for the program to easily find the desired card

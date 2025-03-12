@@ -345,7 +345,6 @@ namespace EngineTests
             u1 = new Unit()
             {
                 UniqueId = 1,
-                Card = 100,
                 Owner = 0,
                 LaneCoordinate = LaneID.PLAINS,
                 TileCoordinate = 2,

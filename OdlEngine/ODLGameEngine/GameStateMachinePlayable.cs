@@ -42,7 +42,7 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
             }
             // Now, no other option but to retrieve the actual card I'm attempting to play
-            Card cardData = CardDb.GetCardData(card);
+            EntityBase cardData = CardDb.GetCard(card);
             return PLAYABLE_GetOptions(cardData);
         }
         /// <summary>
@@ -67,8 +67,8 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
             // Otherwise, card can be played somewhere, need to see if user option is valid!            
-            Card cardData = CardDb.GetCardData(card);
-            if ((cardData.TargetOptions & chosenTarget) != 0 || (cardData.TargetOptions == chosenTarget)) // Then just need to verify tagets match
+            EntityBase cardData = CardDb.GetCard(card);
+            if ((cardData.CardPlayInfo.TargetOptions & chosenTarget) != 0 || (cardData.CardPlayInfo.TargetOptions == chosenTarget)) // Then just need to verify tagets match
             {
                 // Ok shit is going down, card needs to be paid and played now, this will result in a step and change of game state
                 try // Also, a player may die!
@@ -99,12 +99,12 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card"></param>
         /// <param name="chosenTarget"></param>
-        void PLAYABLE_PlayCard(Card card, CardTargets chosenTarget)
+        void PLAYABLE_PlayCard(EntityBase card, CardTargets chosenTarget)
         {
-            switch (card.CardType)
+            switch (card.CardPlayInfo.CardType)
             {
                 case CardType.UNIT:
-                    UNIT_PlayUnit((int)_detailedState.CurrentPlayer, CardDb.GetUnitData(card.Id), chosenTarget); // Plays the unit in corresponding place
+                    UNIT_PlayUnit((int)_detailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
                     break;
                 case CardType.SKILL:
                 case CardType.BUILDING:
@@ -120,7 +120,7 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Card they want to play</param>
         /// <returns>Whether the play outcome would be ok, and which targets could be picked</returns>
-        Tuple<PlayOutcome, CardTargets> PLAYABLE_GetOptions(Card card)
+        Tuple<PlayOutcome, CardTargets> PLAYABLE_GetOptions(EntityBase card)
         {
             PlayOutcome outcome = PlayOutcome.CANT_AFFORD;
             CardTargets possibleTargets = CardTargets.INVALID;
@@ -132,20 +132,20 @@ namespace ODLGameEngine
             }
             // Otherwise I can def afford, check if playable
             outcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (card.TargetOptions == CardTargets.GLOBAL)
+            if (card.CardPlayInfo.TargetOptions == CardTargets.GLOBAL)
             {
                 outcome = PLAYABLE_IsPlayableGlobal(card) ? PlayOutcome.OK : outcome;
                 possibleTargets = CardTargets.GLOBAL;
                 // If filled requirements, card playable
             }
-            else if (card.TargetOptions <= CardTargets.ANY_LANE) // Otherwise need to verify individual VALID(!) lanes
+            else if (card.CardPlayInfo.TargetOptions <= CardTargets.ANY_LANE) // Otherwise need to verify individual VALID(!) lanes
             {
                 int laneCandidate;
                 CardTargets validTargetsIfPossible = CardTargets.GLOBAL;
                 for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
                 {
                     laneCandidate = 1 << i;
-                    if (card.TargetOptions.HasFlag((CardTargets)laneCandidate)) // If this lane is one of the possible ones
+                    if (card.CardPlayInfo.TargetOptions.HasFlag((CardTargets)laneCandidate)) // If this lane is one of the possible ones
                     {
                         if (PLAYABLE_IsPlayableLane(card, (CardTargets)laneCandidate))
                         {
@@ -163,29 +163,29 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Which card</param>
         /// <returns>True if can afford</returns>
-        bool PLAYABLE_PlayerCanAfford(Card card)
+        bool PLAYABLE_PlayerCanAfford(EntityBase card)
         {
             // May need to be made smarter if someone does variable cost cards
-            return (_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Gold >= int.Parse(card.Cost));
+            return (_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Gold >= int.Parse(card.CardPrintInfo.Cost));
         }
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
         /// </summary>
         /// <param name="card">Card to check</param>
         /// <returns>Cost in gold of card</returns>
-        void PLAYABLE_PayCost(Card card)
+        void PLAYABLE_PayCost(EntityBase card)
         {
-            ENGINE_PlayerGoldChange((int)_detailedState.CurrentPlayer, -int.Parse(card.Cost));
+            ENGINE_PlayerGoldChange((int)_detailedState.CurrentPlayer, -int.Parse(card.CardPrintInfo.Cost));
         }
         /// <summary>
         /// Checks for a card with "global" tageting whether conditions are fulfilled
         /// </summary>
         /// <param name="card">Card to check</param>
         /// <returns>True if playable</returns>
-        bool PLAYABLE_IsPlayableGlobal(Card card)
+        bool PLAYABLE_IsPlayableGlobal(EntityBase card)
         {
             bool playable = true; // By default playable unless something happens
-            foreach (TargetCondition cond in card.TargetConditions) // Verify individual conditions of board
+            foreach (TargetCondition cond in card.CardPlayInfo.TargetConditions) // Verify individual conditions of board
             {
                 switch (cond)
                 {
@@ -203,12 +203,12 @@ namespace ODLGameEngine
         /// <param name="card">Which card</param>
         /// <param name="lane">Which lane</param>
         /// <returns>True if can be played in this lane</returns>
-        bool PLAYABLE_IsPlayableLane(Card card, CardTargets laneCandidate)
+        bool PLAYABLE_IsPlayableLane(EntityBase card, CardTargets laneCandidate)
         {
             Lane laneToCheck = _detailedState.BoardState.GetLane(laneCandidate);
             bool playable = true; // By default playable unless something happens
 
-            foreach (TargetCondition cond in card.TargetConditions) // Verify individual conditions of board
+            foreach (TargetCondition cond in card.CardPlayInfo.TargetConditions) // Verify individual conditions of board
             {
                 switch (cond)
                 {

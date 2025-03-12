@@ -348,7 +348,7 @@ namespace EngineTests
                     int handSize = sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount;
                     int cardIndexToPlay = rng.Next(handSize);
                     int cardIdToPlay = possibleCards[cardIndexToPlay]; // Get random card of the ones I generated
-                    Card cardToPlay = sm.CardDb.GetCardData(cardIdToPlay);
+                    EntityBase cardToPlay = sm.CardDb.GetCard(cardIdToPlay);
                     int currentGold = sm.GetDetailedState().PlayerStates[playerIndex].Gold;
                     Tuple <PlayOutcome, StepResult> res = sm.PlayCard(cardIdToPlay, CardTargets.GLOBAL);
                     possibleCards.RemoveAt(cardIndexToPlay); // Remove this one
@@ -357,7 +357,7 @@ namespace EngineTests
                     Assert.IsTrue(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.HasCard(cardIdToPlay)); // Card was discarded
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.CardCount, i+1); // Discard pile has correct number of cards
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount, handSize-1); // One less card in hand
-                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Gold, currentGold - int.Parse(cardToPlay.Cost)); // Spent the money
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Gold, currentGold - int.Parse(cardToPlay.CardPrintInfo.Cost)); // Spent the money
                     Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, player); // Player still in command
                     Assert.AreEqual(sm.GetDetailedState().CurrentState, States.ACTION_PHASE); // Still in action phase
                 }
