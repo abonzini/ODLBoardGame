@@ -60,12 +60,12 @@ namespace ODLGameEngine
                             }
                         }
                         if (enemyUnit == null) throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!");
-                        UNIT_Combat(unit, enemyUnit); // Let them fight.
+                        UNIT_DamageStep(unit, enemyUnit); // Let them fight.
                     }
                     else if (lane.GetLastTileCoord(unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
                     {
                         advanceCtx.CurrentMovement = 0;
-                        UNIT_AttackEntity(unit, _detailedState.PlayerStates[opponentId]); // Deal direct damage to enemy!
+                        UNIT_DamageStep(unit, _detailedState.PlayerStates[opponentId]); // Deal direct damage to enemy!
                     }
                     else // Unit then can advance normally here, perform it
                     {
@@ -89,25 +89,20 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="attacker">Attacking unit</param>
         /// <param name="defender">Defending unit</param>
-        void UNIT_Combat(Unit attacker, Unit defender)
+        void UNIT_DamageStep(Unit attacker, BoardEntity defender)
         {
+            DamageContext attackerDmgCtx, defenderDmgCtx;
             ENGINE_AddMessageEvent($"Combat between P{attacker.Owner + 1}'s {attacker.Name} and P{defender.Owner + 1}'s {defender.Name}");
-            // First, first unit will attack the second unit
-            UNIT_AttackEntity(attacker, defender);
-            // And then, the second unit attacks first unit
-            UNIT_AttackEntity(defender, attacker);
-        }
-        /// <summary>
-        /// Unit attacks an entity with HP, game processes
-        /// </summary>
-        /// <param name="attacker"></param>
-        /// <param name="defender"></param>
-        public void UNIT_AttackEntity(Unit attacker, BoardEntity defender)
-        {
-            ENGINE_AddMessageEvent($"P{attacker.Owner + 1}'s {attacker.Name} attacks {defender.Name}");
-            // TODO: This may involve more complex situations where the system checks how much damage was dealt, whithin a battle context
-            // And then check for example if unit was killed and so on, to activate interactions. But not needed now
-            _ = BOARDENTITY_DealDamage(attacker, defender, attacker.Attack);
+
+            // Surely, unit will apply damage to the victim
+            attackerDmgCtx = BOARDENTITY_DealDamage(attacker, defender, attacker.Attack); // TODO: GetAttack fn to incorporate buffs and such
+            if(defender is Unit defendingUnit)
+            {
+                // If defender was also a unit, then the attacker also receives damage
+                defenderDmgCtx = BOARDENTITY_DealDamage(defender, attacker, defendingUnit.Attack);
+            }
+
+            // TODO: Contexts are checked here! even death and damage taking, to avoid Units doing stuff in this critical damage step
         }
     }
 }

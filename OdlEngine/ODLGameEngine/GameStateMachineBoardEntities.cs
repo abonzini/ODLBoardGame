@@ -81,6 +81,14 @@ namespace ODLGameEngine
                 // Nothing to do
             }
         }
+        /// <summary>
+        /// An attacker damages a defender, damage is dealt a fixed amount.
+        /// THIS FUNCTION SHOULD NEVER TRIGGER ANY INTERACTION OR TRIGGERS!!!!
+        /// </summary>
+        /// <param name="attacker"></param>
+        /// <param name="defender"></param>
+        /// <param name="damage"></param>
+        /// <returns>Description of damage & outcome for processing</returns>
         DamageContext BOARDENTITY_DealDamage(EntityBase attacker, BoardEntity defender, int damage)
         {
             DamageContext damageCtx = new DamageContext() // Create info of the result of this action
