@@ -357,7 +357,7 @@ namespace EngineTests
                     Assert.IsTrue(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.HasCard(cardIdToPlay)); // Card was discarded
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].DiscardPile.CardCount, i+1); // Discard pile has correct number of cards
                     Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount, handSize-1); // One less card in hand
-                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Gold, currentGold - int.Parse(cardToPlay.CardPrintInfo.Cost)); // Spent the money
+                    Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].Gold, currentGold - int.Parse(cardToPlay.EntityPrintInfo.Cost)); // Spent the money
                     Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, player); // Player still in command
                     Assert.AreEqual(sm.GetDetailedState().CurrentState, States.ACTION_PHASE); // Still in action phase
                 }

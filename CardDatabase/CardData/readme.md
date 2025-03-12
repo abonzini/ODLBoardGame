@@ -11,7 +11,7 @@ The json file is somewhat complex, describes the card in its totality, as well a
 Every card, no matter the type, has the following elements inside no matter what:
 
 ```
-"CardPrintInfo":
+"EntityPrintInfo":
 {
     "Id": 0,
     "Title": "",
@@ -27,7 +27,7 @@ Every card, no matter the type, has the following elements inside no matter what
 ```
 
 ```
-"CardPlayInfo":
+"EntityPlayInfo":
 {
     "CardType": "UNKNOWN",
     "TargetOptions": "GLOBAL",
@@ -37,7 +37,7 @@ Every card, no matter the type, has the following elements inside no matter what
 ```
 
 Besides card-specific fields (explained below), these mandatory fields serve the following purpose:
-- **CardPrintInfo** contains all the visual information of how a card is "printed", includes data such as:
+- **EntityPrintInfo** contains all the visual information of how a card is "printed", includes data such as:
     - ```ID:``` Card ID number
     - ```Title:``` I.e. the card "name", or title of the card
     - ```Text:``` Card text/effect if any
@@ -45,7 +45,7 @@ Besides card-specific fields (explained below), these mandatory fields serve the
     - ```Rarity:``` The rarity of the card, ranging from 0 (generated) or 1-3
     - ```Expansion:``` Expansion name in card language
     - ```ClassType:``` Card class (or BASE)
-- **CardPlayInfo**
+- **EntityPlayInfo**
     - ```CardType:``` Type of card, for now UNIT, SKILL, BUILDING
     - ```TargetOptions:``` Where the card can be targeted. Options:
         - ```GLOBAL```

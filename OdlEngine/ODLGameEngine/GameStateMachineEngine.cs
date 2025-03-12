@@ -21,6 +21,8 @@ namespace ODLGameEngine
         {
             int auxInt1, auxInt2;
             Unit auxUnit;
+            PlacedEntity auxPlacedEntity;
+            BoardEntity auxBoardEntity;
             _currentStep?.events.Add(e);
             switch (e.eventType)
             {
@@ -91,49 +93,78 @@ namespace ODLGameEngine
                     _detailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2); // Remove from hand...
                     _detailedState.PlayerStates[auxInt1].DiscardPile.InsertCard(auxInt2); // And add to discard pile
                     break;
-                case EventType.INIT_UNIT:
-                    auxUnit = ((EntityEvent<Unit>)e).entity;
-                    _detailedState.BoardState.Units.Add(auxUnit.UniqueId, auxUnit); // Adds unit
-                    _detailedState.PlayerStates[auxUnit.Owner].NUnits++;
+                case EventType.INIT_ENTITY:
+                    auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
+                    switch(auxPlacedEntity.EntityPlayInfo.EntityType)
+                    {
+                        case EntityType.UNIT:
+                            _detailedState.BoardState.Units.Add(auxPlacedEntity.UniqueId, (Unit)auxPlacedEntity); // Adds unit
+                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits++;
+                            break;
+                        case EntityType.BUILDING:
+                            throw new NotImplementedException("Building init not implemented yet");
+                        default:
+                            throw new Exception("Can't initialize non-placed entities!");
+                    }
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
-                    _detailedState.NextUnitIndex++;
+                    _detailedState.NextUniqueIndex++;
                     break;
-                case EventType.UNIT_LANE_TRANSITION:
-                    auxUnit = ((EntityTransitionEvent<Unit, LaneID>)e).entity;
-                    ((EntityTransitionEvent<Unit, LaneID>)e).oldValue = auxUnit.LaneCoordinate; // Store old value first
-                    if(auxUnit.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
+                case EventType.ENTITY_LANE_TRANSITION:
+                    auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).entity;
+                    ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue = auxPlacedEntity.LaneCoordinate; // Store old value first
+                    if(auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).PlayerUnitCount[auxUnit.Owner]--;
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
+                        }
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
+                        {
+                            // Todo
+                        }
                     }
-                    auxUnit.LaneCoordinate = ((EntityTransitionEvent<Unit, LaneID>)e).newValue; // unit now has new value
+                    auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).newValue; // unit now has new value
                     // Finally, update count in lane(s)
-                    if (auxUnit.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
+                    if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).PlayerUnitCount[auxUnit.Owner]++;
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
+                        }
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
+                        {
+                            // Todo
+                        }
                     }
                     break;
-                case EventType.UNIT_TILE_TRANSITION:
-                    auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
-                    ((EntityTransitionEvent<Unit, int>)e).oldValue = auxUnit.TileCoordinate; // Store old value first
-                    if (auxUnit.TileCoordinate >= 0) // Remove count from old tile if applicable
+                case EventType.ENTITY_TILE_TRANSITION:
+                    auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, int>)e).entity;
+                    ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue = auxPlacedEntity.TileCoordinate; // Store old value first
+                    if (auxPlacedEntity.TileCoordinate >= 0) // Remove count from old tile if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]--;
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).UnitsInTile.Remove(auxUnit.UniqueId);
+                        if(auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Remove(auxPlacedEntity.UniqueId);
+                        }
                     }
-                    auxUnit.TileCoordinate = ((EntityTransitionEvent<Unit, int>)e).newValue; // unit now has new value
+                    auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).newValue; // unit now has new value
                     // Finally, update count in tile
-                    if (auxUnit.TileCoordinate >= 0) // Adds count to new tile if applicable
+                    if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).UnitsInTile.Add(auxUnit.UniqueId);
+                        _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
+                        _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Add(auxPlacedEntity.UniqueId);
                     }
                     break;
-                case EventType.DEINIT_UNIT: // Unit simply leaves field and user loses the unit
-                    auxUnit = ((EntityEvent<Unit>)e).entity;
-                    _detailedState.BoardState.Units.Remove(auxUnit.UniqueId);
-                    // Now, remove from player's
-                    _detailedState.PlayerStates[auxUnit.Owner].NUnits--;
+                case EventType.DEINIT_ENTITY: // Unit simply leaves field and user loses the unit
+                    auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
+                    if(auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                    {
+                        // Now, remove from player's
+                        _detailedState.BoardState.Units.Remove(auxPlacedEntity.UniqueId);
+                        _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits--;
+                    }
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
@@ -141,11 +172,11 @@ namespace ODLGameEngine
                     ((EntityTransitionEvent<Unit, int>)e).oldValue = auxUnit.MvtCooldownTimer; // Store old value first
                     auxUnit.MvtCooldownTimer = auxInt1;
                     break;
-                case EventType.UNIT_DAMAGE_COUNTER_CHANGE:
-                    auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
-                    auxInt1 = ((EntityTransitionEvent<Unit, int>)e).newValue;
-                    ((EntityTransitionEvent<Unit, int>)e).oldValue = auxUnit.DamageTokens;
-                    auxUnit.DamageTokens = auxInt1;
+                case EventType.ENTITY_DAMAGE_COUNTER_CHANGE:
+                    auxBoardEntity = ((EntityTransitionEvent<BoardEntity, int>)e).entity;
+                    auxInt1 = ((EntityTransitionEvent<BoardEntity, int>)e).newValue;
+                    ((EntityTransitionEvent<BoardEntity, int>)e).oldValue = auxBoardEntity.DamageTokens;
+                    auxBoardEntity.DamageTokens = auxInt1;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -159,6 +190,8 @@ namespace ODLGameEngine
         {
             int auxInt1, auxInt2;
             Unit auxUnit;
+            PlacedEntity auxPlacedEntity;
+            BoardEntity auxBoardEntity;
             switch (e.eventType)
             {
                 case EventType.STATE_TRANSITION:
@@ -212,56 +245,89 @@ namespace ODLGameEngine
                     _detailedState.PlayerStates[auxInt1].DiscardPile.RemoveCard(auxInt2); // Pop from discard pile
                     _detailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2); // Reinsert in hand
                     break;
-                case EventType.INIT_UNIT:
-                    auxUnit = ((EntityEvent<Unit>)e).entity;
-                    _detailedState.BoardState.Units.Remove(auxUnit.UniqueId); // Just removes the unit
-                    _detailedState.PlayerStates[auxUnit.Owner].NUnits--; 
+                case EventType.INIT_ENTITY:
+                    auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
+                    switch (auxPlacedEntity.EntityPlayInfo.EntityType)
+                    {
+                        case EntityType.UNIT:
+                            _detailedState.BoardState.Units.Remove(auxPlacedEntity.UniqueId); // Deinits unit
+                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits--;
+                            break;
+                        case EntityType.BUILDING:
+                            throw new NotImplementedException("Building init not implemented yet");
+                        default:
+                            throw new Exception("Can't initialize non-placed entities!");
+                    }
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
-                    _detailedState.NextUnitIndex--;
+                    _detailedState.NextUniqueIndex--;
                     break;
-                case EventType.UNIT_LANE_TRANSITION:
-                    auxUnit = ((EntityTransitionEvent<Unit, LaneID>)e).entity;
-                    // Update count in lane(s)
-                    if (auxUnit.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
+                case EventType.ENTITY_LANE_TRANSITION:
+                    auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).entity;
+                    if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).PlayerUnitCount[auxUnit.Owner]--;
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
+                        }
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
+                        }
                     }
-                    auxUnit.LaneCoordinate = ((EntityTransitionEvent<Unit, LaneID>)e).oldValue; // Restore prev value
-                    if (auxUnit.LaneCoordinate != LaneID.NO_LANE) // Restore the prev. lane
+                    auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue; // unit now has prev value
+                    // Finally, update count in lane(s)
+                    if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).PlayerUnitCount[auxUnit.Owner]++;
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
+                        }
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
+                        }
                     }
                     break;
-                case EventType.UNIT_TILE_TRANSITION:
-                    auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
+                case EventType.ENTITY_TILE_TRANSITION:
+                    auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, int>)e).entity;
                     // Update count of tile
-                    if (auxUnit.TileCoordinate >= 0) // Adds count to new tile if applicable
+                    if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]--;
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).UnitsInTile.Remove(auxUnit.UniqueId);
+                        if(auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Remove(auxPlacedEntity.UniqueId);
+                        }
                     }
-                    auxUnit.TileCoordinate = ((EntityTransitionEvent<Unit, int>)e).oldValue; // unit now has prev value
-                    if (auxUnit.TileCoordinate >= 0) // Update its count if applicable
+                    auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue; // unit now has prev value
+                    if (auxPlacedEntity.TileCoordinate >= 0) // Update its count if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).PlayerUnitCount[auxUnit.Owner]++;
-                        _detailedState.BoardState.GetLane(auxUnit.LaneCoordinate).GetTileAbsolute(auxUnit.TileCoordinate).UnitsInTile.Add(auxUnit.UniqueId);
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Add(auxPlacedEntity.UniqueId);
+                        }
                     }
                     break;
-                case EventType.DEINIT_UNIT: // Unit is simply sent from GY to field and user regains the unit (no positioning handled here)
-                    auxUnit = ((EntityEvent<Unit>)e).entity;
-                    _detailedState.BoardState.Units.Add(auxUnit.UniqueId, auxUnit);
-                    _detailedState.PlayerStates[auxUnit.Owner].NUnits++;
+                case EventType.DEINIT_ENTITY:
+                    auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
+                    if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                    {
+                        // Now, remove from player's
+                        _detailedState.BoardState.Units.Add(auxPlacedEntity.UniqueId, (Unit)auxPlacedEntity);
+                        _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits++;
+                    }
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
                     auxInt1 = ((EntityTransitionEvent<Unit, int>)e).oldValue;
                     auxUnit.MvtCooldownTimer = auxInt1;
                     break;
-                case EventType.UNIT_DAMAGE_COUNTER_CHANGE:
-                    auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
-                    auxInt1 = ((EntityTransitionEvent<Unit, int>)e).oldValue;
-                    auxUnit.DamageTokens = auxInt1;
+                case EventType.ENTITY_DAMAGE_COUNTER_CHANGE:
+                    auxBoardEntity = ((EntityTransitionEvent<BoardEntity, int>)e).entity;
+                    auxInt1 = ((EntityTransitionEvent<BoardEntity, int>)e).oldValue;
+                    auxBoardEntity.DamageTokens = auxInt1;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -431,7 +497,7 @@ namespace ODLGameEngine
                     eventType = EventType.DISCARD_FROM_HAND,
                     entity = p,
                     value = cardPlayed,
-                    description = $"P{p + 1} played {CardDb.GetCard(cardPlayed).CardPrintInfo.Title}"
+                    description = $"P{p + 1} played {CardDb.GetCard(cardPlayed).EntityPrintInfo.Title}"
                 });
         }
         /// <summary>
@@ -440,14 +506,14 @@ namespace ODLGameEngine
         /// <param name="p">Player who owns the unit</param>
         /// <param name="unit">Unit</param>
 
-        void ENGINE_InitializeUnit(Unit unit)
+        void ENGINE_InitializeEntity(PlacedEntity entity)
         {
             ENGINE_ExecuteEvent(
-                new EntityEvent<Unit>()
+                new EntityEvent<PlacedEntity>()
                 {
-                    eventType = EventType.INIT_UNIT,
-                    entity = unit,
-                    description = $"P{unit.Owner + 1} now has a {unit.Name}"
+                    eventType = EventType.INIT_ENTITY,
+                    entity = entity,
+                    description = $"P{entity.Owner + 1} now has a {entity.Name}"
                 });
         }
         /// <summary>
@@ -466,14 +532,14 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="unit">Which unit (needs to be initialized)</param>
         /// <param name="lane">Which lane</param>
-        void ENGINE_UnitLaneTransition(Unit unit, LaneID lane)
+        void ENGINE_EntityLaneTransition(PlacedEntity entity, LaneID laneId)
         {
             ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<Unit, LaneID>()
+                new EntityTransitionEvent<PlacedEntity, LaneID>()
                 {
-                    eventType = EventType.UNIT_LANE_TRANSITION,
-                    entity = unit,
-                    newValue = lane,
+                    eventType = EventType.ENTITY_LANE_TRANSITION,
+                    entity = entity,
+                    newValue = laneId,
                 });
         }
         /// <summary>
@@ -481,13 +547,13 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="unit">Which unit (needs to be initialized in a lane)</param>
         /// <param name="lane">Which tile</param>
-        void ENGINE_UnitTileTransition(Unit unit, int tile)
+        void ENGINE_EntityTileTransition(PlacedEntity entity, int tile)
         {
             ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<Unit, int>()
+                new EntityTransitionEvent<PlacedEntity, int>()
                 {
-                    eventType = EventType.UNIT_TILE_TRANSITION,
-                    entity = unit,
+                    eventType = EventType.ENTITY_TILE_TRANSITION,
+                    entity = entity,
                     newValue = tile,
                 });
         }
@@ -495,13 +561,13 @@ namespace ODLGameEngine
         /// Moves a unit from the field (alive) to graveyard (dead)
         /// </summary>
         /// <param name="unit">Unit to be sent to graveyard</param>
-        void ENGINE_DeinitializeUnit(Unit unit)
+        void ENGINE_DeinitializeEntity(PlacedEntity entity)
         {
             ENGINE_ExecuteEvent(
-                new EntityEvent<Unit>()
+                new EntityEvent<PlacedEntity>()
                 {
-                    eventType = EventType.DEINIT_UNIT,
-                    entity = unit
+                    eventType = EventType.DEINIT_ENTITY,
+                    entity = entity
                 });
         }
         /// <summary>
@@ -520,20 +586,20 @@ namespace ODLGameEngine
                 });
         }
         /// <summary>
-        /// Damage a unit, adds damage tokens
+        /// Change damage tokens of an entity
         /// </summary>
         /// <param name="unit">Unit to damage</param>
         /// <param name="newDamageCounters">How much damage</param>
-        void ENGINE_UnitDamageChange(Unit unit, int newDamageCounters)
+        void ENGINE_ChangeEntityDamageTokens(BoardEntity entity, int newDamageCounters)
         {
-            int delta = newDamageCounters - unit.DamageTokens;
+            int delta = newDamageCounters - entity.DamageTokens;
             ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<Unit, int>()
+                new EntityTransitionEvent<BoardEntity, int>()
                 {
-                    eventType = EventType.UNIT_DAMAGE_COUNTER_CHANGE,
-                    entity = unit,
+                    eventType = EventType.ENTITY_DAMAGE_COUNTER_CHANGE,
+                    entity = entity,
                     newValue = newDamageCounters,
-                    description = $"P{unit.Owner + 1}'s {unit.Name} {((delta > 0) ? "received" : "healed")} {Math.Abs(delta)} damage"
+                    description = $"P{entity.Owner + 1}'s {entity.Name} {((delta > 0) ? "received" : "healed")} {Math.Abs(delta)} damage"
                 });
         }
     }

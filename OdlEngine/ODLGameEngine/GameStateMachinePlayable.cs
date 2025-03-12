@@ -68,7 +68,7 @@ namespace ODLGameEngine
             }
             // Otherwise, card can be played somewhere, need to see if user option is valid!            
             EntityBase cardData = CardDb.GetCard(card);
-            if ((cardData.CardPlayInfo.TargetOptions & chosenTarget) != 0 || (cardData.CardPlayInfo.TargetOptions == chosenTarget)) // Then just need to verify tagets match
+            if ((cardData.EntityPlayInfo.TargetOptions & chosenTarget) != 0 || (cardData.EntityPlayInfo.TargetOptions == chosenTarget)) // Then just need to verify tagets match
             {
                 // Ok shit is going down, card needs to be paid and played now, this will result in a step and change of game state
                 try // Also, a player may die!
@@ -101,13 +101,13 @@ namespace ODLGameEngine
         /// <param name="chosenTarget"></param>
         void PLAYABLE_PlayCard(EntityBase card, CardTargets chosenTarget)
         {
-            switch (card.CardPlayInfo.CardType)
+            switch (card.EntityPlayInfo.EntityType)
             {
-                case CardType.UNIT:
+                case EntityType.UNIT:
                     UNIT_PlayUnit((int)_detailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
                     break;
-                case CardType.SKILL:
-                case CardType.BUILDING:
+                case EntityType.SKILL:
+                case EntityType.BUILDING:
                     // TODO!
                     break;
                 default:
@@ -132,20 +132,20 @@ namespace ODLGameEngine
             }
             // Otherwise I can def afford, check if playable
             outcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (card.CardPlayInfo.TargetOptions == CardTargets.GLOBAL)
+            if (card.EntityPlayInfo.TargetOptions == CardTargets.GLOBAL)
             {
                 outcome = PLAYABLE_IsPlayableGlobal(card) ? PlayOutcome.OK : outcome;
                 possibleTargets = CardTargets.GLOBAL;
                 // If filled requirements, card playable
             }
-            else if (card.CardPlayInfo.TargetOptions <= CardTargets.ANY_LANE) // Otherwise need to verify individual VALID(!) lanes
+            else if (card.EntityPlayInfo.TargetOptions <= CardTargets.ANY_LANE) // Otherwise need to verify individual VALID(!) lanes
             {
                 int laneCandidate;
                 CardTargets validTargetsIfPossible = CardTargets.GLOBAL;
                 for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
                 {
                     laneCandidate = 1 << i;
-                    if (card.CardPlayInfo.TargetOptions.HasFlag((CardTargets)laneCandidate)) // If this lane is one of the possible ones
+                    if (card.EntityPlayInfo.TargetOptions.HasFlag((CardTargets)laneCandidate)) // If this lane is one of the possible ones
                     {
                         if (PLAYABLE_IsPlayableLane(card, (CardTargets)laneCandidate))
                         {
@@ -166,7 +166,7 @@ namespace ODLGameEngine
         bool PLAYABLE_PlayerCanAfford(EntityBase card)
         {
             // May need to be made smarter if someone does variable cost cards
-            return (_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Gold >= int.Parse(card.CardPrintInfo.Cost));
+            return (_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Gold >= int.Parse(card.EntityPrintInfo.Cost));
         }
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
@@ -175,7 +175,7 @@ namespace ODLGameEngine
         /// <returns>Cost in gold of card</returns>
         void PLAYABLE_PayCost(EntityBase card)
         {
-            ENGINE_PlayerGoldChange((int)_detailedState.CurrentPlayer, -int.Parse(card.CardPrintInfo.Cost));
+            ENGINE_PlayerGoldChange((int)_detailedState.CurrentPlayer, -int.Parse(card.EntityPrintInfo.Cost));
         }
         /// <summary>
         /// Checks for a card with "global" tageting whether conditions are fulfilled
@@ -185,7 +185,7 @@ namespace ODLGameEngine
         bool PLAYABLE_IsPlayableGlobal(EntityBase card)
         {
             bool playable = true; // By default playable unless something happens
-            foreach (TargetCondition cond in card.CardPlayInfo.TargetConditions) // Verify individual conditions of board
+            foreach (TargetCondition cond in card.EntityPlayInfo.TargetConditions) // Verify individual conditions of board
             {
                 switch (cond)
                 {
@@ -208,7 +208,7 @@ namespace ODLGameEngine
             Lane laneToCheck = _detailedState.BoardState.GetLane(laneCandidate);
             bool playable = true; // By default playable unless something happens
 
-            foreach (TargetCondition cond in card.CardPlayInfo.TargetConditions) // Verify individual conditions of board
+            foreach (TargetCondition cond in card.EntityPlayInfo.TargetConditions) // Verify individual conditions of board
             {
                 switch (cond)
                 {

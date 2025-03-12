@@ -31,7 +31,7 @@ namespace ODLGameEngine
                 string[] splitLines = line.Split(',');
                 if(id == int.Parse(splitLines[0])) // Found the desired ID
                 {
-                    _ = Enum.TryParse(splitLines[1], out CardType cardtype);
+                    _ = Enum.TryParse(splitLines[1], out EntityType cardtype);
                     string expa = splitLines[2];
                     string cardClass = splitLines[3];
                     // Found all I need from card dir, now I import the card json
@@ -39,12 +39,12 @@ namespace ODLGameEngine
                     // Load the specific card data
                     switch (cardtype)
                     {
-                        case CardType.UNIT:
+                        case EntityType.UNIT:
                             cardEntity = JsonSerializer.Deserialize<EntityBase>(File.ReadAllText(cardInfoFile)); ;
                             break;
-                        case CardType.BUILDING:
-                        case CardType.SKILL:
-                        case CardType.UNKNOWN:
+                        case EntityType.BUILDING:
+                        case EntityType.SKILL:
+                        case EntityType.UNKNOWN:
                         default:
                             throw new Exception("Unrecognised card type when deserializing");
                     }

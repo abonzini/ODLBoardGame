@@ -9,12 +9,13 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
-    public enum CardType
+    public enum EntityType
     {
         UNKNOWN,
         UNIT,
         BUILDING,
-        SKILL
+        SKILL,
+        PLAYER
     }
 
     /// <summary>
@@ -58,7 +59,7 @@ namespace ODLGameEngine
     /// <summary>
     /// Will define how a card looks
     /// </summary>
-    public class CardPrintInfo
+    public class EntityPrintInfo
     {
         public int Id { get; set; } = 0;
         public string Title { get; set; } = "";
@@ -77,10 +78,10 @@ namespace ODLGameEngine
     /// <summary>
     /// Defines how a card is played
     /// </summary>
-    public class CardPlayInfo
+    public class EntityPlayInfo
     {
         [JsonConverter(typeof(StringEnumConverter))]
-        public CardType CardType { get; set; } = CardType.UNKNOWN;
+        public EntityType EntityType { get; set; } = EntityType.UNKNOWN;
         [JsonConverter(typeof(StringEnumConverter))]
         public CardTargets TargetOptions { get; set; } = CardTargets.GLOBAL; // Which lane(s) if any the card could work on
         [JsonConverter(typeof(StringEnumConverter))]
@@ -92,9 +93,9 @@ namespace ODLGameEngine
     public class EntityBase : ICloneable, IHashable
     {
         [JsonProperty]
-        public CardPlayInfo CardPlayInfo { get; set; } // Non-hashed, non-cloned as I just want to reference once
+        public EntityPlayInfo EntityPlayInfo { get; set; } = new EntityPlayInfo(); // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
-        public CardPrintInfo CardPrintInfo { get; set; } // Non-hashed, non-cloned as I just want to reference once
+        public EntityPrintInfo EntityPrintInfo { get; set; } // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
         public string Name { get; set; } = "";
         [JsonProperty]

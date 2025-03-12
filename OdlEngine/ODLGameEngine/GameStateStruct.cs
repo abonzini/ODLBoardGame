@@ -78,7 +78,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public int Seed { get; set; } = 0;
         [JsonProperty]
-        public int NextUnitIndex { get; set; } = 0;
+        public int NextUniqueIndex { get; set; } = 0;
         [JsonProperty]
         public CurrentPlayer CurrentPlayer { get; set; } = CurrentPlayer.OMNISCIENT;
         [JsonProperty]
@@ -91,7 +91,7 @@ namespace ODLGameEngine
             HashCode hash = new HashCode();
             hash.Add(CurrentState);
             hash.Add(Seed);
-            hash.Add(NextUnitIndex);
+            hash.Add(NextUniqueIndex);
             hash.Add(CurrentPlayer);
             hash.Add(PlayerStates[0].GetGameStateHash());
             hash.Add(PlayerStates[1].GetGameStateHash());

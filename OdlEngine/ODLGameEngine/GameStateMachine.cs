@@ -55,6 +55,8 @@ namespace ODLGameEngine
             _detailedState = state;
             _detailedState.Seed = seed;
             _rng = new Random(seed);
+            _detailedState.PlayerStates[0].Owner = 0; // Need for players to keep track of themselves...
+            _detailedState.PlayerStates[1].Owner = 1;
         }
 
         // --------------------------------------------------------------------------------------
@@ -154,6 +156,7 @@ namespace ODLGameEngine
         void STATE_LoadInitialPlayerData(int player, PlayerInitialData playerData)
         {
             _detailedState.PlayerStates[player].Name = playerData.Name;
+            _detailedState.PlayerStates[player].Owner = player;
             _detailedState.PlayerStates[player].PlayerClass = playerData.PlayerClass;
             _detailedState.PlayerStates[player].Deck.InitializeDeck(playerData.InitialDecklist);
         }

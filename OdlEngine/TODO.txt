@@ -8,13 +8,8 @@ Ongoing tasks in order of priority:
 		- Serialization and de-serialization of effects will be done as a master enum and then the context will be a bag of stuff
 		- Interaction handler with Entity passed, additional bag of data (e.g. damaged entity, damage amount, overflow, etc), and obviously a context info to operate with (e.g. how much damage I deal when I play, how many cards I'll draw)
 	- TODO:
-		- Re-unify dealing of damage
-		- Implement tokenized system and overkill counter (eventually may be pushed and it's an easy insert)
 		- Define effect struct, bag of context and yolo, why optimize it... (readonly!)
-		- Implement interaction as interaction type and ctx elem
 		- Interaction handler with Card base, gets Ctx bag. For now they don't clone but instead use the original one? Unless interactions are added later but dealt later.
-		  Only card base needed, interaction type will decode the rest. E.g. when combat, implies I'm unit, so on.
-		  When march starts on my same tile, that's a placeable, regardless of what.
 	- Brainstorm results:
 			class:
 			list[] effects [effect1, effect2];

@@ -83,9 +83,9 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Will play one of them
                 CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
-                int unitCounter1 = sm.GetDetailedState().NextUnitIndex;
+                int unitCounter1 = sm.GetDetailedState().NextUniqueIndex;
                 Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play it
-                int unitCounter2 = sm.GetDetailedState().NextUnitIndex;
+                int unitCounter2 = sm.GetDetailedState().NextUniqueIndex;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -95,7 +95,7 @@ namespace EngineTests
                 chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
                 // Play new one
                 res = sm.PlayCard(-1011117, chosenTarget); // Play it
-                int futureUnitCounter = sm.GetDetailedState().NextUnitIndex;
+                int futureUnitCounter = sm.GetDetailedState().NextUniqueIndex;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -108,11 +108,11 @@ namespace EngineTests
                 Assert.AreNotEqual(sm.GetDetailedState().BoardState.Units[unitCounter2].Attack, sm.GetDetailedState().BoardState.Units[unitCounter1].Attack);
                 // Finally, roll back!
                 sm.UndoPreviousStep();
-                Assert.AreEqual(unitCounter2, sm.GetDetailedState().NextUnitIndex); // And reverts properly
+                Assert.AreEqual(unitCounter2, sm.GetDetailedState().NextUniqueIndex); // And reverts properly
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 1);
                 Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 1);
                 sm.UndoPreviousStep();
-                Assert.AreEqual(unitCounter1, sm.GetDetailedState().NextUnitIndex); // And reverts properly
+                Assert.AreEqual(unitCounter1, sm.GetDetailedState().NextUniqueIndex); // And reverts properly
                 Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NUnits, 0);
                 Assert.AreEqual(sm.GetDetailedState().BoardState.Units.Count, 0);
             }
@@ -1283,7 +1283,7 @@ namespace EngineTests
                 ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
                 ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
                 Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
-                Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP - attack); // Now player 2 has less Hp
+                Assert.AreEqual(ps2.DamageTokens, attack); // Now player 2 has less Hp
                 Assert.AreNotEqual(ps1Hash, ps1.GetGameStateHash()); // Because they drew card
                 Assert.AreNotEqual(ps2Hash, ps2.GetGameStateHash());
                 Assert.AreEqual(sm.GetDetailedState().CurrentState, States.ACTION_PHASE); // Still in action phase, not EOG
@@ -1440,7 +1440,7 @@ namespace EngineTests
                 ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
                 ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
                 Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
-                Assert.AreEqual(ps2.Hp, 0); // Now player 2 is dead
+                Assert.AreEqual(ps2.Hp, ps2.DamageTokens); // Now player 2 is dead
                 Assert.AreEqual(ps1Hash, ps1.GetGameStateHash()); // Because the game ends during advance without drawing card!!!!
                 Assert.AreNotEqual(ps2Hash, ps2.GetGameStateHash()); // Because they are dead
                 Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
@@ -1518,7 +1518,7 @@ namespace EngineTests
                 ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
                 ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
                 Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
-                Assert.AreEqual(ps2.Hp, 0); // Now player 2 is dead
+                Assert.AreEqual(ps2.Hp, ps2.DamageTokens); // Now player 2 is dead
                 Assert.AreEqual(ps1Hash, ps1.GetGameStateHash()); // Because the game ends during advance without drawing card!!!!
                 Assert.AreNotEqual(ps2Hash, ps2.GetGameStateHash()); // Because they are dead
                 Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
@@ -1605,7 +1605,7 @@ namespace EngineTests
                     ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
                     ps2 = sm.GetDetailedState().PlayerStates[otherPlayerIndex];
                     Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
-                    Assert.AreEqual(ps2.Hp, 0); // Now player 2 is dead
+                    Assert.AreEqual(ps2.Hp, ps2.DamageTokens); // Now player 2 is dead
                     Assert.AreEqual(ps1Hash, ps1.GetGameStateHash()); // Because the game ends during advance without drawing card!!!!
                     Assert.AreNotEqual(ps2Hash, ps2.GetGameStateHash()); // Because they are dead
                     Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
