@@ -100,6 +100,8 @@ namespace ODLGameEngine
         public string Name { get; set; } = "";
         [JsonProperty]
         public int Owner { get; set; } = 0;
+        [JsonProperty]
+        public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non serialized, also when cloned, it links to the same reference and doesn't duplicate this
 
         // TODO: Interactions
         public virtual object Clone()

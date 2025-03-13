@@ -77,6 +77,9 @@ namespace ODLGameEngine
                     ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
                     // Then the play effects
                     PLAYABLE_PlayCard(cardData, chosenTarget);
+                    // INTERACTION: CARD IS PLAYED
+                    PlayContext playCtx = new PlayContext() { LaneTargets = chosenTarget };
+                    TRIGINTER_ProcessInteraction(cardData, InteractionType.WHEN_PLAYED, playCtx);
                     // Ends by transitioning to next action phase
                     ENGINE_ChangeState(States.ACTION_PHASE);
                 }

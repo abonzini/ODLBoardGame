@@ -61,7 +61,7 @@ Besides card-specific fields (explained below), these mandatory fields serve the
         - ```NONE```
     - ```StealthPlay:``` (true/false) if card is a stealth card
 
-Then, depending on the type of cards, additional fields are needed/used.
+Then, depending on the type of cards, additional fields are needed/used. Every type of card also can have **Triggers** and **Interactions** which are additional fields explained below. 
 
 # Units
 When card is a unit, the unit needs to contain the following data. This will create a unit with the correct values and effects:
@@ -77,3 +77,65 @@ Will write as I implement
 
 # BuildingData
 Will write as I implement
+
+# Trigger and Interaction Effects
+
+These define a card's "effects".
+The two types are:
+
+- **Triggers:** These will trigger when something happens globally, outside of the card's control. For example cards that are designed as "At the end of turn do X", or "When a player does X, this card does Y".
+- **Interactions:** Effects that are activated when somethign happens with a card. For example, a card that does something when taking damage, or when played. Most skills will have interactions as they will have effects when played.
+
+The way to define them on a card is with the same syntax, adding ```Interactions``` or ```Triggers``` effect.
+They are defined in json as a dictionary.
+The key is the type of trigger/interaction, and the value is a list of the effects that will be performed in sequence:
+
+```
+"Interactions":
+    {
+        "INTERACTION_TYPE":
+            [
+                {
+                    "EffectType": <...>
+                    <Param 1>: <...>
+                    <Param 2>: <...>
+                    <...>
+                },
+                {
+                    "EffectType": <...>
+                    <Param 1>: <...>
+                    <Param 2>: <...>
+                    <...>
+                },
+                <etc>
+            ],
+        "INTERACTION_TYPE":
+            [
+                {
+                    "EffectType": <...>
+                    <Param 1>: <...>
+                    <Param 2>: <...>
+                    <...>
+                },
+                {
+                    "EffectType": <...>
+                    <Param 1>: <...>
+                    <Param 2>: <...>
+                    <...>
+                },
+                <etc>
+            ],
+    }
+```
+
+In the example above, the ard would contain 2 interactions, and then each would perform a sequence of effects.
+An effect is described as an effect type, and a series of parameters that may be needed for the effect to work.
+This way, any card can be described in a dynamic, human readable way.
+
+## Interaction/Trigger types
+
+- ```WHEN_PLAYED:``` Will be executed when the card is played for the first time. Exmaples: Every single ```skill``` card
+
+## Effect Types
+
+- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes. ```CardNumber``` is the card number of the unit summoned, and ```CardTargets``` is one or more lane targets where the card(s) will be summoned card targets are worded identically as the targets in **EntityPlayInfo**. Examples: ```RUSH```
