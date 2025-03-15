@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +14,13 @@ namespace ODLGameEngine
         NO_TARGET_AVAILABLE,
         INVALID_TARGET,
         INVALID_CARD,
-        INVALID_GAME_STATE
+        INVALID_GAME_STATE,
+        POWER_ALREADY_USED
+    }
+    public enum PlayType
+    {
+        PLAY_FROM_HAND,
+        ACTIVE_POWER
     }
     public partial class GameStateMachine
     {
@@ -28,18 +35,32 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Card to play</param>
         /// <returns>If playable, and where (if playable)</returns>
-        public Tuple<PlayOutcome, CardTargets> GetPlayableOptions(int card)
+        public Tuple<PlayOutcome, CardTargets> GetPlayableOptions(int card, PlayType playType)
         {
             // Check whether we're in the right place first (can only do this on play state)
             if(_detailedState.CurrentState != States.ACTION_PHASE)
             {
-                return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_GAME_STATE, CardTargets.INVALID); // Reutnr
+                return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_GAME_STATE, CardTargets.INVALID); // Return
             }
-            // An extra check first, whether card actually exists in hand
-            AssortedCardCollection hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
-            if (!hand.HasCard(card)) // Card not in hand!
+            // An extra check first, whether card actually exists in hand (if applicable)
+            if(playType == PlayType.PLAY_FROM_HAND)
             {
-                return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
+                AssortedCardCollection hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
+                if (!hand.HasCard(card)) // Card not in hand!
+                {
+                    return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
+                }
+            }
+            else if (playType == PlayType.ACTIVE_POWER)
+            {
+                if (!_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].PowerAvailable) // Power not available!
+                {
+                    return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.POWER_ALREADY_USED, CardTargets.INVALID); // Return this (invalid card in hand!)
+                }
+            }
+            else
+            {
+                //??
             }
             // Now, no other option but to retrieve the actual card I'm attempting to play
             EntityBase cardData = CardDb.GetCard(card);
@@ -51,11 +72,12 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Which card to play</param>
         /// <param name="chosenTarget">Where to play card</param>
+        /// <param name="playType">The type of play, default is standard "play from hand"</param>
         /// <returns>Outcome, and Step result (as in step() if successful</returns>
-        public Tuple<PlayOutcome, StepResult> PlayCard(int card, CardTargets chosenTarget)
+        public Tuple<PlayOutcome, StepResult> PlayCard(int card, CardTargets chosenTarget, PlayType playType = PlayType.PLAY_FROM_HAND)
         {
             // I need to verify whether chosen card is playable
-            Tuple<PlayOutcome, CardTargets> cardOptions = GetPlayableOptions(card); // Does same checks as before, whether a card can be played, and where
+            Tuple<PlayOutcome, CardTargets> cardOptions = GetPlayableOptions(card, playType); // Does same checks as before, whether a card can be played, and where
             if (cardOptions.Item1 != PlayOutcome.OK)
             {
                 return new Tuple<PlayOutcome, StepResult>(cardOptions.Item1, null); // If failure, return type of failure, can't be played!
@@ -74,11 +96,14 @@ namespace ODLGameEngine
                 try // Also, a player may die!
                 {
                     PLAYABLE_PayCost(cardData);
-                    ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
+                    if(playType == PlayType.PLAY_FROM_HAND)
+                    {
+                        ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
+                    }
                     // Then the play effects
                     PLAYABLE_PlayCard(cardData, chosenTarget);
                     // INTERACTION: CARD IS PLAYED
-                    PlayContext playCtx = new PlayContext() { LaneTargets = chosenTarget };
+                    PlayContext playCtx = new PlayContext() { Player = (int)_detailedState.CurrentPlayer, LaneTargets = chosenTarget };
                     TRIGINTER_ProcessInteraction(cardData, InteractionType.WHEN_PLAYED, playCtx);
                     // Ends by transitioning to next action phase
                     ENGINE_ChangeState(States.ACTION_PHASE);
@@ -94,9 +119,20 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
         }
-
+        /// <summary>
+        /// Plays the active power for a character
+        /// </summary>
+        /// <returns>Like PlayCard, chain of effects after power was played</returns>
+        public Tuple<PlayOutcome, StepResult> PlayActivePower()
+        {
+            Tuple<PlayOutcome, StepResult> res = PlayCard(GameConstants.RUSH_CARD_ID, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
+            if(res.Item1 == PlayOutcome.OK)
+            {
+                ENGINE_ChangePlayerPowerAvailability(_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer], false);
+            }
+            return res;
+        }
         // Back-end (private)
-
         /// <summary>
         /// Plays a card effect on current player, play is verified and card not anymore in hand, but all effects need to be made
         /// </summary>

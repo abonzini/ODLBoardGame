@@ -1,5 +1,5 @@
 {
-	"CardPrintInfo":
+	"EntityPrintInfo":
 	{
 		"Id": 2,
 		"Title": "PEASANT",
@@ -10,7 +10,7 @@
 		"Expansion": "VANILLA",
 		"ClassType": "BASE"
 	}
-	"CardPlayInfo":
+	"EntityPlayInfo":
 	{
 		"CardType": "UNIT",
 		"TargetOptions": "ANY_LANE",

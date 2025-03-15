@@ -138,4 +138,20 @@ This way, any card can be described in a dynamic, human readable way.
 
 ## Effect Types
 
-- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes. ```CardNumber``` is the card number of the unit summoned, and ```CardTargets``` is one or more lane targets where the card(s) will be summoned card targets are worded identically as the targets in **EntityPlayInfo**. Examples: ```RUSH```
+- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes. ```CardNumber``` is the card number of the unit summoned, ```PlayerTarget``` is the player who will own the unit, and ```CardTargets``` is one or more lane targets where the card(s) will be summoned. Examples: ```RUSH```
+
+## Enum Values
+
+- ```CardTargets```
+    - ```GLOBAL```. For cards where the target is the "whole board" 
+    - ```PLAINS```
+    - ```FOREST```
+    - ```MOUNTAIN```
+    - ```ALL_BUT_MOUNTAIN```
+    - ```ALL_BUT_FOREST```
+    - ```ALL_BUT_PLAINS```
+    - ```ANY_LANE```
+    - ```INVALID```
+- ```TargetPlayer```
+    -```CARD_PLAYER```: Player of the card receives the effect
+    -```CARD_PLAYER_OPPONENT```: Player opposing the card player will receive the effect

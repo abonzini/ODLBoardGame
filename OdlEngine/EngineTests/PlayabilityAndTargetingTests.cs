@@ -35,7 +35,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for(int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-(100 + i * 10));
+                    Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-(100 + i * 10), PlayType.PLAY_FROM_HAND);
                     if(i <= 4)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
@@ -70,7 +70,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-(100 + i)); // Ok in all cases with valid target
+                    Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-(100 + i), PlayType.PLAY_FROM_HAND); // Ok in all cases with valid target
                     if (i <= 7)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // OK
@@ -107,7 +107,7 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     if(st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests
                     {
-                        Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-100);
+                        Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(-100, PlayType.PLAY_FROM_HAND);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_GAME_STATE);
                         Assert.AreEqual(res.Item2, CardTargets.INVALID);
                     }
@@ -140,7 +140,7 @@ namespace EngineTests
                 {
                     if (i > 4) // Only test incorrect ones as correct ones are in another test
                     {
-                        Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(possibleCards[i]);
+                        Tuple<PlayOutcome, CardTargets> res = sm.GetPlayableOptions(possibleCards[i], PlayType.PLAY_FROM_HAND);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_CARD); // Would be an error!
                         Assert.AreEqual(res.Item2, CardTargets.INVALID); // Also this invalid...
                     }

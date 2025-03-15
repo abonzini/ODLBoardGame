@@ -23,6 +23,7 @@ namespace ODLGameEngine
             Unit auxUnit;
             PlacedEntity auxPlacedEntity;
             BoardEntity auxBoardEntity;
+            PlayerState auxPlayerState;
             _currentStep?.events.Add(e);
             switch (e.eventType)
             {
@@ -178,6 +179,11 @@ namespace ODLGameEngine
                     ((EntityTransitionEvent<BoardEntity, int>)e).oldValue = auxBoardEntity.DamageTokens;
                     auxBoardEntity.DamageTokens = auxInt1;
                     break;
+                case EventType.PLAYER_POWER_AVAILABILITY:
+                    auxPlayerState = ((EntityTransitionEvent<PlayerState, bool>)e).entity;
+                    ((EntityTransitionEvent<PlayerState, bool>)e).oldValue = auxPlayerState.PowerAvailable;
+                    auxPlayerState.PowerAvailable = ((EntityTransitionEvent<PlayerState, bool>)e).newValue;
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -192,6 +198,7 @@ namespace ODLGameEngine
             Unit auxUnit;
             PlacedEntity auxPlacedEntity;
             BoardEntity auxBoardEntity;
+            PlayerState auxPlayerState;
             switch (e.eventType)
             {
                 case EventType.STATE_TRANSITION:
@@ -328,6 +335,10 @@ namespace ODLGameEngine
                     auxBoardEntity = ((EntityTransitionEvent<BoardEntity, int>)e).entity;
                     auxInt1 = ((EntityTransitionEvent<BoardEntity, int>)e).oldValue;
                     auxBoardEntity.DamageTokens = auxInt1;
+                    break;
+                case EventType.PLAYER_POWER_AVAILABILITY:
+                    auxPlayerState = ((EntityTransitionEvent<PlayerState, bool>)e).entity;
+                    auxPlayerState.PowerAvailable = ((EntityTransitionEvent<PlayerState, bool>)e).oldValue;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -600,6 +611,21 @@ namespace ODLGameEngine
                     entity = entity,
                     newValue = newDamageCounters,
                     description = $"P{entity.Owner + 1}'s {entity.Name} {((delta > 0) ? "received" : "healed")} {Math.Abs(delta)} damage"
+                });
+        }
+        /// <summary>
+        /// Sets the state of player's active power
+        /// </summary>
+        /// <param name="player">Which player</param>
+        /// <param name="powerAvailability">New state</param>
+        void ENGINE_ChangePlayerPowerAvailability(PlayerState player, bool  powerAvailability)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<PlayerState, bool>()
+                {
+                    eventType = EventType.PLAYER_POWER_AVAILABILITY,
+                    entity = player,
+                    newValue = powerAvailability
                 });
         }
     }

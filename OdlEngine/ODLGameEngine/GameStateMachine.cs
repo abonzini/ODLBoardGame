@@ -29,7 +29,7 @@ namespace ODLGameEngine
         {
             get
             {
-                _cardDb ??= new CardFinder(".\\..\\..\\..\\..\\CardDatabase"); // Shouldn't happen unless testing!! Wonder if this path is always ok
+                _cardDb ??= new CardFinder(".\\..\\..\\..\\..\\..\\CardDatabase"); // Shouldn't happen unless testing!! Wonder if this path is always ok
                 return _cardDb;
             }
             set
@@ -196,6 +196,7 @@ namespace ODLGameEngine
             }
             STATE_DeckDrawMultiple(playerId, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Current player draws
             ENGINE_PlayerGoldChange(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Current player gets gold
+            ENGINE_ChangePlayerPowerAvailability(_detailedState.PlayerStates[playerId], true); // Player can now use active power again
         }
         /// <summary>
         /// Shuffles a player deck

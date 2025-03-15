@@ -17,10 +17,34 @@ namespace ODLGameEngine
         {
             if (entity.Interactions != null && entity.Interactions.TryGetValue(inter, out List<Effect> effects))
             {
-                EffectContext sequenceContext = null; // TODO: Basically stores local info about this context but not needed right now
+                int auxInt;
+                EntityBase auxCardData;
+                //EffectContext sequenceContext = null; // TODO: Basically stores local info about this context but not needed right now
                 foreach (Effect effect in effects) // Execute series of events for the card in question
                 {
-                    // Start doing each one
+                    switch(effect.EffectType)
+                    {
+                        case EffectType.SUMMON_UNIT:
+                            // Unit summoning is made without considering cost and the sort, so just go to Playables, play card
+                            auxCardData = CardDb.GetCard(effect.CardNumber);
+                            auxInt = effect.TargetPlayer switch
+                            {
+                                PlayerTarget.CARD_PLAYER => ((PlayContext)specificContext).Player,
+                                PlayerTarget.CARD_PLAYER_OPPONENT => 1 - ((PlayContext)specificContext).Player,
+                                _ => throw new NotImplementedException("Invalid player target"),
+                            };
+                            for (int i = 1; i <= GameConstants.BOARD_LANES_NUMBER; i++)
+                            {
+                                CardTargets nextLane = (CardTargets)(1 << i); // Get lanes in order, can be randomized if needed
+                                if(effect.LaneTargets.HasFlag(nextLane)) // If this lane is a valid target for this unt
+                                {
+                                    UNIT_PlayUnit(auxInt, (Unit)auxCardData, nextLane); // Plays the unit
+                                }
+                            }
+                            break;
+                        default:
+                            throw new NotImplementedException("Effect type not implemented yet");
+                    }
                 }
             }
         }

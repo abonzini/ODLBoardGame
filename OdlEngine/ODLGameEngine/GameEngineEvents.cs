@@ -64,7 +64,8 @@ namespace ODLGameEngine
         ENTITY_TILE_TRANSITION,
         DEINIT_ENTITY,
         UNIT_MOVEMENT_COOLDOWN_VALUE,
-        ENTITY_DAMAGE_COUNTER_CHANGE
+        ENTITY_DAMAGE_COUNTER_CHANGE,
+        PLAYER_POWER_AVAILABILITY
     }
 
     public class GameEngineEvent

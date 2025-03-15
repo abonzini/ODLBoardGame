@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace ODLGameEngine
 {
@@ -31,19 +31,21 @@ namespace ODLGameEngine
                 string[] splitLines = line.Split(',');
                 if(id == int.Parse(splitLines[0])) // Found the desired ID
                 {
-                    _ = Enum.TryParse(splitLines[1], out EntityType cardtype);
+                    _ = Enum.TryParse(splitLines[1].ToUpper(), out EntityType cardtype);
                     string expa = splitLines[2];
                     string cardClass = splitLines[3];
                     // Found all I need from card dir, now I import the card json
-                    string cardInfoFile = Path.Combine(_baseDir, "CardData", expa, cardClass + $"{id}.json");
+                    string cardInfoFile = Path.Combine(_baseDir, "CardData", expa, cardClass, $"{id}.json");
                     // Load the specific card data
                     switch (cardtype)
                     {
                         case EntityType.UNIT:
-                            cardEntity = JsonSerializer.Deserialize<EntityBase>(File.ReadAllText(cardInfoFile)); ;
+                            cardEntity = JsonConvert.DeserializeObject<Unit>(File.ReadAllText(cardInfoFile));
+                            break;
+                        case EntityType.SKILL:
+                            cardEntity = JsonConvert.DeserializeObject<Skill>(File.ReadAllText(cardInfoFile));
                             break;
                         case EntityType.BUILDING:
-                        case EntityType.SKILL:
                         case EntityType.UNKNOWN:
                         default:
                             throw new Exception("Unrecognised card type when deserializing");

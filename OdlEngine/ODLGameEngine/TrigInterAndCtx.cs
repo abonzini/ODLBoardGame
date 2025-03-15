@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +13,7 @@ namespace ODLGameEngine
     /// <summary>
     /// When the interaction is triggered
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum InteractionType
     {
         WHEN_PLAYED
@@ -18,18 +21,32 @@ namespace ODLGameEngine
     /// <summary>
     /// What sort of effect is going to be made
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum EffectType
     {
         SUMMON_UNIT
+    }
+    /// <summary>
+    /// Player who is target of a card effect
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum PlayerTarget
+    {
+        CARD_PLAYER,
+        CARD_PLAYER_OPPONENT
     }
     /// <summary>
     /// Effect is described by a type and a series of modifiers that define the effect
     /// </summary>
     public class Effect
     {
-        public readonly EffectType EffectType;
-        public readonly int CardNumber;
-        public readonly CardTargets LaneTargets;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public EffectType EffectType;
+        public int CardNumber;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public PlayerTarget TargetPlayer;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public CardTargets LaneTargets;
     }
 
     // CONTEXT CONTANERS
@@ -40,6 +57,7 @@ namespace ODLGameEngine
     /// </summary>
     public class PlayContext : EffectContext
     {
+        public int Player;
         public CardTargets LaneTargets;
     }
     /// <summary>

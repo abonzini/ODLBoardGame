@@ -28,7 +28,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public int Gold { get; set; } = 0;
         [JsonProperty]
-        public bool RushAvailable { get; set; } = true;
+        public bool PowerAvailable { get; set; } = true;
         [JsonProperty]
         public int NBuildings { get; set; } = 0;
         [JsonProperty]
@@ -46,7 +46,7 @@ namespace ODLGameEngine
             hash.Add(base.GetGameStateHash());
             hash.Add(PlayerClass);
             hash.Add(Gold);
-            hash.Add(RushAvailable);
+            hash.Add(PowerAvailable);
             hash.Add(Hand.GetGameStateHash());
             hash.Add(Deck.GetGameStateHash());
             hash.Add(DiscardPile.GetGameStateHash());

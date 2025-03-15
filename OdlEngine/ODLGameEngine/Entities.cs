@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum EntityType
     {
         UNKNOWN,
@@ -21,6 +22,7 @@ namespace ODLGameEngine
     /// <summary>
     /// Which expansion the card belongs to
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ExpansionId
     {
         VANILLA
@@ -30,6 +32,7 @@ namespace ODLGameEngine
     /// Defines how/where card can be targeted, useful for giving options at a first glance to a player
     /// </summary>
     [Flags]
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum CardTargets
     {
         GLOBAL = 0,
@@ -46,6 +49,7 @@ namespace ODLGameEngine
     /// <summary>
     /// The condition that makes the card say "yes, this (lane?) is a valid target"
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum TargetCondition
     {
         NONE, /// Can be played always
@@ -97,11 +101,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public EntityPrintInfo EntityPrintInfo { get; set; } // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
-        public string Name { get; set; } = "";
-        [JsonProperty]
-        public int Owner { get; set; } = 0;
-        [JsonProperty]
-        public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non serialized, also when cloned, it links to the same reference and doesn't duplicate this
+        public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 
         // TODO: Interactions
         public virtual object Clone()
@@ -116,8 +116,6 @@ namespace ODLGameEngine
         public virtual int GetGameStateHash()
         {
             HashCode hash = new HashCode();
-            hash.Add(Name);
-            hash.Add(Owner);
             return hash.ToHashCode();
         }
     }
@@ -125,6 +123,10 @@ namespace ODLGameEngine
     [JsonObject(MemberSerialization.OptIn)]
     public class BoardEntity : EntityBase
     {
+        [JsonProperty]
+        public string Name { get; set; } = "";
+        [JsonProperty]
+        public int Owner { get; set; } = 0;
         [JsonProperty]
         public int Hp { get; set; } = 0;
         [JsonProperty]
@@ -137,6 +139,8 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(base.GetGameStateHash());
+            hash.Add(Name);
+            hash.Add(Owner);
             hash.Add(Hp);
             hash.Add(DamageTokens);
             return hash.ToHashCode();

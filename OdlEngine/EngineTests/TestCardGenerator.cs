@@ -21,7 +21,7 @@ namespace EngineTests
         /// <returns>Test generator</returns>
         public static TestCardGenerator GenerateTestCardGenerator()
         {
-            return new TestCardGenerator(".\\..\\..\\..\\..\\CardDatabase");
+            return new TestCardGenerator(".\\..\\..\\..\\..\\..\\CardDatabase");
         }
         public override EntityBase GetCard(int id)
         {

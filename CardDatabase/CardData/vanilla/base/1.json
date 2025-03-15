@@ -1,0 +1,27 @@
+{
+	"EntityPlayInfo":
+	{
+		"EntityType": "SKILL",
+		"TargetOptions": "GLOBAL"
+	},
+	"EntityPrintInfo":
+	{
+		"Id": 1,
+		"Title": "RUSH",
+		"Cost": "5",
+		"Expansion": "VANILLA",
+		"ClassType": "BASE"
+	},
+	"Interactions":
+	{
+		"WHEN_PLAYED":
+		[
+			{
+				"EffectType": "SUMMON_UNIT",
+				"TargetPlayer": "CARD_PLAYER",
+				"CardNumber": 1,
+				"LaneTargets": "ANY_LANE"
+			}
+		]
+	}
+}
