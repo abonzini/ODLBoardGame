@@ -100,6 +100,10 @@ namespace ODLGameEngine
                     {
                         ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
                     }
+                    else if(playType == PlayType.ACTIVE_POWER)
+                    {
+                        ENGINE_ChangePlayerPowerAvailability(_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer], false);
+                    }
                     // Then the play effects
                     PLAYABLE_PlayCard(cardData, chosenTarget);
                     // INTERACTION: CARD IS PLAYED
@@ -126,10 +130,6 @@ namespace ODLGameEngine
         public Tuple<PlayOutcome, StepResult> PlayActivePower()
         {
             Tuple<PlayOutcome, StepResult> res = PlayCard(GameConstants.RUSH_CARD_ID, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
-            if(res.Item1 == PlayOutcome.OK)
-            {
-                ENGINE_ChangePlayerPowerAvailability(_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer], false);
-            }
             return res;
         }
         // Back-end (private)
@@ -145,7 +145,8 @@ namespace ODLGameEngine
                 case EntityType.UNIT:
                     UNIT_PlayUnit((int)_detailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
                     break;
-                case EntityType.SKILL:
+                case EntityType.SKILL: // Nothing needed as skills don't introduce new entities
+                    break;
                 case EntityType.BUILDING:
                     // TODO!
                     break;

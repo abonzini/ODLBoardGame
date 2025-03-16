@@ -33,7 +33,7 @@ namespace ODLGameEngine
                                 PlayerTarget.CARD_PLAYER_OPPONENT => 1 - ((PlayContext)specificContext).Player,
                                 _ => throw new NotImplementedException("Invalid player target"),
                             };
-                            for (int i = 1; i <= GameConstants.BOARD_LANES_NUMBER; i++)
+                            for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
                             {
                                 CardTargets nextLane = (CardTargets)(1 << i); // Get lanes in order, can be randomized if needed
                                 if(effect.LaneTargets.HasFlag(nextLane)) // If this lane is a valid target for this unt

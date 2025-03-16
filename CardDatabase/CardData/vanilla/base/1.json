@@ -19,7 +19,7 @@
 			{
 				"EffectType": "SUMMON_UNIT",
 				"TargetPlayer": "CARD_PLAYER",
-				"CardNumber": 1,
+				"CardNumber": 2,
 				"LaneTargets": "ANY_LANE"
 			}
 		]

@@ -9,14 +9,12 @@
 		"Attack": "2",
 		"Expansion": "VANILLA",
 		"ClassType": "BASE"
-	}
+	},
 	"EntityPlayInfo":
 	{
-		"CardType": "UNIT",
-		"TargetOptions": "ANY_LANE",
-		"TargetConditions": [],
-		"StealthPlay": false
-	}
+		"EntityType": "UNIT",
+		"TargetOptions": "ANY_LANE"
+	},
 	"Movement": 1,
 	"Attack": 2,
 	"Hp": 2

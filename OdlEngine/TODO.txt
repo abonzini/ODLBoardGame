@@ -1,5 +1,4 @@
 Ongoing tasks in order of priority:
-- Rush test. Finished failing tests, now need the passing test of rush working properly and summoning the units
 - Phase out the default "play from hand" of PLAYABLE and massive cleanup in tests too
 - Buildings
 	- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
