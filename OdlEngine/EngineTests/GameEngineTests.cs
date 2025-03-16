@@ -262,7 +262,7 @@ namespace EngineTests
             Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
             Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetGameStateHash()); // Hash would be recalculated but still the same
             // Will play card now
-            Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, CardTargets.PLAINS); // Play it
+            Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-1011117, CardTargets.PLAINS); // Play it
             // Make sure card was played ok
             Assert.AreEqual(res.Item1, PlayOutcome.OK);
             Assert.IsNotNull(res.Item2);

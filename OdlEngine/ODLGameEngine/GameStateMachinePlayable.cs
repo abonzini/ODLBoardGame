@@ -66,6 +66,19 @@ namespace ODLGameEngine
             EntityBase cardData = CardDb.GetCard(card);
             return PLAYABLE_GetOptions(cardData);
         }
+        public Tuple<PlayOutcome, StepResult> PlayFromHand(int card, CardTargets chosenTarget)
+        {
+            return PlayCard(card, chosenTarget, PlayType.PLAY_FROM_HAND);
+        }
+        /// <summary>
+        /// Plays the active power for a character
+        /// </summary>
+        /// <returns>Like PlayCard, chain of effects after power was played</returns>
+        public Tuple<PlayOutcome, StepResult> PlayActivePower()
+        {
+            return PlayCard(GameConstants.RUSH_CARD_ID, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
+        }
+        // Back-end (private)
         /// <summary>
         /// Player choses card to play and where to play it.
         /// If not failed, this will change game state, function returns last step
@@ -74,7 +87,7 @@ namespace ODLGameEngine
         /// <param name="chosenTarget">Where to play card</param>
         /// <param name="playType">The type of play, default is standard "play from hand"</param>
         /// <returns>Outcome, and Step result (as in step() if successful</returns>
-        public Tuple<PlayOutcome, StepResult> PlayCard(int card, CardTargets chosenTarget, PlayType playType = PlayType.PLAY_FROM_HAND)
+        Tuple<PlayOutcome, StepResult> PlayCard(int card, CardTargets chosenTarget, PlayType playType)
         {
             // I need to verify whether chosen card is playable
             Tuple<PlayOutcome, CardTargets> cardOptions = GetPlayableOptions(card, playType); // Does same checks as before, whether a card can be played, and where
@@ -96,11 +109,11 @@ namespace ODLGameEngine
                 try // Also, a player may die!
                 {
                     PLAYABLE_PayCost(cardData);
-                    if(playType == PlayType.PLAY_FROM_HAND)
+                    if (playType == PlayType.PLAY_FROM_HAND)
                     {
                         ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
                     }
-                    else if(playType == PlayType.ACTIVE_POWER)
+                    else if (playType == PlayType.ACTIVE_POWER)
                     {
                         ENGINE_ChangePlayerPowerAvailability(_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer], false);
                     }
@@ -123,16 +136,6 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
         }
-        /// <summary>
-        /// Plays the active power for a character
-        /// </summary>
-        /// <returns>Like PlayCard, chain of effects after power was played</returns>
-        public Tuple<PlayOutcome, StepResult> PlayActivePower()
-        {
-            Tuple<PlayOutcome, StepResult> res = PlayCard(GameConstants.RUSH_CARD_ID, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
-            return res;
-        }
-        // Back-end (private)
         /// <summary>
         /// Plays a card effect on current player, play is verified and card not anymore in hand, but all effects need to be made
         /// </summary>

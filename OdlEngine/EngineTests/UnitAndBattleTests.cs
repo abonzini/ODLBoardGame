@@ -38,7 +38,7 @@ namespace EngineTests
                 boardHash = sm.GetDetailedState().BoardState.GetGameStateHash(); // Store hash
                 // Will play one of them
                 CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play it
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-1011117, chosenTarget); // Play it
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -84,7 +84,7 @@ namespace EngineTests
                 // Will play one of them
                 CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
                 int unitCounter1 = sm.GetDetailedState().NextUniqueIndex;
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play it
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-1011117, chosenTarget); // Play it
                 int unitCounter2 = sm.GetDetailedState().NextUniqueIndex;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -94,7 +94,7 @@ namespace EngineTests
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
                 chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
                 // Play new one
-                res = sm.PlayCard(-1011117, chosenTarget); // Play it
+                res = sm.PlayFromHand(-1011117, chosenTarget); // Play it
                 int futureUnitCounter = sm.GetDetailedState().NextUniqueIndex;
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -145,7 +145,7 @@ namespace EngineTests
                 plainsInit |= chosenTarget == CardTargets.PLAINS;
                 forestInit |= chosenTarget == CardTargets.FOREST;
                 mountainInit |= chosenTarget == CardTargets.MOUNTAIN;
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play card in some lane
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-1011117, chosenTarget); // Play card in some lane
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -170,7 +170,7 @@ namespace EngineTests
                 plainsInit |= chosenTarget == CardTargets.PLAINS;
                 forestInit |= chosenTarget == CardTargets.FOREST;
                 mountainInit |= chosenTarget == CardTargets.MOUNTAIN;
-                res = sm.PlayCard(-1011117, chosenTarget);
+                res = sm.PlayFromHand(-1011117, chosenTarget);
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -181,7 +181,7 @@ namespace EngineTests
                 plainsInit |= chosenTarget == CardTargets.PLAINS;
                 forestInit |= chosenTarget == CardTargets.FOREST;
                 mountainInit |= chosenTarget == CardTargets.MOUNTAIN;
-                res = sm.PlayCard(-1011117, chosenTarget);
+                res = sm.PlayFromHand(-1011117, chosenTarget);
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -224,7 +224,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, false); // Also ensure hashes are unique for board here
                 CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1011117, chosenTarget); // Play card in some lane
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-1011117, chosenTarget); // Play card in some lane
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -247,7 +247,7 @@ namespace EngineTests
                 Assert.AreEqual(sm.GetDetailedState().CurrentState, States.ACTION_PHASE);
                 TestHelperFunctions.HashSetVerification(sm.GetDetailedState().BoardState, boardHashes, true); // Hash should be here as board didn't change!
                 // Ok now other player plays card...
-                res = sm.PlayCard(-1011117, chosenTarget); // Play card in exactly the same lane
+                res = sm.PlayFromHand(-1011117, chosenTarget); // Play card in exactly the same lane
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 // Check also for the lane, unit is in the correct place for the other player
@@ -319,7 +319,7 @@ namespace EngineTests
                 boardHash = sm.GetDetailedState().BoardState.GetGameStateHash(); // Store hash
                 // Will play one of them
                 CardTargets chosenTarget = (CardTargets)(1 << _rng.Next(3)); // Choose a random lane as target
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-1001117, chosenTarget); // Play it
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-1001117, chosenTarget); // Play it
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -429,7 +429,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                Tuple<PlayOutcome, StepResult> res = sm.PlayCard(card, CardTargets.MOUNTAIN); // Play card in mountain (longest lane)!
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(card, CardTargets.MOUNTAIN); // Play card in mountain (longest lane)!
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -492,12 +492,12 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                sm.PlayCard(-1010317, CardTargets.MOUNTAIN); // Opp plays in mountain and skips turn
+                sm.PlayFromHand(-1010317, CardTargets.MOUNTAIN); // Opp plays in mountain and skips turn
                 // Ok! Now i need to do the sequence to advance...
                 sm.EndTurn(); // End opponent's
                 sm.Step(); // Finish draw phase of main player
                 // Now I summon unit:
-                sm.PlayCard(-1010917, CardTargets.MOUNTAIN);
+                sm.PlayFromHand(-1010917, CardTargets.MOUNTAIN);
                 // Now I end turn and opponent will advance!
                 sm.EndTurn();
                 sm.Step();
@@ -571,9 +571,9 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                sm.PlayCard(card, CardTargets.PLAINS);
-                sm.PlayCard(card, CardTargets.FOREST);
-                sm.PlayCard(card, CardTargets.MOUNTAIN);
+                sm.PlayFromHand(card, CardTargets.PLAINS);
+                sm.PlayFromHand(card, CardTargets.FOREST);
+                sm.PlayFromHand(card, CardTargets.MOUNTAIN);
                 // Verify...
                 Lane plains = sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS);
                 Lane forest = sm.GetDetailedState().BoardState.GetLane(LaneID.FOREST);
@@ -642,11 +642,11 @@ namespace EngineTests
                 };
                 sm.LoadGame(state); // Start from here
                 // Play units and also store them for evil illegal modifications
-                sm.PlayCard(card, CardTargets.PLAINS);
+                sm.PlayFromHand(card, CardTargets.PLAINS);
                 Unit plainsUnit = sm.GetDetailedState().BoardState.Units.Last().Value;
-                sm.PlayCard(card, CardTargets.FOREST);
+                sm.PlayFromHand(card, CardTargets.FOREST);
                 Unit forestUnit = sm.GetDetailedState().BoardState.Units.Last().Value;
-                sm.PlayCard(card, CardTargets.MOUNTAIN);
+                sm.PlayFromHand(card, CardTargets.MOUNTAIN);
                 Unit mountainsUnit = sm.GetDetailedState().BoardState.Units.Last().Value;
                 // Verify...
                 Lane plains = sm.GetDetailedState().BoardState.GetLane(LaneID.PLAINS);
@@ -806,12 +806,12 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                sm.PlayCard(slowCard, CardTargets.MOUNTAIN); // Opp plays in mountain and skips turn
+                sm.PlayFromHand(slowCard, CardTargets.MOUNTAIN); // Opp plays in mountain and skips turn
                 // Ok! Now i need to do the sequence to advance...
                 sm.EndTurn(); // End opponent's
                 sm.Step(); // Finish draw phase of main player
                 // Now I summon unit:
-                sm.PlayCard(fastCard, CardTargets.MOUNTAIN);
+                sm.PlayFromHand(fastCard, CardTargets.MOUNTAIN);
                 // Now I end turn and opponent will advance!
                 sm.EndTurn();
                 sm.Step();
@@ -903,12 +903,12 @@ namespace EngineTests
                         CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                     };
                     sm.LoadGame(state); // Start from here
-                    sm.PlayCard(slowCard, CardTargets.MOUNTAIN); // Opp plays in mountain and skips turn
+                    sm.PlayFromHand(slowCard, CardTargets.MOUNTAIN); // Opp plays in mountain and skips turn
                                                                  // Ok! Now i need to do the sequence to advance...
                     sm.EndTurn(); // End opponent's
                     sm.Step(); // Finish draw phase of main player
                                // Now I summon unit:
-                    sm.PlayCard(fastCard, CardTargets.MOUNTAIN);
+                    sm.PlayFromHand(fastCard, CardTargets.MOUNTAIN);
                     // Now I end turn and opponent will advance!
                     sm.EndTurn();
                     sm.Step();
@@ -1021,14 +1021,14 @@ namespace EngineTests
                         CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                     };
                     sm.LoadGame(state); // Start from here
-                    sm.PlayCard(defenderCard, lane); // Opp plays in lane and skips turn
+                    sm.PlayFromHand(defenderCard, lane); // Opp plays in lane and skips turn
                     // Ok! Now i need to do the sequence to advance...
                     sm.EndTurn(); // End opponent's
                     sm.Step(); // Finish draw phase of main player
                     // Now I summon all units in all lanes:
-                    sm.PlayCard(attackerCard, CardTargets.PLAINS);
-                    sm.PlayCard(attackerCard, CardTargets.FOREST);
-                    sm.PlayCard(attackerCard, CardTargets.MOUNTAIN);
+                    sm.PlayFromHand(attackerCard, CardTargets.PLAINS);
+                    sm.PlayFromHand(attackerCard, CardTargets.FOREST);
+                    sm.PlayFromHand(attackerCard, CardTargets.MOUNTAIN);
                     // Now I end turn and opponent will advance!
                     sm.EndTurn();
                     sm.Step();
@@ -1153,15 +1153,15 @@ namespace EngineTests
                         CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                     };
                     sm.LoadGame(state); // Start from here
-                    sm.PlayCard(defenderCard, lane); // Opp plays 2 of same, 0 and 1
-                    sm.PlayCard(defenderCard, lane);
+                    sm.PlayFromHand(defenderCard, lane); // Opp plays 2 of same, 0 and 1
+                    sm.PlayFromHand(defenderCard, lane);
                     // Ok! Now i need to do the sequence to advance...
                     sm.EndTurn(); // End opponent's
                     sm.Step(); // Finish draw phase of main player
                     // Now I summon 3 units: 2,3,4
-                    sm.PlayCard(attackerCard, lane);
-                    sm.PlayCard(attackerCard, lane);
-                    sm.PlayCard(attackerCard, lane);
+                    sm.PlayFromHand(attackerCard, lane);
+                    sm.PlayFromHand(attackerCard, lane);
+                    sm.PlayFromHand(attackerCard, lane);
                     // Now I end turn and opponent will advance!
                     sm.EndTurn();
                     sm.Step();
@@ -1263,7 +1263,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                sm.PlayCard(card, target); // Play the unit
+                sm.PlayFromHand(card, target); // Play the unit
                 // Ok! Now i need to do the sequence to advance...
                 sm.EndTurn(); // End turn
                 sm.Step(); // Finish draw phase of opp
@@ -1339,11 +1339,11 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                sm.PlayCard(card, target); // Play the unit
+                sm.PlayFromHand(card, target); // Play the unit
                 // Ok! Now i need to do the sequence to advance...
                 sm.EndTurn(); // End turn
                 sm.Step(); // Finish draw phase of opp
-                sm.PlayCard(card, target); // Play the unit for opp
+                sm.PlayFromHand(card, target); // Play the unit for opp
                 sm.EndTurn(); // End opp turn
                 // Now the unit is ready to advance, will collide with enemy tho
                 PlayerState ps1 = sm.GetDetailedState().PlayerStates[playerIndex];
@@ -1420,7 +1420,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                sm.PlayCard(card, target); // Play the unit
+                sm.PlayFromHand(card, target); // Play the unit
                 // Ok! Now i need to do the sequence to advance...
                 sm.EndTurn(); // End turn
                 sm.Step(); // Finish draw phase of opp
@@ -1498,7 +1498,7 @@ namespace EngineTests
                     CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                 };
                 sm.LoadGame(state); // Start from here
-                sm.PlayCard(card, target); // Play the unit
+                sm.PlayFromHand(card, target); // Play the unit
                 // Ok! Now i need to do the sequence to advance...
                 sm.EndTurn(); // End turn
                 sm.Step(); // Finish draw phase of opp
@@ -1575,9 +1575,9 @@ namespace EngineTests
                         CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
                     };
                     sm.LoadGame(state); // Start from here
-                    sm.PlayCard(card, CardTargets.PLAINS); // Play all units, one per lane
-                    sm.PlayCard(card, CardTargets.FOREST);
-                    sm.PlayCard(card, CardTargets.MOUNTAIN);
+                    sm.PlayFromHand(card, CardTargets.PLAINS); // Play all units, one per lane
+                    sm.PlayFromHand(card, CardTargets.FOREST);
+                    sm.PlayFromHand(card, CardTargets.MOUNTAIN);
                     // Ok! Now i need to do the sequence to advance...
                     sm.EndTurn(); // End turn
                     sm.Step(); // Finish draw phase of opp

@@ -174,7 +174,7 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     if (st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-100, CardTargets.GLOBAL); // Should break every single time and nothing should happen (TODO hash verify?)
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-100, CardTargets.GLOBAL); // Should break every single time and nothing should happen (TODO hash verify?)
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_GAME_STATE);
                         Assert.IsNull(res.Item2);
                     }
@@ -207,7 +207,7 @@ namespace EngineTests
                 {
                     if (i > 4) // Just test wrong case as other cases are tested elsewhere in detail
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(possibleCards[i],CardTargets.GLOBAL);
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(possibleCards[i],CardTargets.GLOBAL);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_CARD); // Would be an error!
                         Assert.IsNull(res.Item2); // Also this invalid...
                     }
@@ -239,7 +239,7 @@ namespace EngineTests
                 {
                     for(int j = 0; j < 10; j++) // Try and target absolutely all ways (many should break!)
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-(100 + i), (CardTargets)j); // Try to target card
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-(100 + i), (CardTargets)j); // Try to target card
                         if((j > 7) || (j&(j-1)) != 0) // Implying invalid targets no matter what! (Either non power of 2 or high target enum)
                         {
                             Assert.AreEqual(res.Item1, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
@@ -301,7 +301,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.GetDetailedState().PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayCard(-(100 + i * 10), CardTargets.GLOBAL);
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-(100 + i * 10), CardTargets.GLOBAL);
                     if (i <= 4)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
@@ -350,7 +350,7 @@ namespace EngineTests
                     int cardIdToPlay = possibleCards[cardIndexToPlay]; // Get random card of the ones I generated
                     EntityBase cardToPlay = sm.CardDb.GetCard(cardIdToPlay);
                     int currentGold = sm.GetDetailedState().PlayerStates[playerIndex].Gold;
-                    Tuple <PlayOutcome, StepResult> res = sm.PlayCard(cardIdToPlay, CardTargets.GLOBAL);
+                    Tuple <PlayOutcome, StepResult> res = sm.PlayFromHand(cardIdToPlay, CardTargets.GLOBAL);
                     possibleCards.RemoveAt(cardIndexToPlay); // Remove this one
                     Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
                     Assert.IsNotNull(res.Item2); // Sth happened
