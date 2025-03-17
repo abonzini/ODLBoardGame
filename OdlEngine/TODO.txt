@@ -1,18 +1,13 @@
 Ongoing tasks in order of priority:
 - Buildings
-	- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
-		- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
-	- Tests:
-		- Given a BP, playability for empty lane (unplayable, verif)
-		- Playability OK for first tile
-		- Playability OK if building already present
-		- Playability OK, building only in 1, unit advances and then becomes ok
-		- Playability OK by skipping 1st one and allowing in 2nd
-	- Building summoned properly, set in lane ok with ENGINE call
+	- Building summoned properly, set in lane and tile with ENGINE call. Proper updating of tile/player fields and reversability
 		- Tests:
-			- Similar to unit tests, copy the idea
-			- Verify count, etc
-	- Bldg damage
+			- Copy Unit tests, instantiation, counters, etc
+			Also, continue placeability:
+			- Playability fails if buildign already present
+			- Playability suceeds if building present, due to unit advance
+			- Playability correct with 2 units, one building, then the other
+	- Implement building battle (e.g. marching damage), unit continues march
 		- Tests:
 			- Bldg destroyed
 			- Bldg survives

@@ -49,7 +49,7 @@ namespace EngineTests
                     EntityPrintInfo = printInfo
                 };
             }
-            if(id >= 1000000 && id < 1999999)
+            if(id >= 1000000 && id < 1999999) // unit: 1-G-HP-ATK-MOV-DENOM-TGT
             {
                 EntityPrintInfo printInfo = new EntityPrintInfo()
                 {
@@ -72,7 +72,7 @@ namespace EngineTests
                     MovementDenominator = (id / 10) % 10, // 5th, mov denominator
                 };
             }
-            if (id >= 1000000000 && id < 1999999999)
+            if (id >= 1000000000 && id < 1999999999) //1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
             {
                 EntityPrintInfo printInfo = new EntityPrintInfo()
                 {
@@ -86,13 +86,13 @@ namespace EngineTests
                     TargetOptions = ((id % 10) <= 7) ? (CardTargets)(id % 10) : CardTargets.INVALID,
                     TargetConditions = TargetCondition.BLUEPRINT,
                 };
-                int bpRaw = (id / 100) % 1000000;
+                int bpRaw = (id / 10) % 1000000;
                 List<int> plainsBp = new List<int>();
                 List<int> forestBp = new List<int>();
                 List<int> mountainBp = new List<int>();
                 for (int i = 0; i<18;i++) // Decode the 18-bit of BP
                 {
-                    bool bitActive = (bpRaw &= 1 << i) != 0; // get bit
+                    bool bitActive = (bpRaw & (1 << i)) != 0; // get bit
                     if(bitActive)
                     {
                         if (i < GameConstants.PLAINS_TILES_NUMBER) // parsing palins

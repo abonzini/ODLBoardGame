@@ -43,7 +43,7 @@ namespace ODLGameEngine
         ALL_BUT_FOREST = 5,
         ALL_BUT_PLAINS = 6,
         ANY_LANE = 7,
-        INVALID = 99
+        INVALID = 15
     }
 
     /// <summary>
