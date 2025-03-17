@@ -512,7 +512,7 @@ namespace EngineTests
                 Assert.AreEqual(lane.PlayerUnitCount[otherPlayerIndex], 1);
                 // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
                 Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
-                int intersectionCoordinate = lane.GetFirstTileCoord(otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
+                int intersectionCoordinate = lane.GetAbsoluteTileCoord(0,otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
                 Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], 1);
                 // Advance...
                 sm.Step();
@@ -827,7 +827,7 @@ namespace EngineTests
                 Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, 0); // No damage
                 Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, 0); // No damage
                 // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
-                int intersectionCoordinate = lane.GetFirstTileCoord(otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
+                int intersectionCoordinate = lane.GetAbsoluteTileCoord(0,otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
                 Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
                 Assert.AreEqual(lane.GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
                 Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], 1);
@@ -924,7 +924,7 @@ namespace EngineTests
                     Assert.AreEqual(sm.GetDetailedState().BoardState.Units[0].DamageTokens, 0); // No damage
                     Assert.AreEqual(sm.GetDetailedState().BoardState.Units[1].DamageTokens, 0); // No damage
                     // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
-                    int intersectionCoordinate = lane.GetFirstTileCoord(otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
+                    int intersectionCoordinate = lane.GetAbsoluteTileCoord(0,otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
                     Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnitCount[playerIndex], 1);
                     Assert.AreEqual(lane.GetTileRelative(0, playerIndex).UnitsInTile.Count, 1);
                     Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnitCount[otherPlayerIndex], 1);

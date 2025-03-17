@@ -62,7 +62,7 @@ namespace EngineTests
                     EntityType = EntityType.UNIT,
                     TargetOptions = ((id % 10) <= 7) ? (CardTargets)(id % 10) : CardTargets.INVALID,
                 };
-                return new Unit() // Returns "brick" card
+                return new Unit() // Returns "TOKEN" card
                 {
                     EntityPlayInfo = playInfo,
                     EntityPrintInfo = printInfo,
@@ -70,6 +70,54 @@ namespace EngineTests
                     Attack = (id / 1000) % 10, // Third, attack
                     Movement = (id / 100) % 10, // 4th, movement
                     MovementDenominator = (id / 10) % 10, // 5th, mov denominator
+                };
+            }
+            if (id >= 1000000000 && id < 1999999999)
+            {
+                EntityPrintInfo printInfo = new EntityPrintInfo()
+                {
+                    Id = -id,
+                    Title = "TOKEN_BUILDING",
+                    Cost = ((id / 100000000) % 10).ToString() // First digit is gold, 0-9
+                };
+                EntityPlayInfo playInfo = new EntityPlayInfo()
+                {
+                    EntityType = EntityType.BUILDING,
+                    TargetOptions = ((id % 10) <= 7) ? (CardTargets)(id % 10) : CardTargets.INVALID,
+                    TargetConditions = TargetCondition.BLUEPRINT,
+                };
+                int bpRaw = (id / 100) % 1000000;
+                List<int> plainsBp = new List<int>();
+                List<int> forestBp = new List<int>();
+                List<int> mountainBp = new List<int>();
+                for (int i = 0; i<18;i++) // Decode the 18-bit of BP
+                {
+                    bool bitActive = (bpRaw &= 1 << i) != 0; // get bit
+                    if(bitActive)
+                    {
+                        if (i < GameConstants.PLAINS_TILES_NUMBER) // parsing palins
+                        {
+                            plainsBp.Add(i);
+                        }
+                        else if (i < GameConstants.PLAINS_TILES_NUMBER + GameConstants.FOREST_TILES_NUMBER) // parsing forest
+                        {
+                            forestBp.Add(i - GameConstants.PLAINS_TILES_NUMBER);
+                        }
+                        else if (i < GameConstants.PLAINS_TILES_NUMBER + GameConstants.FOREST_TILES_NUMBER + GameConstants.MOUNTAIN_TILES_NUMBER) // Parsing mountains
+                        {
+                            mountainBp.Add(i - GameConstants.PLAINS_TILES_NUMBER - GameConstants.FOREST_TILES_NUMBER);
+                        }
+                        else { throw new Exception("Messed up bitpacking of BP!"); }
+                    }
+                }
+                return new Building() // Returns "TOKEN_BUILDING" card
+                {
+                    EntityPlayInfo = playInfo,
+                    EntityPrintInfo = printInfo,
+                    Hp = (id / 10000000) % 10, // Second digit is hp, 0-9
+                    PlainsBp = plainsBp.ToArray(),
+                    ForestBp = forestBp.ToArray(),
+                    MountainBp = mountainBp.ToArray(),
                 };
             }
             throw new NotImplementedException("Not implemented yet");

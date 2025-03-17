@@ -2,7 +2,21 @@ Ongoing tasks in order of priority:
 - Buildings
 	- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
 		- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
+	- Tests:
+		- Given a BP, playability for empty lane (unplayable, verif)
+		- Playability OK for first tile
+		- Playability OK if building already present
+		- Playability OK, building only in 1, unit advances and then becomes ok
+		- Playability OK by skipping 1st one and allowing in 2nd
+	- Building summoned properly, set in lane ok with ENGINE call
+		- Tests:
+			- Similar to unit tests, copy the idea
+			- Verify count, etc
 	- Bldg damage
+		- Tests:
+			- Bldg destroyed
+			- Bldg survives
+			- Bldg overkilled
 - Stealth
 - Implement complex effects:
 	- Events (when an effect occurs globally and triggers a unit, e.g. EOT)

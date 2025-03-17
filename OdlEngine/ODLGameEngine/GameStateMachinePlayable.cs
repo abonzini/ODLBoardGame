@@ -227,16 +227,16 @@ namespace ODLGameEngine
         /// <returns>True if playable</returns>
         bool PLAYABLE_IsPlayableGlobal(EntityBase card)
         {
-            bool playable = true; // By default playable unless something happens
-            foreach (TargetCondition cond in card.EntityPlayInfo.TargetConditions) // Verify individual conditions of board
+            bool playable; // By default playable unless something happens
+            switch (card.EntityPlayInfo.TargetConditions)
             {
-                switch (cond)
-                {
-                    case TargetCondition.NONE:
-                    default:
-                        playable &= true;
-                        break;
-                }
+                case TargetCondition.BLUEPRINT: // Blueprint can't be global!
+                    playable = false;
+                    break;
+                case TargetCondition.NONE:
+                default:
+                    playable = true;
+                    break;
             }
             return playable; // If no conditions, all good
         }
@@ -248,18 +248,18 @@ namespace ODLGameEngine
         /// <returns>True if can be played in this lane</returns>
         bool PLAYABLE_IsPlayableLane(EntityBase card, CardTargets laneCandidate)
         {
-            Lane laneToCheck = _detailedState.BoardState.GetLane(laneCandidate);
-            bool playable = true; // By default playable unless something happens
-
-            foreach (TargetCondition cond in card.EntityPlayInfo.TargetConditions) // Verify individual conditions of board
+            //Lane laneToCheck = _detailedState.BoardState.GetLane(laneCandidate);
+            bool playable; // By default playable unless something happens
+            switch (card.EntityPlayInfo.TargetConditions)
             {
-                switch (cond)
-                {
-                    case TargetCondition.NONE:
-                    default:
-                        playable &= true;
-                        break;
-                }
+                case TargetCondition.BLUEPRINT:
+                    // if number is -1 means that we couldn't find a tile to place the building
+                    playable = (BUILDING_GetFirstBuildableTile((int)_detailedState.CurrentPlayer, (Building)card, laneCandidate) >= 0); // Still asume, for now, that current player is the one playing the card
+                    break;
+                case TargetCondition.NONE:
+                default:
+                    playable = true;
+                    break;
             }
             return playable; // If no conditions, all good
         }

@@ -57,13 +57,14 @@ Besides card-specific fields (explained below), these mandatory fields serve the
         - ```ALL_BUT_PLAINS```
         - ```ANY_LANE```
         - ```INVALID```
-    - ```TargetConditions:``` Some cards are unable to be played without target, e.g. a skill that damages an enemy needs an enemy to be present (maybe in a specific lane), or similar. This is a collection (i.e. need to define with a []) and however many conditions we need. Multiple conditions need to be put carefully to avoid weird states
-        - ```NONE```
+    - ```TargetConditions:``` Some cards are unable to be played without target, e.g. a skill that damages an enemy needs an enemy to be present (maybe in a specific lane), or similar. Options:
+        - ```NONE```, No condition, played always
+        - ```BLUEPRINT```, Can be played only if blueprint condition is satisfied (buildings always have this condition)
     - ```StealthPlay:``` (true/false) if card is a stealth card
 
 Then, depending on the type of cards, additional fields are needed/used. Every type of card also can have **Triggers** and **Interactions** which are additional fields explained below. 
 
-# Units
+## Units
 When card is a unit, the unit needs to contain the following data. This will create a unit with the correct values and effects:
 - ```Name:``` Name of unit as it shows once in the field, if left empty, will use the name of the printed card.
 - ```Hp:``` Base Hp value of unit when summoned
@@ -72,11 +73,15 @@ When card is a unit, the unit needs to contain the following data. This will cre
 - ```Movement:``` Movement value
 - ```MovementDenominator:``` Denominator of movement stats, 1 by default if not defined here.
 
-# SkillData
-Will write as I implement
+## Buildings
+Building cards are similar to units, they contain the following:
+- ```Name:``` Name of building as it shows once in the field, if left empty, will use the name of the printed card.
+- ```Hp:``` Base Hp value of building when constructed
+- ```DamageTokens:``` How many damage tokens the building has. Default value is naturally 0 unless unit needs to start damaged for some weird reason
+- ```PlainsBp```/```ForestBp```/```MountainBp:``` Blueprint of the building for each lane. If left empty, building can't be built in that lane. It is an ordered collection. E.g. ```"PlainsBp": [2,1,3]``` means that, in plains, the building will attempt to be constructed first in tile 2, then 1, and then 3.
 
-# BuildingData
-Will write as I implement
+## Skills
+Skills do not contain any other info as they only have effects (I.e. "When played" interactions), and do not persist in the field.
 
 # Trigger and Interaction Effects
 

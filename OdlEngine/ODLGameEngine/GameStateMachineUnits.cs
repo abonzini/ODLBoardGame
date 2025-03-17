@@ -20,7 +20,7 @@ namespace ODLGameEngine
             // Locates unit to right place. Get the lane where unit is played, and place it in first tile
             Lane unitLane = _detailedState.BoardState.GetLane(chosenTarget);
             BOARDENTITY_InsertInLane(newSpawnedUnit, unitLane.Id);
-            int tileCoord = unitLane.GetFirstTileCoord(player); // Get tile coord
+            int tileCoord = unitLane.GetAbsoluteTileCoord(0,player); // Get tile coord
             BOARDENTITY_InsertInTile(newSpawnedUnit, tileCoord);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             BOARDENTITY_CheckIfUnitAlive(newSpawnedUnit);
@@ -62,7 +62,7 @@ namespace ODLGameEngine
                         if (enemyUnit == null) throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!");
                         UNIT_DamageStep(unit, enemyUnit); // Let them fight.
                     }
-                    else if (lane.GetLastTileCoord(unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
+                    else if (lane.GetAbsoluteTileCoord(-1, unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
                     {
                         advanceCtx.CurrentMovement = 0;
                         UNIT_DamageStep(unit, _detailedState.PlayerStates[opponentId]); // Deal direct damage to enemy!
