@@ -102,12 +102,12 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
             // Otherwise, card can be played somewhere, need to see if user option is valid!            
-            EntityBase cardData = CardDb.GetCard(card);
-            if ((cardData.EntityPlayInfo.TargetOptions & chosenTarget) != 0 || (cardData.EntityPlayInfo.TargetOptions == chosenTarget)) // Then just need to verify tagets match
+            if ((cardOptions.Item2 & chosenTarget) != 0 || (cardOptions.Item2 == chosenTarget)) // Then just need to verify tagets match with playable options
             {
                 // Ok shit is going down, card needs to be paid and played now, this will result in a step and change of game state
                 try // Also, a player may die!
                 {
+                    EntityBase cardData = CardDb.GetCard(card);
                     PLAYABLE_PayCost(cardData);
                     if (playType == PlayType.PLAY_FROM_HAND)
                     {
