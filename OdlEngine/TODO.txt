@@ -2,8 +2,9 @@ Ongoing tasks in order of priority:
 - Buildings
 	- Building summoned properly, set in lane and tile with ENGINE call. Proper updating of tile/player fields and reversability
 		- Tests:
-			- Copy Unit tests, instantiation, counters, etc
+			- Copy Unit tests, instantiation, counters, etc. Building placed
 			Also, continue placeability:
+			- All placeability tests should include actually trying to play the thing, to not only verify playOptions (source of important bug!) Revert if succesful and also check hashes. Need to do this once building is actually playable though
 			- Playability fails if buildign already present
 			- Playability suceeds if building present, due to unit advance
 			- Playability correct with 2 units, one building, then the other
