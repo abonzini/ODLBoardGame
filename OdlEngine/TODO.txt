@@ -13,6 +13,7 @@ Ongoing tasks in order of priority:
 	- Buff tokens
 	- Buff tok is just extra fields (hashable and serializable) on the placeable
 - Deck-out
+- Stealth
 - Implement rest of rulebook
 	- Todo...
 	- Lots of individual mechanics that will be polished as it goes, individual card testing
