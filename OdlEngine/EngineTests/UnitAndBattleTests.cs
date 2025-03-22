@@ -1640,5 +1640,195 @@ namespace EngineTests
                 }
             }
         }
+        [TestMethod]
+        public void BuildingDamagedOnAdvance()
+        {
+            // A unit advances, damages building
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int attack = _rng.Next(1, 9); // Attack between 1-8
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.DRAW_PHASE,
+                    CurrentPlayer = (CurrentPlayer)playerIndex
+                };
+                // Will try this in any lane
+                CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                int brick = -107; // Random brick card
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                    state.PlayerStates[playerIndex].Hand.InsertCard(brick);
+                    state.PlayerStates[playerIndex].Deck.InsertCard(brick);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(brick);
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(brick);
+                }
+                GameStateMachine stageSm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                stageSm.LoadGame(state); // Start from here
+                Unit testUnit = new Unit()
+                {
+                    EntityPlayInfo = new EntityPlayInfo()
+                    {
+                        EntityType = EntityType.UNIT
+                    },
+                    Attack = attack,
+                    Name = "UNIT",
+                    Owner = playerIndex,
+                    Hp = 1,
+                    Movement = 2
+                };
+                Building testBldg = new Building()
+                {
+                    EntityPlayInfo = new EntityPlayInfo()
+                    {
+                        EntityType = EntityType.BUILDING
+                    },
+                    Hp = attack + 1,
+                    Owner = otherPlayerIndex,
+                    Name = "BUILDING"
+                };
+                Lane lane = stageSm.GetDetailedState().BoardState.GetLane(target);
+                // Initialize unit into board in correct place, skip all playability stuff which is done elsewhere
+                stageSm.BOARDENTITY_InitializeEntity(testUnit);
+                stageSm.BOARDENTITY_InsertInLane(testUnit, lane.Id);
+                int tileCoord = lane.GetAbsoluteTileCoord(0, playerIndex); // Put it in first tile
+                stageSm.BOARDENTITY_InsertInTile(testUnit, tileCoord);
+                // Same as the building in second tile
+                stageSm.BOARDENTITY_InitializeEntity(testBldg);
+                stageSm.BOARDENTITY_InsertInLane(testBldg, lane.Id);
+                tileCoord = lane.GetAbsoluteTileCoord(1, playerIndex); // Put it in second tile
+                stageSm.BOARDENTITY_InsertInTile(testBldg, tileCoord);
+                // Create a new blank SM from load game
+                GameStateMachine sm = new GameStateMachine();
+                sm.LoadGame(stageSm.GetDetailedState());
+                // Pre advance
+                state = sm.GetDetailedState();
+                int hash = state.GetGameStateHash();
+                Assert.AreEqual(state.PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(state.PlayerStates[otherPlayerIndex].NBuildings, 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTile, testBldg.UniqueId);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTileOwner, otherPlayerIndex);
+                // Advance
+                sm.Step();
+                Assert.AreNotEqual(hash, sm.GetDetailedState().GetGameStateHash()); // Hash changed
+                Assert.AreEqual(state.PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(state.PlayerStates[otherPlayerIndex].NBuildings, 1);
+                Assert.AreEqual(testBldg.DamageTokens, attack); // Bldg has now damage tokens
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTile, testBldg.UniqueId);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTileOwner, otherPlayerIndex);
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(hash, sm.GetDetailedState().GetGameStateHash()); // Hash changed
+                Assert.AreEqual(state.PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(state.PlayerStates[otherPlayerIndex].NBuildings, 1);
+                Assert.AreEqual(testBldg.DamageTokens, 0);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTile, testBldg.UniqueId);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTileOwner, otherPlayerIndex);
+            }
+        }
+        [TestMethod]
+        public void BuildingKilledOnAdvance()
+        {
+            // A unit advances, destorys building
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int attack = _rng.Next(1, 10); // Attack between 1-9
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.DRAW_PHASE,
+                    CurrentPlayer = (CurrentPlayer)playerIndex
+                };
+                // Will try this in any lane
+                CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                int brick = -107; // Random brick card
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                    state.PlayerStates[playerIndex].Hand.InsertCard(brick);
+                    state.PlayerStates[playerIndex].Deck.InsertCard(brick);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(brick);
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(brick);
+                }
+                GameStateMachine stageSm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                stageSm.LoadGame(state); // Start from here
+                Unit testUnit = new Unit()
+                {
+                    EntityPlayInfo = new EntityPlayInfo()
+                    {
+                        EntityType = EntityType.UNIT
+                    },
+                    Attack = attack,
+                    Name = "UNIT",
+                    Owner = playerIndex,
+                    Hp = 1,
+                    Movement = 2
+                };
+                Building testBldg = new Building()
+                {
+                    EntityPlayInfo = new EntityPlayInfo()
+                    {
+                        EntityType = EntityType.BUILDING
+                    },
+                    Hp = attack,
+                    Owner = otherPlayerIndex,
+                    Name = "BUILDING"
+                };
+                Lane lane = stageSm.GetDetailedState().BoardState.GetLane(target);
+                // Initialize unit into board in correct place, skip all playability stuff which is done elsewhere
+                stageSm.BOARDENTITY_InitializeEntity(testUnit);
+                stageSm.BOARDENTITY_InsertInLane(testUnit, lane.Id);
+                int tileCoord = lane.GetAbsoluteTileCoord(0, playerIndex); // Put it in first tile
+                stageSm.BOARDENTITY_InsertInTile(testUnit, tileCoord);
+                // Same as the building in second tile
+                stageSm.BOARDENTITY_InitializeEntity(testBldg);
+                stageSm.BOARDENTITY_InsertInLane(testBldg, lane.Id);
+                tileCoord = lane.GetAbsoluteTileCoord(1, playerIndex); // Put it in second tile
+                stageSm.BOARDENTITY_InsertInTile(testBldg, tileCoord);
+                // Create blank SM
+                GameStateMachine sm = new GameStateMachine();
+                sm.LoadGame(stageSm.GetDetailedState());
+                // Pre advance
+                state = sm.GetDetailedState();
+                int hash = state.GetGameStateHash();
+                Assert.AreEqual(state.PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(state.PlayerStates[otherPlayerIndex].NBuildings, 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1,playerIndex).BuildingInTile, testBldg.UniqueId);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1,playerIndex).BuildingInTileOwner, otherPlayerIndex);
+                // Advance
+                sm.Step();
+                Assert.AreNotEqual(hash, sm.GetDetailedState().GetGameStateHash()); // Hash changed
+                Assert.AreEqual(state.PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(state.PlayerStates[otherPlayerIndex].NBuildings, 0);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildingCount[otherPlayerIndex], 0);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTile, -1);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTileOwner, -1);
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(hash, sm.GetDetailedState().GetGameStateHash()); // Hash changed
+                Assert.AreEqual(state.PlayerStates[playerIndex].NUnits, 1);
+                Assert.AreEqual(state.PlayerStates[otherPlayerIndex].NBuildings, 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTile, testBldg.UniqueId);
+                Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).BuildingInTileOwner, otherPlayerIndex);
+            }
+        }
     }
 }

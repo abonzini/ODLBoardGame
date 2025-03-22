@@ -107,7 +107,7 @@ namespace ODLGameEngine
                             _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings++;
                             break;
                         default:
-                            throw new Exception("Can't initialize non-placed entities!");
+                            throw new Exception("Can't initialize non-placeable entities!");
                     }
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:

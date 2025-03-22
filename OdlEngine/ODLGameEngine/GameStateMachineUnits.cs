@@ -79,7 +79,12 @@ namespace ODLGameEngine
                         // Request unit advancement a tile
                         BOARDENTITY_InsertInTile(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
                         // Entering new tile
-                        // TODO: Building damage, building effects
+                        Tile newTile = _detailedState.BoardState.GetLane(unit.LaneCoordinate).GetTileAbsolute(unit.TileCoordinate);
+                        if (newTile.BuildingInTile >= 0 && newTile.BuildingInTileOwner == opponentId) // Found a building too, need to damage it
+                        {
+                            Building enemyBuildingCandidate = _detailedState.BoardState.Buildings[newTile.BuildingInTile]; //Get the building in the tile
+                            UNIT_Combat(unit, enemyBuildingCandidate);
+                        }
                     }
                 }
             }

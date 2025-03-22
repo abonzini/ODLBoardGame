@@ -1,10 +1,4 @@
 Ongoing tasks in order of priority:
-- Implement building damage (e.g. marching damage), unit continues advance.
-	- Tests (probably part of "unit and combat tests"):
-		- Unit marches and continues march while building damaged
-		- Bldg destroyed
-		- Bldg survives
-		- Bldg overkilled
 - Deck-out
 - Stealth
 	- Stealth test cases:

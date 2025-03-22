@@ -341,7 +341,7 @@ namespace EngineTests
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTile, -1);
                 Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTileOwner, -1);
                 // Now I play the building
-                Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(buildingId, laneTarget);
+                sm.PlayFromHand(buildingId, laneTarget);
                 // Post play, building should STILL not be there because it insta-died
                 Assert.AreEqual(prePlayBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Board shouldn't have changed at all
                 Assert.AreNotEqual(prePlayStateHash, sm.GetDetailedState().GetGameStateHash()); // Gamestate definitely changed because hands changed, unit, etc
@@ -397,13 +397,13 @@ namespace EngineTests
                 Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);
                 Assert.AreEqual(optionRes.Item2, laneTarget);
                 // Now I play the building
-                Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(buildingId, laneTarget);
+                sm.PlayFromHand(buildingId, laneTarget);
                 // Check if same building is buildable (shouldn't be, no available target)
                 optionRes = sm.GetPlayableOptions(buildingId, PlayType.PLAY_FROM_HAND);
                 Assert.AreEqual(optionRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE);
                 Assert.AreEqual(optionRes.Item2, CardTargets.INVALID);
                 // Try build anyway
-                playRes = sm.PlayFromHand(buildingId, laneTarget);
+                Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(buildingId, laneTarget);
                 Assert.AreEqual(playRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE);
                 Assert.IsNull(playRes.Item2);
             }
