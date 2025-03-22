@@ -1,19 +1,20 @@
 Ongoing tasks in order of priority:
-- Buildings
-	- Building summoned properly, set in lane and tile with ENGINE call. Proper updating of tile/player fields and reversability
-		- Tests:
-			- Copy Unit tests, instantiation, counters, etc. Building placed
-			Also, continue placeability:
-			- All placeability tests should include actually trying to play the thing, to not only verify playOptions (source of important bug!) Revert if succesful and also check hashes. Need to do this once building is actually playable though
-			- Playability fails if buildign already present
-			- Playability suceeds if building present, due to unit advance
-			- Playability correct with 2 units, one building, then the other
-	- Implement building battle (e.g. marching damage), unit continues march
-		- Tests:
-			- Bldg destroyed
-			- Bldg survives
-			- Bldg overkilled
+- Implement building damage (e.g. marching damage), unit continues advance.
+	- Tests (probably part of "unit and combat tests":
+		- Unit marches and continues march while building damaged
+		- Bldg destroyed
+		- Bldg survives
+		- Bldg overkilled
+- Deck-out
 - Stealth
+	- Stealth test cases:
+	- Stealth properly interacting with effects that change boardstate besides the stealth unit effect
+		- Stelath unit building
+		- Stealth unit building stealt building
+		- Stelath building being built period
+		- On consturciton effect activated for stealth building
+		- Building being skipped by stealth (non-existing) unit, built by another one in tile
+		- Similarly, Building skipped by stealth (non-existing) unit, built by another unit but that unit activates effect
 - Implement complex effects:
 	- Events (when an effect occurs globally and triggers a unit, e.g. EOT)
 	- Events (hashable, serializable in unit but not on main). THEY ARE IMPLEMENTED THROUGH AN EVENT HANDLER IN THE STATE MACHINE, WHICH IS PROPERLY FILLED/EMPTIED WHEN PLACEABLE ENTERS/LEAVES
@@ -22,7 +23,7 @@ Ongoing tasks in order of priority:
 	---
 	- Buff tokens
 	- Buff tok is just extra fields (hashable and serializable) on the placeable
-- Deck-out
 - Implement rest of rulebook
 	- Todo...
 	- Lots of individual mechanics that will be polished as it goes, individual card testing
+	- Ask yourself, how would this affect stealth?

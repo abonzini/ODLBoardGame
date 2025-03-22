@@ -33,9 +33,35 @@ namespace ODLGameEngine
                 if(tile.BuildingInTile < 0 && tile.PlayerUnitCount[player] > 0) // Condition is, tile can't have building already, and there has to be atleast one unit to build it
                 {
                     firstBuildableTile = tileCandidate;
+                    break;
                 }
             }
             return firstBuildableTile;
+        }
+        /// <summary>
+        /// Spawns the building for a player
+        /// </summary>
+        /// <param name="player">Player</param>
+        /// <param name="bldg">Building</param>
+        /// <param name="chosenTarget">Target chosen for building</param>
+
+        void BUILDING_PlayBuilding(int player, Building bldg, CardTargets chosenTarget)
+        {
+            // To spawn a building, first you get the playable ID
+            // Clone the building, add to board
+            // "Change" the coordinate of unit to right place
+            Building newSpawnedBuilding = (Building)bldg.Clone(); // Clone in order to not break the same species
+            if (newSpawnedBuilding.Name == "") { newSpawnedBuilding.Name = newSpawnedBuilding.EntityPrintInfo.Title; }
+            newSpawnedBuilding.Owner = player;
+            BOARDENTITY_InitializeEntity(newSpawnedBuilding);
+            // Locates unit to right place. Get the lane where unit is played, and place it in first tile
+            Lane bldgLane = _detailedState.BoardState.GetLane(chosenTarget);
+            BOARDENTITY_InsertInLane(newSpawnedBuilding, bldgLane.Id);
+            int tileCoord = BUILDING_GetFirstBuildableTile(player, bldg, chosenTarget);
+            tileCoord = bldgLane.GetAbsoluteTileCoord(tileCoord, player); // Transform tile to absolute
+            BOARDENTITY_InsertInTile(newSpawnedBuilding, tileCoord);
+            // In case unit has 0 hp or is hit by something, need to check by the end to make sure
+            BOARDENTITY_CheckIfUnitAlive(newSpawnedBuilding);
         }
     }
 }

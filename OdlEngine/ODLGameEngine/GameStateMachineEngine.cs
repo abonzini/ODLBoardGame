@@ -103,7 +103,9 @@ namespace ODLGameEngine
                             _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits++;
                             break;
                         case EntityType.BUILDING:
-                            throw new NotImplementedException("Building init not implemented yet");
+                            _detailedState.BoardState.Buildings.Add(auxPlacedEntity.UniqueId, (Building)auxPlacedEntity); // Adds building
+                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings++;
+                            break;
                         default:
                             throw new Exception("Can't initialize non-placed entities!");
                     }
@@ -122,7 +124,7 @@ namespace ODLGameEngine
                         }
                         if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
                         {
-                            // Todo
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerBuildingCount[auxPlacedEntity.Owner]--;
                         }
                     }
                     auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).newValue; // unit now has new value
@@ -135,7 +137,7 @@ namespace ODLGameEngine
                         }
                         if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
                         {
-                            // Todo
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerBuildingCount[auxPlacedEntity.Owner]++;
                         }
                     }
                     break;
@@ -144,27 +146,48 @@ namespace ODLGameEngine
                     ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue = auxPlacedEntity.TileCoordinate; // Store old value first
                     if (auxPlacedEntity.TileCoordinate >= 0) // Remove count from old tile if applicable
                     {
-                        if(auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
                         {
                             _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
                             _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Remove(auxPlacedEntity.UniqueId);
+                        }
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTileOwner = -1;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTile = -1;
                         }
                     }
                     auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).newValue; // unit now has new value
                     // Finally, update count in tile
                     if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
-                        _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Add(auxPlacedEntity.UniqueId);
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Add(auxPlacedEntity.UniqueId);
+                        }
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTileOwner = auxPlacedEntity.Owner;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTile = auxPlacedEntity.UniqueId;
+                        }
                     }
                     break;
                 case EventType.DEINIT_ENTITY: // Unit simply leaves field and user loses the unit
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    if(auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                    switch (auxPlacedEntity.EntityPlayInfo.EntityType)
                     {
-                        // Now, remove from player's
-                        _detailedState.BoardState.Units.Remove(auxPlacedEntity.UniqueId);
-                        _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits--;
+                        case EntityType.UNIT:
+                            // Now, remove from player's
+                            _detailedState.BoardState.Units.Remove(auxPlacedEntity.UniqueId);
+                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits--;
+                            break;
+                        case EntityType.BUILDING:
+                            _detailedState.BoardState.Buildings.Remove(auxPlacedEntity.UniqueId);
+                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings--;
+                            break;
+                        default:
+                            throw new Exception("Can't de-initialize non-placed entities!");
                     }
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
@@ -261,7 +284,9 @@ namespace ODLGameEngine
                             _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits--;
                             break;
                         case EntityType.BUILDING:
-                            throw new NotImplementedException("Building init not implemented yet");
+                            _detailedState.BoardState.Buildings.Remove(auxPlacedEntity.UniqueId); // Deinits building
+                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings--;
+                            break;
                         default:
                             throw new Exception("Can't initialize non-placed entities!");
                     }
@@ -279,7 +304,7 @@ namespace ODLGameEngine
                         }
                         if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
                         {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerBuildingCount[auxPlacedEntity.Owner]--;
                         }
                     }
                     auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue; // unit now has prev value
@@ -292,7 +317,7 @@ namespace ODLGameEngine
                         }
                         if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
                         {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerBuildingCount[auxPlacedEntity.Owner]++;
                         }
                     }
                     break;
@@ -306,6 +331,11 @@ namespace ODLGameEngine
                             _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
                             _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Remove(auxPlacedEntity.UniqueId);
                         }
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTileOwner = -1;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTile = -1;
+                        }
                     }
                     auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue; // unit now has prev value
                     if (auxPlacedEntity.TileCoordinate >= 0) // Update its count if applicable
@@ -315,15 +345,27 @@ namespace ODLGameEngine
                             _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
                             _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Add(auxPlacedEntity.UniqueId);
                         }
+                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
+                        {
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTileOwner = auxPlacedEntity.Owner;
+                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTile = auxPlacedEntity.UniqueId;
+                        }
                     }
                     break;
                 case EventType.DEINIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
+                    switch (auxPlacedEntity.EntityPlayInfo.EntityType)
                     {
-                        // Now, remove from player's
-                        _detailedState.BoardState.Units.Add(auxPlacedEntity.UniqueId, (Unit)auxPlacedEntity);
-                        _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits++;
+                        case EntityType.UNIT:
+                            _detailedState.BoardState.Units.Add(auxPlacedEntity.UniqueId, (Unit)auxPlacedEntity);
+                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits++;
+                            break;
+                        case EntityType.BUILDING:
+                            _detailedState.BoardState.Buildings.Add(auxPlacedEntity.UniqueId, (Building)auxPlacedEntity);
+                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings++;
+                            break;
+                        default:
+                            throw new Exception("Can't undo de-initialize non-placed entities!");
                     }
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:

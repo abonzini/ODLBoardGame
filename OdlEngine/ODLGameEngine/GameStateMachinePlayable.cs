@@ -103,7 +103,7 @@ namespace ODLGameEngine
             }
             // Otherwise, card can be played somewhere, need to see if user option is valid!            
             EntityBase cardData = CardDb.GetCard(card);
-            if ((cardData.EntityPlayInfo.TargetOptions & chosenTarget) != 0 || (cardData.EntityPlayInfo.TargetOptions == chosenTarget)) // Then just need to verify tagets match
+            if ((cardOptions.Item2 & chosenTarget) != 0 || (cardOptions.Item2 == chosenTarget)) // Then just need to verify tagets match
             {
                 // Ok shit is going down, card needs to be paid and played now, this will result in a step and change of game state
                 try // Also, a player may die!
@@ -151,7 +151,7 @@ namespace ODLGameEngine
                 case EntityType.SKILL: // Nothing needed as skills don't introduce new entities
                     break;
                 case EntityType.BUILDING:
-                    // TODO!
+                    BUILDING_PlayBuilding((int)_detailedState.CurrentPlayer, (Building)card, chosenTarget); // Plays building in tile
                     break;
                 default:
                     throw new NotImplementedException("Trying to play a non-supported type!");

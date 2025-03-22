@@ -38,7 +38,7 @@ namespace ODLGameEngine
 
         public override string ToString()
         {
-            return $"P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
+            return $"P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]} B: {BuildingInTile}(P{BuildingInTileOwner+1})";
         }
     }
     /// <summary>
@@ -119,7 +119,7 @@ namespace ODLGameEngine
         }
         public override string ToString()
         {
-            return Id.ToString() + $", P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
+            return Id.ToString() + $", P1: {PlayerUnitCount[0]}u{PlayerBuildingCount[0]}b P2: {PlayerUnitCount[1]}u{PlayerBuildingCount[1]}b";
         }
 
         public int GetGameStateHash()
