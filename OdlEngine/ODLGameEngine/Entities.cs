@@ -43,7 +43,7 @@ namespace ODLGameEngine
         ALL_BUT_FOREST = 5,
         ALL_BUT_PLAINS = 6,
         ANY_LANE = 7,
-        INVALID = 99
+        INVALID = 15
     }
 
     /// <summary>
@@ -53,8 +53,8 @@ namespace ODLGameEngine
     public enum TargetCondition
     {
         NONE, /// Can be played always
+        BLUEPRINT, /// Subject to blueprint targeting
         // Could be, but only implement as needed
-        //BLUEPRINT, /// Subject to blueprint
         //LANE_HAS_ENEMY_UNIT,
         //LANE_HAS_ENEMY_BUILDING,
         //LANE_HAS_FRIENDLY_UNIT,
@@ -89,7 +89,7 @@ namespace ODLGameEngine
         [JsonConverter(typeof(StringEnumConverter))]
         public CardTargets TargetOptions { get; set; } = CardTargets.GLOBAL; // Which lane(s) if any the card could work on
         [JsonConverter(typeof(StringEnumConverter))]
-        public List<TargetCondition> TargetConditions { get; set; } = new List<TargetCondition>(); // What needs to happen for a card to be "playable" in a lane
+        public TargetCondition TargetConditions { get; set; } = TargetCondition.NONE; // What needs to happen for a card to be "playable" in a lane
         public bool StealthPlay { get; set; } = false; // Whether card triggers a stealth case
     }
 
@@ -153,9 +153,9 @@ namespace ODLGameEngine
         [JsonProperty]
         public int UniqueId { get; set; } = 0;
         [JsonProperty]
-        public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE;
+        public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE; // Non serialized, doesn't define unit and info is kept in the board serialization
         [JsonProperty]
-        public int TileCoordinate { get; set; } = -1;
+        public int TileCoordinate { get; set; } = -1; // Non serialized, doesn't define unit and info is kept in the board serialization
         // Stealth shenanigans
         [JsonProperty]
         public bool IsHidden { get; set; } = false;
@@ -175,6 +175,7 @@ namespace ODLGameEngine
         public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
+            hash.Add(base.GetGameStateHash());
             hash.Add(UniqueId);
             hash.Add(DamageTokens);
             hash.Add(IsHidden);

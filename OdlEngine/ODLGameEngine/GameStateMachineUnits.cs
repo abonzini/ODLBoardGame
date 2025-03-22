@@ -8,6 +8,12 @@ namespace ODLGameEngine
 {
     public partial class GameStateMachine // Deals with unit and unit related stuff, maybe advancing
     {
+        /// <summary>
+        /// Initializes the new unit for the specified player
+        /// </summary>
+        /// <param name="player">Player</param>
+        /// <param name="unit">Unit</param>
+        /// <param name="chosenTarget">Lane that was chosen</param>
         void UNIT_PlayUnit(int player, Unit unit, CardTargets chosenTarget)
         {
             // To spawn a unit, first you get the playable ID
@@ -20,7 +26,7 @@ namespace ODLGameEngine
             // Locates unit to right place. Get the lane where unit is played, and place it in first tile
             Lane unitLane = _detailedState.BoardState.GetLane(chosenTarget);
             BOARDENTITY_InsertInLane(newSpawnedUnit, unitLane.Id);
-            int tileCoord = unitLane.GetFirstTileCoord(player); // Get tile coord
+            int tileCoord = unitLane.GetAbsoluteTileCoord(0,player); // Get tile coord
             BOARDENTITY_InsertInTile(newSpawnedUnit, tileCoord);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             BOARDENTITY_CheckIfUnitAlive(newSpawnedUnit);
@@ -60,12 +66,12 @@ namespace ODLGameEngine
                             }
                         }
                         if (enemyUnit == null) throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!");
-                        UNIT_DamageStep(unit, enemyUnit); // Let them fight.
+                        UNIT_Combat(unit, enemyUnit); // Let them fight.
                     }
-                    else if (lane.GetLastTileCoord(unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
+                    else if (lane.GetAbsoluteTileCoord(-1, unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
                     {
                         advanceCtx.CurrentMovement = 0;
-                        UNIT_DamageStep(unit, _detailedState.PlayerStates[opponentId]); // Deal direct damage to enemy!
+                        UNIT_Combat(unit, _detailedState.PlayerStates[opponentId]); // Deal direct damage to enemy!
                     }
                     else // Unit then can advance normally here, perform it
                     {
@@ -89,17 +95,17 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="attacker">Attacking unit</param>
         /// <param name="defender">Defending unit</param>
-        void UNIT_DamageStep(Unit attacker, BoardEntity defender)
+        void UNIT_Combat(Unit attacker, BoardEntity defender)
         {
             DamageContext attackerDmgCtx, defenderDmgCtx;
             ENGINE_AddMessageEvent($"Combat between P{attacker.Owner + 1}'s {attacker.Name} and P{defender.Owner + 1}'s {defender.Name}");
 
             // Surely, unit will apply damage to the victim
-            attackerDmgCtx = BOARDENTITY_DealDamage(attacker, defender, attacker.Attack); // TODO: GetAttack fn to incorporate buffs and such
+            attackerDmgCtx = BOARDENTITY_DamageStep(attacker, defender, attacker.Attack); // TODO: GetAttack fn to incorporate buffs and such
             if(defender is Unit defendingUnit)
             {
                 // If defender was also a unit, then the attacker also receives damage
-                defenderDmgCtx = BOARDENTITY_DealDamage(defender, attacker, defendingUnit.Attack);
+                defenderDmgCtx = BOARDENTITY_DamageStep(defender, attacker, defendingUnit.Attack);
             }
 
             // TODO: Contexts are checked here! even death and damage taking, to avoid Units doing stuff in this critical damage step

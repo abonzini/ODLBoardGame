@@ -89,7 +89,7 @@ namespace ODLGameEngine
         /// <param name="defender"></param>
         /// <param name="damage"></param>
         /// <returns>Description of damage & outcome for processing</returns>
-        DamageContext BOARDENTITY_DealDamage(EntityBase attacker, BoardEntity defender, int damage)
+        DamageContext BOARDENTITY_DamageStep(EntityBase attacker, BoardEntity defender, int damage)
         {
             DamageContext damageCtx = new DamageContext() // Create info of the result of this action
             {

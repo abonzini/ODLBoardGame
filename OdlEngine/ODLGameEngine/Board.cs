@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -13,7 +14,9 @@ namespace ODLGameEngine
     public class Tile : IHashable
     {
         [JsonProperty]
-        public int BuildingInTile { get; set; } = 0;
+        public int BuildingInTile { get; set; } = -1; // Starts with no (invalid) building!
+        [JsonProperty]
+        public int BuildingInTileOwner { get; set; } = -1; // Starts with no (invalid) owner!
         [JsonProperty]
         public SortedSet<int> UnitsInTile { get; set; } = new SortedSet<int>();
         [JsonProperty]
@@ -23,6 +26,7 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(BuildingInTile);
+            hash.Add(BuildingInTileOwner);
             hash.Add(PlayerUnitCount[0]);
             hash.Add(PlayerUnitCount[1]);
             foreach(int unit in UnitsInTile)
@@ -34,7 +38,7 @@ namespace ODLGameEngine
 
         public override string ToString()
         {
-            return $"P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
+            return $"P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]} B: {BuildingInTile}(P{BuildingInTileOwner+1})";
         }
     }
     /// <summary>
@@ -58,6 +62,8 @@ namespace ODLGameEngine
         public List<Tile> Tiles { get; set; }
         [JsonProperty]
         public int[] PlayerUnitCount { get; set; } = [0, 0];
+        [JsonProperty]
+        public int[] PlayerBuildingCount { get; set; } = [0, 0];
         public Lane(LaneID id, int n)
         {
             Id = id;
@@ -85,34 +91,27 @@ namespace ODLGameEngine
         /// <returns></returns>
         public Tile GetTileRelative(int index, int player)
         {
-            if(index < 0) // Pyhton notation, need to add n, so that -1 -> n-1 and -n becomes 0
-            {
-                index += Len;
-            }
-            if(player == 1) // Next, for player, I need to flip, so that first is last and vice versa. This involves n-1 complement
-            {
-                index = Len - 1 - index;
-            }
+            index = GetAbsoluteTileCoord(index, player);
             // Now that I got the right index, return correct value...
             return GetTileAbsolute(index);
         }
         /// <summary>
-        /// Returns the index of the first tile, but relative to a player
+        /// Returns the absolute tile coord given a tile # relative to a player
         /// </summary>
-        /// <param name="player">Player</param>
-        /// <returns>Tile index</returns>
-        public int GetFirstTileCoord(int player) /// Returns the first tile of the lane (to spawn units)
+        /// <param name="relativeCoord">The coord in question</param>
+        /// <param name="player">Player relative to</param>
+        /// <returns></returns>
+        public int GetAbsoluteTileCoord(int relativeCoord, int player)
         {
-            return (player != 0) ? Len - 1 : 0;
-        }
-        /// <summary>
-        /// Returns the index of the last tile, but relative to a player
-        /// </summary>
-        /// <param name="player">Player</param>
-        /// <returns>Tile index</returns>
-        public int GetLastTileCoord(int player) /// Returns the edge of the lane (to decide if advance or damage castle)
-        {
-            return (player != 1) ? Len - 1 : 0;
+            if (relativeCoord < 0) // Pyhton notation, need to add n, so that -1 -> n-1 and -n becomes 0
+            {
+                relativeCoord += Len;
+            }
+            if (player == 1) // Next, for player, I need to flip, so that first is last and vice versa. This involves n-1 complement
+            {
+                relativeCoord = Len - 1 - relativeCoord;
+            }
+            return relativeCoord;
         }
         public static int GetAdvanceDirection(int player)
         {
@@ -120,7 +119,7 @@ namespace ODLGameEngine
         }
         public override string ToString()
         {
-            return Id.ToString() + $", P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]}";
+            return Id.ToString() + $", P1: {PlayerUnitCount[0]}u{PlayerBuildingCount[0]}b P2: {PlayerUnitCount[1]}u{PlayerBuildingCount[1]}b";
         }
 
         public int GetGameStateHash()
@@ -129,6 +128,8 @@ namespace ODLGameEngine
             hash.Add(Len); // So that different lanes have different hashes even if empty
             hash.Add(PlayerUnitCount[0]);
             hash.Add(PlayerUnitCount[1]);
+            hash.Add(PlayerBuildingCount[0]);
+            hash.Add(PlayerBuildingCount[1]);
             foreach (Tile tile in Tiles)
             {
                 hash.Add(tile.GetGameStateHash());

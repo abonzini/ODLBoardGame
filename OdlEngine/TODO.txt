@@ -1,20 +1,27 @@
 Ongoing tasks in order of priority:
-- Buildings
-	- Buildings also summoned, more complex behaviour as BP are involved and only one building can be placed
-		- Cards number -1000000000 to -1999999999 -> Playable token buildings, procedurally generated as 1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
-	- Bldg damage
+- Implement building damage (e.g. marching damage), unit continues advance.
+	- Tests (probably part of "unit and combat tests"):
+		- Unit marches and continues march while building damaged
+		- Bldg destroyed
+		- Bldg survives
+		- Bldg overkilled
+- Deck-out
+- Stealth
+	- Stealth test cases:
+	- Stealth properly interacting with effects that change boardstate besides the stealth unit effect
+		- Stelath unit building
+		- Stealth unit building stealt building
+		- Stelath building being built period
+		- On consturciton effect activated for stealth building
+		- Building being skipped by stealth (non-existing) unit, built by another one in tile
+		- Similarly, Building skipped by stealth (non-existing) unit, built by another unit but that unit activates effect
 - Implement complex effects:
 	- Events (when an effect occurs globally and triggers a unit, e.g. EOT). Loaded as dict <EventType, List<Entity>> of entities with the effect. This can be serialized, non-hashed.
 	- Filters?
 	---
 	- Buff tokens
 	- Buff tok is just extra fields (hashable and serializable) on the placeable
-- Deck-out
-- Stealth, implementation of the 2 stealth cards too
-	- Stealth play is in PLAYABLE_ in otder to get other valid targets (needed?) or just re-do idk, however it does instance number of units, but they're filtered out in player's unit count
-	- Proper correlations, to not break stuff
-	- Avancement, more complex advancment logic including non-decrementing counter if unit revealed, i.e. check for advance, advance result, and switch this instead of the thign in the tile.
-	- Stealth breaking when unit has an interaction with other entities that change somethign other than themselves
 - Implement rest of rulebook
 	- Todo...
 	- Lots of individual mechanics that will be polished as it goes, individual card testing
+	- Ask yourself, how would this affect stealth?
