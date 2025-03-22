@@ -1,6 +1,6 @@
 Ongoing tasks in order of priority:
 - Implement building damage (e.g. marching damage), unit continues advance.
-	- Tests (probably part of "unit and combat tests":
+	- Tests (probably part of "unit and combat tests"):
 		- Unit marches and continues march while building damaged
 		- Bldg destroyed
 		- Bldg survives
@@ -16,10 +16,8 @@ Ongoing tasks in order of priority:
 		- Building being skipped by stealth (non-existing) unit, built by another one in tile
 		- Similarly, Building skipped by stealth (non-existing) unit, built by another unit but that unit activates effect
 - Implement complex effects:
-	- Events (when an effect occurs globally and triggers a unit, e.g. EOT)
-	- Events (hashable, serializable in unit but not on main). THEY ARE IMPLEMENTED THROUGH AN EVENT HANDLER IN THE STATE MACHINE, WHICH IS PROPERLY FILLED/EMPTIED WHEN PLACEABLE ENTERS/LEAVES
-	- Filters	
-	- Resulting action. Can this be done in a smooth way? Proposal: new class with Enum + <T1,T2,etc>. Idea is that similar to event handler, but with different enum, is processed where corresponds, and launched by event. By the time we reach unit effect, we run the effect, description of effect can also be fine tuned. E.g. effect, summons X (in lane), summons X (in lane), summons X (in lane), etc. 3 events. Skill card then also is simply a list of effects (when played). While playables have interrups.
+	- Events (when an effect occurs globally and triggers a unit, e.g. EOT). Loaded as dict <EventType, List<Entity>> of entities with the effect. This can be serialized, non-hashed.
+	- Filters?
 	---
 	- Buff tokens
 	- Buff tok is just extra fields (hashable and serializable) on the placeable
