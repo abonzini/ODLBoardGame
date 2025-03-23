@@ -50,7 +50,6 @@ namespace ODLGameEngine
     }
 
     // CONTEXT CONTANERS
-
     public abstract class EffectContext { }
     /// <summary>
     /// When card is played
@@ -80,7 +79,18 @@ namespace ODLGameEngine
         public int InitialMovement = 0;
         public int CurrentMovement = 0;
     }
+    /// <summary>
+    /// When a construction takes place
+    /// </summary>
+    public class ConstructionContext : EffectContext
+    {
+        public Building Building = null;
+        public Unit Builder = null;
+        public int AbsoluteTile = -1;
+        public int RelativeTile = -1;
+        public int FirstAvailableOption = -1;
+    }
     // TODO:
-    // Building Context
+    // Playability context? E.g for activities like "the next card you build" etc
     // Healing Context?
 }

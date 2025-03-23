@@ -254,7 +254,7 @@ namespace ODLGameEngine
             {
                 case TargetCondition.BLUEPRINT:
                     // if number is -1 means that we couldn't find a tile to place the building
-                    playable = (BUILDING_GetFirstBuildableTile((int)_detailedState.CurrentPlayer, (Building)card, laneCandidate) >= 0); // Still asume, for now, that current player is the one playing the card
+                    playable = (BUILDING_GetBuildingOptions((int)_detailedState.CurrentPlayer, (Building)card, laneCandidate).FirstAvailableOption >= 0); // Still asume, for now, that current player is the one playing the card
                     break;
                 case TargetCondition.NONE:
                 default:
