@@ -8,6 +8,7 @@ namespace ODLGameEngine
 {
     public static class GameConstants
     {
+        // Sizes
         public const int BOARD_LANES_NUMBER = 3;
         public const int PLAINS_TILES_NUMBER = 4;
         public const int FOREST_TILES_NUMBER = 6;
@@ -20,6 +21,7 @@ namespace ODLGameEngine
         public const int DRAW_PHASE_CARDS_DRAWN = 1;
         public const int DRAW_PHASE_GOLD_OBTAINED = 2;
         public const int RUSH_CARD_ID = 1;
+        public const int DECKOUT_DAMAGE = 5;
     }
 
 }

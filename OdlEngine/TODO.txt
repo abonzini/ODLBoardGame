@@ -1,5 +1,4 @@
 Ongoing tasks in order of priority:
-- Deck-out
 - Stealth
 	- Stealth test cases:
 	- Stealth properly interacting with effects that change boardstate besides the stealth unit effect

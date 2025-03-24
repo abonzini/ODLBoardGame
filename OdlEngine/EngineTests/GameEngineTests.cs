@@ -240,6 +240,219 @@ namespace EngineTests
                 Assert.AreEqual(preEotHash, postEotHash); // Hash repeatability check
             }
         }
+        // Deck out tests
+        [TestMethod]
+        public void TheresNoDeckOut()
+        {
+            CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
+            Random _rng = new Random();
+            foreach (CurrentPlayer id in ids)
+            {
+                int currentPlayer = (int)id;
+                int playerHp = _rng.Next(GameConstants.DECKOUT_DAMAGE + 1, 31);
+                PlayerState pl1 = new PlayerState
+                {
+                    Hp = playerHp
+                };
+                PlayerState pl2 = new PlayerState
+                {
+                    Hp = playerHp
+                };
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.DRAW_PHASE,
+                    CurrentPlayer = id,
+                    PlayerStates = [pl1, pl2]
+                };
+                state.PlayerStates[currentPlayer].Deck.InsertCard(-109); // Adds useless card to player deck
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
+                // Pre draw
+                int deckHash = plState.Deck.GetGameStateHash();
+                int playerHash = plState.GetGameStateHash();
+                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 1);
+                // Draw
+                sm.Step();
+                Assert.AreNotEqual(deckHash, plState.Deck.GetGameStateHash()); // Changed because card was drawn
+                Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
+                Assert.AreEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 1);
+            }
+        }
+        [TestMethod]
+        public void DeckOutDamage()
+        {
+            CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
+            Random _rng = new Random();
+            foreach (CurrentPlayer id in ids)
+            {
+                int currentPlayer = (int)id;
+                int playerHp = _rng.Next(GameConstants.DECKOUT_DAMAGE + 1, 31);
+                PlayerState pl1 = new PlayerState
+                {
+                    Hp = playerHp
+                };
+                PlayerState pl2 = new PlayerState
+                {
+                    Hp = playerHp
+                };
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.DRAW_PHASE,
+                    CurrentPlayer = id,
+                    PlayerStates = [pl1, pl2]
+                };
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
+                // Pre draw
+                int deckHash = plState.Deck.GetGameStateHash();
+                int playerHash = plState.GetGameStateHash();
+                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                // Draw
+                sm.Step();
+                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
+                Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
+                Assert.AreEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+            }
+        }
+        [TestMethod]
+        public void DeckOutKill()
+        {
+            CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
+            Random _rng = new Random();
+            foreach (CurrentPlayer id in ids)
+            {
+                int currentPlayer = (int)id;
+                PlayerState pl1 = new PlayerState
+                {
+                    Hp = GameConstants.DECKOUT_DAMAGE
+                };
+                PlayerState pl2 = new PlayerState
+                {
+                    Hp = GameConstants.DECKOUT_DAMAGE
+                };
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.DRAW_PHASE,
+                    CurrentPlayer = id,
+                    PlayerStates = [pl1, pl2]
+                };
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
+                // Pre draw
+                int deckHash = plState.Deck.GetGameStateHash();
+                int playerHash = plState.GetGameStateHash();
+                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+                // Draw
+                sm.Step();
+                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
+                Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
+                Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
+                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, (CurrentPlayer)(1-(int)id)); // other player won
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
+                Assert.AreEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+            }
+        }
+        [TestMethod]
+        public void DeckOutOverkill()
+        {
+            CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
+            Random _rng = new Random();
+            foreach (CurrentPlayer id in ids)
+            {
+                int currentPlayer = (int)id;
+                PlayerState pl1 = new PlayerState
+                {
+                    Hp = GameConstants.DECKOUT_DAMAGE-1
+                };
+                PlayerState pl2 = new PlayerState
+                {
+                    Hp = GameConstants.DECKOUT_DAMAGE-1
+                };
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.DRAW_PHASE,
+                    CurrentPlayer = id,
+                    PlayerStates = [pl1, pl2]
+                };
+                GameStateMachine sm = new GameStateMachine
+                {
+                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
+                };
+                sm.LoadGame(state); // Start from here
+                PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
+                // Pre draw
+                int deckHash = plState.Deck.GetGameStateHash();
+                int playerHash = plState.GetGameStateHash();
+                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+                // Draw
+                sm.Step();
+                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
+                Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
+                Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE - 1);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
+                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, (CurrentPlayer)(1 - (int)id)); // other player won
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
+                Assert.AreEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
+                Assert.AreEqual(plState.DamageTokens, 0);
+                Assert.AreEqual(plState.Deck.DeckSize, 0);
+                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+            }
+        }
+        // Hash tests
         [TestMethod]
         public void BoardHashVerify() // Verify that an unchanged board has an unchanged hash
         {

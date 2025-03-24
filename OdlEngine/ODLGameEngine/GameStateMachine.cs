@@ -178,8 +178,9 @@ namespace ODLGameEngine
         void STATE_DrawPhase()
         {
             int playerId = (int)_detailedState.CurrentPlayer;
+            PlayerState player = _detailedState.PlayerStates[playerId];
             // Advance all units of that player
-            if (_detailedState.PlayerStates[playerId].NUnits > 0) // Only advance if player has units
+            if (player.NUnits > 0) // Only advance if player has units
             {
                 SortedList<int, Unit> liveUnits = _detailedState.BoardState.Units;
                 List<int> liveUnitsIds = liveUnits.Keys.ToList(); // Obtain all elements in list to iterate on
@@ -194,9 +195,16 @@ namespace ODLGameEngine
                     }
                 }
             }
-            STATE_DeckDrawMultiple(playerId, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Current player draws
+            if (player.Deck.DeckSize > 0) // If current player still has cards in deck, draw phase
+            {
+                STATE_DeckDrawMultiple(playerId, GameConstants.DRAW_PHASE_CARDS_DRAWN);
+            }
+            else // Else there's a deck out event, player receives self inflicted deck-out damage
+            {
+                BOARDENTITY_DamageStep(player, player, GameConstants.DECKOUT_DAMAGE);
+            }
             ENGINE_PlayerGoldChange(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Current player gets gold
-            ENGINE_ChangePlayerPowerAvailability(_detailedState.PlayerStates[playerId], true); // Player can now use active power again
+            ENGINE_ChangePlayerPowerAvailability(player, true); // Player can now use active power again
         }
         /// <summary>
         /// Shuffles a player deck
