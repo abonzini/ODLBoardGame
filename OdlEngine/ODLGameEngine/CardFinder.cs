@@ -14,11 +14,19 @@ namespace ODLGameEngine
     {
         protected Dictionary<int, EntityBase> cardData = new Dictionary<int, EntityBase>();
         protected readonly string _baseDir;
+        public CardFinder()
+        {
+            _baseDir = "";
+        }
         public CardFinder(string baseDir)
         {
             _baseDir = baseDir;
         }
-        public virtual EntityBase GetCard(int id)
+        public void InjectCard(int id, EntityBase entity)
+        {
+            cardData[id] = entity;
+        }
+        public EntityBase GetCard(int id)
         {
             if (cardData.TryGetValue(id, out EntityBase cardEntity)) // Need to only parse data I yet didn't parse
             {

@@ -11,144 +11,105 @@ namespace EngineTests
     /// <summary>
     /// The TestCardGenerator returns as normal, but if ID is negative, instead will generate a card depending on the code
     /// </summary>
-    internal class TestCardGenerator : CardFinder
+    static class TestCardGenerator
     {
-        public TestCardGenerator(string baseDir) : base(baseDir)
+        /// <summary>
+        /// Creates a blank spell
+        /// </summary>
+        /// <param name="id">Id#</param>
+        /// <param name="name">Name</param>
+        /// <param name="cost">Cost</param>
+        /// <param name="target">Targets</param>
+        /// <returns></returns>
+        public static Skill CreateSkill(int id, string name, int cost, CardTargets target)
         {
+            EntityPrintInfo printInfo = new EntityPrintInfo()
+            {
+                Id = id,
+                Title = name,
+                Cost = cost.ToString()
+            };
+            EntityPlayInfo playInfo = new EntityPlayInfo()
+            {
+                EntityType = EntityType.SKILL,
+                TargetOptions = target,
+            };
+            return new Skill() // Returns "brick" card
+            {
+                EntityPlayInfo = playInfo,
+                EntityPrintInfo = printInfo
+            };
         }
         /// <summary>
-        /// Creates a new instanxce of stast generator for well... testing. I assume path doesn't change otherwise just call constructor manually...
+        /// Creates a basic unit
         /// </summary>
-        /// <returns>Test generator</returns>
-        public static TestCardGenerator GenerateTestCardGenerator()
+        /// <param name="id">1</param>
+        /// <param name="name">Name</param>
+        /// <param name="cost">Cost</param>
+        /// <param name="target">Targets</param>
+        /// <param name="hp">Hp</param>
+        /// <param name="attack">Attack</param>
+        /// <param name="movement">Movement</param>
+        /// <param name="denominator">Movement Denominator</param>
+        /// <returns></returns>
+        public static Unit CreateUnit(int id, string name, int cost, CardTargets target, int hp, int attack, int movement, int denominator)
         {
-            return new TestCardGenerator(".\\..\\..\\..\\..\\..\\CardDatabase");
+            EntityPrintInfo printInfo = new EntityPrintInfo()
+            {
+                Id = id,
+                Title = name,
+                Cost = cost.ToString(),
+            };
+            EntityPlayInfo playInfo = new EntityPlayInfo()
+            {
+                EntityType = EntityType.UNIT,
+                TargetOptions = target
+            };
+            return new Unit()
+            {
+                EntityPlayInfo = playInfo,
+                EntityPrintInfo = printInfo,
+                Hp = hp,
+                Attack = attack,
+                Movement = movement,
+                MovementDenominator = denominator
+            };
         }
-        public override EntityBase GetCard(int id)
+        /// <summary>
+        /// Creates basic building
+        /// </summary>
+        /// <param name="id">Id#</param>
+        /// <param name="name">Name</param>
+        /// <param name="cost">Cost</param>
+        /// <param name="target">Target</param>
+        /// <param name="hp">Hp</param>
+        /// <param name="plainBp">Array with plain Bp options</param>
+        /// <param name="forestBp">Array with forest Bp options</param>
+        /// <param name="mountainBp">Array with mountain Bp options</param>
+        /// <returns></returns>
+        public static Building CreateBuilding(int id, string name, int cost, CardTargets target, int hp, int[] plainBp, int[] forestBp, int[] mountainBp)
         {
-            if (id >= 0) // Normal card then
+            EntityPrintInfo printInfo = new EntityPrintInfo()
             {
-                return base.GetCard(id);
-            }
-            id *= -1; // Remove negative sign
-            if(id == 10 && id < 19) // Spell card that breaks the game when played
+                Id = id,
+                Title = name,
+                Cost = cost.ToString()
+            };
+            EntityPlayInfo playInfo = new EntityPlayInfo()
             {
-                EntityPrintInfo printInfo = new EntityPrintInfo()
-                {
-                    Id = -id,
-                    Title = "BREAKER",
-                    Cost = (id % 10).ToString() // First digit is gold, 0-9
-                };
-                EntityPlayInfo playInfo = new EntityPlayInfo()
-                {
-                    EntityType = EntityType.SKILL,
-                    TargetOptions = CardTargets.GLOBAL
-                };
-                Skill skill = new Skill() // Returns "breaker" card
-                {
-                    EntityPlayInfo = playInfo,
-                    EntityPrintInfo = printInfo
-                };
-                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                List<Effect> effect = new List<Effect>();
-                effect.Add(new Effect()
-                {
-                    EffectType = EffectType.EFFECT_EXCEPTION
-                });
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, effect); // Add it to resulting card
-                return skill;
-            }
-            if(id >= 100 && id <= 199) // Attempting to generate brick skill (does nothing but can be played) Brick: 1-G-TGT where TGT 0-7 or invalid
+                EntityType = EntityType.BUILDING,
+                TargetOptions = target,
+                TargetConditions = TargetCondition.BLUEPRINT,
+            };
+            return new Building() // Returns "TOKEN_BUILDING" card
             {
-                EntityPrintInfo printInfo = new EntityPrintInfo()
-                {
-                    Id = -id,
-                    Title = "BRICK",
-                    Cost = ((id / 10) % 10).ToString() // Second digit is gold, 0-9
-                };
-                EntityPlayInfo playInfo = new EntityPlayInfo()
-                {
-                    EntityType = EntityType.SKILL,
-                    TargetOptions = ((id % 10) <= 7) ? (CardTargets)(id % 10) : CardTargets.INVALID,
-                };
-                return new Skill() // Returns "brick" card
-                {
-                    EntityPlayInfo = playInfo,
-                    EntityPrintInfo = printInfo
-                };
-            }
-            if(id >= 1000000 && id < 1999999) // unit: 1-G-HP-ATK-MOV-DENOM-TGT
-            {
-                EntityPrintInfo printInfo = new EntityPrintInfo()
-                {
-                    Id = -id,
-                    Title = "TOKEN",
-                    Cost = ((id / 100000) % 10).ToString() // First digit is gold, 0-9
-                };
-                EntityPlayInfo playInfo = new EntityPlayInfo()
-                {
-                    EntityType = EntityType.UNIT,
-                    TargetOptions = ((id % 10) <= 7) ? (CardTargets)(id % 10) : CardTargets.INVALID,
-                };
-                return new Unit() // Returns "TOKEN" card
-                {
-                    EntityPlayInfo = playInfo,
-                    EntityPrintInfo = printInfo,
-                    Hp = (id / 10000) % 10, // Second digit is hp, 0-9
-                    Attack = (id / 1000) % 10, // Third, attack
-                    Movement = (id / 100) % 10, // 4th, movement
-                    MovementDenominator = (id / 10) % 10, // 5th, mov denominator
-                };
-            }
-            if (id >= 1000000000 && id < 1999999999) //1-G-HP-[bPlain-bForest-bMountain](packed 18-bit binary, 4-6-8bit)-TGT
-            {
-                EntityPrintInfo printInfo = new EntityPrintInfo()
-                {
-                    Id = -id,
-                    Title = "TOKEN_BUILDING",
-                    Cost = ((id / 100000000) % 10).ToString() // First digit is gold, 0-9
-                };
-                EntityPlayInfo playInfo = new EntityPlayInfo()
-                {
-                    EntityType = EntityType.BUILDING,
-                    TargetOptions = ((id % 10) <= 7) ? (CardTargets)(id % 10) : CardTargets.INVALID,
-                    TargetConditions = TargetCondition.BLUEPRINT,
-                };
-                int bpRaw = (id / 10) % 1000000;
-                List<int> plainsBp = new List<int>();
-                List<int> forestBp = new List<int>();
-                List<int> mountainBp = new List<int>();
-                for (int i = 0; i<18;i++) // Decode the 18-bit of BP
-                {
-                    bool bitActive = (bpRaw & (1 << i)) != 0; // get bit
-                    if(bitActive)
-                    {
-                        if (i < GameConstants.PLAINS_TILES_NUMBER) // parsing palins
-                        {
-                            plainsBp.Add(i);
-                        }
-                        else if (i < GameConstants.PLAINS_TILES_NUMBER + GameConstants.FOREST_TILES_NUMBER) // parsing forest
-                        {
-                            forestBp.Add(i - GameConstants.PLAINS_TILES_NUMBER);
-                        }
-                        else if (i < GameConstants.PLAINS_TILES_NUMBER + GameConstants.FOREST_TILES_NUMBER + GameConstants.MOUNTAIN_TILES_NUMBER) // Parsing mountains
-                        {
-                            mountainBp.Add(i - GameConstants.PLAINS_TILES_NUMBER - GameConstants.FOREST_TILES_NUMBER);
-                        }
-                        else { throw new Exception("Messed up bitpacking of BP!"); }
-                    }
-                }
-                return new Building() // Returns "TOKEN_BUILDING" card
-                {
-                    EntityPlayInfo = playInfo,
-                    EntityPrintInfo = printInfo,
-                    Hp = (id / 10000000) % 10, // Second digit is hp, 0-9
-                    PlainsBp = plainsBp.ToArray(),
-                    ForestBp = forestBp.ToArray(),
-                    MountainBp = mountainBp.ToArray(),
-                };
-            }
-            throw new NotImplementedException("Not implemented yet");
+                EntityPlayInfo = playInfo,
+                EntityPrintInfo = printInfo,
+                Hp = hp,
+                PlainsBp = plainBp,
+                ForestBp = forestBp,
+                MountainBp = mountainBp,
+            };
         }
     }
 }

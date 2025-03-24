@@ -214,10 +214,7 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = id
                 };
-                GameStateMachine sm = new GameStateMachine
-                {
-                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
-                };
+                GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 // Ensure all in order before EOT
                 GameStateStruct preEotState = sm.GetDetailedState();
@@ -264,11 +261,8 @@ namespace EngineTests
                     CurrentPlayer = id,
                     PlayerStates = [pl1, pl2]
                 };
-                state.PlayerStates[currentPlayer].Deck.InsertCard(-109); // Adds useless card to player deck
-                GameStateMachine sm = new GameStateMachine
-                {
-                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
-                };
+                state.PlayerStates[currentPlayer].Deck.InsertCard(-1); // Adds useless card to player deck
+                GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
                 // Pre draw
@@ -300,7 +294,6 @@ namespace EngineTests
             Random _rng = new Random();
             foreach (CurrentPlayer id in ids)
             {
-                int currentPlayer = (int)id;
                 int playerHp = _rng.Next(GameConstants.DECKOUT_DAMAGE + 1, 31);
                 PlayerState pl1 = new PlayerState
                 {
@@ -316,10 +309,7 @@ namespace EngineTests
                     CurrentPlayer = id,
                     PlayerStates = [pl1, pl2]
                 };
-                GameStateMachine sm = new GameStateMachine
-                {
-                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
-                };
+                GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
                 // Pre draw
@@ -348,10 +338,8 @@ namespace EngineTests
         public void DeckOutKill()
         {
             CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
-            Random _rng = new Random();
             foreach (CurrentPlayer id in ids)
             {
-                int currentPlayer = (int)id;
                 PlayerState pl1 = new PlayerState
                 {
                     Hp = GameConstants.DECKOUT_DAMAGE
@@ -366,10 +354,7 @@ namespace EngineTests
                     CurrentPlayer = id,
                     PlayerStates = [pl1, pl2]
                 };
-                GameStateMachine sm = new GameStateMachine
-                {
-                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
-                };
+                GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
                 // Pre draw
@@ -402,10 +387,8 @@ namespace EngineTests
         public void DeckOutOverkill()
         {
             CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
-            Random _rng = new Random();
             foreach (CurrentPlayer id in ids)
             {
-                int currentPlayer = (int)id;
                 PlayerState pl1 = new PlayerState
                 {
                     Hp = GameConstants.DECKOUT_DAMAGE-1
@@ -420,10 +403,7 @@ namespace EngineTests
                     CurrentPlayer = id,
                     PlayerStates = [pl1, pl2]
                 };
-                GameStateMachine sm = new GameStateMachine
-                {
-                    CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
-                };
+                GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
                 // Pre draw
@@ -462,12 +442,12 @@ namespace EngineTests
                 CurrentState = States.ACTION_PHASE,
                 CurrentPlayer = CurrentPlayer.PLAYER_1
             };
-            state.PlayerStates[playerIndex].Hand.InsertCard(-1011117); // Insert token card
+            CardFinder cardDb = new CardFinder();
+            // Card 1: basic unit
+            cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+            state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token card
             state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
-            GameStateMachine sm = new GameStateMachine
-            {
-                CardDb = TestCardGenerator.GenerateTestCardGenerator() // Add test cardDb
-            };
+            GameStateMachine sm = new GameStateMachine(cardDb);
             sm.LoadGame(state); // Start from here
             // HASH CHECK
             int emptyBoardHash = sm.GetDetailedState().BoardState.GetGameStateHash();
@@ -475,7 +455,7 @@ namespace EngineTests
             Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
             Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetGameStateHash()); // Hash would be recalculated but still the same
             // Will play card now
-            Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(-1011117, CardTargets.PLAINS); // Play it
+            Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, CardTargets.PLAINS); // Play it
             // Make sure card was played ok
             Assert.AreEqual(res.Item1, PlayOutcome.OK);
             Assert.IsNotNull(res.Item2);

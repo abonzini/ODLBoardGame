@@ -47,12 +47,12 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = player
                 };
-                GameStateMachine sm = new GameStateMachine()
-                {
-                    CardDb = new TestCardGenerator(".\\..\\..\\..\\..\\..\\CardDatabase")
-                };
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Brick with cost 9
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 9, CardTargets.GLOBAL));
+                GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                sm.GetDetailedState().PlayerStates[(int)player].ActivePowerCast = -190; // Use expensive brick as placeholder active effect
+                sm.GetDetailedState().PlayerStates[(int)player].ActivePowerCast = 1; // Use expensive brick as placeholder active effect
                 Tuple<PlayOutcome, StepResult> res = sm.PlayActivePower();
                 Assert.AreEqual(res.Item1, PlayOutcome.CANT_AFFORD);
                 Assert.AreEqual(res.Item2, null);
@@ -125,14 +125,17 @@ namespace EngineTests
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
+                CardFinder cardDb = new CardFinder();
+                // Card 1: 5-cost brick
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 5, CardTargets.GLOBAL));
                 PlayerState pl1 = new PlayerState()
                 {
                     Gold = 10, // Let them afford the power
-                    ActivePowerCast = -150 // Cost 5 brick
+                    ActivePowerCast = 1 // Cost 5 brick
                 }; PlayerState pl2 = new PlayerState()
                 {
                     Gold = 10, // Let them afford the power
-                    ActivePowerCast = -150 // Cost 5 brick
+                    ActivePowerCast = 1 // Cost 5 brick
                 };
                 pl1.Deck.InitializeDeck("1,1,1"); // Add 3 cards just to avoid deck out
                 GameStateStruct state = new GameStateStruct
@@ -141,10 +144,7 @@ namespace EngineTests
                     CurrentPlayer = player,
                     PlayerStates = [pl1, pl2],
                 };
-                GameStateMachine sm = new GameStateMachine()
-                {
-                    CardDb = new TestCardGenerator(".\\..\\..\\..\\..\\..\\CardDatabase")
-                };
+                GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Pre rush assert
                 int stateHash = sm.GetDetailedState().GetGameStateHash();

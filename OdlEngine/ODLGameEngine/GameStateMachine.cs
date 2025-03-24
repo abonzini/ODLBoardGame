@@ -47,6 +47,11 @@ namespace ODLGameEngine
         {
             STATE_InitInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
         }
+        public GameStateMachine(CardFinder cardDb)
+        {
+            _cardDb = cardDb;
+            STATE_InitInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
+        }
         /// <summary>
         /// Initializes internal stuff
         /// </summary>
