@@ -1,4 +1,5 @@
 Ongoing tasks in order of priority:
+- TrigInterEffect Test class. Test in depth all sorts of effects, use gard getter and custom json cards for this
 - Stealth
 	- Stealth test cases:
 	- Stealth properly interacting with effects that change boardstate besides the stealth unit effect
