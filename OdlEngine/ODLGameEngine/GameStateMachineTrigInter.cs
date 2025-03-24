@@ -24,6 +24,8 @@ namespace ODLGameEngine
                 {
                     switch(effect.EffectType)
                     {
+                        case EffectType.EFFECT_EXCEPTION:
+                            throw new EffectDrivenException("Card's effect has triggered an exception on purpose");
                         case EffectType.SUMMON_UNIT:
                             // Unit summoning is made without considering cost and the sort, so just go to Playables, play card
                             auxCardData = CardDb.GetCard(effect.CardNumber);

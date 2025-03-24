@@ -47,8 +47,12 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = player
                 };
-                GameStateMachine sm = new GameStateMachine();
+                GameStateMachine sm = new GameStateMachine()
+                {
+                    CardDb = new TestCardGenerator(".\\..\\..\\..\\..\\..\\CardDatabase")
+                };
                 sm.LoadGame(state); // Start from here
+                sm.GetDetailedState().PlayerStates[(int)player].ActivePowerCast = -190; // Use expensive brick as placeholder active effect
                 Tuple<PlayOutcome, StepResult> res = sm.PlayActivePower();
                 Assert.AreEqual(res.Item1, PlayOutcome.CANT_AFFORD);
                 Assert.AreEqual(res.Item2, null);
@@ -116,17 +120,19 @@ namespace EngineTests
             Assert.AreNotEqual(plHash, pl.GetGameStateHash()); // Verify hash is now different
         }
         [TestMethod]
-        public void RushTest()
+        public void ActivePowerCast()
         {
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
                 PlayerState pl1 = new PlayerState()
                 {
-                    Gold = 10 // Let them afford the power
+                    Gold = 10, // Let them afford the power
+                    ActivePowerCast = -150 // Cost 5 brick
                 }; PlayerState pl2 = new PlayerState()
                 {
-                    Gold = 10 // Let them afford the power
+                    Gold = 10, // Let them afford the power
+                    ActivePowerCast = -150 // Cost 5 brick
                 };
                 pl1.Deck.InitializeDeck("1,1,1"); // Add 3 cards just to avoid deck out
                 GameStateStruct state = new GameStateStruct
@@ -135,16 +141,15 @@ namespace EngineTests
                     CurrentPlayer = player,
                     PlayerStates = [pl1, pl2],
                 };
-                GameStateMachine sm = new GameStateMachine();
+                GameStateMachine sm = new GameStateMachine()
+                {
+                    CardDb = new TestCardGenerator(".\\..\\..\\..\\..\\..\\CardDatabase")
+                };
                 sm.LoadGame(state); // Start from here
                 // Pre rush assert
                 int stateHash = sm.GetDetailedState().GetGameStateHash();
                 PlayerState currentPlayer = sm.GetDetailedState().PlayerStates[(int)sm.GetDetailedState().CurrentPlayer];
                 Assert.AreEqual(currentPlayer.Gold, 10);
-                Assert.AreEqual(currentPlayer.NUnits, 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.PLAINS).PlayerUnitCount[currentPlayer.Owner], 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.FOREST).PlayerUnitCount[currentPlayer.Owner], 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN).PlayerUnitCount[currentPlayer.Owner], 0);
                 Assert.AreEqual(currentPlayer.PowerAvailable, true);
                 // Now, rush
                 Tuple<PlayOutcome, StepResult> res = sm.PlayActivePower();
@@ -153,20 +158,12 @@ namespace EngineTests
                 currentPlayer = sm.GetDetailedState().PlayerStates[(int)sm.GetDetailedState().CurrentPlayer];
                 Assert.AreNotEqual(stateHash, sm.GetDetailedState().GetGameStateHash());
                 Assert.AreEqual(currentPlayer.Gold, 5);
-                Assert.AreEqual(currentPlayer.NUnits, 3);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.PLAINS).PlayerUnitCount[currentPlayer.Owner], 1);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.FOREST).PlayerUnitCount[currentPlayer.Owner], 1);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN).PlayerUnitCount[currentPlayer.Owner], 1);
                 Assert.AreEqual(currentPlayer.PowerAvailable, false);
                 // Now, revert it
                 sm.UndoPreviousStep();
                 currentPlayer = sm.GetDetailedState().PlayerStates[(int)sm.GetDetailedState().CurrentPlayer];
                 Assert.AreEqual(stateHash, sm.GetDetailedState().GetGameStateHash());
                 Assert.AreEqual(currentPlayer.Gold, 10);
-                Assert.AreEqual(currentPlayer.NUnits, 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.PLAINS).PlayerUnitCount[currentPlayer.Owner], 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.FOREST).PlayerUnitCount[currentPlayer.Owner], 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(CardTargets.MOUNTAIN).PlayerUnitCount[currentPlayer.Owner], 0);
                 Assert.AreEqual(currentPlayer.PowerAvailable, true);
             }
         }

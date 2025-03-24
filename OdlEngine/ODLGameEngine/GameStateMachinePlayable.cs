@@ -76,7 +76,7 @@ namespace ODLGameEngine
         /// <returns>Like PlayCard, chain of effects after power was played</returns>
         public Tuple<PlayOutcome, StepResult> PlayActivePower()
         {
-            return PlayCard(GameConstants.RUSH_CARD_ID, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
+            return PlayCard(_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].ActivePowerCast, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
         }
         // Back-end (private)
         /// <summary>

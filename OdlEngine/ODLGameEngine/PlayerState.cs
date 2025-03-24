@@ -39,6 +39,8 @@ namespace ODLGameEngine
         public Deck Deck { get; set; } = new Deck();
         [JsonProperty]
         public AssortedCardCollection DiscardPile { get; set; } = new AssortedCardCollection();
+        [JsonProperty]
+        public int ActivePowerCast { get; set; } = GameConstants.RUSH_CARD_ID;
 
         public override int GetGameStateHash()
         {
@@ -50,6 +52,7 @@ namespace ODLGameEngine
             hash.Add(Hand.GetGameStateHash());
             hash.Add(Deck.GetGameStateHash());
             hash.Add(DiscardPile.GetGameStateHash());
+            hash.Add(ActivePowerCast);
             return hash.ToHashCode();
         }
     }

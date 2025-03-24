@@ -1,4 +1,5 @@
-﻿using ODLGameEngine;
+﻿using Microsoft.VisualBasic;
+using ODLGameEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,33 @@ namespace EngineTests
                 return base.GetCard(id);
             }
             id *= -1; // Remove negative sign
+            if(id == 10 && id < 19) // Spell card that breaks the game when played
+            {
+                EntityPrintInfo printInfo = new EntityPrintInfo()
+                {
+                    Id = -id,
+                    Title = "BREAKER",
+                    Cost = (id % 10).ToString() // First digit is gold, 0-9
+                };
+                EntityPlayInfo playInfo = new EntityPlayInfo()
+                {
+                    EntityType = EntityType.SKILL,
+                    TargetOptions = CardTargets.GLOBAL
+                };
+                Skill skill = new Skill() // Returns "breaker" card
+                {
+                    EntityPlayInfo = playInfo,
+                    EntityPrintInfo = printInfo
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                List<Effect> effect = new List<Effect>();
+                effect.Add(new Effect()
+                {
+                    EffectType = EffectType.EFFECT_EXCEPTION
+                });
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, effect); // Add it to resulting card
+                return skill;
+            }
             if(id >= 100 && id <= 199) // Attempting to generate brick skill (does nothing but can be played) Brick: 1-G-TGT where TGT 0-7 or invalid
             {
                 EntityPrintInfo printInfo = new EntityPrintInfo()
