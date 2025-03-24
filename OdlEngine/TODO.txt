@@ -1,5 +1,7 @@
 Ongoing tasks in order of priority:
 - TrigInterEffect Test class. Test in depth all sorts of effects, use gard getter and custom json cards for this
+	- Remove rush from hardcode, add instead to (new) PlayerState ActivePowerCast variable which has RUSH as default! That way we test only effect not rush
+	- Idea is to make it card/group independent while all effects work
 - Stealth
 	- Stealth test cases:
 	- Stealth properly interacting with effects that change boardstate besides the stealth unit effect
@@ -16,6 +18,8 @@ Ongoing tasks in order of priority:
 	- Buff tokens
 	- Buff tok is just extra fields (hashable and serializable) on the placeable
 - Implement rest of rulebook
-	- Todo...
-	- Lots of individual mechanics that will be polished as it goes, individual card testing
-	- Ask yourself, how would this affect stealth?
+	- Procedure:
+		- Propose card, way to code it
+		- Add triginters if not there already
+		- Ask yourself questions of how it could break the game, how it affects stealth, probably triginter related but good excercise
+		- No individual card testing! Game must be mechanically robust even if cards are completely revamped
