@@ -1,5 +1,6 @@
 Ongoing tasks in order of priority:
 - Stealth
+	- Rework Lane/Tile as members of the same "PhysicalLocation" class. Number of units, stealth units, Mantain list of units. They just duplicate info. Hash of lane is just hash of tiles (dependence). Methods: Insert (unit/building), GetRealNumber. Serialization tbd but most likely all? Or just some idk. Check if I want to also define list for all players, or both, no shame on having lots of info. 
 	- Think it properly as stealth buildings stack!
 		- May require multiple building in tile for this case,
 		- Lots of complex correlations, make sure to think of possibilities for:
