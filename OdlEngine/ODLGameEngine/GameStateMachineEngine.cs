@@ -67,6 +67,7 @@ namespace ODLGameEngine
                     _detailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int,int>)e).newValue;
                     break;
                 case EventType.MESSAGE:
+                case EventType.DEBUG_CHECK:
                     break;
                 case EventType.CARD_DECK_SWAP:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
@@ -246,6 +247,7 @@ namespace ODLGameEngine
                     _detailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int, int>)e).oldValue;
                     break;
                 case EventType.MESSAGE:
+                case EventType.DEBUG_CHECK:
                     break;
                 case EventType.CARD_DECK_SWAP:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
@@ -669,6 +671,14 @@ namespace ODLGameEngine
                     entity = player,
                     newValue = powerAvailability
                 });
+        }
+        void ENGINE_AddDebugEvent()
+        {
+            ENGINE_ExecuteEvent(
+                    new GameEngineEvent()
+                    {
+                        eventType = EventType.DEBUG_CHECK,
+                    });
         }
     }
 }

@@ -65,7 +65,8 @@ namespace ODLGameEngine
         DEINIT_ENTITY,
         UNIT_MOVEMENT_COOLDOWN_VALUE,
         ENTITY_DAMAGE_COUNTER_CHANGE,
-        PLAYER_POWER_AVAILABILITY
+        PLAYER_POWER_AVAILABILITY,
+        DEBUG_CHECK
     }
 
     public class GameEngineEvent

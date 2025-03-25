@@ -9,10 +9,6 @@ using System.Threading.Tasks;
 namespace ODLGameEngine
 {
     // FLEXIBLE DEFINITION OF EFFECTS
-    public class EffectDrivenException : Exception
-    {
-        public EffectDrivenException(string message) : base(message) { }
-    }
     /// <summary>
     /// When the interaction is triggered
     /// </summary>
@@ -27,7 +23,7 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum EffectType
     {
-        EFFECT_EXCEPTION,
+        DEBUG,
         SUMMON_UNIT
     }
     /// <summary>

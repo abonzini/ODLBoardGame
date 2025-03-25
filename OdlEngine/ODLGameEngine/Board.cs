@@ -205,6 +205,9 @@ namespace ODLGameEngine
                 hash.Add(kvp.Key);
                 hash.Add(kvp.Value.GetGameStateHash());
             }
+            hash.Add(PlainsLane.GetGameStateHash());
+            hash.Add(ForestLane.GetGameStateHash());
+            hash.Add(MountainLane.GetGameStateHash());
             return hash.ToHashCode();
         }
     }
