@@ -90,7 +90,6 @@ namespace ODLGameEngine
         public CardTargets TargetOptions { get; set; } = CardTargets.GLOBAL; // Which lane(s) if any the card could work on
         [JsonConverter(typeof(StringEnumConverter))]
         public TargetCondition TargetConditions { get; set; } = TargetCondition.NONE; // What needs to happen for a card to be "playable" in a lane
-        public bool StealthPlay { get; set; } = false; // Whether card triggers a stealth case
     }
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -156,16 +155,14 @@ namespace ODLGameEngine
         public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE; // Non serialized, doesn't define unit and info is kept in the board serialization
         [JsonProperty]
         public int TileCoordinate { get; set; } = -1; // Non serialized, doesn't define unit and info is kept in the board serialization
-        // Stealth shenanigans
+        /// <summary>
+        /// If a (possible unit) is actually real
+        /// </summary>
         [JsonProperty]
-        public bool IsHidden { get; set; } = false;
-        [JsonProperty]
-        public bool IsTheRealOne { get; set; } = true;
-        public List<HiddenCorrelation> HiddenCorrelations { get; set; } = new List<HiddenCorrelation>(); // Non-hashed (as it just represents a relation between hashed objects) and non-serialized (only game engine is meant to care)
+        public bool IsReal = true;
         public override object Clone()
         {
             object newEntity = MemberwiseClone();
-            ((PlacedEntity)newEntity).HiddenCorrelations = new List<HiddenCorrelation>(); // No need to fill as the cloning is normally used to copy card details to board
             return newEntity;
         }
         /// <summary>
@@ -178,8 +175,6 @@ namespace ODLGameEngine
             hash.Add(base.GetGameStateHash());
             hash.Add(UniqueId);
             hash.Add(DamageTokens);
-            hash.Add(IsHidden);
-            hash.Add(IsTheRealOne);
             return hash.ToHashCode();
         }
     }

@@ -131,25 +131,21 @@ namespace EngineTests
                     CardTargets[] targetTest = [CardTargets.PLAINS, CardTargets.FOREST, CardTargets.MOUNTAIN];
                     foreach (CardTargets target in targetTest)
                     {
-                        int prePlayHash = sm.GetDetailedState().GetGameStateHash();
+                        int prePlayHash = sm.DetailedState.GetGameStateHash();
                         Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, target);
                         if (wouldBeValidTarget.HasFlag(target)) // if target is correct
                         {
                             // Building should've played ok
                             Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
                             Assert.IsNotNull(playRes.Item2);
-                            Assert.AreNotEqual(prePlayHash, sm.GetDetailedState().GetGameStateHash()); // Hash should've changed
-                            Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 1); // Player has building
-                            Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).PlayerBuildingCount[playerIndex], 1); // Lane has building
-                            Assert.AreNotEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).BuildingInTile, -1); // Tile has building
-                            Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).BuildingInTileOwner, playerIndex); // Tile has correct buiding owner
+                            Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash should've changed
+                            Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 1); // Player has building
+                            Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).RealPlayerBuildingCount[playerIndex], 1); // Lane has building
                             // Revert this, assert reversion
                             sm.UndoPreviousStep();
-                            Assert.AreEqual(prePlayHash, sm.GetDetailedState().GetGameStateHash());
-                            Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 0);
-                            Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).PlayerBuildingCount[playerIndex], 0);
-                            Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).BuildingInTile, -1);
-                            Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(target).GetTileRelative(0, playerIndex).BuildingInTileOwner, -1);
+                            Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                            Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 0);
+                            Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).RealPlayerBuildingCount[playerIndex], 0);
                         }
                         else
                         {
@@ -265,25 +261,21 @@ namespace EngineTests
                 // I finally attempt to actually play the building which would only succeed in the right lane
                 foreach (CardTargets playTarget in targetTest)
                 {
-                    int prePlayHash = sm.GetDetailedState().GetGameStateHash();
+                    int prePlayHash = sm.DetailedState.GetGameStateHash();
                     Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, playTarget);
                     if (target.HasFlag(playTarget)) // if target is correct
                     {
                         // Building should've played ok
                         Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
                         Assert.IsNotNull(playRes.Item2);
-                        Assert.AreNotEqual(prePlayHash, sm.GetDetailedState().GetGameStateHash()); // Hash should've changed
-                        Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 1); // Player has building
-                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(playTarget).PlayerBuildingCount[playerIndex], 1); // Lane has building
-                        Assert.AreNotEqual(sm.GetDetailedState().BoardState.GetLane(playTarget).GetTileRelative(1, playerIndex).BuildingInTile, -1); // Tile has building
-                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(playTarget).GetTileRelative(1, playerIndex).BuildingInTileOwner, playerIndex); // Tile has correct buiding owner
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash should've changed
+                        Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 1); // Player has building
+                        Assert.AreEqual(sm.DetailedState.BoardState.GetLane(playTarget).RealPlayerBuildingCount[playerIndex], 1); // Lane has building
                         // Revert this, assert reversion
                         sm.UndoPreviousStep();
-                        Assert.AreEqual(prePlayHash, sm.GetDetailedState().GetGameStateHash());
-                        Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 0);
-                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(playTarget).PlayerBuildingCount[playerIndex], 0);
-                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(playTarget).GetTileRelative(1, playerIndex).BuildingInTile, -1);
-                        Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(playTarget).GetTileRelative(1, playerIndex).BuildingInTileOwner, -1);
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                        Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 0);
+                        Assert.AreEqual(sm.DetailedState.BoardState.GetLane(playTarget).RealPlayerBuildingCount[playerIndex], 0);
                     }
                     else
                     {
@@ -327,36 +319,31 @@ namespace EngineTests
                 // Play unit in lane
                 sm.PlayFromHand(2, laneTarget);
                 // Check my building will be buildable
-                Tuple<PlayOutcome, CardTargets>  optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
+                Tuple<PlayOutcome, CardTargets> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
                 Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);
                 Assert.AreEqual(optionRes.Item2, laneTarget);
                 // Pre play, ensure building's not there
-                int prePlayBoardHash = sm.GetDetailedState().BoardState.GetGameStateHash();
-                int prePlayStateHash = sm.GetDetailedState().GetGameStateHash();
-                int nextEntityIndex = sm.GetDetailedState().NextUniqueIndex;
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).PlayerBuildingCount[playerIndex], 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTile, -1);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTileOwner, -1);
+                int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash();
+                int prePlayStateHash = sm.DetailedState.GetGameStateHash();
+                int nextEntityIndex = sm.DetailedState.NextUniqueIndex;
+                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).RealPlayerBuildingCount[playerIndex], 0);
                 // Now I play the building
                 sm.PlayFromHand(1, laneTarget);
                 // Post play, building should STILL not be there because it insta-died
-                Assert.AreEqual(prePlayBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Board shouldn't have changed at all
-                Assert.AreNotEqual(prePlayStateHash, sm.GetDetailedState().GetGameStateHash()); // Gamestate definitely changed because hands changed, unit, etc
-                Assert.AreNotEqual(nextEntityIndex, sm.GetDetailedState().NextUniqueIndex); // Also ensure building was at some point instantiated
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).PlayerBuildingCount[playerIndex], 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTile, -1);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTileOwner, -1);
+                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Board shouldn't have changed at all
+                Assert.AreNotEqual(prePlayStateHash, sm.DetailedState.GetGameStateHash()); // Gamestate definitely changed because hands changed, unit, etc
+                Assert.AreNotEqual(nextEntityIndex, sm.DetailedState.NextUniqueIndex); // Also ensure building was at some point instantiated
+                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).RealPlayerBuildingCount[playerIndex], 0);
                 // Finally, revert
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Board shouldn't have changed at all
-                Assert.AreEqual(prePlayStateHash, sm.GetDetailedState().GetGameStateHash()); // Gamestate definitely changed because hands changed, unit, etc
-                Assert.AreEqual(nextEntityIndex, sm.GetDetailedState().NextUniqueIndex); // Also ensure building was at some point instantiated
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).PlayerBuildingCount[playerIndex], 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTile, -1);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTileOwner, -1);            }
+                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Board shouldn't have changed at all
+                Assert.AreEqual(prePlayStateHash, sm.DetailedState.GetGameStateHash()); // Gamestate definitely changed because hands changed, unit, etc
+                Assert.AreEqual(nextEntityIndex, sm.DetailedState.NextUniqueIndex); // Also ensure building was at some point instantiated
+                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).RealPlayerBuildingCount[playerIndex], 0);
+            }
         }
         [TestMethod]
         public void CantBuildOnTopOfBuiding()
@@ -440,58 +427,41 @@ namespace EngineTests
                 // Play unit in lane
                 sm.PlayFromHand(2, laneTarget);
                 // HACK, add the same unit in 2 different tiles to avoid needing to advance
-                state = sm.GetDetailedState();
+                state = sm.DetailedState;
                 Tile secondTile = state.BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex);
-                secondTile.UnitsInTile.Add(state.BoardState.Units.First().Key); // Add unit also here, this is a weird invalid state but should work for this test
-                secondTile.PlayerUnitCount[playerIndex]++;
+                secondTile.InsertEntity(state.BoardState.Entities.First().Value); // Add unit also here, this is a weird invalid state but should work for this test
                 // Check my building will be buildable, prepare for playing
                 Tuple<PlayOutcome, CardTargets> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
                 Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);
                 Assert.AreEqual(optionRes.Item2, laneTarget);
-                int prePlayHash1 = sm.GetDetailedState().GetGameStateHash();
+                int prePlayHash1 = sm.DetailedState.GetGameStateHash();
                 // Now I play the building
                 Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, laneTarget);
                 Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(playRes.Item2);
-                int prePlayHash2 = sm.GetDetailedState().GetGameStateHash();
+                int prePlayHash2 = sm.DetailedState.GetGameStateHash();
                 Assert.AreNotEqual(prePlayHash1, prePlayHash2); // Hash should've changed
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 1); // Player has building
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).PlayerBuildingCount[playerIndex], 1); // Lane has building
-                Assert.AreNotEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTile, -1); // First Tile
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTileOwner, playerIndex);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex).BuildingInTile, -1); // Second Tile
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex).BuildingInTileOwner, -1);
+                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 1); // Player has building
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).RealPlayerBuildingCount[playerIndex], 1); // Lane has building
                 // Play second building
                 playRes = sm.PlayFromHand(1, laneTarget);
                 Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(playRes.Item2);
-                Assert.AreNotEqual(prePlayHash1, sm.GetDetailedState().GetGameStateHash()); // Hash should've changed
-                Assert.AreNotEqual(prePlayHash2, sm.GetDetailedState().GetGameStateHash()); // Hash should've changed
+                Assert.AreNotEqual(prePlayHash1, sm.DetailedState.GetGameStateHash()); // Hash should've changed
+                Assert.AreNotEqual(prePlayHash2, sm.DetailedState.GetGameStateHash()); // Hash should've changed
                 Assert.AreNotEqual(prePlayHash1, prePlayHash2); // Hash should've changed
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 2); // Player has 2 buildings
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).PlayerBuildingCount[playerIndex], 2); // Lane has 2 buildings
-                Assert.AreNotEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTile, -1); // First Tile
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTileOwner, playerIndex);
-                Assert.AreNotEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex).BuildingInTile, -1); // Second Tile
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex).BuildingInTileOwner, playerIndex);
+                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 2); // Player has 2 buildings
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).RealPlayerBuildingCount[playerIndex], 2); // Lane has 2 buildings
                 // Revert 2nd Building
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayHash2, sm.GetDetailedState().GetGameStateHash());
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 1); // Player has 1 building
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).PlayerBuildingCount[playerIndex], 1); // Lane has building
-                Assert.AreNotEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTile, -1); // First Tile
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTileOwner, playerIndex);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex).BuildingInTile, -1); // Second Tile
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex).BuildingInTileOwner, -1);
+                Assert.AreEqual(prePlayHash2, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 1); // Player has 1 building
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).RealPlayerBuildingCount[playerIndex], 1); // Lane has building
                 // Revert first building
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayHash1, sm.GetDetailedState().GetGameStateHash());
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[playerIndex].NBuildings, 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).PlayerBuildingCount[playerIndex], 0);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTile, -1); // First Tile
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(0, playerIndex).BuildingInTileOwner, -1);
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex).BuildingInTile, -1); // Second Tile
-                Assert.AreEqual(sm.GetDetailedState().BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex).BuildingInTileOwner, -1);
+                Assert.AreEqual(prePlayHash1, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerBuildingCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).RealPlayerBuildingCount[playerIndex], 0);
             }
         }
         [TestMethod]

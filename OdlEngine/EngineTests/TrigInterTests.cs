@@ -82,7 +82,7 @@ namespace EngineTests
                 // interaction will be modified for target player and target lane(s)
                 // Resulting hash board will be compared with pre-play hash and non-repeated
                 // Will check: Player count, lane count, tile count, init unit count
-                state = sm.GetDetailedState();
+                state = sm.DetailedState;
                 int prePlayHash = state.GetGameStateHash();
                 HashSet<int> hashes = new HashSet<int>();
                 hashes.Add(prePlayHash);
@@ -103,14 +103,14 @@ namespace EngineTests
                         summonEffect.LaneTargets = laneTarget;
                         summonEffect.TargetPlayer = playerTarget;
                         // Pre play tests
-                        Assert.AreEqual(state.BoardState.Units.Count, 0);
-                        Assert.AreEqual(state.PlayerStates[ownerPlayer].NUnits, 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.AllUnits.Count, 0);
+                        Assert.AreEqual(state.BoardState.RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], 0);
                         // Play
                         Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, CardTargets.GLOBAL); // Play the card
                         Assert.AreEqual(PlayOutcome.OK, playRes.Item1);
@@ -120,25 +120,25 @@ namespace EngineTests
                         Assert.IsFalse(hashes.Contains(newHash));
                         hashes.Add(newHash);
                         // Location assert
-                        Assert.AreEqual(state.BoardState.Units.Count, numberOfSummons);
-                        Assert.AreEqual(state.PlayerStates[ownerPlayer].NUnits, numberOfSummons);
-                        Assert.AreEqual(state.BoardState.PlainsLane.PlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.PLAINS)?1:0);
-                        Assert.AreEqual(state.BoardState.ForestLane.PlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.FOREST) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.PlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.MOUNTAIN) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.PLAINS) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.FOREST) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.MOUNTAIN) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.AllUnits.Count, numberOfSummons);
+                        Assert.AreEqual(state.BoardState.RealPlayerUnitCount[ownerPlayer], numberOfSummons);
+                        Assert.AreEqual(state.BoardState.PlainsLane.RealPlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.PLAINS)?1:0);
+                        Assert.AreEqual(state.BoardState.ForestLane.RealPlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.FOREST) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.RealPlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.MOUNTAIN) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.PLAINS) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.FOREST) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], laneTarget.HasFlag(CardTargets.MOUNTAIN) ? 1 : 0);
                         // Revert
                         sm.UndoPreviousStep();
                         Assert.AreEqual(prePlayHash, state.GetGameStateHash());
-                        Assert.AreEqual(state.BoardState.Units.Count, 0);
-                        Assert.AreEqual(state.PlayerStates[ownerPlayer].NUnits, 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).PlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.AllUnits.Count, 0);
+                        Assert.AreEqual(state.BoardState.RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).RealPlayerUnitCount[ownerPlayer], 0);
                     }
                 }
             }

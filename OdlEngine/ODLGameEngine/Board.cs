@@ -10,35 +10,95 @@ using System.Xml;
 
 namespace ODLGameEngine
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    public class Tile : IHashable
+    public abstract class BoardElement : IHashable
     {
-        [JsonProperty]
-        public int BuildingInTile { get; set; } = -1; // Starts with no (invalid) building!
-        [JsonProperty]
-        public int BuildingInTileOwner { get; set; } = -1; // Starts with no (invalid) owner!
-        [JsonProperty]
-        public SortedSet<int> UnitsInTile { get; set; } = new SortedSet<int>();
-        [JsonProperty]
-        public int[] PlayerUnitCount { get; set; } = [0, 0];
-
-        public int GetGameStateHash()
+        public SortedSet<int>[] PlayerUnits { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
+        public SortedSet<int> AllUnits { get; set; } = new SortedSet<int>();
+        public SortedSet<int>[] PlayerBuildings { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
+        public SortedSet<int> AllBuildings { get; set; } = new SortedSet<int>();
+        public int TotalUnitCount { get; set; } = 0;
+        public int TotalBuildingCount { get; set; } = 0;
+        public int[] RealPlayerUnitCount { get; set; } = [0, 0];
+        public int[] PossiblePlayerUnitCount { get; set; } = [0, 0];
+        public int[] RealPlayerBuildingCount { get; set; } = [0, 0];
+        public int[] PossiblePlayerBuildingCount { get; set; } = [0, 0];
+        public void InsertEntity(PlacedEntity entity)
+        {
+            switch (entity.EntityPlayInfo.EntityType)
+            {
+                case EntityType.UNIT:
+                    AllUnits.Add(entity.UniqueId);
+                    PlayerUnits[entity.Owner].Add(entity.UniqueId);
+                    PossiblePlayerUnitCount[entity.Owner]++;
+                    TotalUnitCount++;
+                    if(entity.IsReal)
+                    {
+                        RealPlayerUnitCount[entity.Owner]++;
+                    }
+                    break;
+                case EntityType.BUILDING:
+                    AllBuildings.Add(entity.UniqueId);
+                    PlayerBuildings[entity.Owner].Add(entity.UniqueId);
+                    PossiblePlayerBuildingCount[entity.Owner]++;
+                    TotalBuildingCount++;
+                    if (entity.IsReal)
+                    {
+                        RealPlayerBuildingCount[entity.Owner]++;
+                    }
+                    break;
+                default:
+                    throw new Exception("Board element can only contain placed entities!");
+            }
+        }
+        public void RemoveEntity(PlacedEntity entity)
+        {
+            switch (entity.EntityPlayInfo.EntityType)
+            {
+                case EntityType.UNIT:
+                    AllUnits.Remove(entity.UniqueId);
+                    PlayerUnits[entity.Owner].Remove(entity.UniqueId);
+                    TotalUnitCount--;
+                    PossiblePlayerUnitCount[entity.Owner]--;
+                    if(entity.IsReal)
+                    {
+                        RealPlayerUnitCount[entity.Owner]--;
+                    }
+                    break;
+                case EntityType.BUILDING:
+                    AllBuildings.Remove(entity.UniqueId);
+                    PlayerBuildings[entity.Owner].Remove(entity.UniqueId);
+                    TotalBuildingCount--;
+                    PossiblePlayerBuildingCount[entity.Owner]--;
+                    if (entity.IsReal)
+                    {
+                        RealPlayerBuildingCount[entity.Owner]--;
+                    }
+                    break;
+                default:
+                    throw new Exception("Board element can only contain placed entities!");
+            }
+        }
+        public abstract int GetGameStateHash();
+    }
+    public class Tile : BoardElement
+    {
+        public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
-            hash.Add(BuildingInTile);
-            hash.Add(BuildingInTileOwner);
-            hash.Add(PlayerUnitCount[0]);
-            hash.Add(PlayerUnitCount[1]);
-            foreach(int unit in UnitsInTile)
+            foreach(int unit in AllUnits)
             {
                 hash.Add(unit);
+            }
+            foreach(int building in AllBuildings)
+            {
+                hash.Add(building);
             }
             return hash.ToHashCode();
         }
 
         public override string ToString()
         {
-            return $"P1: {PlayerUnitCount[0]} P2: {PlayerUnitCount[1]} B: {BuildingInTile}(P{BuildingInTileOwner+1})";
+            return $"P1: {RealPlayerUnitCount[0]} P2: {RealPlayerUnitCount[1]} B: {RealPlayerBuildingCount[0]+ RealPlayerBuildingCount[1]})";
         }
     }
     /// <summary>
@@ -51,19 +111,11 @@ namespace ODLGameEngine
         FOREST,
         MOUNTAIN
     }
-    [JsonObject(MemberSerialization.OptIn)]
-    public class Lane : IHashable /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
+    public class Lane : BoardElement /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
     {
-        [JsonProperty]
         public LaneID Id {get; set;} = LaneID.NO_LANE;
-        [JsonProperty] 
         public int Len { get; set; } = 0;
-        [JsonProperty]
         public List<Tile> Tiles { get; set; }
-        [JsonProperty]
-        public int[] PlayerUnitCount { get; set; } = [0, 0];
-        [JsonProperty]
-        public int[] PlayerBuildingCount { get; set; } = [0, 0];
         public Lane(LaneID id, int n)
         {
             Id = id;
@@ -119,17 +171,12 @@ namespace ODLGameEngine
         }
         public override string ToString()
         {
-            return Id.ToString() + $", P1: {PlayerUnitCount[0]}u{PlayerBuildingCount[0]}b P2: {PlayerUnitCount[1]}u{PlayerBuildingCount[1]}b";
+            return Id.ToString() + $", P1: {RealPlayerUnitCount[0]}u{RealPlayerBuildingCount[0]}b P2: {RealPlayerUnitCount[1]}u{RealPlayerBuildingCount[1]}b";
         }
 
-        public int GetGameStateHash()
+        public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
-            hash.Add(Len); // So that different lanes have different hashes even if empty
-            hash.Add(PlayerUnitCount[0]);
-            hash.Add(PlayerUnitCount[1]);
-            hash.Add(PlayerBuildingCount[0]);
-            hash.Add(PlayerBuildingCount[1]);
             foreach (Tile tile in Tiles)
             {
                 hash.Add(tile.GetGameStateHash());
@@ -147,7 +194,7 @@ namespace ODLGameEngine
     /// This may change in the future if there's extra tile modifiers that are stored in a tile but not on Board directly, in which change we may change the whole hashing scheme
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class Board : IHashable
+    public class Board : BoardElement
     {
         [JsonProperty]
         public Lane PlainsLane { get; set; } = new Lane(LaneID.PLAINS, GameConstants.PLAINS_TILES_NUMBER);
@@ -155,11 +202,9 @@ namespace ODLGameEngine
         public Lane ForestLane { get; set; } = new Lane(LaneID.FOREST, GameConstants.FOREST_TILES_NUMBER);
         [JsonProperty]
         public Lane MountainLane { get; set; } = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_TILES_NUMBER);
-        // Units
+        // Entities
         [JsonProperty]
-        public readonly SortedList<int, Unit> Units = new SortedList<int, Unit>();
-        [JsonProperty]
-        public readonly SortedList<int, Building> Buildings = new SortedList<int, Building>();
+        public readonly SortedList<int, PlacedEntity> Entities = new SortedList<int, PlacedEntity>();
         // Methods
         public Lane GetLane(int i)
         {
@@ -192,15 +237,14 @@ namespace ODLGameEngine
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
-        public virtual int GetGameStateHash()
+        public PlacedEntity GetEntity(int i)
+        {
+            return Entities[i];
+        }
+        public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
-            foreach (KeyValuePair<int, Unit> kvp in Units)
-            {
-                hash.Add(kvp.Key);
-                hash.Add(kvp.Value.GetGameStateHash());
-            }
-            foreach (KeyValuePair<int, Building> kvp in Buildings)
+            foreach (KeyValuePair<int, PlacedEntity> kvp in Entities)
             {
                 hash.Add(kvp.Key);
                 hash.Add(kvp.Value.GetGameStateHash());

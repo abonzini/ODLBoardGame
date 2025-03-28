@@ -19,51 +19,51 @@ namespace EngineTests
             HashSet<int> playerHashes = new HashSet<int>(); // Stores all player hashes
             HashSet<int> stateHashes = new HashSet<int>(); // Stores all states
             GameStateMachine sm = new GameStateMachine();
-            Assert.AreEqual(sm.GetDetailedState().CurrentState, States.START); // Ensure start in start state
+            Assert.AreEqual(sm.DetailedState.CurrentState, States.START); // Ensure start in start state
             PlayerInitialData dummyPlayer1 = InitialStatesGenerator.GetDummyPlayer("p1");
             PlayerInitialData dummyPlayer2 = InitialStatesGenerator.GetDummyPlayer("p2");
             sm.StartNewGame(dummyPlayer1, dummyPlayer2);
             // Initial hashes of players and whole game
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, false);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, false);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, false);
-            Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT); // Now should be about to init P1
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, false);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, false);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, false);
+            Assert.AreEqual(sm.DetailedState.CurrentState, States.P1_INIT); // Now should be about to init P1
             sm.Step();
             // Now only P1 should've changed
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, false);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, true);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, false);
-            Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Now should be about to init P2
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, false);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, true);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, false);
+            Assert.AreEqual(sm.DetailedState.CurrentState, States.P2_INIT); // Now should be about to init P2
             sm.Step();
             // Now only P2 should've changed
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, false);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, true);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, false);
-            Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE); // Now game should be started
-            Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, CurrentPlayer.PLAYER_1); // And P1 should be active
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, false);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, true);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, false);
+            Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE); // Now game should be started
+            Assert.AreEqual(sm.DetailedState.CurrentPlayer, CurrentPlayer.PLAYER_1); // And P1 should be active
             // Now assert states of players
-            TestHelperFunctions.VerifyPlayerInitialised(sm.GetDetailedState().PlayerStates[0]);
-            Assert.IsTrue(TestHelperFunctions.IsDeckShuffled(sm.GetDetailedState().PlayerStates[0]));
-            TestHelperFunctions.VerifyPlayerInitialised(sm.GetDetailedState().PlayerStates[1]);
-            Assert.IsTrue(TestHelperFunctions.IsDeckShuffled(sm.GetDetailedState().PlayerStates[1]));
+            TestHelperFunctions.VerifyPlayerInitialised(sm.DetailedState.PlayerStates[0]);
+            Assert.IsTrue(TestHelperFunctions.IsDeckShuffled(sm.DetailedState.PlayerStates[0]));
+            TestHelperFunctions.VerifyPlayerInitialised(sm.DetailedState.PlayerStates[1]);
+            Assert.IsTrue(TestHelperFunctions.IsDeckShuffled(sm.DetailedState.PlayerStates[1]));
             // Now the undo
             sm.UndoPreviousStep(); // Goes back to P2 Init
             // Check hashes already present
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, true);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, true);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, true); // Game state should exist!!
-            Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT);
-            Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, CurrentPlayer.OMNISCIENT);
-            Assert.IsFalse(TestHelperFunctions.IsDeckShuffled(sm.GetDetailedState().PlayerStates[1]));
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, true);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, true);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, true); // Game state should exist!!
+            Assert.AreEqual(sm.DetailedState.CurrentState, States.P2_INIT);
+            Assert.AreEqual(sm.DetailedState.CurrentPlayer, CurrentPlayer.OMNISCIENT);
+            Assert.IsFalse(TestHelperFunctions.IsDeckShuffled(sm.DetailedState.PlayerStates[1]));
             sm.UndoPreviousStep();
             // Check hashes already present
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, true);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, true);
-            TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, true); // Game state should exist!!
-            Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT);
-            Assert.IsFalse(TestHelperFunctions.IsDeckShuffled(sm.GetDetailedState().PlayerStates[0]));
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, true);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, true);
+            TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, true); // Game state should exist!!
+            Assert.AreEqual(sm.DetailedState.CurrentState, States.P1_INIT);
+            Assert.IsFalse(TestHelperFunctions.IsDeckShuffled(sm.DetailedState.PlayerStates[0]));
             sm.UndoPreviousStep(); // Should stop going back here
-            Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT);
+            Assert.AreEqual(sm.DetailedState.CurrentState, States.P1_INIT);
             // Total 4 hashes, 2 for uninitialized and 2 for initialized
             Assert.AreEqual(playerHashes.Count, 4);
             Assert.AreEqual(stateHashes.Count, 3); // 3 states at different initialization stages
@@ -79,50 +79,50 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(id, (int)DateTime.Now.Ticks)); // Don't care about seed in this test
                 // First hashes
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, false);
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, false);
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, false);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, false);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, false);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, false);
                 if (id == CurrentPlayer.PLAYER_1)
                 {
-                    Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT); // Now should be about to init P1
+                    Assert.AreEqual(sm.DetailedState.CurrentState, States.P1_INIT); // Now should be about to init P1
                     sm.Step();
                     // Only p1 hash should've changed
-                    TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, false);
-                    TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, true);
-                    TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, false);
+                    TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, false);
+                    TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, true);
+                    TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, false);
                 }
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Now should be about to init P2
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.P2_INIT); // Now should be about to init P2
                 sm.Step();
                 // Only p2 hash should've changed
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, true);
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, false);
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, false);
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE); // Now game should be started
-                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, CurrentPlayer.PLAYER_1); // And P1 should be active
+                TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, true);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, false);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, false);
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE); // Now game should be started
+                Assert.AreEqual(sm.DetailedState.CurrentPlayer, CurrentPlayer.PLAYER_1); // And P1 should be active
                 // Now the undo
                 sm.UndoPreviousStep(); // Goes back to P2 Init
                 // Both hashes unchanged
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, true);
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, true);
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, true);
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Now game should be started
-                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, CurrentPlayer.OMNISCIENT); // And P1 should be reverted
+                TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, true);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, true);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, true);
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.P2_INIT); // Now game should be started
+                Assert.AreEqual(sm.DetailedState.CurrentPlayer, CurrentPlayer.OMNISCIENT); // And P1 should be reverted
                 sm.UndoPreviousStep();
                 // Both hashes unchanged
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[0], playerHashes, true);
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState().PlayerStates[1], playerHashes, true);
-                TestHelperFunctions.HashSetVerification(sm.GetDetailedState(), stateHashes, true);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, true);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[1], playerHashes, true);
+                TestHelperFunctions.HashSetVerification(sm.DetailedState, stateHashes, true);
                 if (id == CurrentPlayer.PLAYER_1)
                 {
-                    Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT);
+                    Assert.AreEqual(sm.DetailedState.CurrentState, States.P1_INIT);
                     sm.UndoPreviousStep(); // Should stop going back here
-                    Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P1_INIT);
+                    Assert.AreEqual(sm.DetailedState.CurrentState, States.P1_INIT);
                     Assert.AreEqual(playerHashes.Count, 4); // 4 hashes, 2 init, 2 uninit
                     Assert.AreEqual(stateHashes.Count, 3);
                 }
                 else
                 {
-                    Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT); // Should stop going back here
+                    Assert.AreEqual(sm.DetailedState.CurrentState, States.P2_INIT); // Should stop going back here
                     Assert.AreEqual(playerHashes.Count, 3); // 3 hashes, only p2 changed this time
                     Assert.AreEqual(stateHashes.Count, 2);
 
@@ -137,22 +137,22 @@ namespace EngineTests
             PlayerInitialData dummyPlayer1 = InitialStatesGenerator.GetDummyPlayer("p1");
             PlayerInitialData dummyPlayer2 = InitialStatesGenerator.GetDummyPlayer("p2");
             sm.StartNewGame(dummyPlayer1, dummyPlayer2);
-            p1Seed = sm.GetDetailedState().Seed;
+            p1Seed = sm.DetailedState.Seed;
             sm.Step();
-            p2Seed = sm.GetDetailedState().Seed;
+            p2Seed = sm.DetailedState.Seed;
             sm.Step();
-            drawSeed = sm.GetDetailedState().Seed;
+            drawSeed = sm.DetailedState.Seed;
             // Good, now I go back and check that seeds are correct
             // Now the undo
             sm.UndoPreviousStep(); // Goes back to P2 Init
-            Assert.AreEqual(p2Seed, sm.GetDetailedState().Seed);
+            Assert.AreEqual(p2Seed, sm.DetailedState.Seed);
             sm.UndoPreviousStep(); // Back to P1
-            Assert.AreEqual(p1Seed, sm.GetDetailedState().Seed);
+            Assert.AreEqual(p1Seed, sm.DetailedState.Seed);
             // Ok now I go forward twice again and it should generate same exact seed
             sm.Step();
-            Assert.AreEqual(p2Seed, sm.GetDetailedState().Seed);
+            Assert.AreEqual(p2Seed, sm.DetailedState.Seed);
             sm.Step();
-            Assert.AreEqual(drawSeed, sm.GetDetailedState().Seed);
+            Assert.AreEqual(drawSeed, sm.DetailedState.Seed);
         }
         [TestMethod]
         public void TestDeterminismLoadPlayers() // Same as above, but starting from a chosen manual seed
@@ -171,16 +171,16 @@ namespace EngineTests
                 {
                     sm.Step();
                 }
-                Assert.AreEqual(p2Seed, sm.GetDetailedState().Seed);
+                Assert.AreEqual(p2Seed, sm.DetailedState.Seed);
                 sm.Step();
-                Assert.AreEqual(drawSeed, sm.GetDetailedState().Seed);
+                Assert.AreEqual(drawSeed, sm.DetailedState.Seed);
                 // Good, now I go back and check that seeds are correct
                 sm.UndoPreviousStep(); // Goes back to P2 Init
-                Assert.AreEqual(p2Seed, sm.GetDetailedState().Seed);
+                Assert.AreEqual(p2Seed, sm.DetailedState.Seed);
                 if(id == CurrentPlayer.PLAYER_1)
                 {
                     sm.UndoPreviousStep(); // Back to P1
-                    Assert.AreEqual(p1Seed, sm.GetDetailedState().Seed);
+                    Assert.AreEqual(p1Seed, sm.DetailedState.Seed);
                 }
             }
         }
@@ -190,12 +190,12 @@ namespace EngineTests
             // Test that draw phase occurs, draws cards and gold, then goes to action phase
             GameStateMachine sm = new GameStateMachine();
             sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(CurrentPlayer.PLAYER_2, (int)DateTime.Now.Ticks));
-            Assert.AreEqual(sm.GetDetailedState().CurrentState, States.P2_INIT);// In P2 init phase
+            Assert.AreEqual(sm.DetailedState.CurrentState, States.P2_INIT);// In P2 init phase
             // Now advance step and check data pre draw
             sm.Step();
             TestHelperFunctions.VerifyDrawPhaseResult(sm); // Checks the draw step passes well
             // Quick trick, from here do the same but from P2 draw phase
-            GameStateStruct testState = sm.GetDetailedState();
+            GameStateStruct testState = sm.DetailedState;
             testState.CurrentPlayer = CurrentPlayer.PLAYER_2;
             sm = new GameStateMachine();
             sm.LoadGame(testState);
@@ -217,20 +217,20 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 // Ensure all in order before EOT
-                GameStateStruct preEotState = sm.GetDetailedState();
+                GameStateStruct preEotState = sm.DetailedState;
                 int preEotHash = preEotState.GetGameStateHash(); // Keep hash
                 Assert.AreEqual(preEotState.CurrentState, States.ACTION_PHASE); // in action phase
                 Assert.AreEqual(preEotState.CurrentPlayer, id); // Current player
                 // Now I activate end of turn!
                 sm.EndTurn();
-                GameStateStruct postEotState = sm.GetDetailedState();
+                GameStateStruct postEotState = sm.DetailedState;
                 int postEotHash = preEotState.GetGameStateHash(); // Keep hash
                 Assert.AreEqual(postEotState.CurrentState, States.DRAW_PHASE); // in draw phase now!
                 Assert.AreEqual(postEotState.CurrentPlayer, (CurrentPlayer)otherPlayerIndex); // Current player has changed and will soon initialize drawing (draw phase already tested)
                 Assert.AreNotEqual(preEotHash, postEotHash); // Hope hash are different (only because new current player)
                 // Reversion should also apply
                 sm.UndoPreviousStep();
-                postEotState = sm.GetDetailedState();
+                postEotState = sm.DetailedState;
                 postEotHash = preEotState.GetGameStateHash();
                 Assert.AreEqual(postEotState.CurrentState, States.ACTION_PHASE); // Back to action
                 Assert.AreEqual(postEotState.CurrentPlayer, id); // Current player back to original
@@ -264,7 +264,7 @@ namespace EngineTests
                 state.PlayerStates[currentPlayer].Deck.InsertCard(-1); // Adds useless card to player deck
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
+                PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
                 int deckHash = plState.Deck.GetGameStateHash();
                 int playerHash = plState.GetGameStateHash();
@@ -311,7 +311,7 @@ namespace EngineTests
                 };
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
+                PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
                 int deckHash = plState.Deck.GetGameStateHash();
                 int playerHash = plState.GetGameStateHash();
@@ -356,14 +356,14 @@ namespace EngineTests
                 };
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
+                PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
                 int deckHash = plState.Deck.GetGameStateHash();
                 int playerHash = plState.GetGameStateHash();
                 Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
                 // Draw
                 sm.Step();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
@@ -371,8 +371,8 @@ namespace EngineTests
                 Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
-                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, (CurrentPlayer)(1-(int)id)); // other player won
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.EOG); // Game ends here
+                Assert.AreEqual(sm.DetailedState.CurrentPlayer, (CurrentPlayer)(1-(int)id)); // other player won
                 // Revert
                 sm.UndoPreviousStep();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
@@ -380,7 +380,7 @@ namespace EngineTests
                 Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
             }
         }
         [TestMethod]
@@ -405,14 +405,14 @@ namespace EngineTests
                 };
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                PlayerState plState = sm.GetDetailedState().PlayerStates[(int)id];
+                PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
                 int deckHash = plState.Deck.GetGameStateHash();
                 int playerHash = plState.GetGameStateHash();
                 Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
                 // Draw
                 sm.Step();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
@@ -420,8 +420,8 @@ namespace EngineTests
                 Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.EOG); // Game ends here
-                Assert.AreEqual(sm.GetDetailedState().CurrentPlayer, (CurrentPlayer)(1 - (int)id)); // other player won
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.EOG); // Game ends here
+                Assert.AreEqual(sm.DetailedState.CurrentPlayer, (CurrentPlayer)(1 - (int)id)); // other player won
                 // Revert
                 sm.UndoPreviousStep();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
@@ -429,7 +429,7 @@ namespace EngineTests
                 Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
-                Assert.AreEqual(sm.GetDetailedState().CurrentState, States.DRAW_PHASE);
+                Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
             }
         }
         // Hash tests
@@ -450,29 +450,29 @@ namespace EngineTests
             GameStateMachine sm = new GameStateMachine(cardDb);
             sm.LoadGame(state); // Start from here
             // HASH CHECK
-            int emptyBoardHash = sm.GetDetailedState().BoardState.GetGameStateHash();
-            int emptyBoardStateHash = sm.GetDetailedState().GetGameStateHash();
-            Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
-            Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetGameStateHash()); // Hash would be recalculated but still the same
+            int emptyBoardHash = sm.DetailedState.BoardState.GetGameStateHash();
+            int emptyBoardStateHash = sm.DetailedState.GetGameStateHash();
+            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
+            Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetGameStateHash()); // Hash would be recalculated but still the same
             // Will play card now
             Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, CardTargets.PLAINS); // Play it
             // Make sure card was played ok
             Assert.AreEqual(res.Item1, PlayOutcome.OK);
             Assert.IsNotNull(res.Item2);
             // And check hash again
-            int boardWUnitHash = sm.GetDetailedState().BoardState.GetGameStateHash();
-            int stateWUnitHash = sm.GetDetailedState().GetGameStateHash();
+            int boardWUnitHash = sm.DetailedState.BoardState.GetGameStateHash();
+            int stateWUnitHash = sm.DetailedState.GetGameStateHash();
             Assert.AreNotEqual(emptyBoardHash, boardWUnitHash);
             Assert.AreNotEqual(emptyBoardStateHash, stateWUnitHash);
-            Assert.AreEqual(boardWUnitHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
-            Assert.AreEqual(stateWUnitHash, sm.GetDetailedState().GetGameStateHash()); // Hash would be recalculated but still the same
+            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
+            Assert.AreEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // Hash would be recalculated but still the same
             // Modify unit (shady)
-            sm.GetDetailedState().BoardState.Units[0].Attack += 5; // Add 5 to attack, whatever
-            Assert.AreNotEqual(boardWUnitHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
-            Assert.AreNotEqual(stateWUnitHash, sm.GetDetailedState().GetGameStateHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
+            ((Unit)sm.GetBoardEntity(0)).Attack += 5; // Add 5 to attack, whatever
+            Assert.AreNotEqual(boardWUnitHash, sm.DetailedState.BoardState.GetGameStateHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
+            Assert.AreNotEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
             sm.UndoPreviousStep();
-            Assert.AreEqual(emptyBoardHash, sm.GetDetailedState().BoardState.GetGameStateHash()); // Finally hash should've reverted and known
-            Assert.AreEqual(emptyBoardStateHash, sm.GetDetailedState().GetGameStateHash()); // Finally hash should've reverted and known
+            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Finally hash should've reverted and known
+            Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetGameStateHash()); // Finally hash should've reverted and known
         }
     }
     public static class InitialStatesGenerator // Generates a game state for test

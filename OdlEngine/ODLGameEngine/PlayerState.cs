@@ -30,10 +30,6 @@ namespace ODLGameEngine
         [JsonProperty]
         public bool PowerAvailable { get; set; } = true;
         [JsonProperty]
-        public int NBuildings { get; set; } = 0;
-        [JsonProperty]
-        public int NUnits { get; set; } = 0;
-        [JsonProperty]
         public AssortedCardCollection Hand { get; set; } = new AssortedCardCollection();
         [JsonProperty]
         public Deck Deck { get; set; } = new Deck();

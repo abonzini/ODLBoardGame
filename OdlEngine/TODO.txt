@@ -1,16 +1,19 @@
 Ongoing tasks in order of priority:
 - Stealth
-	- Rework Lane/Tile as members of the same "PhysicalLocation" class. Number of units, stealth units, Mantain list of units. They just duplicate info. Hash of lane is just hash of tiles (dependence). Methods: Insert (unit/building), GetRealNumber. Serialization tbd but most likely all? Or just some idk. Check if I want to also define list for all players, or both, no shame on having lots of info. 
-	- Think it properly as stealth buildings stack!
-		- May require multiple building in tile for this case,
-		- Lots of complex correlations, make sure to think of possibilities for:
-			- Unit w stealth building
-			- Stealth unit w building
-			- Stealth unit w stealth building
-			- Stealth building position(s) and proper correlations
-			- Discovery loop
-			- Advancement and stealth, better handling of advancement context (not just clear if unit)
-			- Discovery events? Combat discovers, (later there'll be other ones)
+	- Propose remaining correlation scheme and conditions
+	- Add elements to entity
+	- Add elements to manual
+	- Play stelath loop plus correlations, complex when multiple buildings in a tile and the sort
+	- Cases:
+		- Unit w stealth building
+		- Stealth unit w building
+		- Stealth unit w stealth building
+		- Stealth building position(s) and proper correlations
+		- Discovery loop
+		- Advancement and stealth, better handling of advancement context (not just clear if unit)
+		- Advancement and stealth p2: Unit checks for loop of buildings and reveals until there's only one to attack
+		- Discovery events? Combat discovers, (later there'll be other ones)
+		- Complex playable context? building context also defining extra reveal situations and the sort, careful about this
 	- Stealth test cases:
 		- Stealth unit
 		- Stealth building:

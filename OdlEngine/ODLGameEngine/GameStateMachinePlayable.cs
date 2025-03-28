@@ -38,14 +38,14 @@ namespace ODLGameEngine
         public Tuple<PlayOutcome, CardTargets> GetPlayableOptions(int card, PlayType playType)
         {
             // Check whether we're in the right place first (can only do this on play state)
-            if(_detailedState.CurrentState != States.ACTION_PHASE)
+            if(DetailedState.CurrentState != States.ACTION_PHASE)
             {
                 return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_GAME_STATE, CardTargets.INVALID); // Return
             }
             // An extra check first, whether card actually exists in hand (if applicable)
             if(playType == PlayType.PLAY_FROM_HAND)
             {
-                AssortedCardCollection hand = _detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Hand;
+                AssortedCardCollection hand = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Hand;
                 if (!hand.HasCard(card)) // Card not in hand!
                 {
                     return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
@@ -53,7 +53,7 @@ namespace ODLGameEngine
             }
             else if (playType == PlayType.ACTIVE_POWER)
             {
-                if (!_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].PowerAvailable) // Power not available!
+                if (!DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].PowerAvailable) // Power not available!
                 {
                     return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.POWER_ALREADY_USED, CardTargets.INVALID); // Return this (invalid card in hand!)
                 }
@@ -76,7 +76,7 @@ namespace ODLGameEngine
         /// <returns>Like PlayCard, chain of effects after power was played</returns>
         public Tuple<PlayOutcome, StepResult> PlayActivePower()
         {
-            return PlayCard(_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].ActivePowerCast, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
+            return PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerCast, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
         }
         // Back-end (private)
         /// <summary>
@@ -111,16 +111,16 @@ namespace ODLGameEngine
                     PLAYABLE_PayCost(cardData);
                     if (playType == PlayType.PLAY_FROM_HAND)
                     {
-                        ENGINE_DiscardCardFromHand((int)_detailedState.CurrentPlayer, card);
+                        ENGINE_DiscardCardFromHand((int)DetailedState.CurrentPlayer, card);
                     }
                     else if (playType == PlayType.ACTIVE_POWER)
                     {
-                        ENGINE_ChangePlayerPowerAvailability(_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer], false);
+                        ENGINE_ChangePlayerPowerAvailability(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer], false);
                     }
                     // Then the play effects
                     PLAYABLE_PlayCard(cardData, chosenTarget);
                     // INTERACTION: CARD IS PLAYED
-                    PlayContext playCtx = new PlayContext() { Player = (int)_detailedState.CurrentPlayer, LaneTargets = chosenTarget };
+                    PlayContext playCtx = new PlayContext() { Player = (int)DetailedState.CurrentPlayer, LaneTargets = chosenTarget };
                     TRIGINTER_ProcessInteraction(cardData, InteractionType.WHEN_PLAYED, playCtx);
                     // Ends by transitioning to next action phase
                     ENGINE_ChangeState(States.ACTION_PHASE);
@@ -146,12 +146,12 @@ namespace ODLGameEngine
             switch (card.EntityPlayInfo.EntityType)
             {
                 case EntityType.UNIT:
-                    UNIT_PlayUnit((int)_detailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
+                    UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
                     break;
                 case EntityType.SKILL: // Nothing needed as skills don't introduce new entities
                     break;
                 case EntityType.BUILDING:
-                    BUILDING_PlayBuilding((int)_detailedState.CurrentPlayer, (Building)card, chosenTarget); // Plays building in tile
+                    BUILDING_PlayBuilding((int)DetailedState.CurrentPlayer, (Building)card, chosenTarget); // Plays building in tile
                     break;
                 default:
                     throw new NotImplementedException("Trying to play a non-supported type!");
@@ -209,7 +209,7 @@ namespace ODLGameEngine
         bool PLAYABLE_PlayerCanAfford(EntityBase card)
         {
             // May need to be made smarter if someone does variable cost cards
-            return (_detailedState.PlayerStates[(int)_detailedState.CurrentPlayer].Gold >= int.Parse(card.EntityPrintInfo.Cost));
+            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Gold >= int.Parse(card.EntityPrintInfo.Cost));
         }
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
@@ -218,7 +218,7 @@ namespace ODLGameEngine
         /// <returns>Cost in gold of card</returns>
         void PLAYABLE_PayCost(EntityBase card)
         {
-            ENGINE_PlayerGoldChange((int)_detailedState.CurrentPlayer, -int.Parse(card.EntityPrintInfo.Cost));
+            ENGINE_PlayerGoldChange((int)DetailedState.CurrentPlayer, -int.Parse(card.EntityPrintInfo.Cost));
         }
         /// <summary>
         /// Checks for a card with "global" tageting whether conditions are fulfilled
@@ -254,7 +254,7 @@ namespace ODLGameEngine
             {
                 case TargetCondition.BLUEPRINT:
                     // if number is -1 means that we couldn't find a tile to place the building
-                    playable = (BUILDING_GetBuildingOptions((int)_detailedState.CurrentPlayer, (Building)card, laneCandidate).FirstAvailableOption >= 0); // Still asume, for now, that current player is the one playing the card
+                    playable = (BUILDING_GetBuildingOptions((int)DetailedState.CurrentPlayer, (Building)card, laneCandidate).FirstAvailableOption >= 0); // Still asume, for now, that current player is the one playing the card
                     break;
                 case TargetCondition.NONE:
                 default:

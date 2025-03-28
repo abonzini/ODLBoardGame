@@ -22,8 +22,7 @@ namespace ODLGameEngine
     public partial class GameStateMachine
     {
         Random _rng;
-        GameStateStruct _detailedState = null; // State info, will work over this to advance game
-        public GameStateStruct GetDetailedState() { return _detailedState; }
+        public GameStateStruct DetailedState = null; // State info, will work over this to advance game
         CardFinder _cardDb = null;
         public CardFinder CardDb
         {
@@ -57,11 +56,20 @@ namespace ODLGameEngine
         /// </summary>
         void STATE_InitInternal(GameStateStruct state, int seed)
         {
-            _detailedState = state;
-            _detailedState.Seed = seed;
+            DetailedState = state;
+            DetailedState.Seed = seed;
             _rng = new Random(seed);
-            _detailedState.PlayerStates[0].Owner = 0; // Need for players to keep track of themselves...
-            _detailedState.PlayerStates[1].Owner = 1;
+            DetailedState.PlayerStates[0].Owner = 0; // Need for players to keep track of themselves...
+            DetailedState.PlayerStates[1].Owner = 1;
+        }
+        /// <summary>
+        /// Returns entity to make it quicker and less verbose
+        /// </summary>
+        /// <param name="idx">Entity index</param>
+        /// <returns>Entity</returns>
+        public PlacedEntity GetBoardEntity(int idx)
+        {
+            return DetailedState.BoardState.GetEntity(idx);
         }
 
         // --------------------------------------------------------------------------------------
@@ -76,7 +84,7 @@ namespace ODLGameEngine
         {
             try // Something here may make the game end so I need to catch!
             {
-                switch(_detailedState.CurrentState)
+                switch(DetailedState.CurrentState)
                 {
                     case States.START:
                     case States.ACTION_PHASE:
@@ -111,7 +119,7 @@ namespace ODLGameEngine
         /// <returns>Next active player</returns>
         private CurrentPlayer GetNextPlayer()
         {
-            return _detailedState.CurrentPlayer switch // Player is always 1 unless it goes from 1 -> 2
+            return DetailedState.CurrentPlayer switch // Player is always 1 unless it goes from 1 -> 2
             {
                 CurrentPlayer.PLAYER_1 => CurrentPlayer.PLAYER_2,
                 _ => CurrentPlayer.PLAYER_1,
@@ -123,9 +131,9 @@ namespace ODLGameEngine
         /// <param name="initialState">State to load</param>
         public void LoadGame(GameStateStruct initialState)
         {
-            if (_detailedState.CurrentState != States.START) return; // Only works first thing
+            if (DetailedState.CurrentState != States.START) return; // Only works first thing
             STATE_InitInternal(initialState, initialState.Seed); // Initializes game to this point
-            ENGINE_ChangeState(_detailedState.CurrentState); // Asks to enter new state, will create next step too (new)
+            ENGINE_ChangeState(DetailedState.CurrentState); // Asks to enter new state, will create next step too (new)
         }
         /// <summary>
         /// Starts new game from scratch
@@ -144,7 +152,7 @@ namespace ODLGameEngine
         /// <returns>Actions occurring during EOT</returns>
         public StepResult EndTurn()
         {
-            if (_detailedState.CurrentState != States.ACTION_PHASE) // Need to be in action phase!
+            if (DetailedState.CurrentState != States.ACTION_PHASE) // Need to be in action phase!
             {
                 return null;
             }
@@ -160,10 +168,10 @@ namespace ODLGameEngine
         /// <param name="playerData">Container with initial data needed to start the game</param>
         void STATE_LoadInitialPlayerData(int player, PlayerInitialData playerData)
         {
-            _detailedState.PlayerStates[player].Name = playerData.Name;
-            _detailedState.PlayerStates[player].Owner = player;
-            _detailedState.PlayerStates[player].PlayerClass = playerData.PlayerClass;
-            _detailedState.PlayerStates[player].Deck.InitializeDeck(playerData.InitialDecklist);
+            DetailedState.PlayerStates[player].Name = playerData.Name;
+            DetailedState.PlayerStates[player].Owner = player;
+            DetailedState.PlayerStates[player].PlayerClass = playerData.PlayerClass;
+            DetailedState.PlayerStates[player].Deck.InitializeDeck(playerData.InitialDecklist);
         }
         /// <summary>
         /// Initializes player HP, gold, shuffles deck and draws cards. Needs to use correct RNG
@@ -182,21 +190,18 @@ namespace ODLGameEngine
         /// </summary>
         void STATE_DrawPhase()
         {
-            int playerId = (int)_detailedState.CurrentPlayer;
-            PlayerState player = _detailedState.PlayerStates[playerId];
+            int playerId = (int)DetailedState.CurrentPlayer;
+            PlayerState player = DetailedState.PlayerStates[playerId];
             // Advance all units of that player
-            if (player.NUnits > 0) // Only advance if player has units
+            if (DetailedState.BoardState.PossiblePlayerUnitCount[playerId] > 0) // Only advance if player has units
             {
-                SortedList<int, Unit> liveUnits = _detailedState.BoardState.Units;
-                List<int> liveUnitsIds = liveUnits.Keys.ToList(); // Obtain all elements in list to iterate on
-                foreach (int unitId in liveUnitsIds) // Obtain unit one by one in order of play, need to do it like this in case units are deleted in the meanwhile
+                // Obtain all elements in list to iterate on, do it like this to allow iteration even if a unit dies during the advance (iteration integrity)
+                List<int> playerUnitsIds = DetailedState.BoardState.PlayerUnits[playerId].ToList();
+                foreach (int unitId in playerUnitsIds)
                 {
-                    if(liveUnits.TryGetValue(unitId, out Unit unit)) // Check if unit is still alive, if not, no need to march
+                    if(DetailedState.BoardState.Entities.TryGetValue(unitId, out PlacedEntity unit)) // Check if unit is still alive, if not, no need to march
                     {
-                        if(unit.Owner == playerId) // This unit needs to march
-                        {
-                            UNIT_AdvanceUnit(unit); // Then the unit advances!
-                        }
+                        UNIT_AdvanceUnit((Unit)unit); // Then the unit advances!
                     }
                 }
             }
@@ -219,7 +224,7 @@ namespace ODLGameEngine
         {
             ENGINE_AddMessageEvent($"P{player + 1}'s deck shuffled");
             // Fisher Yates Algorithm for Shuffling, mix starting from last, first card isn't swapped with itself
-            for (int i = _detailedState.PlayerStates[player].Deck.DeckSize - 1; i > 0; i--)
+            for (int i = DetailedState.PlayerStates[player].Deck.DeckSize - 1; i > 0; i--)
             {
                 ENGINE_SwapCardsInDeck(player, i, _rng.Next(i+1));
             }
@@ -234,7 +239,7 @@ namespace ODLGameEngine
             ENGINE_AddMessageEvent($"P{player + 1}'s draws {n}");
             for (int i  = 0; i < n; i++)
             {
-                int card = _detailedState.PlayerStates[player].Deck.PeepAt(); // Found card in deck
+                int card = DetailedState.PlayerStates[player].Deck.PeepAt(); // Found card in deck
                 ENGINE_DeckDrawSingle(player); // Removes from deck
                 // Nothing happens for now "when drawn"
                 ENGINE_AddCardToHand(player, card); // Therefore adds to hand
@@ -256,21 +261,13 @@ namespace ODLGameEngine
             }
             _currentStep.events.Clear(); // Clear list as all events have been reverted
         }
-        void STATE_VerifyPlayerHpChange(int player)
-        {
-            PlayerState ps = _detailedState.PlayerStates[player];
-            if (ps.Hp <= 0) // Player is dead, trigger end of times
-            {
-                throw new EndOfGameException($"{ps.Name} dead by HP", 1 - player); // Other player wins!
-            }
-        }
         /// <summary>
         /// To be called by an action to signal the end of the game!
         /// </summary>
         /// <param name="playerWhoWon">Which player won?</param>
         private void STATE_TriggerEndOfGame(int playerWhoWon) // Gets stuck in EOG forever for now
         {
-            ENGINE_AddMessageEvent($"GAME OVER, {_detailedState.PlayerStates[playerWhoWon].Name} WON");
+            ENGINE_AddMessageEvent($"GAME OVER, {DetailedState.PlayerStates[playerWhoWon].Name} WON");
             ENGINE_SetNextPlayer((CurrentPlayer)playerWhoWon); // The "current player" in this status is also the one who won the game
             ENGINE_ChangeState(States.EOG); // Switches to EOG and the game then gets stuck here
         }
@@ -281,7 +278,7 @@ namespace ODLGameEngine
 
         public override string ToString()
         {
-            return $"{Enum.GetName(_detailedState.CurrentState)}";
+            return $"{Enum.GetName(DetailedState.CurrentState)}";
         }
     }
 }

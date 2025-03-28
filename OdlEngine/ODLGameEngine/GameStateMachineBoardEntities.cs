@@ -15,7 +15,7 @@ namespace ODLGameEngine
         /// <param name="entity">Entity to register</param>
         public void BOARDENTITY_InitializeEntity(PlacedEntity entity)
         {
-            int unitId = _detailedState.NextUniqueIndex;
+            int unitId = DetailedState.NextUniqueIndex;
             entity.UniqueId = unitId;
             // Unit ready to be added
             ENGINE_InitializeEntity(entity); // Now entity is attached to game

@@ -36,110 +36,85 @@ namespace ODLGameEngine
                     }
                     else
                     {
-                        ((TransitionEvent<States>)e).oldValue = _detailedState.CurrentState;
+                        ((TransitionEvent<States>)e).oldValue = DetailedState.CurrentState;
                         _stepHistory.Add(_currentStep);
                     }
-                    _detailedState.CurrentState = ((TransitionEvent<States>)e).newValue;
+                    DetailedState.CurrentState = ((TransitionEvent<States>)e).newValue;
                     _currentStep = new StepResult();
                     if (firstStep) _currentStep.tag = Tag.FIRST_STATE; // Tag it as first if needed (step can't be reverted)
                     // State transition complete!
                     break;
                 case EventType.PLAYER_TRANSITION:
                     // Requested a transition to new state, which implies ending this step and creating a new one
-                    ((TransitionEvent<CurrentPlayer>)e).oldValue = _detailedState.CurrentPlayer;
-                    _detailedState.CurrentPlayer = ((TransitionEvent<CurrentPlayer>)e).newValue; // Player transition complete!
+                    ((TransitionEvent<CurrentPlayer>)e).oldValue = DetailedState.CurrentPlayer;
+                    DetailedState.CurrentPlayer = ((TransitionEvent<CurrentPlayer>)e).newValue; // Player transition complete!
                     break;
                 case EventType.RNG_TRANSITION:
                     // Requested a transition to new rng seed
-                    ((TransitionEvent<int>)e).oldValue = _detailedState.Seed;
-                    _detailedState.Seed = ((TransitionEvent<int>)e).newValue; // Player transition complete!
-                    _rng = new Random(_detailedState.Seed);
+                    ((TransitionEvent<int>)e).oldValue = DetailedState.Seed;
+                    DetailedState.Seed = ((TransitionEvent<int>)e).newValue; // Player transition complete!
+                    _rng = new Random(DetailedState.Seed);
                     break;
                 case EventType.PLAYER_HP_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int,int>)e).entity;
                     auxInt2 = ((EntityTransitionEvent<int, int>)e).newValue;
-                    ((EntityTransitionEvent<int, int>)e).oldValue = _detailedState.PlayerStates[auxInt1].Hp;
-                    _detailedState.PlayerStates[auxInt1].Hp = auxInt2;
+                    ((EntityTransitionEvent<int, int>)e).oldValue = DetailedState.PlayerStates[auxInt1].Hp;
+                    DetailedState.PlayerStates[auxInt1].Hp = auxInt2;
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    ((EntityTransitionEvent<int, int>)e).oldValue = _detailedState.PlayerStates[auxInt1].Gold;
-                    _detailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int,int>)e).newValue;
+                    ((EntityTransitionEvent<int, int>)e).oldValue = DetailedState.PlayerStates[auxInt1].Gold;
+                    DetailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int,int>)e).newValue;
                     break;
                 case EventType.MESSAGE:
                 case EventType.DEBUG_CHECK:
                     break;
                 case EventType.CARD_DECK_SWAP:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Deck.SwapCards(
+                    DetailedState.PlayerStates[auxInt1].Deck.SwapCards(
                         ((EntityTransitionEvent<int, int>)e).newValue,
                         ((EntityTransitionEvent<int, int>)e).oldValue
                         );
                     break;
                 case EventType.REMOVE_TOPDECK:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    ((EntityValueEvent<int, int>)e).value = _detailedState.PlayerStates[auxInt1].Deck.PopCard(); // Pop last card from deck
+                    ((EntityValueEvent<int, int>)e).value = DetailedState.PlayerStates[auxInt1].Deck.PopCard(); // Pop last card from deck
                     break;
                 case EventType.ADD_CARD_TO_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value;
-                    _detailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2);
+                    DetailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2);
                     break;
                 case EventType.PLAYER_GOLD_CHANGE:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Gold += ((EntityValueEvent<int, int>)e).value; // Add gold
+                    DetailedState.PlayerStates[auxInt1].Gold += ((EntityValueEvent<int, int>)e).value; // Add gold
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value; // Card now popped from hand
-                    _detailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2); // Remove from hand...
-                    _detailedState.PlayerStates[auxInt1].DiscardPile.InsertCard(auxInt2); // And add to discard pile
+                    DetailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2); // Remove from hand...
+                    DetailedState.PlayerStates[auxInt1].DiscardPile.InsertCard(auxInt2); // And add to discard pile
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    switch(auxPlacedEntity.EntityPlayInfo.EntityType)
-                    {
-                        case EntityType.UNIT:
-                            _detailedState.BoardState.Units.Add(auxPlacedEntity.UniqueId, (Unit)auxPlacedEntity); // Adds unit
-                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits++;
-                            break;
-                        case EntityType.BUILDING:
-                            _detailedState.BoardState.Buildings.Add(auxPlacedEntity.UniqueId, (Building)auxPlacedEntity); // Adds building
-                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings++;
-                            break;
-                        default:
-                            throw new Exception("Can't initialize non-placeable entities!");
-                    }
+                    DetailedState.BoardState.InsertEntity(auxPlacedEntity);
+                    DetailedState.BoardState.Entities.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
-                    _detailedState.NextUniqueIndex++;
+                    DetailedState.NextUniqueIndex++;
                     break;
                 case EventType.ENTITY_LANE_TRANSITION:
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).entity;
                     ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue = auxPlacedEntity.LaneCoordinate; // Store old value first
                     if(auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
                     {
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
-                        }
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerBuildingCount[auxPlacedEntity.Owner]--;
-                        }
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).RemoveEntity(auxPlacedEntity);
                     }
                     auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).newValue; // unit now has new value
                     // Finally, update count in lane(s)
                     if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
                     {
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
-                        }
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerBuildingCount[auxPlacedEntity.Owner]++;
-                        }
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).InsertEntity(auxPlacedEntity);
                     }
                     break;
                 case EventType.ENTITY_TILE_TRANSITION:
@@ -147,49 +122,19 @@ namespace ODLGameEngine
                     ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue = auxPlacedEntity.TileCoordinate; // Store old value first
                     if (auxPlacedEntity.TileCoordinate >= 0) // Remove count from old tile if applicable
                     {
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Remove(auxPlacedEntity.UniqueId);
-                        }
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTileOwner = -1;
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTile = -1;
-                        }
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).RemoveEntity(auxPlacedEntity);
                     }
                     auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).newValue; // unit now has new value
                     // Finally, update count in tile
                     if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Add(auxPlacedEntity.UniqueId);
-                        }
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTileOwner = auxPlacedEntity.Owner;
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTile = auxPlacedEntity.UniqueId;
-                        }
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).InsertEntity(auxPlacedEntity);
                     }
                     break;
                 case EventType.DEINIT_ENTITY: // Unit simply leaves field and user loses the unit
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    switch (auxPlacedEntity.EntityPlayInfo.EntityType)
-                    {
-                        case EntityType.UNIT:
-                            // Now, remove from player's
-                            _detailedState.BoardState.Units.Remove(auxPlacedEntity.UniqueId);
-                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits--;
-                            break;
-                        case EntityType.BUILDING:
-                            _detailedState.BoardState.Buildings.Remove(auxPlacedEntity.UniqueId);
-                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings--;
-                            break;
-                        default:
-                            throw new Exception("Can't de-initialize non-placed entities!");
-                    }
+                    DetailedState.BoardState.RemoveEntity(auxPlacedEntity);
+                    DetailedState.BoardState.Entities.Remove(auxPlacedEntity.UniqueId);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
@@ -227,31 +172,31 @@ namespace ODLGameEngine
             {
                 case EventType.STATE_TRANSITION:
                     // Requested a transition to new state, which implies ending this step and creating a new one
-                    _detailedState.CurrentState = ((TransitionEvent<States>)e).oldValue; // Just retrieves the prev state
+                    DetailedState.CurrentState = ((TransitionEvent<States>)e).oldValue; // Just retrieves the prev state
                     break;
                 case EventType.PLAYER_TRANSITION:
                     // Requested a transition to new state, which implies ending this step and creating a new one
-                    _detailedState.CurrentPlayer = ((TransitionEvent<CurrentPlayer>)e).oldValue; // Player transition complete!
+                    DetailedState.CurrentPlayer = ((TransitionEvent<CurrentPlayer>)e).oldValue; // Player transition complete!
                     break;
                 case EventType.RNG_TRANSITION:
                     // Requested a transition to new rng seed
-                    _detailedState.Seed = ((TransitionEvent<int>)e).oldValue; // Player transition complete!
-                    _rng = new Random(_detailedState.Seed);
+                    DetailedState.Seed = ((TransitionEvent<int>)e).oldValue; // Player transition complete!
+                    _rng = new Random(DetailedState.Seed);
                     break;
                 case EventType.PLAYER_HP_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Hp = ((EntityTransitionEvent<int, int>)e).oldValue;
+                    DetailedState.PlayerStates[auxInt1].Hp = ((EntityTransitionEvent<int, int>)e).oldValue;
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int, int>)e).oldValue;
+                    DetailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int, int>)e).oldValue;
                     break;
                 case EventType.MESSAGE:
                 case EventType.DEBUG_CHECK:
                     break;
                 case EventType.CARD_DECK_SWAP:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Deck.SwapCards(
+                    DetailedState.PlayerStates[auxInt1].Deck.SwapCards(
                         ((EntityTransitionEvent<int, int>)e).newValue,
                         ((EntityTransitionEvent<int, int>)e).oldValue
                         );
@@ -259,68 +204,43 @@ namespace ODLGameEngine
                 case EventType.REMOVE_TOPDECK:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value;
-                    _detailedState.PlayerStates[auxInt1].Deck.InsertCard(auxInt2);
+                    DetailedState.PlayerStates[auxInt1].Deck.InsertCard(auxInt2);
                     // Return to deck
                     break;
                 case EventType.ADD_CARD_TO_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value;
-                    _detailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2);
+                    DetailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2);
                     break;
                 case EventType.PLAYER_GOLD_CHANGE:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    _detailedState.PlayerStates[auxInt1].Gold -= ((EntityValueEvent<int, int>)e).value; // Remove gold
+                    DetailedState.PlayerStates[auxInt1].Gold -= ((EntityValueEvent<int, int>)e).value; // Remove gold
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value;
-                    _detailedState.PlayerStates[auxInt1].DiscardPile.RemoveCard(auxInt2); // Pop from discard pile
-                    _detailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2); // Reinsert in hand
+                    DetailedState.PlayerStates[auxInt1].DiscardPile.RemoveCard(auxInt2); // Pop from discard pile
+                    DetailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2); // Reinsert in hand
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    switch (auxPlacedEntity.EntityPlayInfo.EntityType)
-                    {
-                        case EntityType.UNIT:
-                            _detailedState.BoardState.Units.Remove(auxPlacedEntity.UniqueId); // Deinits unit
-                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits--;
-                            break;
-                        case EntityType.BUILDING:
-                            _detailedState.BoardState.Buildings.Remove(auxPlacedEntity.UniqueId); // Deinits building
-                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings--;
-                            break;
-                        default:
-                            throw new Exception("Can't initialize non-placed entities!");
-                    }
+                    DetailedState.BoardState.RemoveEntity(auxPlacedEntity);
+                    DetailedState.BoardState.Entities.Remove(auxPlacedEntity.UniqueId);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
-                    _detailedState.NextUniqueIndex--;
+                    DetailedState.NextUniqueIndex--;
                     break;
                 case EventType.ENTITY_LANE_TRANSITION:
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).entity;
                     if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
                     {
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
-                        }
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerBuildingCount[auxPlacedEntity.Owner]--;
-                        }
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).RemoveEntity(auxPlacedEntity);
                     }
                     auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue; // unit now has prev value
                     // Finally, update count in lane(s)
                     if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
                     {
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
-                        }
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).PlayerBuildingCount[auxPlacedEntity.Owner]++;
-                        }
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).InsertEntity(auxPlacedEntity);
                     }
                     break;
                 case EventType.ENTITY_TILE_TRANSITION:
@@ -328,47 +248,18 @@ namespace ODLGameEngine
                     // Update count of tile
                     if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        if(auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]--;
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Remove(auxPlacedEntity.UniqueId);
-                        }
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTileOwner = -1;
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTile = -1;
-                        }
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).RemoveEntity(auxPlacedEntity);
                     }
                     auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue; // unit now has prev value
                     if (auxPlacedEntity.TileCoordinate >= 0) // Update its count if applicable
                     {
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.UNIT)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).PlayerUnitCount[auxPlacedEntity.Owner]++;
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).UnitsInTile.Add(auxPlacedEntity.UniqueId);
-                        }
-                        if (auxPlacedEntity.EntityPlayInfo.EntityType == EntityType.BUILDING)
-                        {
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTileOwner = auxPlacedEntity.Owner;
-                            _detailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).BuildingInTile = auxPlacedEntity.UniqueId;
-                        }
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).InsertEntity(auxPlacedEntity);
                     }
                     break;
                 case EventType.DEINIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    switch (auxPlacedEntity.EntityPlayInfo.EntityType)
-                    {
-                        case EntityType.UNIT:
-                            _detailedState.BoardState.Units.Add(auxPlacedEntity.UniqueId, (Unit)auxPlacedEntity);
-                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NUnits++;
-                            break;
-                        case EntityType.BUILDING:
-                            _detailedState.BoardState.Buildings.Add(auxPlacedEntity.UniqueId, (Building)auxPlacedEntity);
-                            _detailedState.PlayerStates[auxPlacedEntity.Owner].NBuildings++;
-                            break;
-                        default:
-                            throw new Exception("Can't undo de-initialize non-placed entities!");
-                    }
+                    DetailedState.BoardState.InsertEntity(auxPlacedEntity);
+                    DetailedState.BoardState.Entities.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;

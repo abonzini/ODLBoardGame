@@ -57,7 +57,7 @@ namespace EngineTests
         public static void VerifyDrawPhaseResult(GameStateMachine sm)
         {
             HashSet<int> hashes = new HashSet<int>(); // Checks all hashes resulting
-            GameStateStruct testState = sm.GetDetailedState();
+            GameStateStruct testState = sm.DetailedState;
             Assert.AreEqual(testState.CurrentState, States.DRAW_PHASE); // Am I in draw phase
             int preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
             int preGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
@@ -72,7 +72,7 @@ namespace EngineTests
             HashSetVerification(testState, hashes, false);
             // Now draw!
             sm.Step();
-            testState = sm.GetDetailedState();
+            testState = sm.DetailedState;
             int postCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
             int postGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
             int postDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
@@ -90,7 +90,7 @@ namespace EngineTests
             HashSetVerification(testState, hashes, false);
             // Now revert
             sm.UndoPreviousStep(); // Go back to beginning of drawphase
-            testState = sm.GetDetailedState();
+            testState = sm.DetailedState;
             preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
             preGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
             preDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;

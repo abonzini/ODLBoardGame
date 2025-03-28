@@ -26,23 +26,21 @@ namespace ODLGameEngine
                 CardTargets.MOUNTAIN => building.MountainBp,
                 _ => throw new InvalidDataException("Invalid lane target fot building!"),
             };
-            Lane lane = _detailedState.BoardState.GetLane(laneTarget);
+            Lane lane = DetailedState.BoardState.GetLane(laneTarget);
             int i;
             for (i = 0; i < bp.Length; i++)
             {
                 Tile tile = lane.GetTileRelative(bp[i], player); // Gets next tile candidate
-                if (tile.BuildingInTile < 0 && tile.PlayerUnitCount[player] > 0) // Condition is, tile can't have building already, and there has to be atleast one unit to build it
+                // TODO: This is not true when stealth is involved but this function will be modified when that happens
+                if (tile.AllBuildings.Count == 0 && tile.RealPlayerUnitCount[player] > 0) // Condition is, tile can't have building already, and there has to be atleast one unit to build it
                 {
                     res.Building = building;
                     res.FirstAvailableOption = i;
                     res.RelativeTile = bp[i];
                     res.AbsoluteTile = lane.GetAbsoluteTileCoord(bp[i], player);
-                    foreach(int unitIndex in tile.UnitsInTile) // Check first unit of that player in the tile
+                    foreach(int unitIndex in tile.PlayerUnits[player]) // Check first unit of that player in the tile
                     {
-                        if (_detailedState.BoardState.Units[unitIndex].Owner == player) // Found it, this is the builder
-                        {
-                            res.Builder = _detailedState.BoardState.Units[unitIndex]; // TODO: In the future it may be smarter to do a bit more work here, ignore/skip stealthed fake units or the sort
-                        }
+                        res.Builder = (Unit)DetailedState.BoardState.Entities[unitIndex]; // TODO: In the future it may be smarter to do a bit more work here, ignore/skip stealthed fake units or the sort
                     }
                     break;
                 }
@@ -55,7 +53,6 @@ namespace ODLGameEngine
         /// <param name="player">Player</param>
         /// <param name="bldg">Building</param>
         /// <param name="chosenTarget">Target chosen for building</param>
-
         void BUILDING_PlayBuilding(int player, Building bldg, CardTargets chosenTarget)
         {
             // To spawn a building, first you get the playable ID
@@ -67,7 +64,7 @@ namespace ODLGameEngine
             // Clone the building, add to board
             BOARDENTITY_InitializeEntity(newSpawnedBuilding);
             // Locates unit to right place. Get the lane where unit is played, and place it in first tile
-            Lane bldgLane = _detailedState.BoardState.GetLane(chosenTarget);
+            Lane bldgLane = DetailedState.BoardState.GetLane(chosenTarget);
             BOARDENTITY_InsertInLane(newSpawnedBuilding, bldgLane.Id);
             BOARDENTITY_InsertInTile(newSpawnedBuilding, constructionCtx.AbsoluteTile);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure

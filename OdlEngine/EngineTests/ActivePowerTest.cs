@@ -52,7 +52,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 9, CardTargets.GLOBAL));
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                sm.GetDetailedState().PlayerStates[(int)player].ActivePowerCast = 1; // Use expensive brick as placeholder active effect
+                sm.DetailedState.PlayerStates[(int)player].ActivePowerCast = 1; // Use expensive brick as placeholder active effect
                 Tuple<PlayOutcome, StepResult> res = sm.PlayActivePower();
                 Assert.AreEqual(res.Item1, PlayOutcome.CANT_AFFORD);
                 Assert.AreEqual(res.Item2, null);
@@ -101,11 +101,11 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 sm.EndTurn(); // End opposingplayer's turn
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[(int)player].PowerAvailable, false); // Ensure I couldn't use
+                Assert.AreEqual(sm.DetailedState.PlayerStates[(int)player].PowerAvailable, false); // Ensure I couldn't use
                 sm.Step();
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[(int)player].PowerAvailable, true); // But now ensure I can
+                Assert.AreEqual(sm.DetailedState.PlayerStates[(int)player].PowerAvailable, true); // But now ensure I can
                 sm.UndoPreviousStep();
-                Assert.AreEqual(sm.GetDetailedState().PlayerStates[(int)player].PowerAvailable, false); // Ensure reverted properly
+                Assert.AreEqual(sm.DetailedState.PlayerStates[(int)player].PowerAvailable, false); // Ensure reverted properly
             }
         }
         [TestMethod]
@@ -147,22 +147,22 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Pre rush assert
-                int stateHash = sm.GetDetailedState().GetGameStateHash();
-                PlayerState currentPlayer = sm.GetDetailedState().PlayerStates[(int)sm.GetDetailedState().CurrentPlayer];
+                int stateHash = sm.DetailedState.GetGameStateHash();
+                PlayerState currentPlayer = sm.DetailedState.PlayerStates[(int)sm.DetailedState.CurrentPlayer];
                 Assert.AreEqual(currentPlayer.Gold, 10);
                 Assert.AreEqual(currentPlayer.PowerAvailable, true);
                 // Now, rush
                 Tuple<PlayOutcome, StepResult> res = sm.PlayActivePower();
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
-                currentPlayer = sm.GetDetailedState().PlayerStates[(int)sm.GetDetailedState().CurrentPlayer];
-                Assert.AreNotEqual(stateHash, sm.GetDetailedState().GetGameStateHash());
+                currentPlayer = sm.DetailedState.PlayerStates[(int)sm.DetailedState.CurrentPlayer];
+                Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash());
                 Assert.AreEqual(currentPlayer.Gold, 5);
                 Assert.AreEqual(currentPlayer.PowerAvailable, false);
                 // Now, revert it
                 sm.UndoPreviousStep();
-                currentPlayer = sm.GetDetailedState().PlayerStates[(int)sm.GetDetailedState().CurrentPlayer];
-                Assert.AreEqual(stateHash, sm.GetDetailedState().GetGameStateHash());
+                currentPlayer = sm.DetailedState.PlayerStates[(int)sm.DetailedState.CurrentPlayer];
+                Assert.AreEqual(stateHash, sm.DetailedState.GetGameStateHash());
                 Assert.AreEqual(currentPlayer.Gold, 10);
                 Assert.AreEqual(currentPlayer.PowerAvailable, true);
             }
