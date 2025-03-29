@@ -31,17 +31,13 @@ namespace ODLGameEngine
             for (i = 0; i < bp.Length; i++)
             {
                 Tile tile = lane.GetTileRelative(bp[i], player); // Gets next tile candidate
-                // TODO: This is not true when stealth is involved but this function will be modified when that happens
-                if (tile.AllBuildings.Count == 0 && tile.RealPlayerUnitCount[player] > 0) // Condition is, tile can't have building already, and there has to be atleast one unit to build it
+                if (tile.AllBuildings.Count == 0 && tile.PlayerUnits[player].Count > 0) // Condition is, tile can't have building already, and there has to be atleast one unit to build it
                 {
                     res.Building = building;
                     res.FirstAvailableOption = i;
                     res.RelativeTile = bp[i];
                     res.AbsoluteTile = lane.GetAbsoluteTileCoord(bp[i], player);
-                    foreach(int unitIndex in tile.PlayerUnits[player]) // Check first unit of that player in the tile
-                    {
-                        res.Builder = (Unit)DetailedState.BoardState.Entities[unitIndex]; // TODO: In the future it may be smarter to do a bit more work here, ignore/skip stealthed fake units or the sort
-                    }
+                    res.Builder = (Unit)GetBoardEntity(tile.PlayerUnits[player].First());
                     break;
                 }
             }

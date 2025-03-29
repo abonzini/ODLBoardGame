@@ -44,16 +44,16 @@ namespace EngineTests
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 // Make sure now there's a unit in the list
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1); // Player now has 1 unit summoned
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1); // Player now has 1 unit summoned
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 1); // Check also back end for now
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(chosenTarget).RealPlayerUnitCount[playerIndex], 1); // Lane also contains 1 unit
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(chosenTarget).PlayerUnits[playerIndex].Count, 1); // Lane also contains 1 unit
                 // Check board hash has changed
                 Assert.AreNotEqual(boardHash, sm.DetailedState.BoardState.GetGameStateHash());
                 // Now I revert!
                 sm.UndoPreviousStep();
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 0); // Reverted
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 0); // Reverted
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 0);
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(chosenTarget).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(chosenTarget).PlayerUnits[playerIndex].Count, 0);
                 // Check board hash has been properly reverted
                 Assert.AreEqual(boardHash, sm.DetailedState.BoardState.GetGameStateHash());
             }
@@ -109,11 +109,11 @@ namespace EngineTests
                 // Finally, roll back!
                 sm.UndoPreviousStep();
                 Assert.AreEqual(unitCounter2, sm.DetailedState.NextUniqueIndex); // And reverts properly
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 1);
                 sm.UndoPreviousStep();
                 Assert.AreEqual(unitCounter1, sm.DetailedState.NextUniqueIndex); // And reverts properly
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 0);
             }
         }
@@ -150,13 +150,13 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 void verifyLaneStates(int playerIndex, bool plainsInit, bool forestInit, bool mountainInit)
                 {
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.PLAINS).RealPlayerUnitCount[playerIndex], plainsInit?1:0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.FOREST).RealPlayerUnitCount[playerIndex], forestInit?1:0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN).RealPlayerUnitCount[playerIndex], mountainInit?1:0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.PLAINS).PlayerUnits[playerIndex].Count, plainsInit?1:0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.FOREST).PlayerUnits[playerIndex].Count, forestInit?1:0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN).PlayerUnits[playerIndex].Count, mountainInit?1:0);
                     // Check tiles
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.PLAINS).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], plainsInit ? 1 : 0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.FOREST).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], forestInit ? 1 : 0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], mountainInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.PLAINS).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, plainsInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.FOREST).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, forestInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, mountainInit ? 1 : 0);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.PLAINS).GetTileRelative(0, playerIndex).AllUnits.Count, plainsInit ? 1 : 0);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.FOREST).GetTileRelative(0, playerIndex).AllUnits.Count, forestInit ? 1 : 0);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN).GetTileRelative(0, playerIndex).AllUnits.Count, mountainInit ? 1 : 0);
@@ -228,14 +228,14 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 // Check also for the lane, unit is in the correct place
                 Lane lane = sm.DetailedState.BoardState.GetLane(chosenTarget);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1); // Lane has 1 unit of player and 0 units of other one
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1); // Same with tiles, first and last check
-                Assert.AreEqual(lane.GetTileRelative(0, otherPlayerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.GetTileRelative(-1, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0); // Also check if first-last is coherent
-                Assert.AreEqual(lane.GetTileRelative(-1, otherPlayerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1); // Lane has 1 unit of player and 0 units of other one
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1); // Same with tiles, first and last check
+                Assert.AreEqual(lane.GetTileRelative(0, otherPlayerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileRelative(-1, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0); // Also check if first-last is coherent
+                Assert.AreEqual(lane.GetTileRelative(-1, otherPlayerIndex).PlayerUnits[playerIndex].Count, 1);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, false); // Also ensure hashes are unique for board here
                 // Ok! Now I end turn, do the draw phase
                 sm.EndTurn();
@@ -250,27 +250,27 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 // Check also for the lane, unit is in the correct place for the other player
                 lane = sm.DetailedState.BoardState.GetLane(chosenTarget);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1); // Lane has 1 unit of each now
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1); // Same with tiles, first and last check
-                Assert.AreEqual(lane.GetTileRelative(0, otherPlayerIndex).RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.GetTileRelative(-1, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 1); // Also check if first-last is coherent
-                Assert.AreEqual(lane.GetTileRelative(-1, otherPlayerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1); // Lane has 1 unit of each now
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1); // Same with tiles, first and last check
+                Assert.AreEqual(lane.GetTileRelative(0, otherPlayerIndex).PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileRelative(-1, playerIndex).PlayerUnits[otherPlayerIndex].Count, 1); // Also check if first-last is coherent
+                Assert.AreEqual(lane.GetTileRelative(-1, otherPlayerIndex).PlayerUnits[playerIndex].Count, 1);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, false); // Also ensure hashes are unique for board here
                 // Finally do reversions
                 // Revert playing and draw
                 sm.UndoPreviousStep(); // Unplay p2
                 lane = sm.DetailedState.BoardState.GetLane(chosenTarget);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1); // Lane has 1 unit of player and 0 units of other one
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1); // Same with tiles, first and last check
-                Assert.AreEqual(lane.GetTileRelative(0, otherPlayerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.GetTileRelative(-1, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0); // Also check if first-last is coherent
-                Assert.AreEqual(lane.GetTileRelative(-1, otherPlayerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1); // Lane has 1 unit of player and 0 units of other one
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1); // Same with tiles, first and last check
+                Assert.AreEqual(lane.GetTileRelative(0, otherPlayerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileRelative(-1, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0); // Also check if first-last is coherent
+                Assert.AreEqual(lane.GetTileRelative(-1, otherPlayerIndex).PlayerUnits[playerIndex].Count, 1);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, true); // Hash should be present
                 sm.UndoPreviousStep(); // Undraw
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, true); // Hash should be present
@@ -278,14 +278,14 @@ namespace EngineTests
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, true); // Hash should be present
                 sm.UndoPreviousStep(); // Unplay p1
                 lane = sm.DetailedState.BoardState.GetLane(chosenTarget);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 0); // Lane has 1 unit of player and 0 units of other one
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0); // Same with tiles, first and last check
-                Assert.AreEqual(lane.GetTileRelative(0, otherPlayerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
-                Assert.AreEqual(lane.GetTileRelative(-1, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0); // Also check if first-last is coherent
-                Assert.AreEqual(lane.GetTileRelative(-1, otherPlayerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 0); // Lane has 1 unit of player and 0 units of other one
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0); // Same with tiles, first and last check
+                Assert.AreEqual(lane.GetTileRelative(0, otherPlayerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileRelative(-1, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0); // Also check if first-last is coherent
+                Assert.AreEqual(lane.GetTileRelative(-1, otherPlayerIndex).PlayerUnits[playerIndex].Count, 0);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, true); // Hash should be present
             }
         }
@@ -321,16 +321,16 @@ namespace EngineTests
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 // Make sure unit has insta-died (nothing in field, 1 card in GY
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 0); // Player has no units
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 0); // Player has no units
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 0); // Field has no units
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(chosenTarget).RealPlayerUnitCount[playerIndex], 0); // Lane doesn't have the unit
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(chosenTarget).PlayerUnits[playerIndex].Count, 0); // Lane doesn't have the unit
                 // Check board hash has not changed (as there's no GY)
                 Assert.AreEqual(boardHash, sm.DetailedState.BoardState.GetGameStateHash());
                 // Now I revert!
                 sm.UndoPreviousStep();
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 0); // Player still has no units
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 0); // Player still has no units
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 0); // And field has no units
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(chosenTarget).RealPlayerUnitCount[playerIndex], 0); // Lane doesn't have the unit
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(chosenTarget).PlayerUnits[playerIndex].Count, 0); // Lane doesn't have the unit
                 // Check board hash is still same
                 Assert.AreEqual(boardHash, sm.DetailedState.BoardState.GetGameStateHash());
             }
@@ -434,28 +434,28 @@ namespace EngineTests
                 sm.EndTurn(); // End players turn
                 // Now I'm about to do the advance. Before the advance:
                 Lane lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 int UnitHash = sm.GetBoardEntity(0).GetGameStateHash(); // Get Hash of unit
                 int preAdvanceHash = sm.DetailedState.GetGameStateHash(); // Hash of game overall
                 // Now advance! Ensure result of basic advance
                 sm.Step();
                 lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 // Ensures the unit moved the right number of tiles in the right direction
-                Assert.AreEqual(lane.GetTileRelative(movement, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.GetTileRelative(movement, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 Assert.AreNotEqual(preAdvanceHash, sm.DetailedState.GetGameStateHash()); // Hash of board has changed
                 Assert.AreEqual(sm.GetBoardEntity(0).GetGameStateHash(), UnitHash); // However, the unit should be the same!
                 // Finally revert the advance
                 sm.UndoPreviousStep();
                 lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.GetTileRelative(movement, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileRelative(movement, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 Assert.AreEqual(preAdvanceHash, sm.DetailedState.GetGameStateHash());
                 Assert.AreEqual(sm.GetBoardEntity(0).GetGameStateHash(), UnitHash);
             }
@@ -501,38 +501,38 @@ namespace EngineTests
                 int preAdvanceHash = sm.DetailedState.GetGameStateHash();
                 Lane lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
                 // Both players have a unit
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
                 // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 int intersectionCoordinate = lane.GetAbsoluteTileCoord(0,otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, 1);
                 // Advance...
                 sm.Step();
                 // Verify
                 lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
                 // Now unit is not in advance anymore and instead moved to intersect
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, 1);
                 Assert.AreNotEqual(preAdvanceHash, sm.DetailedState.GetGameStateHash()); // Hash verif
                 // Undo advance and verify again
                 sm.UndoPreviousStep();
                 lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
                 // Now unit is not in advance anymore and instead moved to intersect
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(preAdvanceHash, sm.DetailedState.GetGameStateHash()); // Hash verif
             }
         }
@@ -571,37 +571,37 @@ namespace EngineTests
                 Lane plains = sm.DetailedState.BoardState.GetLane(LaneID.PLAINS);
                 Lane forest = sm.DetailedState.BoardState.GetLane(LaneID.FOREST);
                 Lane mountain = sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
                 // Verify position of units, so that units are in first
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 sm.EndTurn(); // End turn
                 sm.Step(); // Finish draw phase of opp
                 sm.EndTurn(); // Finish opp turn
                 // Now about to start my advance, no hash verif needed
                 sm.Step();
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
                 // After advance, units should be on opposite end of lane!
-                Assert.AreEqual(plains.GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(plains.GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 // After undo...
                 sm.UndoPreviousStep();
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
                 // After advance, units should be on opposite end of lane!
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
             }
         }
         [TestMethod]
@@ -643,14 +643,14 @@ namespace EngineTests
                 Lane plains = sm.DetailedState.BoardState.GetLane(LaneID.PLAINS);
                 Lane forest = sm.DetailedState.BoardState.GetLane(LaneID.FOREST);
                 Lane mountain = sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
                 // Verify position of units, so that units are in first
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 sm.EndTurn(); // End turn
                 sm.Step(); // Finish draw phase of opp
                 sm.EndTurn(); // Finish opp turn
@@ -664,18 +664,18 @@ namespace EngineTests
                 TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, false);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, false);
                 sm.Step(); // Advance
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
                 // Only plains should've moved
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 // Rest should still be in the first place
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, false);
                 TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, false);
                 TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, false);
@@ -685,16 +685,16 @@ namespace EngineTests
                 sm.Step();
                 sm.EndTurn();
                 sm.Step(); // Advance
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, false);
                 TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, false);
                 TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, false);
@@ -704,59 +704,59 @@ namespace EngineTests
                 sm.Step();
                 sm.EndTurn();
                 sm.Step(); // Advance
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, false); // BUT HASH SHOULD CHANGE AS IT IS A DIFFERENT STATE!
                 TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, false);
                 TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, false);
                 TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, false);
                 // Undo!
                 sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep();
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, true);
                 TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, true);
                 TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, true);
                 TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, true);
                 sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep();
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(plains.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, true);
                 TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, true);
                 TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, true);
                 TestHelperFunctions.HashSetVerification(mountainsUnit, unitHashes, true); 
                 sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep(); sm.UndoPreviousStep();
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                Assert.AreEqual(plains.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                Assert.AreEqual(plains.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(plains.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(forest.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(mountain.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, true);
                 TestHelperFunctions.HashSetVerification(plainsUnit, unitHashes, true);
                 TestHelperFunctions.HashSetVerification(forestUnit, unitHashes, true);
@@ -808,50 +808,50 @@ namespace EngineTests
                 // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
                 Lane lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
                 // Both players have a unit
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 2); // 2 units total
                 Assert.AreEqual(sm.GetBoardEntity(0).DamageTokens, 0); // No damage
                 Assert.AreEqual(sm.GetBoardEntity(1).DamageTokens, 0); // No damage
                 // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
                 int intersectionCoordinate = lane.GetAbsoluteTileCoord(0,otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 Assert.AreEqual(lane.GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).AllUnits.Count, 1);
                 // Advance...
                 sm.Step();
                 // Verify
                 lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1); // Players still have their dudes
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1); // Players still have their dudes
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 2); // 2 units total
                 Assert.AreEqual(sm.GetBoardEntity(0).DamageTokens, attack); // They have damage!
                 Assert.AreEqual(sm.GetBoardEntity(1).DamageTokens, attack + 1);
                 // Now unit is not in advance anymore and instead moved to intersect
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).AllUnits.Count, 2); // 2 Now
                 // Undo advance and verify again
                 sm.UndoPreviousStep();
                 lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
                 // Both players have a unit
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 2); // 2 units total
                 Assert.AreEqual(sm.GetBoardEntity(0).DamageTokens, 0); // No damage
                 Assert.AreEqual(sm.GetBoardEntity(1).DamageTokens, 0); // No damage
                 // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
-                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 Assert.AreEqual(lane.GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).AllUnits.Count, 1);
             }
         }
@@ -903,18 +903,18 @@ namespace EngineTests
                     // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
                     Lane lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
                     // Both players have a unit
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                    Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                    Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 2); // 2 units total
                     Assert.AreEqual(sm.GetBoardEntity(0).DamageTokens, 0); // No damage
                     Assert.AreEqual(sm.GetBoardEntity(1).DamageTokens, 0); // No damage
                     // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
                     int intersectionCoordinate = lane.GetAbsoluteTileCoord(0,otherPlayerIndex) + Lane.GetAdvanceDirection(otherPlayerIndex) * 3;
-                    Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(lane.GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, 1);
                     Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).AllUnits.Count, 1);
                     // Advance...
                     sm.Step();
@@ -922,10 +922,10 @@ namespace EngineTests
                     int attackerCount = (defenderExtraDmg[i] < 0) ? 1 : 0; // Attacker is there only if defender's weak
                     int defenderCount = (attackerExtraDmg[i] < 0) ? 1 : 0; // Defender is there only if attacker's weak
                     lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], attackerCount); // Players still have their dudes
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], defenderCount);
-                    Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], attackerCount);
-                    Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], defenderCount);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, attackerCount); // Players still have their dudes
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, defenderCount);
+                    Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, attackerCount);
+                    Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, defenderCount);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, attackerCount + defenderCount); // 2 units total
                     if (defenderCount > 0)
                     {
@@ -944,25 +944,25 @@ namespace EngineTests
                         Assert.IsFalse(sm.DetailedState.BoardState.Entities.ContainsKey(1)); // unit ded
                     }
                     // Now unit is not in advance anymore and instead moved to intersect
-                    Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                    Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[playerIndex], attackerCount);
-                    Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], defenderCount);
+                    Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                    Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[playerIndex].Count, attackerCount);
+                    Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, defenderCount);
                     Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).AllUnits.Count, attackerCount + defenderCount); // 2 Now
                     // Undo advance and verify again
                     sm.UndoPreviousStep();
                     lane = sm.DetailedState.BoardState.GetLane(CardTargets.MOUNTAIN);
                     // Both players have a unit
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
-                    Assert.AreEqual(lane.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(lane.RealPlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
+                    Assert.AreEqual(lane.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(lane.PlayerUnits[otherPlayerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 2); // 2 units total
                     Assert.AreEqual(sm.GetBoardEntity(0).DamageTokens, 0); // No damage
                     Assert.AreEqual(sm.GetBoardEntity(1).DamageTokens, 0); // No damage
                     // Verify position of units. Player's is in the first, and opp's is in the intersection tile as they advanced already
-                    Assert.AreEqual(lane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(lane.GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).RealPlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).PlayerUnits[otherPlayerIndex].Count, 1);
                     Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).AllUnits.Count, 1);
                 }
             }
@@ -1025,23 +1025,23 @@ namespace EngineTests
                     nextTgt = (CardTargets)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
                     Lane other2 = sm.DetailedState.BoardState.GetLane(nextTgt);
                     // Check unit counts
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
                     // Check the right amount in all lanes
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[otherPlayerIndex], 1);
-                    Assert.AreEqual(other1.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(other2.RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(theLane.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(theLane.PlayerUnits[otherPlayerIndex].Count, 1);
+                    Assert.AreEqual(other1.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(other2.PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 4); // 4 units total
                     // Verify position of units. One tile has 2 things and the others 1
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 1);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 2);
-                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
                     Assert.AreEqual(other1.GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
                     Assert.AreEqual(other2.GetTileRelative(0, playerIndex).AllUnits.Count, 1);
                     // Advance...
                     sm.Step();
@@ -1052,21 +1052,21 @@ namespace EngineTests
                     nextTgt = (CardTargets)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
                     other2 = sm.DetailedState.BoardState.GetLane(nextTgt);
                     // Check unit counts, similar but both players lost the unit in "the lane", the others advanced
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 2);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 0);
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[playerIndex], 0);
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[otherPlayerIndex], 0);
-                    Assert.AreEqual(other1.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(other2.RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 2);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 0);
+                    Assert.AreEqual(theLane.PlayerUnits[playerIndex].Count, 0);
+                    Assert.AreEqual(theLane.PlayerUnits[otherPlayerIndex].Count, 0);
+                    Assert.AreEqual(other1.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(other2.PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 2);
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 0);
-                    Assert.AreEqual(other1.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1); // Make sure the others displaced properly
-                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                    Assert.AreEqual(other1.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1); // Make sure the others displaced properly
+                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
                     Assert.AreEqual(other1.GetTileRelative(1, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(other2.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                    Assert.AreEqual(other2.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
                     Assert.AreEqual(other2.GetTileRelative(1, playerIndex).AllUnits.Count, 1);
                     // Undo advance and verify again
                     sm.UndoPreviousStep();
@@ -1076,23 +1076,23 @@ namespace EngineTests
                     nextTgt = (CardTargets)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
                     other2 = sm.DetailedState.BoardState.GetLane(nextTgt);
                     // Check unit counts
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 1);
                     // Check the right amount in all lanes
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[otherPlayerIndex], 1);
-                    Assert.AreEqual(other1.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(other2.RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(theLane.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(theLane.PlayerUnits[otherPlayerIndex].Count, 1);
+                    Assert.AreEqual(other1.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(other2.PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 4); // 4 units total
                     // Verify position of units. One tile has 2 things and the others 1
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 1);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 1);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 2);
-                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(other1.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
                     Assert.AreEqual(other1.GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(other2.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
                     Assert.AreEqual(other2.GetTileRelative(0, playerIndex).AllUnits.Count, 1);
                 }
             }
@@ -1152,14 +1152,14 @@ namespace EngineTests
                     // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
                     Lane theLane = sm.DetailedState.BoardState.GetLane(lane);
                     // Check unit counts
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 2);
                     // Check the right amount in all lanes
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[playerIndex], 3);
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(theLane.PlayerUnits[playerIndex].Count, 3);
+                    Assert.AreEqual(theLane.PlayerUnits[otherPlayerIndex].Count, 2);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 5); // 5 units total
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 3);
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 3);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 2);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 5);
                     // Only for this, also check ids
                     Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(0));
@@ -1172,15 +1172,15 @@ namespace EngineTests
                     // Verify
                     theLane = sm.DetailedState.BoardState.GetLane(lane);
                     // Check unit counts
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 0);
                     // Check the right amount in all lanes
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[playerIndex], 1);
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(theLane.PlayerUnits[playerIndex].Count, 1);
+                    Assert.AreEqual(theLane.PlayerUnits[otherPlayerIndex].Count, 0);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 1); // 1 unit total
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
-                    Assert.AreEqual(theLane.GetTileRelative(1, playerIndex).RealPlayerUnitCount[playerIndex], 1); // in the next tile!
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 0);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
+                    Assert.AreEqual(theLane.GetTileRelative(1, playerIndex).PlayerUnits[playerIndex].Count, 1); // in the next tile!
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 0);
                     Assert.AreEqual(theLane.GetTileRelative(1, playerIndex).AllUnits.Count, 1);
                     Assert.IsFalse(sm.DetailedState.BoardState.Entities.ContainsKey(0));
@@ -1193,14 +1193,14 @@ namespace EngineTests
                     sm.UndoPreviousStep();
                     theLane = sm.DetailedState.BoardState.GetLane(lane);
                     // Check unit counts
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[playerIndex], 3);
-                    Assert.AreEqual(sm.DetailedState.BoardState.RealPlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[playerIndex].Count, 3);
+                    Assert.AreEqual(sm.DetailedState.BoardState.PlayerUnits[otherPlayerIndex].Count, 2);
                     // Check the right amount in all lanes
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[playerIndex], 3);
-                    Assert.AreEqual(theLane.RealPlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(theLane.PlayerUnits[playerIndex].Count, 3);
+                    Assert.AreEqual(theLane.PlayerUnits[otherPlayerIndex].Count, 2);
                     Assert.AreEqual(sm.DetailedState.BoardState.AllUnits.Count, 5); // 5 units total
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 3);
-                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 2);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 3);
+                    Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 2);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 5);
                     // Only for this, also check ids
                     Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(0));
@@ -1257,7 +1257,7 @@ namespace EngineTests
                 Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
                 Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 1); // 1 unit in tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1); // From correct player
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1); // From correct player
                 // Player's unit will advance!
                 sm.Step();
                 // Post advance check of same things
@@ -1270,9 +1270,9 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.ACTION_PHASE); // Still in action phase, not EOG
                 // Unit positioning is coherent
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 0); // No more unit in first tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 1); // 1 unit in last tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 1); // From correct player
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 1); // From correct player
                 // Undo advance and verify again
                 sm.UndoPreviousStep();
                 ps1 = sm.DetailedState.PlayerStates[playerIndex];
@@ -1282,9 +1282,9 @@ namespace EngineTests
                 Assert.AreEqual(ps1Hash, ps1.GetGameStateHash());
                 Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 1); // Unit back at beginning
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 0);
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 0);
             }
         }
         [TestMethod]
@@ -1332,9 +1332,9 @@ namespace EngineTests
                 Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP); // Because they drew card
                 Assert.AreEqual(ps2.Hp, GameConstants.STARTING_HP); // However, this one didn't get any change
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 1); // Check both units
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 1); // Ensure enemy blocks last tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[otherPlayerIndex].Count, 1);
                 // Player's unit will advance!
                 sm.Step();
                 // Post advance check of same things
@@ -1347,10 +1347,10 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.ACTION_PHASE); // Still in action phase, not EOG
                 // Unit positioning is coherent
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 0); // No more unit in first tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 2); // 2 now in last tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 1); // From both players
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 1); // From both players
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 1); // From both players
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[otherPlayerIndex].Count, 1); // From both players
                 // Undo advance and verify again
                 sm.UndoPreviousStep();
                 ps1 = sm.DetailedState.PlayerStates[playerIndex];
@@ -1360,9 +1360,9 @@ namespace EngineTests
                 Assert.AreEqual(ps1Hash, ps1.GetGameStateHash());
                 Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 1);
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[otherPlayerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[otherPlayerIndex].Count, 1);
             }
         }
         [TestMethod]
@@ -1410,7 +1410,7 @@ namespace EngineTests
                 Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
                 Assert.AreEqual(ps2.Hp, attack);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 1); // 1 unit in tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1); // From correct player
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1); // From correct player
                 // Player's unit will advance!
                 sm.Step();
                 // Post advance check of same things
@@ -1424,9 +1424,9 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.CurrentPlayer, player); // Indicates player who won (player for now can only win in their turn so this is pointless)
                 // Unit positioning is coherent
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 0); // No more unit in first tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 1); // 1 unit in last tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 1); // From correct player
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 1); // From correct player
                 // Undo advance and verify again
                 sm.UndoPreviousStep();
                 ps1 = sm.DetailedState.PlayerStates[playerIndex];
@@ -1436,9 +1436,9 @@ namespace EngineTests
                 Assert.AreEqual(ps1Hash, ps1.GetGameStateHash());
                 Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 1); // Unit back at beginning
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 0);
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 0);
             }
         }
         [TestMethod]
@@ -1486,7 +1486,7 @@ namespace EngineTests
                 Assert.AreEqual(ps1.Hp, GameConstants.STARTING_HP);
                 Assert.AreEqual(ps2.Hp, attack - 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 1); // 1 unit in tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1); // From correct player
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1); // From correct player
                 // Player's unit will advance!
                 sm.Step();
                 // Post advance check of same things
@@ -1500,9 +1500,9 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.CurrentPlayer, player); // Indicates player who won (player for now can only win in their turn so this is pointless)
                 // Unit positioning is coherent
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 0); // No more unit in first tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 1); // 1 unit in last tile
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 1); // From correct player
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 1); // From correct player
                 // Undo advance and verify again
                 sm.UndoPreviousStep();
                 ps1 = sm.DetailedState.PlayerStates[playerIndex];
@@ -1512,9 +1512,9 @@ namespace EngineTests
                 Assert.AreEqual(ps1Hash, ps1.GetGameStateHash());
                 Assert.AreEqual(ps2Hash, ps2.GetGameStateHash());
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).AllUnits.Count, 1); // Unit back at beginning
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).AllUnits.Count, 0);
-                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).RealPlayerUnitCount[playerIndex], 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileRelative(-1, playerIndex).PlayerUnits[playerIndex].Count, 0);
             }
         }
         [TestMethod]
@@ -1567,11 +1567,11 @@ namespace EngineTests
                     int forestHash = sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetGameStateHash();
                     int mountainHash = sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetGameStateHash();
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     // Player's unit will advance!
                     sm.Step();
                     // Post advance check of same things, this will end game and units will be frozen in time
@@ -1589,11 +1589,11 @@ namespace EngineTests
                     Assert.AreEqual(unitThatKills < 3, mountainHash == sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetGameStateHash());
                     // Unit will be in first tile or in last depending advance
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative((unitThatKills >= 1)?-1:0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative((unitThatKills >= 1) ? -1 : 0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative((unitThatKills >= 1) ? -1 : 0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative((unitThatKills >= 2) ? -1 : 0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative((unitThatKills >= 2) ? -1 : 0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative((unitThatKills >= 2) ? -1 : 0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative((unitThatKills >= 3) ? -1 : 0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative((unitThatKills >= 3) ? -1 : 0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative((unitThatKills >= 3) ? -1 : 0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     // Undo advance and verify again
                     sm.UndoPreviousStep();
                     ps1 = sm.DetailedState.PlayerStates[playerIndex];
@@ -1605,11 +1605,11 @@ namespace EngineTests
                     Assert.AreEqual(forestHash, sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetGameStateHash());
                     Assert.AreEqual(mountainHash, sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetGameStateHash());
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.PLAINS).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.FOREST).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).AllUnits.Count, 1);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).RealPlayerUnitCount[playerIndex], 1);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(LaneID.MOUNTAIN).GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 1);
                 }
             }
         }
@@ -1662,25 +1662,25 @@ namespace EngineTests
                 // Pre advance
                 state = sm.DetailedState;
                 int hash = state.GetGameStateHash();
-                Assert.AreEqual(state.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(state.BoardState.RealPlayerBuildingCount[otherPlayerIndex], 1);
-                Assert.AreEqual(state.BoardState.GetLane(target).RealPlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.PlayerBuildings[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildings[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).AllBuildings.First(), testBldg.UniqueId);
                 // Advance
                 sm.Step();
                 Assert.AreNotEqual(hash, sm.DetailedState.GetGameStateHash()); // Hash changed
-                Assert.AreEqual(state.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(state.BoardState.RealPlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.PlayerBuildings[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(testBldg.DamageTokens, attack); // Bldg has now damage tokens
-                Assert.AreEqual(state.BoardState.GetLane(target).RealPlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildings[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).AllBuildings.First(), testBldg.UniqueId);
                 // Revert
                 sm.UndoPreviousStep();
                 Assert.AreEqual(hash, sm.DetailedState.GetGameStateHash()); // Hash changed
-                Assert.AreEqual(state.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(state.BoardState.RealPlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.PlayerBuildings[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(testBldg.DamageTokens, 0);
-                Assert.AreEqual(state.BoardState.GetLane(target).RealPlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildings[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).AllBuildings.First(), testBldg.UniqueId);
             }
         }
@@ -1733,22 +1733,22 @@ namespace EngineTests
                 // Pre advance
                 state = sm.DetailedState;
                 int hash = state.GetGameStateHash();
-                Assert.AreEqual(state.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(state.BoardState.RealPlayerBuildingCount[otherPlayerIndex], 1);
-                Assert.AreEqual(state.BoardState.GetLane(target).RealPlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.PlayerBuildings[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildings[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1,playerIndex).AllBuildings.First(), testBldg.UniqueId);
                 // Advance
                 sm.Step();
                 Assert.AreNotEqual(hash, sm.DetailedState.GetGameStateHash()); // Hash changed
-                Assert.AreEqual(state.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(state.BoardState.RealPlayerBuildingCount[otherPlayerIndex], 0);
-                Assert.AreEqual(state.BoardState.GetLane(target).RealPlayerBuildingCount[otherPlayerIndex], 0);
+                Assert.AreEqual(state.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.PlayerBuildings[otherPlayerIndex].Count, 0);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildings[otherPlayerIndex].Count, 0);
                 // Revert
                 sm.UndoPreviousStep();
                 Assert.AreEqual(hash, sm.DetailedState.GetGameStateHash()); // Hash changed
-                Assert.AreEqual(state.BoardState.RealPlayerUnitCount[playerIndex], 1);
-                Assert.AreEqual(state.BoardState.RealPlayerBuildingCount[otherPlayerIndex], 1);
-                Assert.AreEqual(state.BoardState.GetLane(target).RealPlayerBuildingCount[otherPlayerIndex], 1);
+                Assert.AreEqual(state.BoardState.PlayerUnits[playerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.PlayerBuildings[otherPlayerIndex].Count, 1);
+                Assert.AreEqual(state.BoardState.GetLane(target).PlayerBuildings[otherPlayerIndex].Count, 1);
                 Assert.AreEqual(state.BoardState.GetLane(target).GetTileRelative(1, playerIndex).AllBuildings.First(), testBldg.UniqueId);
             }
         }

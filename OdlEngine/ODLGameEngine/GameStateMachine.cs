@@ -193,7 +193,7 @@ namespace ODLGameEngine
             int playerId = (int)DetailedState.CurrentPlayer;
             PlayerState player = DetailedState.PlayerStates[playerId];
             // Advance all units of that player
-            if (DetailedState.BoardState.PossiblePlayerUnitCount[playerId] > 0) // Only advance if player has units
+            if (DetailedState.BoardState.PlayerUnits[playerId].Count > 0) // Only advance if player has units
             {
                 // Obtain all elements in list to iterate on, do it like this to allow iteration even if a unit dies during the advance (iteration integrity)
                 List<int> playerUnitsIds = DetailedState.BoardState.PlayerUnits[playerId].ToList();

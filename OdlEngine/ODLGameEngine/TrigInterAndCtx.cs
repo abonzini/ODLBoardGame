@@ -91,5 +91,5 @@ namespace ODLGameEngine
         public int FirstAvailableOption = -1;
     }
     // TODO:
-    // Playability context? E.g for activities like player, card, target, etc, also stealth reveal, where a list of things you'll reveal if card is played. Also pass this
+    // Playability context? E.g for activities like player, card, target, etc. Pass it to entity init
 }

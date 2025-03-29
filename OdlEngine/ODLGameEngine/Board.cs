@@ -16,12 +16,6 @@ namespace ODLGameEngine
         public SortedSet<int> AllUnits { get; set; } = new SortedSet<int>();
         public SortedSet<int>[] PlayerBuildings { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
         public SortedSet<int> AllBuildings { get; set; } = new SortedSet<int>();
-        public int TotalUnitCount { get; set; } = 0;
-        public int TotalBuildingCount { get; set; } = 0;
-        public int[] RealPlayerUnitCount { get; set; } = [0, 0];
-        public int[] PossiblePlayerUnitCount { get; set; } = [0, 0];
-        public int[] RealPlayerBuildingCount { get; set; } = [0, 0];
-        public int[] PossiblePlayerBuildingCount { get; set; } = [0, 0];
         public void InsertEntity(PlacedEntity entity)
         {
             switch (entity.EntityPlayInfo.EntityType)
@@ -29,22 +23,10 @@ namespace ODLGameEngine
                 case EntityType.UNIT:
                     AllUnits.Add(entity.UniqueId);
                     PlayerUnits[entity.Owner].Add(entity.UniqueId);
-                    PossiblePlayerUnitCount[entity.Owner]++;
-                    TotalUnitCount++;
-                    if(entity.IsReal)
-                    {
-                        RealPlayerUnitCount[entity.Owner]++;
-                    }
                     break;
                 case EntityType.BUILDING:
                     AllBuildings.Add(entity.UniqueId);
                     PlayerBuildings[entity.Owner].Add(entity.UniqueId);
-                    PossiblePlayerBuildingCount[entity.Owner]++;
-                    TotalBuildingCount++;
-                    if (entity.IsReal)
-                    {
-                        RealPlayerBuildingCount[entity.Owner]++;
-                    }
                     break;
                 default:
                     throw new Exception("Board element can only contain placed entities!");
@@ -57,22 +39,10 @@ namespace ODLGameEngine
                 case EntityType.UNIT:
                     AllUnits.Remove(entity.UniqueId);
                     PlayerUnits[entity.Owner].Remove(entity.UniqueId);
-                    TotalUnitCount--;
-                    PossiblePlayerUnitCount[entity.Owner]--;
-                    if(entity.IsReal)
-                    {
-                        RealPlayerUnitCount[entity.Owner]--;
-                    }
                     break;
                 case EntityType.BUILDING:
                     AllBuildings.Remove(entity.UniqueId);
                     PlayerBuildings[entity.Owner].Remove(entity.UniqueId);
-                    TotalBuildingCount--;
-                    PossiblePlayerBuildingCount[entity.Owner]--;
-                    if (entity.IsReal)
-                    {
-                        RealPlayerBuildingCount[entity.Owner]--;
-                    }
                     break;
                 default:
                     throw new Exception("Board element can only contain placed entities!");
@@ -98,7 +68,7 @@ namespace ODLGameEngine
 
         public override string ToString()
         {
-            return $"P1: {RealPlayerUnitCount[0]} P2: {RealPlayerUnitCount[1]} B: {RealPlayerBuildingCount[0]+ RealPlayerBuildingCount[1]})";
+            return $"P1: {PlayerUnits[0].Count} P2: {PlayerUnits[1].Count} B: {PlayerBuildings[0].Count+ PlayerBuildings[1].Count})";
         }
     }
     /// <summary>
@@ -171,7 +141,7 @@ namespace ODLGameEngine
         }
         public override string ToString()
         {
-            return Id.ToString() + $", P1: {RealPlayerUnitCount[0]}u{RealPlayerBuildingCount[0]}b P2: {RealPlayerUnitCount[1]}u{RealPlayerBuildingCount[1]}b";
+            return Id.ToString() + $", P1: {PlayerUnits[0].Count}u{PlayerBuildings[0].Count}b P2: {PlayerUnits[1].Count}u{PlayerBuildings[1].Count}b";
         }
 
         public override int GetGameStateHash()

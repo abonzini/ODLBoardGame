@@ -155,11 +155,6 @@ namespace ODLGameEngine
         public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE; // Non serialized, doesn't define unit and info is kept in the board serialization
         [JsonProperty]
         public int TileCoordinate { get; set; } = -1; // Non serialized, doesn't define unit and info is kept in the board serialization
-        /// <summary>
-        /// If a (possible unit) is actually real
-        /// </summary>
-        [JsonProperty]
-        public bool IsReal = true;
         public override object Clone()
         {
             object newEntity = MemberwiseClone();

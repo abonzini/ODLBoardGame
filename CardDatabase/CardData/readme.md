@@ -31,8 +31,7 @@ Every card, no matter the type, has the following elements inside no matter what
 {
     "CardType": "UNKNOWN",
     "TargetOptions": "GLOBAL",
-    "TargetConditions": [],
-    "StealthPlay": false
+    "TargetConditions": []
 }
 ```
 
@@ -60,7 +59,6 @@ Besides card-specific fields (explained below), these mandatory fields serve the
     - ```TargetConditions:``` Some cards are unable to be played without target, e.g. a skill that damages an enemy needs an enemy to be present (maybe in a specific lane), or similar. Options:
         - ```NONE```, No condition, played always
         - ```BLUEPRINT```, Can be played only if blueprint condition is satisfied (buildings always have this condition)
-    - ```StealthPlay:``` (true/false) if card is a stealth card
 
 Then, depending on the type of cards, additional fields are needed/used. Every type of card also can have **Triggers** and **Interactions** which are additional fields explained below. 
 

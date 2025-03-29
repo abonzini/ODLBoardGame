@@ -52,7 +52,7 @@ namespace ODLGameEngine
                 while(advanceCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
                     // Exiting current tile
-                    if (lane.GetTileAbsolute(unit.TileCoordinate).RealPlayerUnitCount[opponentId] > 0) // If enemy unit in tile, will stop advance here (and also attack)
+                    if (lane.GetTileAbsolute(unit.TileCoordinate).PlayerUnits[opponentId].Count > 0) // If enemy unit in tile, will stop advance here (and also attack)
                     {
                         advanceCtx.CurrentMovement = 0;
                         Unit enemyUnit = (Unit)DetailedState.BoardState.Entities[lane.PlayerUnits[opponentId].First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
@@ -70,7 +70,6 @@ namespace ODLGameEngine
                         BOARDENTITY_InsertInTile(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
                         // Entering new tile
                         Tile newTile = DetailedState.BoardState.GetLane(unit.LaneCoordinate).GetTileAbsolute(unit.TileCoordinate);
-                        // TODO: This may become some iteration-based system if/when stealth is involved
                         if (newTile.AllBuildings.Count != 0) // If tile has a building, do potential building effects
                         {
                             Building bldg = (Building)GetBoardEntity(newTile.AllBuildings.First()); // Get building (if real, always first and only)
