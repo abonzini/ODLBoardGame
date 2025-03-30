@@ -1,8 +1,5 @@
 Ongoing tasks in order of priority:
 - Implement complex effects:
-	- Events (when an effect occurs globally and triggers a unit, e.g. EOT). Loaded as dict <EventType, List<Entity>> of entities with the effect. This can be serialized, non-hashed.
-	- Filters?
-	---
 	- Buff tokens
 	- Buff tok is just extra fields (hashable and serializable) on the placeable
 - Implement rest of rulebook

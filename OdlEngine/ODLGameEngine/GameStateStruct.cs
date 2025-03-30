@@ -85,6 +85,8 @@ namespace ODLGameEngine
         public PlayerState[] PlayerStates { get; set; } = [new PlayerState(), new PlayerState()];
         [JsonProperty]
         public Board BoardState { get; set; } = new Board();
+        [JsonProperty]
+        public Dictionary<TriggerType, SortedSet<int>> Triggers = new Dictionary<TriggerType, SortedSet<int>>(); 
 
         public int GetGameStateHash()
         {
@@ -96,6 +98,14 @@ namespace ODLGameEngine
             hash.Add(PlayerStates[0].GetGameStateHash());
             hash.Add(PlayerStates[1].GetGameStateHash());
             hash.Add(BoardState.GetGameStateHash());
+            foreach(KeyValuePair< TriggerType, SortedSet<int>> trigger in Triggers)
+            {
+                hash.Add(trigger.Key);
+                foreach(int entity in  trigger.Value)
+                {
+                    hash.Add(entity);
+                }
+            }
             return hash.ToHashCode();
         }
     }

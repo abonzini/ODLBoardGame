@@ -99,6 +99,7 @@ namespace ODLGameEngine
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
                     DetailedState.BoardState.InsertEntity(auxPlacedEntity);
                     DetailedState.BoardState.Entities.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
+                    ENGINE_RegisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     DetailedState.NextUniqueIndex++;
@@ -135,6 +136,7 @@ namespace ODLGameEngine
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
                     DetailedState.BoardState.RemoveEntity(auxPlacedEntity);
                     DetailedState.BoardState.Entities.Remove(auxPlacedEntity.UniqueId);
+                    ENGINE_DeregisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
@@ -226,6 +228,7 @@ namespace ODLGameEngine
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
                     DetailedState.BoardState.RemoveEntity(auxPlacedEntity);
                     DetailedState.BoardState.Entities.Remove(auxPlacedEntity.UniqueId);
+                    ENGINE_DeregisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     DetailedState.NextUniqueIndex--;
@@ -260,6 +263,7 @@ namespace ODLGameEngine
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
                     DetailedState.BoardState.InsertEntity(auxPlacedEntity);
                     DetailedState.BoardState.Entities.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
+                    ENGINE_RegisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
@@ -277,6 +281,48 @@ namespace ODLGameEngine
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
+            }
+        }
+        /// <summary>
+        /// Registers an entity's trigger
+        /// </summary>
+        /// <param name="entity">Entity</param>
+        void ENGINE_RegisterEntityTriggers(PlacedEntity entity)
+        {
+            if (entity.Triggers != null) // Check if unit has triggers to process
+            {
+                foreach (TriggerType trigger in entity.Triggers.Keys) // Register this unit's trigger
+                {
+                    SortedSet<int> subscribedEntities;
+                    if (DetailedState.Triggers.TryGetValue(trigger, out subscribedEntities)) // If tigger already created, just add to list
+                    {
+                        subscribedEntities.Add(entity.UniqueId);
+                    }
+                    else // Otherwise create new list with this unit as trigger
+                    {
+                        subscribedEntities = new SortedSet<int>();
+                        DetailedState.Triggers.Add(trigger, subscribedEntities);
+                        subscribedEntities.Add(entity.UniqueId);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// Deregisters an entity's trigger (ENGINE HELPER)
+        /// </summary>
+        /// <param name="entity">Entity</param>
+        void ENGINE_DeregisterEntityTriggers(PlacedEntity entity)
+        {
+            if (entity.Triggers != null) // Check if unit has triggers to process
+            {
+                foreach (TriggerType trigger in entity.Triggers.Keys) // Deregisters all the triggers present in the unit
+                {
+                    DetailedState.Triggers[trigger].Remove(entity.UniqueId);
+                    if (DetailedState.Triggers[trigger].Count == 0) // Removes trigger so that disctionary can be reverted identically if needed
+                    {
+                        DetailedState.Triggers.Remove(trigger);
+                    }
+                }
             }
         }
         // --------------------------------------------------------------------------------------

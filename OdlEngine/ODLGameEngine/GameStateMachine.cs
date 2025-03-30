@@ -162,6 +162,16 @@ namespace ODLGameEngine
             return _stepHistory.Last(); // Returns everything that happened in this
         }
         /// <summary>
+        /// Doesnt do anything really, just made to test triggers, creates an empty turn made for triggering externally
+        /// </summary>
+        /// <returns>Actions occurring during this debug step</returns>
+        public StepResult TriggerDebugStep()
+        {
+            TRIGINTER_ProcessTrigger(TriggerType.DEBUG_TRIGGER, null); // No debug context (for now?)
+            ENGINE_ChangeState(DetailedState.CurrentState); // Reiterate whatever the current state is now
+            return _stepHistory.Last();
+        }
+        /// <summary>
         /// Loads the initial player data including deck sizes name and class
         /// </summary>
         /// <param name="player">Which player</param>

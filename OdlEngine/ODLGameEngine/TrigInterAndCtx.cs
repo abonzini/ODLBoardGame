@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
-    // FLEXIBLE DEFINITION OF EFFECTS
+    // Triggers and interactions
     /// <summary>
     /// When the interaction is triggered
     /// </summary>
@@ -17,6 +17,12 @@ namespace ODLGameEngine
     {
         WHEN_PLAYED
     }
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum TriggerType
+    {
+        DEBUG_TRIGGER
+    }
+    // Effects
     /// <summary>
     /// What sort of effect is going to be made
     /// </summary>

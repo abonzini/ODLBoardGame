@@ -102,7 +102,6 @@ namespace ODLGameEngine
         [JsonProperty]
         public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 
-        // TODO: Interactions
         public virtual object Clone()
         {
             object newEntity = MemberwiseClone();
@@ -155,6 +154,9 @@ namespace ODLGameEngine
         public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE; // Non serialized, doesn't define unit and info is kept in the board serialization
         [JsonProperty]
         public int TileCoordinate { get; set; } = -1; // Non serialized, doesn't define unit and info is kept in the board serialization
+        [JsonProperty]
+        public Dictionary<TriggerType, List<Effect>> Triggers { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
+
         public override object Clone()
         {
             object newEntity = MemberwiseClone();
