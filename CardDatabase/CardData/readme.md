@@ -30,7 +30,7 @@ Every card, no matter the type, has the following elements inside no matter what
 "EntityPlayInfo":
 {
     "CardType": "UNKNOWN",
-    "TargetOptions": "GLOBAL",
+    "TargetOptions": "BOARD",
     "TargetConditions": []
 }
 ```
@@ -47,7 +47,7 @@ Besides card-specific fields (explained below), these mandatory fields serve the
 - **EntityPlayInfo**
     - ```CardType:``` Type of card, for now UNIT, SKILL, BUILDING
     - ```TargetOptions:``` Where the card can be targeted. Options:
-        - ```GLOBAL```
+        - ```BOARD```
         - ```PLAINS```
         - ```FOREST```
         - ```MOUNTAIN```
@@ -56,6 +56,9 @@ Besides card-specific fields (explained below), these mandatory fields serve the
         - ```ALL_BUT_PLAINS```
         - ```ALL_LANES```
         - ```INVALID```
+
+        These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
+        For example, ```PLAINS|FOREST``` would work exactly like ```ALL_BUT_MOUNTAIN```.
     - ```TargetConditions:``` Some cards are unable to be played without target, e.g. a skill that damages an enemy needs an enemy to be present (maybe in a specific lane), or similar. Options:
         - ```NONE```, No condition, played always
         - ```BLUEPRINT```, Can be played only if blueprint condition is satisfied (buildings always have this condition)
@@ -141,12 +144,12 @@ This way, any card can be described in a dynamic, human readable way.
 
 ## Effect Types
 
-- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes. ```CardNumber``` is the card number of the unit summoned, ```PlayerTarget``` is the player who will own the unit, and ```CardTargets``` is one or more lane targets where the card(s) will be summoned. Examples: ```RUSH```
+- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes. ```CardNumber``` is the card number of the unit summoned, ```TargetPlayer``` is the player who will own the unit, and ```CardTargets``` is one or more lane targets where the card(s) will be summoned. Examples: **RUSH**
 
 ## Enum Values
 
 - ```CardTargets```
-    - ```GLOBAL```. For cards where the target is the "whole board" 
+    - ```BOARD```. For cards where the target is the "whole board" 
     - ```PLAINS```
     - ```FOREST```
     - ```MOUNTAIN```
@@ -154,7 +157,13 @@ This way, any card can be described in a dynamic, human readable way.
     - ```ALL_BUT_FOREST```
     - ```ALL_BUT_PLAINS```
     - ```ALL_LANES```
-    - ```INVALID```
+
+    These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
+    For example, ```PLAINS|FOREST``` would work exactly like ```ALL_BUT_MOUNTAIN```.
 - ```TargetPlayer```
-    -```CARD_OWNER```: Owner of the card receives the effect
-    -```CARD_OWNER_OPPONENT```: Player opposing the card owner will receive the effect
+    -```OWNER```: Owner of the card receives the effect
+    -```OPPONENT```: Player opposing the card owner will receive the effect
+    -```BOTH```: Both players receive the effect
+
+    These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
+    For example, ```OWNER|OPPONENT``` would work exactly like ```BOTH```.

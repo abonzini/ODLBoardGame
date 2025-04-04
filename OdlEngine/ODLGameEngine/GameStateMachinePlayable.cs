@@ -76,7 +76,7 @@ namespace ODLGameEngine
         /// <returns>Like PlayCard, chain of effects after power was played</returns>
         public Tuple<PlayOutcome, StepResult> PlayActivePower()
         {
-            return PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerCast, CardTargets.GLOBAL, PlayType.ACTIVE_POWER);
+            return PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerCast, CardTargets.BOARD, PlayType.ACTIVE_POWER);
         }
         // Back-end (private)
         /// <summary>
@@ -96,9 +96,9 @@ namespace ODLGameEngine
                 return new Tuple<PlayOutcome, StepResult>(cardOptions.Item1, null); // If failure, return type of failure, can't be played!
             }
             // Then, make sure chosen target makes sense
-            if ((chosenTarget & chosenTarget - 1) != 0)
+            if (((chosenTarget & chosenTarget - 1) != 0) || (chosenTarget > CardTargets.ALL_LANES))
             {
-                // Invalid target, either 0 or a specific single lane, not multiple!
+                // Invalid target, either 0 or a specific single lane, not multiple or values higher than the allowed lanes!
                 return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
             }
             // Otherwise, card can be played somewhere, need to see if user option is valid!            
@@ -176,16 +176,16 @@ namespace ODLGameEngine
             }
             // Otherwise I can def afford, check if playable
             outcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (card.EntityPlayInfo.TargetOptions == CardTargets.GLOBAL)
+            if (card.EntityPlayInfo.TargetOptions == CardTargets.BOARD)
             {
                 outcome = PLAYABLE_IsPlayableGlobal(card) ? PlayOutcome.OK : outcome;
-                possibleTargets = CardTargets.GLOBAL;
+                possibleTargets = CardTargets.BOARD;
                 // If filled requirements, card playable
             }
             else if (card.EntityPlayInfo.TargetOptions <= CardTargets.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
             {
                 int laneCandidate;
-                CardTargets validTargetsIfPossible = CardTargets.GLOBAL;
+                CardTargets validTargetsIfPossible = CardTargets.BOARD;
                 for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
                 {
                     laneCandidate = 1 << i;
@@ -198,7 +198,7 @@ namespace ODLGameEngine
                         }
                     }
                 }
-                possibleTargets = (validTargetsIfPossible != CardTargets.GLOBAL) ? validTargetsIfPossible : CardTargets.INVALID;
+                possibleTargets = (validTargetsIfPossible != CardTargets.BOARD) ? validTargetsIfPossible : CardTargets.INVALID;
             }
             return new Tuple<PlayOutcome, CardTargets>(outcome, possibleTargets); // Return my findings
         }

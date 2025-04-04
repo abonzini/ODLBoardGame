@@ -35,24 +35,32 @@ namespace ODLGameEngine
     /// <summary>
     /// Player who is target of a card effect
     /// </summary>
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(FlagEnumJsonConverter))]
+    [Flags]
     public enum PlayerTarget
     {
-        CARD_OWNER,
-        CARD_OWNER_OPPONENT
+        OWNER = 1,
+        OPPONENT = 2,
+        BOTH = 3,
     }
     /// <summary>
     /// Effect is described by a type and a series of modifiers that define the effect
     /// </summary>
     public class Effect
     {
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EffectType EffectType;
         public int CardNumber;
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
         public PlayerTarget TargetPlayer;
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
         public CardTargets LaneTargets;
+        /*
+         * TODO:
+         * Entity targets, first, last, random, all (create enum)
+         * Entity type filter, unit, building, player, (spell?!)
+         * Combined with lane and player, we can quickly do a series of filterings and get target(s) for an effect
+         */
     }
 
     // CONTEXT CONTANERS

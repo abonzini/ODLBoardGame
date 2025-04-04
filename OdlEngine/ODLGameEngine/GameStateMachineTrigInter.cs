@@ -51,30 +51,43 @@ namespace ODLGameEngine
         /// <param name="specificContext">Additional context that accompanies the desired effect (e.g. when killed, implies killed by someone, etc)</param>
         void TRIGINTER_ProcessEffects(EntityBase entity, List<Effect> effects, EffectContext specificContext)
         {
-            int auxInt;
-            EntityBase auxCardData;
             foreach (Effect effect in effects) // Execute series of events for the card in question
             {
                 switch (effect.EffectType)
                 {
+                    // TODO: Targetting will move to a more universal situation when more cases and target filters are applied
+                    // Possibly, a function that gets all possible entities (class, so we can do players too) in a BoardElement (e.g. board, lane, even a tile, whatever)
+                    // For lane targets, a function that returns all possible lanes maybe?
                     case EffectType.DEBUG:
                         ENGINE_AddDebugEvent();
                         break;
                     case EffectType.SUMMON_UNIT:
                         // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
-                        auxCardData = CardDb.GetCard(effect.CardNumber);
-                        auxInt = effect.TargetPlayer switch
+                        for (int i = 0; i < 2; i++) // Check for which order is the summon
                         {
-                            PlayerTarget.CARD_OWNER => entity.Owner,
-                            PlayerTarget.CARD_OWNER_OPPONENT => 1 - entity.Owner,
-                            _ => throw new NotImplementedException("Invalid player target"),
-                        };
-                        for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
-                        {
-                            CardTargets nextLane = (CardTargets)(1 << i); // Get lanes in order, can be randomized if needed
-                            if(effect.LaneTargets.HasFlag(nextLane)) // If this lane is a valid target for this unt
+                            PlayerTarget nextPossibleOwner = (PlayerTarget)(1 << i);
+                            int playerOwner;
+                            if(effect.TargetPlayer.HasFlag(nextPossibleOwner)) // Valid owner!
                             {
-                                UNIT_PlayUnit(auxInt, (Unit)auxCardData, nextLane); // Plays the unit
+                                playerOwner = effect.TargetPlayer switch
+                                {
+                                    PlayerTarget.OWNER => entity.Owner,
+                                    PlayerTarget.OPPONENT => 1 - entity.Owner,
+                                    _ => throw new NotImplementedException("Invalid player target"),
+                                };
+                            }
+                            else // If this owner option invalid, then move to the next one
+                            {
+                                continue;
+                            }
+                            Unit auxCardData = (Unit)CardDb.GetCard(effect.CardNumber);
+                            for (int j = 0; j < GameConstants.BOARD_LANES_NUMBER; j++)
+                            {
+                                CardTargets nextLane = (CardTargets)(1 << j); // Get lanes in order, can be randomized if needed
+                                if(effect.LaneTargets.HasFlag(nextLane)) // If this lane is a valid target for this unt
+                                {
+                                    UNIT_PlayUnit(playerOwner, auxCardData, nextLane); // Plays the unit
+                                }
                             }
                         }
                         break;

@@ -9,14 +9,15 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(FlagEnumJsonConverter))]
+    [Flags]
     public enum EntityType
     {
-        UNKNOWN,
-        UNIT,
-        BUILDING,
-        SKILL,
-        PLAYER
+        NONE        = 0,
+        UNIT        = 1,
+        BUILDING    = 2,
+        SKILL       = 4,
+        PLAYER      = 8
     }
 
     /// <summary>
@@ -32,10 +33,10 @@ namespace ODLGameEngine
     /// Defines how/where card can be targeted, useful for giving options at a first glance to a player
     /// </summary>
     [Flags]
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(FlagEnumJsonConverter))]
     public enum CardTargets
     {
-        GLOBAL = 0,
+        BOARD = 0,
         PLAINS = 1,
         FOREST = 2,
         MOUNTAIN = 4,
@@ -43,7 +44,7 @@ namespace ODLGameEngine
         ALL_BUT_FOREST = 5,
         ALL_BUT_PLAINS = 6,
         ALL_LANES = 7,
-        INVALID = 15
+        INVALID = 8
     }
 
     /// <summary>
@@ -84,10 +85,10 @@ namespace ODLGameEngine
     /// </summary>
     public class EntityPlayInfo
     {
-        [JsonConverter(typeof(StringEnumConverter))]
-        public EntityType EntityType { get; set; } = EntityType.UNKNOWN;
-        [JsonConverter(typeof(StringEnumConverter))]
-        public CardTargets TargetOptions { get; set; } = CardTargets.GLOBAL; // Which lane(s) if any the card could work on
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public EntityType EntityType { get; set; } = EntityType.NONE;
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public CardTargets TargetOptions { get; set; } = CardTargets.BOARD; // Which lane(s) if any the card could work on
         [JsonConverter(typeof(StringEnumConverter))]
         public TargetCondition TargetConditions { get; set; } = TargetCondition.NONE; // What needs to happen for a card to be "playable" in a lane
     }

@@ -92,7 +92,7 @@ namespace EngineTests
                 // Modify unit (shady)
                 ((Unit)sm.GetBoardEntity(0)).Attack += 5; // Add 5 to attack, whatever
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
-                chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
+                chosenTarget = (chosenTarget != CardTargets.BOARD) ? chosenTarget : CardTargets.MOUNTAIN;
                 // Play new one
                 res = sm.PlayFromHand(1, chosenTarget); // Play it
                 int futureUnitCounter = sm.DetailedState.NextUniqueIndex;
@@ -165,7 +165,7 @@ namespace EngineTests
                 verifyLaneStates(playerIndex, plainsInit, forestInit, mountainInit);
                 // Change lane and play and verify
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
-                chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
+                chosenTarget = (chosenTarget != CardTargets.BOARD) ? chosenTarget : CardTargets.MOUNTAIN;
                 plainsInit |= chosenTarget == CardTargets.PLAINS;
                 forestInit |= chosenTarget == CardTargets.FOREST;
                 mountainInit |= chosenTarget == CardTargets.MOUNTAIN;
@@ -176,7 +176,7 @@ namespace EngineTests
                 verifyLaneStates(playerIndex, plainsInit, forestInit, mountainInit);
                 // Change lane and play and verify again!
                 chosenTarget = (CardTargets)((int)chosenTarget >> 1); // Change target to a different (valid) lane
-                chosenTarget = (chosenTarget != CardTargets.GLOBAL) ? chosenTarget : CardTargets.MOUNTAIN;
+                chosenTarget = (chosenTarget != CardTargets.BOARD) ? chosenTarget : CardTargets.MOUNTAIN;
                 plainsInit |= chosenTarget == CardTargets.PLAINS;
                 forestInit |= chosenTarget == CardTargets.FOREST;
                 mountainInit |= chosenTarget == CardTargets.MOUNTAIN;

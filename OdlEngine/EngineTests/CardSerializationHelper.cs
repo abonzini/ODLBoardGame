@@ -19,7 +19,7 @@ namespace EngineTests
             Effect effect = new Effect()
             {
                 EffectType = EffectType.SUMMON_UNIT,
-                TargetPlayer = PlayerTarget.CARD_OWNER,
+                TargetPlayer = PlayerTarget.OWNER,
                 CardNumber = 1,
                 LaneTargets = CardTargets.ALL_LANES
             };
@@ -30,7 +30,7 @@ namespace EngineTests
                 EntityPlayInfo = new EntityPlayInfo()
                 {
                     EntityType = EntityType.SKILL,
-                    TargetOptions = CardTargets.GLOBAL
+                    TargetOptions = CardTargets.BOARD
                 },
                 EntityPrintInfo = new EntityPrintInfo()
                 {

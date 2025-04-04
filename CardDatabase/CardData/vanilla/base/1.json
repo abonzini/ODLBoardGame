@@ -2,7 +2,7 @@
 	"EntityPlayInfo":
 	{
 		"EntityType": "SKILL",
-		"TargetOptions": "GLOBAL"
+		"TargetOptions": "BOARD"
 	},
 	"EntityPrintInfo":
 	{

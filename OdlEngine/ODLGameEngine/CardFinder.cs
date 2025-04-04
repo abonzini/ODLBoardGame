@@ -54,7 +54,9 @@ namespace ODLGameEngine
                             cardEntity = JsonConvert.DeserializeObject<Skill>(File.ReadAllText(cardInfoFile));
                             break;
                         case EntityType.BUILDING:
-                        case EntityType.UNKNOWN:
+                            cardEntity = JsonConvert.DeserializeObject<Building>(File.ReadAllText(cardInfoFile));
+                            break;
+                        case EntityType.NONE:
                         default:
                             throw new Exception("Unrecognised card type when deserializing");
                     }

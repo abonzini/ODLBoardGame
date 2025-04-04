@@ -49,7 +49,7 @@ namespace EngineTests
                 };
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Brick with cost 9
-                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 9, CardTargets.GLOBAL));
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 9, CardTargets.BOARD));
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 sm.DetailedState.PlayerStates[(int)player].ActivePowerCast = 1; // Use expensive brick as placeholder active effect
@@ -127,7 +127,7 @@ namespace EngineTests
             {
                 CardFinder cardDb = new CardFinder();
                 // Card 1: 5-cost brick
-                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 5, CardTargets.GLOBAL));
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 5, CardTargets.BOARD));
                 PlayerState pl1 = new PlayerState()
                 {
                     Gold = 10, // Let them afford the power
