@@ -18,9 +18,9 @@
 		[
 			{
 				"EffectType": "SUMMON_UNIT",
-				"TargetPlayer": "CARD_PLAYER",
+				"TargetPlayer": "CARD_OWNER",
 				"CardNumber": 2,
-				"LaneTargets": "ANY_LANE"
+				"LaneTargets": "ALL_LANES"
 			}
 		]
 	}

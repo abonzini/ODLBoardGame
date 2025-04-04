@@ -118,10 +118,10 @@ namespace ODLGameEngine
                         ENGINE_ChangePlayerPowerAvailability(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer], false);
                     }
                     // Then the play effects
-                    PLAYABLE_PlayCard(cardData, chosenTarget);
+                    EntityBase createdEntity = PLAYABLE_PlayCard(cardData, chosenTarget);
                     // INTERACTION: CARD IS PLAYED
-                    PlayContext playCtx = new PlayContext() { Player = (int)DetailedState.CurrentPlayer, LaneTargets = chosenTarget };
-                    TRIGINTER_ProcessInteraction(cardData, InteractionType.WHEN_PLAYED, playCtx);
+                    PlayContext playCtx = new PlayContext() { LaneTargets = chosenTarget };
+                    TRIGINTER_ProcessInteraction(createdEntity, InteractionType.WHEN_PLAYED, playCtx);
                     // Ends by transitioning to next action phase
                     ENGINE_ChangeState(States.ACTION_PHASE);
                 }
@@ -141,18 +141,19 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card"></param>
         /// <param name="chosenTarget"></param>
-        void PLAYABLE_PlayCard(EntityBase card, CardTargets chosenTarget)
+        /// <returns>The entity that was generated for this play</returns>
+        EntityBase PLAYABLE_PlayCard(EntityBase card, CardTargets chosenTarget)
         {
             switch (card.EntityPlayInfo.EntityType)
             {
                 case EntityType.UNIT:
-                    UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
-                    break;
+                    return UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
                 case EntityType.SKILL: // Nothing needed as skills don't introduce new entities
-                    break;
+                    Skill skillData = (Skill)card.Clone(); // Instances a local version of skill
+                    skillData.Owner = (int)DetailedState.CurrentPlayer;
+                    return skillData;
                 case EntityType.BUILDING:
-                    BUILDING_PlayBuilding((int)DetailedState.CurrentPlayer, (Building)card, chosenTarget); // Plays building in tile
-                    break;
+                    return BUILDING_PlayBuilding((int)DetailedState.CurrentPlayer, (Building)card, chosenTarget); // Plays building in tile
                 default:
                     throw new NotImplementedException("Trying to play a non-supported type!");
             }
@@ -181,7 +182,7 @@ namespace ODLGameEngine
                 possibleTargets = CardTargets.GLOBAL;
                 // If filled requirements, card playable
             }
-            else if (card.EntityPlayInfo.TargetOptions <= CardTargets.ANY_LANE) // Otherwise need to verify individual VALID(!) lanes
+            else if (card.EntityPlayInfo.TargetOptions <= CardTargets.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
             {
                 int laneCandidate;
                 CardTargets validTargetsIfPossible = CardTargets.GLOBAL;

@@ -13,7 +13,7 @@
 	"EntityPlayInfo":
 	{
 		"EntityType": "UNIT",
-		"TargetOptions": "ANY_LANE"
+		"TargetOptions": "ALL_LANES"
 	},
 	"Movement": 1,
 	"Attack": 2,

@@ -28,7 +28,7 @@ namespace EngineTests
                 };
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test unit with 1 in all stats, summonable anywhere
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
@@ -73,7 +73,7 @@ namespace EngineTests
                     CurrentPlayer = player
                 };
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
@@ -131,7 +131,7 @@ namespace EngineTests
                     CurrentPlayer = player
                 };
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
@@ -208,7 +208,7 @@ namespace EngineTests
                     CurrentPlayer = player
                 };
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert token cards, 1 in all stats, summonable in any lane 
@@ -305,7 +305,7 @@ namespace EngineTests
                     CurrentPlayer = player
                 };
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 0, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 0, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats but 0 HP, summonable in any lane 
@@ -412,7 +412,7 @@ namespace EngineTests
                 };
                 int movement = _rng.Next(1, GameConstants.MOUNTAIN_TILES_NUMBER); // Random movement unit, but want to make it so it never reaches castle
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, movement, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, movement, 1));
                 // Will try this in mountain!
                 for (int i = 0; i < 5; i++)
                 {
@@ -475,8 +475,8 @@ namespace EngineTests
                 };
                 // Will try this in mountain!
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 0, 9, 1)); // Max movement bc it's stopped by enemy anyway
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, 1, 0, 3, 1)); // 3 movement so it's in the mid-ish of lane
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 0, 9, 1)); // Max movement bc it's stopped by enemy anyway
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, 1, 0, 3, 1)); // 3 movement so it's in the mid-ish of lane
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both 0 attack so they can't kill themselves
@@ -550,7 +550,7 @@ namespace EngineTests
                     CurrentPlayer = player
                 };
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 0, 9, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 0, 9, 1));
                 // Will try this in all lanes!
                 state.PlayerStates[playerIndex].Hp = 30;
                 state.PlayerStates[otherPlayerIndex].Hp = 30;
@@ -620,7 +620,7 @@ namespace EngineTests
                     CurrentPlayer = player
                 };
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, 0, 1, 9));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 0, 1, 9));
                 // Will try this in all lanes!
                 for (int i = 0; i < 5; i++)
                 {
@@ -783,8 +783,8 @@ namespace EngineTests
                 };
                 // Will try this in mountain as there's space!
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, hp, attack, 9, 1)); // Gets to the end so it clashes
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, hp, attack+1, 3, 1)); // Gets to the middle and waits there
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, hp, attack, 9, 1)); // Gets to the end so it clashes
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, hp, attack+1, 3, 1)); // Gets to the middle and waits there
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -878,8 +878,8 @@ namespace EngineTests
                     };
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
-                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, hp, attackerStat, 9, 1)); // Gets to the end so it clashes
-                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, hp, defenderStat, 3, 1)); // Gets to the middle and waits there
+                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, hp, attackerStat, 9, 1)); // Gets to the end so it clashes
+                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, hp, defenderStat, 3, 1)); // Gets to the middle and waits there
                     for (int j = 0; j < 5; j++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -994,8 +994,8 @@ namespace EngineTests
                     };
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
-                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, stat, stat, 1, 1)); // Gets to the end so it clashes
-                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, stat, stat, movt, 1)); // Gets to the middle and waits there
+                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, stat, stat, 1, 1)); // Gets to the end so it clashes
+                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, stat, stat, movt, 1)); // Gets to the middle and waits there
                     for (int j = 0; j < 5; j++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1124,8 +1124,8 @@ namespace EngineTests
                     };
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
-                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, stat, stat, 1, 1)); // Gets to the end so it clashes
-                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, stat, stat, movt, 1)); // Gets to the middle and waits there
+                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, stat, stat, 1, 1)); // Gets to the end so it clashes
+                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, stat, stat, movt, 1)); // Gets to the middle and waits there
                     for (int j = 0; j < 5; j++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1232,7 +1232,7 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp = GameConstants.STARTING_HP;
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, attack, 9, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, attack, 9, 1));
                 CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
@@ -1306,7 +1306,7 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp = GameConstants.STARTING_HP;
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 2, 1, 9, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 2, 1, 9, 1));
                 CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
@@ -1385,7 +1385,7 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp = attack; // Opp has less HP this time
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, attack, 9, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, attack, 9, 1));
                 CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
@@ -1461,7 +1461,7 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp = attack - 1; // Opp has less HP this time
                                                                       // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, attack, 9, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, attack, 9, 1));
                 CardTargets target = (CardTargets)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
@@ -1537,7 +1537,7 @@ namespace EngineTests
                     state.PlayerStates[playerIndex].Hp = GameConstants.STARTING_HP; // It's important to set this
                     state.PlayerStates[otherPlayerIndex].Hp = 6; // Opp has 6HP which is pretty handy for this test
                     CardFinder cardDb = new CardFinder();
-                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, attack, 9, 1));
+                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, attack, 9, 1));
                     for (int i = 0; i < 5; i++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1641,9 +1641,9 @@ namespace EngineTests
                 }
                 GameStateMachine stageSm = new GameStateMachine();
                 stageSm.LoadGame(state); // Start from here
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, attack, 2, 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, attack, 2, 1);
                 testUnit.Owner = playerIndex;
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, CardTargets.ANY_LANE, attack + 1, [], [], []);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, CardTargets.ALL_LANES, attack + 1, [], [], []);
                 testBldg.Owner = otherPlayerIndex;
                 Lane lane = stageSm.DetailedState.BoardState.GetLane(target);
                 // Initialize unit into board in correct place, skip all playability stuff which is done elsewhere
@@ -1712,9 +1712,9 @@ namespace EngineTests
                 }
                 GameStateMachine stageSm = new GameStateMachine();
                 stageSm.LoadGame(state); // Start from here
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ANY_LANE, 1, attack, 2, 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, attack, 2, 1);
                 testUnit.Owner = playerIndex;
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, CardTargets.ANY_LANE, attack, [], [], []);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, CardTargets.ALL_LANES, attack, [], [], []);
                 testBldg.Owner = otherPlayerIndex;
                 Lane lane = stageSm.DetailedState.BoardState.GetLane(target);
                 // Initialize unit into board in correct place, skip all playability stuff which is done elsewhere

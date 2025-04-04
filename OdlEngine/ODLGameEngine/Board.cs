@@ -209,7 +209,14 @@ namespace ODLGameEngine
         }
         public PlacedEntity GetEntity(int i)
         {
-            return Entities[i];
+            if(Entities.TryGetValue(i, out PlacedEntity entity))
+            {
+                return entity;
+            }
+            else
+            {
+                return null;
+            }
         }
         public override int GetGameStateHash()
         {

@@ -54,7 +54,7 @@ Besides card-specific fields (explained below), these mandatory fields serve the
         - ```ALL_BUT_MOUNTAIN```
         - ```ALL_BUT_FOREST```
         - ```ALL_BUT_PLAINS```
-        - ```ANY_LANE```
+        - ```ALL_LANES```
         - ```INVALID```
     - ```TargetConditions:``` Some cards are unable to be played without target, e.g. a skill that damages an enemy needs an enemy to be present (maybe in a specific lane), or similar. Options:
         - ```NONE```, No condition, played always
@@ -153,8 +153,8 @@ This way, any card can be described in a dynamic, human readable way.
     - ```ALL_BUT_MOUNTAIN```
     - ```ALL_BUT_FOREST```
     - ```ALL_BUT_PLAINS```
-    - ```ANY_LANE```
+    - ```ALL_LANES```
     - ```INVALID```
 - ```TargetPlayer```
-    -```CARD_PLAYER```: Player of the card receives the effect
-    -```CARD_PLAYER_OPPONENT```: Player opposing the card player will receive the effect
+    -```CARD_OWNER```: Owner of the card receives the effect
+    -```CARD_OWNER_OPPONENT```: Player opposing the card owner will receive the effect

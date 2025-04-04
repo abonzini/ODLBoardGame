@@ -38,8 +38,8 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum PlayerTarget
     {
-        CARD_PLAYER,
-        CARD_PLAYER_OPPONENT
+        CARD_OWNER,
+        CARD_OWNER_OPPONENT
     }
     /// <summary>
     /// Effect is described by a type and a series of modifiers that define the effect
@@ -58,11 +58,11 @@ namespace ODLGameEngine
     // CONTEXT CONTANERS
     public abstract class EffectContext { }
     /// <summary>
-    /// When card is played
+    /// When card is played, contains extra info about playability of card.
+    /// TODO: In future may contain extra info or even modifiers depending what happens
     /// </summary>
     public class PlayContext : EffectContext
     {
-        public int Player;
         public CardTargets LaneTargets;
     }
     /// <summary>
@@ -96,6 +96,4 @@ namespace ODLGameEngine
         public int RelativeTile = -1;
         public int FirstAvailableOption = -1;
     }
-    // TODO:
-    // Playability context? E.g for activities like player, card, target, etc. Pass it to entity init
 }

@@ -25,7 +25,7 @@ namespace EngineTests
                 };
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that cant be targeted anywhere
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1,"TEST", 0, CardTargets.ANY_LANE, 1, [], [], []));
+                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1,"TEST", 0, CardTargets.ALL_LANES, 1, [], [], []));
                 for (int i = 0; i < 10; i++)
                 {
                     // Insert useless building in hand. Building wouldn't have valid targets
@@ -60,7 +60,7 @@ namespace EngineTests
                 };
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be built anywhere
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ANY_LANE, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
+                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1);
@@ -95,9 +95,9 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ANY_LANE, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
+                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
                 // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
@@ -170,7 +170,7 @@ namespace EngineTests
                 Assert.IsTrue(res.Item2.HasFlag(CardTargets.PLAINS));
                 Assert.IsTrue(res.Item2.HasFlag(CardTargets.FOREST));
                 Assert.IsTrue(res.Item2.HasFlag(CardTargets.MOUNTAIN));
-                TryBuild(CardTargets.ANY_LANE);
+                TryBuild(CardTargets.ALL_LANES);
                 // And due reversions...
                 sm.UndoPreviousStep();
                 res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
@@ -215,9 +215,9 @@ namespace EngineTests
                 CardTargets target = (CardTargets)(1 << _rng.Next(3)); // Random target
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted only in tile 2
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ANY_LANE, 1, [1], [1], [1]));
+                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ALL_LANES, 1, [1], [1], [1]));
                 // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 // And 3 cheap units 1-G-HP-ATK-MOV-DENOM-TGT
@@ -302,9 +302,9 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere but has 0 hp
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ANY_LANE, 0, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
+                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ALL_LANES, 0, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
                 // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
@@ -361,9 +361,9 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ANY_LANE, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
+                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
                 // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
@@ -410,9 +410,9 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ANY_LANE, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
+                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, CardTargets.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
                 // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);

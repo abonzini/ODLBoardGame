@@ -63,7 +63,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1);
                 Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
@@ -113,7 +113,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect. However will die the moment it's summoned so trigger would be deleted immediately
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ANY_LANE, 0, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ALL_LANES, 0, 1, 1, 1);
                 Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
@@ -164,7 +164,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1);
                 Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
@@ -225,7 +225,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [summonEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Card 2: placeholder simple unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ANY_LANE, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -237,10 +237,10 @@ namespace EngineTests
                 int prePlayHash = state.GetGameStateHash();
                 HashSet<int> hashes = new HashSet<int>();
                 hashes.Add(prePlayHash);
-                List<PlayerTarget> playerTargets = [PlayerTarget.CARD_PLAYER, PlayerTarget.CARD_PLAYER_OPPONENT];
+                List<PlayerTarget> playerTargets = [PlayerTarget.CARD_OWNER, PlayerTarget.CARD_OWNER_OPPONENT];
                 foreach (PlayerTarget playerTarget in playerTargets)
                 {
-                    int ownerPlayer = (playerTarget == PlayerTarget.CARD_PLAYER) ? playerIndex : 1 - playerIndex;
+                    int ownerPlayer = (playerTarget == PlayerTarget.CARD_OWNER) ? playerIndex : 1 - playerIndex;
                     for (int i = 1; i <= 7;  i++)
                     {
                         var numberOfSummons = i switch

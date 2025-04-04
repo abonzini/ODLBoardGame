@@ -49,7 +49,8 @@ namespace ODLGameEngine
         /// <param name="player">Player</param>
         /// <param name="bldg">Building</param>
         /// <param name="chosenTarget">Target chosen for building</param>
-        void BUILDING_PlayBuilding(int player, Building bldg, CardTargets chosenTarget)
+        /// <returns>The created building</returns>
+        Building BUILDING_PlayBuilding(int player, Building bldg, CardTargets chosenTarget)
         {
             // To spawn a building, first you get the playable ID
             Building newSpawnedBuilding = (Building)bldg.Clone(); // Clone in order to not break the same species
@@ -65,6 +66,7 @@ namespace ODLGameEngine
             BOARDENTITY_InsertInTile(newSpawnedBuilding, constructionCtx.AbsoluteTile);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             BOARDENTITY_CheckIfUnitAlive(newSpawnedBuilding);
+            return newSpawnedBuilding;
         }
     }
 }

@@ -19,9 +19,9 @@ namespace EngineTests
             Effect effect = new Effect()
             {
                 EffectType = EffectType.SUMMON_UNIT,
-                TargetPlayer = PlayerTarget.CARD_PLAYER,
+                TargetPlayer = PlayerTarget.CARD_OWNER,
                 CardNumber = 1,
-                LaneTargets = CardTargets.ANY_LANE
+                LaneTargets = CardTargets.ALL_LANES
             };
             dict.Add(InteractionType.WHEN_PLAYED, new List<Effect>() { effect });
 

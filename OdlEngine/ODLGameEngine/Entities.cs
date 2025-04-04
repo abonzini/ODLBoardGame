@@ -42,7 +42,7 @@ namespace ODLGameEngine
         ALL_BUT_MOUNTAIN = 3,
         ALL_BUT_FOREST = 5,
         ALL_BUT_PLAINS = 6,
-        ANY_LANE = 7,
+        ALL_LANES = 7,
         INVALID = 15
     }
 
@@ -96,6 +96,8 @@ namespace ODLGameEngine
     public class EntityBase : ICloneable, IHashable
     {
         [JsonProperty]
+        public int Owner { get; set; } = 0;
+        [JsonProperty]
         public EntityPlayInfo EntityPlayInfo { get; set; } = new EntityPlayInfo(); // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
         public EntityPrintInfo EntityPrintInfo { get; set; } // Non-hashed, non-cloned as I just want to reference once
@@ -123,8 +125,6 @@ namespace ODLGameEngine
     {
         [JsonProperty]
         public string Name { get; set; } = "";
-        [JsonProperty]
-        public int Owner { get; set; } = 0;
         [JsonProperty]
         public int Hp { get; set; } = 0;
         [JsonProperty]

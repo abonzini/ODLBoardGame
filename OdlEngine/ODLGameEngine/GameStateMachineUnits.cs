@@ -14,7 +14,8 @@ namespace ODLGameEngine
         /// <param name="player">Player</param>
         /// <param name="unit">Unit</param>
         /// <param name="chosenTarget">Lane that was chosen</param>
-        void UNIT_PlayUnit(int player, Unit unit, CardTargets chosenTarget)
+        /// <returns>The generated unit</returns>
+        Unit UNIT_PlayUnit(int player, Unit unit, CardTargets chosenTarget)
         {
             // To spawn a unit, first you get the playable ID
             // Clone the unit, add to board
@@ -30,6 +31,7 @@ namespace ODLGameEngine
             BOARDENTITY_InsertInTile(newSpawnedUnit, tileCoord);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             BOARDENTITY_CheckIfUnitAlive(newSpawnedUnit);
+            return newSpawnedUnit;
         }
         /// <summary>
         /// Found unit starts advance
@@ -40,6 +42,10 @@ namespace ODLGameEngine
             int unitOwnerId = unit.Owner;
             int opponentId = 1 - unitOwnerId;
             int cooldown = unit.MvtCooldownTimer;
+            if(cooldown > unit.MovementDenominator) // if denominator was reduced, need to make sure unit can advance properly
+            {
+                cooldown = 0;
+            }
             AdvancingContext advanceCtx = new AdvancingContext() // Set context for advance-related interactions/triggers
             {
                 AdvancingUnit = unit,
