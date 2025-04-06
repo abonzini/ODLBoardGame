@@ -98,7 +98,7 @@ namespace ODLGameEngine
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
                     DetailedState.BoardState.InsertEntity(auxPlacedEntity);
-                    DetailedState.BoardState.Entities.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
+                    DetailedState.BoardState.EntityData.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
                     ENGINE_RegisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
@@ -135,7 +135,7 @@ namespace ODLGameEngine
                 case EventType.DEINIT_ENTITY: // Unit simply leaves field and user loses the unit
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
                     DetailedState.BoardState.RemoveEntity(auxPlacedEntity);
-                    DetailedState.BoardState.Entities.Remove(auxPlacedEntity.UniqueId);
+                    DetailedState.BoardState.EntityData.Remove(auxPlacedEntity.UniqueId);
                     ENGINE_DeregisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
@@ -227,7 +227,7 @@ namespace ODLGameEngine
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
                     DetailedState.BoardState.RemoveEntity(auxPlacedEntity);
-                    DetailedState.BoardState.Entities.Remove(auxPlacedEntity.UniqueId);
+                    DetailedState.BoardState.EntityData.Remove(auxPlacedEntity.UniqueId);
                     ENGINE_DeregisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
@@ -262,7 +262,7 @@ namespace ODLGameEngine
                 case EventType.DEINIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
                     DetailedState.BoardState.InsertEntity(auxPlacedEntity);
-                    DetailedState.BoardState.Entities.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
+                    DetailedState.BoardState.EntityData.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
                     ENGINE_RegisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:

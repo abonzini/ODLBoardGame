@@ -61,7 +61,7 @@ namespace ODLGameEngine
                     if (lane.GetTileAbsolute(unit.TileCoordinate).PlayerUnits[opponentId].Count > 0) // If enemy unit in tile, will stop advance here (and also attack)
                     {
                         advanceCtx.CurrentMovement = 0;
-                        Unit enemyUnit = (Unit)DetailedState.BoardState.Entities[lane.PlayerUnits[opponentId].First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
+                        Unit enemyUnit = (Unit)DetailedState.BoardState.EntityData[lane.PlayerUnits[opponentId].First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
                         UNIT_Combat(unit, enemyUnit); // Let them fight.
                     }
                     else if (lane.GetAbsoluteTileCoord(-1, unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)

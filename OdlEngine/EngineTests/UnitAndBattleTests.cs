@@ -634,11 +634,11 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Play units and also store them for evil illegal modifications
                 sm.PlayFromHand(1, CardTargets.PLAINS);
-                Unit plainsUnit = (Unit)sm.DetailedState.BoardState.Entities.Last().Value;
+                Unit plainsUnit = (Unit)sm.DetailedState.BoardState.EntityData.Last().Value;
                 sm.PlayFromHand(1, CardTargets.FOREST);
-                Unit forestUnit = (Unit)sm.DetailedState.BoardState.Entities.Last().Value;
+                Unit forestUnit = (Unit)sm.DetailedState.BoardState.EntityData.Last().Value;
                 sm.PlayFromHand(1, CardTargets.MOUNTAIN);
-                Unit mountainsUnit = (Unit)sm.DetailedState.BoardState.Entities.Last().Value;
+                Unit mountainsUnit = (Unit)sm.DetailedState.BoardState.EntityData.Last().Value;
                 // Verify...
                 Lane plains = sm.DetailedState.BoardState.GetLane(LaneID.PLAINS);
                 Lane forest = sm.DetailedState.BoardState.GetLane(LaneID.FOREST);
@@ -933,7 +933,7 @@ namespace EngineTests
                     }
                     else
                     {
-                        Assert.IsFalse(sm.DetailedState.BoardState.Entities.ContainsKey(0)); // unit ded
+                        Assert.IsFalse(sm.DetailedState.BoardState.EntityData.ContainsKey(0)); // unit ded
                     }
                     if (attackerCount > 0)
                     {
@@ -941,7 +941,7 @@ namespace EngineTests
                     }
                     else
                     {
-                        Assert.IsFalse(sm.DetailedState.BoardState.Entities.ContainsKey(1)); // unit ded
+                        Assert.IsFalse(sm.DetailedState.BoardState.EntityData.ContainsKey(1)); // unit ded
                     }
                     // Now unit is not in advance anymore and instead moved to intersect
                     Assert.AreEqual(lane.GetTileRelative(0, playerIndex).PlayerUnits[playerIndex].Count, 0);
@@ -1162,11 +1162,11 @@ namespace EngineTests
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 2);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 5);
                     // Only for this, also check ids
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(0));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(1));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(2));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(3));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(4));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(0));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(1));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(2));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(3));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(4));
                     // Advance...
                     sm.Step();
                     // Verify
@@ -1183,11 +1183,11 @@ namespace EngineTests
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 0);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 0);
                     Assert.AreEqual(theLane.GetTileRelative(1, playerIndex).AllUnits.Count, 1);
-                    Assert.IsFalse(sm.DetailedState.BoardState.Entities.ContainsKey(0));
-                    Assert.IsFalse(sm.DetailedState.BoardState.Entities.ContainsKey(1));
-                    Assert.IsFalse(sm.DetailedState.BoardState.Entities.ContainsKey(2));
-                    Assert.IsFalse(sm.DetailedState.BoardState.Entities.ContainsKey(3));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(4)); // Only one that remains
+                    Assert.IsFalse(sm.DetailedState.BoardState.EntityData.ContainsKey(0));
+                    Assert.IsFalse(sm.DetailedState.BoardState.EntityData.ContainsKey(1));
+                    Assert.IsFalse(sm.DetailedState.BoardState.EntityData.ContainsKey(2));
+                    Assert.IsFalse(sm.DetailedState.BoardState.EntityData.ContainsKey(3));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(4)); // Only one that remains
                     Assert.AreEqual(sm.GetBoardEntity(4).DamageTokens, 0); // undamaged too
                     // Undo advance and verify again
                     sm.UndoPreviousStep();
@@ -1203,11 +1203,11 @@ namespace EngineTests
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).PlayerUnits[otherPlayerIndex].Count, 2);
                     Assert.AreEqual(theLane.GetTileRelative(0, playerIndex).AllUnits.Count, 5);
                     // Only for this, also check ids
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(0));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(1));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(2));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(3));
-                    Assert.IsTrue(sm.DetailedState.BoardState.Entities.ContainsKey(4));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(0));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(1));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(2));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(3));
+                    Assert.IsTrue(sm.DetailedState.BoardState.EntityData.ContainsKey(4));
                 }
             }
         }

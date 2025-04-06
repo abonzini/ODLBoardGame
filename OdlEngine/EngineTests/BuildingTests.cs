@@ -429,7 +429,7 @@ namespace EngineTests
                 // HACK, add the same unit in 2 different tiles to avoid needing to advance
                 state = sm.DetailedState;
                 Tile secondTile = state.BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex);
-                secondTile.InsertEntity(state.BoardState.Entities.First().Value); // Add unit also here, this is a weird invalid state but should work for this test
+                secondTile.InsertEntity(state.BoardState.EntityData.First().Value); // Add unit also here, this is a weird invalid state but should work for this test
                 // Check my building will be buildable, prepare for playing
                 Tuple<PlayOutcome, CardTargets> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
                 Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);

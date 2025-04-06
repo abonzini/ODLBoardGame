@@ -16,8 +16,12 @@ namespace ODLGameEngine
         public SortedSet<int> AllUnits { get; set; } = new SortedSet<int>();
         public SortedSet<int>[] PlayerBuildings { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
         public SortedSet<int> AllBuildings { get; set; } = new SortedSet<int>();
+        public SortedSet<int>[] PlayerEntities { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
+        public SortedSet<int> AllEntities { get; set; } = new SortedSet<int>();
         public void InsertEntity(PlacedEntity entity)
         {
+            PlayerEntities[entity.Owner].Add(entity.UniqueId);
+            AllEntities.Add(entity.UniqueId);
             switch (entity.EntityPlayInfo.EntityType)
             {
                 case EntityType.UNIT:
@@ -34,6 +38,8 @@ namespace ODLGameEngine
         }
         public void RemoveEntity(PlacedEntity entity)
         {
+            PlayerEntities[entity.Owner].Remove(entity.UniqueId);
+            AllEntities.Remove(entity.UniqueId);
             switch (entity.EntityPlayInfo.EntityType)
             {
                 case EntityType.UNIT:
@@ -174,7 +180,7 @@ namespace ODLGameEngine
         public Lane MountainLane { get; set; } = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_TILES_NUMBER);
         // Entities
         [JsonProperty]
-        public readonly SortedList<int, PlacedEntity> Entities = new SortedList<int, PlacedEntity>();
+        public readonly SortedList<int, PlacedEntity> EntityData = new SortedList<int, PlacedEntity>();
         // Methods
         public Lane GetLane(int i)
         {
@@ -209,7 +215,7 @@ namespace ODLGameEngine
         }
         public PlacedEntity GetEntity(int i)
         {
-            if(Entities.TryGetValue(i, out PlacedEntity entity))
+            if(EntityData.TryGetValue(i, out PlacedEntity entity))
             {
                 return entity;
             }
@@ -221,7 +227,7 @@ namespace ODLGameEngine
         public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
-            foreach (KeyValuePair<int, PlacedEntity> kvp in Entities)
+            foreach (KeyValuePair<int, PlacedEntity> kvp in EntityData)
             {
                 hash.Add(kvp.Key);
                 hash.Add(kvp.Value.GetGameStateHash());
