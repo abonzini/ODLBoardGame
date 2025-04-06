@@ -59,19 +59,14 @@ namespace ODLGameEngine
             DetailedState = state;
             DetailedState.Seed = seed;
             _rng = new Random(seed);
-            DetailedState.PlayerStates[0].Owner = 0; // Need for players to keep track of themselves...
+            DetailedState.PlayerStates[0].Owner = 0; // Make sure Players are init properly
+            DetailedState.PlayerStates[0].UniqueId = 0;
+            DetailedState.EntityData[0] = DetailedState.PlayerStates[0];
             DetailedState.PlayerStates[1].Owner = 1;
+            DetailedState.PlayerStates[0].UniqueId = 1;
+            DetailedState.EntityData[1] = DetailedState.PlayerStates[1];
+            DetailedState.NextUniqueIndex = 2; // Next one
         }
-        /// <summary>
-        /// Returns entity to make it quicker and less verbose
-        /// </summary>
-        /// <param name="idx">Entity index</param>
-        /// <returns>Entity</returns>
-        public PlacedEntity GetBoardEntity(int idx)
-        {
-            return DetailedState.BoardState.GetEntity(idx);
-        }
-
         // --------------------------------------------------------------------------------------
         // ------------------------  STATE, ACTIONS AND STEP OPERATORS --------------------------
         // --------------------------------------------------------------------------------------
@@ -203,13 +198,13 @@ namespace ODLGameEngine
             int playerId = (int)DetailedState.CurrentPlayer;
             PlayerState player = DetailedState.PlayerStates[playerId];
             // Advance all units of that player
-            if (DetailedState.BoardState.PlayerUnits[playerId].Count > 0) // Only advance if player has units
+            List<int> playerUnitsIds = DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerId).ToList(); // (Clone)
+            if (playerUnitsIds.Count > 0) // Only advance if player has units
             {
                 // Obtain all elements in list to iterate on, do it like this to allow iteration even if a unit dies during the advance (iteration integrity)
-                List<int> playerUnitsIds = DetailedState.BoardState.PlayerUnits[playerId].ToList();
                 foreach (int unitId in playerUnitsIds)
                 {
-                    if(DetailedState.BoardState.EntityData.TryGetValue(unitId, out PlacedEntity unit)) // Check if unit is still alive, if not, no need to march
+                    if(DetailedState.EntityData.TryGetValue(unitId, out BoardEntity unit)) // Check if unit is still alive, if not, no need to march
                     {
                         UNIT_AdvanceUnit((Unit)unit); // Then the unit advances!
                     }

@@ -134,21 +134,25 @@ The key is the type of trigger/interaction, and the value is a list of the effec
     }
 ```
 
-In the example above, the ard would contain 2 interactions, and then each would perform a sequence of effects.
+In the example above, the card would contain 2 interactions, and then each would perform a sequence of effects.
 An effect is described as an effect type, and a series of parameters that may be needed for the effect to work.
 This way, any card can be described in a dynamic, human readable way.
+When an effect is ongoing (either because of a Trigger or an Interaction), the game remembers the card running the effects, this means the owner, the card's location, etc.
 
 ## Interaction/Trigger types
 
-- ```WHEN_PLAYED:``` Will be executed when the card is played for the first time. Exmaples: Every single ```skill``` card
+- ```WHEN_PLAYED:``` Will be executed when the card is played for the first time. Examples: Every single ```skill``` card
 
 ## Effect Types
 
-- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes. ```CardNumber``` is the card number of the unit summoned, ```TargetPlayer``` is the player who will own the unit, and ```CardTargets``` is one or more lane targets where the card(s) will be summoned. Examples: **RUSH**
+- ```FIND_ENTITIES:``` Finds a series of targets for this effect.
+For example, skills that deal direct damage or buff someone, or similar.
+In order to use this, the ```FIND_ENTITIES``` effect needs to be used, followed by the effect in question that uses these targets.
+- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes. ```CardNumber``` is the card number of the unit summoned, ```TargetPlayer``` is the player who will own the unit, and ```TargetLocation``` is one or more lane targets where the card(s) will be summoned. Examples: **RUSH**
 
 ## Enum Values
 
-- ```CardTargets```
+- ```TargetLocation```
     - ```BOARD```. For cards where the target is the "whole board" 
     - ```PLAINS```
     - ```FOREST```

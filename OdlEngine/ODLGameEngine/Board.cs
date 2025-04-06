@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,71 +11,85 @@ using System.Xml;
 
 namespace ODLGameEngine
 {
+    public enum EntityListOperation
+    {
+        ADD,
+        REMOVE
+    }
     public abstract class BoardElement : IHashable
     {
-        public SortedSet<int>[] PlayerUnits { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
-        public SortedSet<int> AllUnits { get; set; } = new SortedSet<int>();
-        public SortedSet<int>[] PlayerBuildings { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
-        public SortedSet<int> AllBuildings { get; set; } = new SortedSet<int>();
-        public SortedSet<int>[] PlayerEntities { get; set; } = [new SortedSet<int>(), new SortedSet<int>()];
-        public SortedSet<int> AllEntities { get; set; } = new SortedSet<int>();
-        public void InsertEntity(PlacedEntity entity)
+        Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities = new Dictionary<(EntityType, int), SortedSet<int>>();
+        public SortedSet<int> GetPlacedEntities(EntityType entityTypes, int owner = -1)
         {
-            PlayerEntities[entity.Owner].Add(entity.UniqueId);
-            AllEntities.Add(entity.UniqueId);
-            switch (entity.EntityPlayInfo.EntityType)
+            SortedSet<int> arr;
+            if (!PlacedEntities.TryGetValue((entityTypes, owner), out arr))
             {
-                case EntityType.UNIT:
-                    AllUnits.Add(entity.UniqueId);
-                    PlayerUnits[entity.Owner].Add(entity.UniqueId);
-                    break;
-                case EntityType.BUILDING:
-                    AllBuildings.Add(entity.UniqueId);
-                    PlayerBuildings[entity.Owner].Add(entity.UniqueId);
-                    break;
-                default:
-                    throw new Exception("Board element can only contain placed entities!");
+                PlacedEntities[(entityTypes, owner)] = new SortedSet<int>(); // Returns an empty list if nothing there
             }
+            return PlacedEntities[(entityTypes, owner)];
         }
-        public void RemoveEntity(PlacedEntity entity)
+        public void EntityListOperation(PlacedEntity entity, EntityListOperation op)
         {
-            PlayerEntities[entity.Owner].Remove(entity.UniqueId);
-            AllEntities.Remove(entity.UniqueId);
-            switch (entity.EntityPlayInfo.EntityType)
+            // Also define the flags to allow into generalised lists
+            int allOwners = -1;
+            List<EntityType> allowedEntities = new List<EntityType>([EntityType.UNIT, EntityType.BUILDING]);
+            allowedEntities.Remove(entity.EntityPlayInfo.EntityType); // This one is always 1 so I don't need to iterate on it
+            int index = entity.UniqueId;
+            int owner = entity.Owner;
+
+            int numberOfCombinations = 1 << allowedEntities.Count; // 2^count
+            for (int i = 0; i < numberOfCombinations; i++)
             {
-                case EntityType.UNIT:
-                    AllUnits.Remove(entity.UniqueId);
-                    PlayerUnits[entity.Owner].Remove(entity.UniqueId);
-                    break;
-                case EntityType.BUILDING:
-                    AllBuildings.Remove(entity.UniqueId);
-                    PlayerBuildings[entity.Owner].Remove(entity.UniqueId);
-                    break;
-                default:
-                    throw new Exception("Board element can only contain placed entities!");
+                EntityType nextEntityCombination = entity.EntityPlayInfo.EntityType; // This flag is always 1
+                for (int bit = 1; bit <= allowedEntities.Count; bit++)
+                {
+                    if ((i & bit) != 0) // Entity is present in this combination
+                    {
+                        nextEntityCombination |= allowedEntities[bit-1]; // In this case, it's added to a combination
+                    }
+                }
+                // At this point a new combination has been created, check if any of them is new and needs to be init
+                SortedSet<int> arr;
+                if (!PlacedEntities.TryGetValue((nextEntityCombination, allOwners), out arr))
+                {
+                    PlacedEntities[(nextEntityCombination, allOwners)] = new SortedSet<int>();
+                }
+                if (!PlacedEntities.TryGetValue((nextEntityCombination, owner), out  arr))
+                {
+                    PlacedEntities[(nextEntityCombination, owner)] = new SortedSet<int>();
+                }
+                // Then add the elements where they belong
+                switch (op)
+                {
+                    case ODLGameEngine.EntityListOperation.ADD:
+                        PlacedEntities[(nextEntityCombination, allOwners)].Add(index);
+                        PlacedEntities[(nextEntityCombination, owner)].Add(index);
+                        break;
+                    case ODLGameEngine.EntityListOperation.REMOVE:
+                        PlacedEntities[(nextEntityCombination, allOwners)].Remove(index);
+                        PlacedEntities[(nextEntityCombination, owner)].Remove(index);
+                        break;
+                    default:
+                        throw new NotImplementedException("Invalid list operation");
+                }
             }
         }
         public abstract int GetGameStateHash();
+        public override string ToString()
+        {
+            return $"P1: {GetPlacedEntities(EntityType.UNIT, 0).Count} P2: {GetPlacedEntities(EntityType.UNIT, 1).Count} B: {GetPlacedEntities(EntityType.BUILDING).Count})";
+        }
     }
     public class Tile : BoardElement
     {
         public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
-            foreach(int unit in AllUnits)
+            foreach(int entity in GetPlacedEntities(EntityType.UNIT|EntityType.BUILDING))
             {
-                hash.Add(unit);
-            }
-            foreach(int building in AllBuildings)
-            {
-                hash.Add(building);
+                hash.Add(entity);
             }
             return hash.ToHashCode();
-        }
-
-        public override string ToString()
-        {
-            return $"P1: {PlayerUnits[0].Count} P2: {PlayerUnits[1].Count} B: {PlayerBuildings[0].Count+ PlayerBuildings[1].Count})";
         }
     }
     /// <summary>
@@ -145,11 +160,6 @@ namespace ODLGameEngine
         {
             return (player == 0) ? 1 : -1;
         }
-        public override string ToString()
-        {
-            return Id.ToString() + $", P1: {PlayerUnits[0].Count}u{PlayerBuildings[0].Count}b P2: {PlayerUnits[1].Count}u{PlayerBuildings[1].Count}b";
-        }
-
         public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
@@ -178,9 +188,6 @@ namespace ODLGameEngine
         public Lane ForestLane { get; set; } = new Lane(LaneID.FOREST, GameConstants.FOREST_TILES_NUMBER);
         [JsonProperty]
         public Lane MountainLane { get; set; } = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_TILES_NUMBER);
-        // Entities
-        [JsonProperty]
-        public readonly SortedList<int, PlacedEntity> EntityData = new SortedList<int, PlacedEntity>();
         // Methods
         public Lane GetLane(int i)
         {
@@ -203,35 +210,19 @@ namespace ODLGameEngine
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
-        public Lane GetLane(CardTargets laneTarget)
+        public Lane GetLane(TargetLocation laneTarget)
         {
             return laneTarget switch
             {
-                CardTargets.PLAINS => PlainsLane,
-                CardTargets.FOREST => ForestLane,
-                CardTargets.MOUNTAIN => MountainLane,
+                TargetLocation.PLAINS => PlainsLane,
+                TargetLocation.FOREST => ForestLane,
+                TargetLocation.MOUNTAIN => MountainLane,
                 _ => throw new Exception("Unrecognized lane requested"),
             };
-        }
-        public PlacedEntity GetEntity(int i)
-        {
-            if(EntityData.TryGetValue(i, out PlacedEntity entity))
-            {
-                return entity;
-            }
-            else
-            {
-                return null;
-            }
         }
         public override int GetGameStateHash()
         {
             HashCode hash = new HashCode();
-            foreach (KeyValuePair<int, PlacedEntity> kvp in EntityData)
-            {
-                hash.Add(kvp.Key);
-                hash.Add(kvp.Value.GetGameStateHash());
-            }
             hash.Add(PlainsLane.GetGameStateHash());
             hash.Add(ForestLane.GetGameStateHash());
             hash.Add(MountainLane.GetGameStateHash());

@@ -23,7 +23,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, CardTargets.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, TargetLocation.BOARD);
                 Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [debugEffect]); // Add interaction to card
@@ -31,7 +31,7 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, CardTargets.BOARD); // Play the card
+                Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, TargetLocation.BOARD); // Play the card
                 Assert.AreEqual(PlayOutcome.OK,playRes.Item1);
                 Assert.IsNotNull(playRes.Item2);
                 bool debugFlagFound = false; // Check if the debug check was added when card was played
@@ -63,7 +63,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
                 Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
@@ -75,7 +75,7 @@ namespace EngineTests
                 int stateHash = sm.DetailedState.GetGameStateHash();
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
                 // Play
-                sm.PlayFromHand(1, CardTargets.PLAINS); // Play the unit in any lane
+                sm.PlayFromHand(1, TargetLocation.PLAINS); // Play the unit in any lane
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // State hash has changed
                 Assert.IsTrue(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER)); // And the state is there!
                 // Now to trigger
@@ -113,7 +113,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect. However will die the moment it's summoned so trigger would be deleted immediately
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ALL_LANES, 0, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, TargetLocation.ALL_LANES, 0, 1, 1, 1);
                 Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
@@ -125,7 +125,7 @@ namespace EngineTests
                 int stateHash = sm.DetailedState.GetGameStateHash();
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
                 // Play
-                sm.PlayFromHand(1, CardTargets.PLAINS); // Play the unit in any lane
+                sm.PlayFromHand(1, TargetLocation.PLAINS); // Play the unit in any lane
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // State hash has changed because hand and placeable counter changed
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER)); // However this is the same
                 // Now to trigger
@@ -164,7 +164,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
                 Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
@@ -181,7 +181,7 @@ namespace EngineTests
                 // Play
                 for (int i = 0; i < numberOfUnits; i++) // Play X times
                 {
-                    sm.PlayFromHand(1, CardTargets.PLAINS); // Play the unit in any lane
+                    sm.PlayFromHand(1, TargetLocation.PLAINS); // Play the unit in any lane
                 }
                 Assert.IsTrue(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
                 Assert.AreEqual(sm.DetailedState.Triggers[TriggerType.DEBUG_TRIGGER].Count, numberOfUnits); // One trigger per unit
@@ -215,7 +215,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, CardTargets.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, TargetLocation.BOARD);
                 Effect summonEffect = new Effect()
                 {
                     EffectType = EffectType.SUMMON_UNIT, // Summons unit
@@ -225,7 +225,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [summonEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Card 2: placeholder simple unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -237,10 +237,10 @@ namespace EngineTests
                 int prePlayHash = state.GetGameStateHash();
                 HashSet<int> hashes = new HashSet<int>();
                 hashes.Add(prePlayHash);
-                List<PlayerTarget> playerTargets = [PlayerTarget.OWNER, PlayerTarget.OPPONENT];
-                foreach (PlayerTarget playerTarget in playerTargets)
+                List<EntityOwner> playerTargets = [EntityOwner.OWNER, EntityOwner.OPPONENT];
+                foreach (EntityOwner playerTarget in playerTargets)
                 {
-                    int ownerPlayer = (playerTarget == PlayerTarget.OWNER) ? playerIndex : 1 - playerIndex;
+                    int ownerPlayer = (playerTarget == EntityOwner.OWNER) ? playerIndex : 1 - playerIndex;
                     for (int i = 1; i <= 7;  i++)
                     {
                         var numberOfSummons = i switch
@@ -250,20 +250,20 @@ namespace EngineTests
                             7 => 3,
                             _ => throw new Exception("Invalid lane what happened here?"),
                         };
-                        CardTargets laneTarget = (CardTargets)i;
-                        summonEffect.LaneTargets = laneTarget;
+                        TargetLocation laneTarget = (TargetLocation)i;
+                        summonEffect.TargetLocation = laneTarget;
                         summonEffect.TargetPlayer = playerTarget;
                         // Pre play tests
-                        Assert.AreEqual(state.BoardState.AllUnits.Count, 0);
-                        Assert.AreEqual(state.BoardState.PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, 0);
+                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, 0);
+                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         // Play
-                        Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, CardTargets.BOARD); // Play the card
+                        Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, TargetLocation.BOARD); // Play the card
                         Assert.AreEqual(PlayOutcome.OK, playRes.Item1);
                         Assert.IsNotNull(playRes.Item2);
                         // Hash assert
@@ -271,25 +271,25 @@ namespace EngineTests
                         Assert.IsFalse(hashes.Contains(newHash));
                         hashes.Add(newHash);
                         // Location assert
-                        Assert.AreEqual(state.BoardState.AllUnits.Count, numberOfSummons);
-                        Assert.AreEqual(state.BoardState.PlayerUnits[ownerPlayer].Count, numberOfSummons);
-                        Assert.AreEqual(state.BoardState.PlainsLane.PlayerUnits[ownerPlayer].Count, laneTarget.HasFlag(CardTargets.PLAINS)?1:0);
-                        Assert.AreEqual(state.BoardState.ForestLane.PlayerUnits[ownerPlayer].Count, laneTarget.HasFlag(CardTargets.FOREST) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.PlayerUnits[ownerPlayer].Count, laneTarget.HasFlag(CardTargets.MOUNTAIN) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, laneTarget.HasFlag(CardTargets.PLAINS) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, laneTarget.HasFlag(CardTargets.FOREST) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, laneTarget.HasFlag(CardTargets.MOUNTAIN) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, numberOfSummons);
+                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, numberOfSummons);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(TargetLocation.PLAINS)?1:0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(TargetLocation.FOREST) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(TargetLocation.MOUNTAIN) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(TargetLocation.PLAINS) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(TargetLocation.FOREST) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(TargetLocation.MOUNTAIN) ? 1 : 0);
                         // Revert
                         sm.UndoPreviousStep();
                         Assert.AreEqual(prePlayHash, state.GetGameStateHash());
-                        Assert.AreEqual(state.BoardState.AllUnits.Count, 0);
-                        Assert.AreEqual(state.BoardState.PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).PlayerUnits[ownerPlayer].Count, 0);
+                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, 0);
+                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                     }
                 }
             }

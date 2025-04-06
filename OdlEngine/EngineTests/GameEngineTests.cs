@@ -444,7 +444,7 @@ namespace EngineTests
             };
             CardFinder cardDb = new CardFinder();
             // Card 1: basic unit
-            cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, CardTargets.ALL_LANES, 1, 1, 1, 1));
+            cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
             state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token card
             state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
             GameStateMachine sm = new GameStateMachine(cardDb);
@@ -455,7 +455,7 @@ namespace EngineTests
             Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
             Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetGameStateHash()); // Hash would be recalculated but still the same
             // Will play card now
-            Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, CardTargets.PLAINS); // Play it
+            Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play it
             // Make sure card was played ok
             Assert.AreEqual(res.Item1, PlayOutcome.OK);
             Assert.IsNotNull(res.Item2);
@@ -467,9 +467,10 @@ namespace EngineTests
             Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
             Assert.AreEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // Hash would be recalculated but still the same
             // Modify unit (shady)
-            ((Unit)sm.GetBoardEntity(0)).Attack += 5; // Add 5 to attack, whatever
-            Assert.AreNotEqual(boardWUnitHash, sm.DetailedState.BoardState.GetGameStateHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
-            Assert.AreNotEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // But now the board hash should fail bc its a brand new unit (and therefore board)
+            int unitIndex = sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).First();
+            ((Unit)sm.DetailedState.EntityData[unitIndex]).Attack += 5; // Add 5 to attack, whatever
+            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetGameStateHash()); // Board is 100% positional so this hash should remain the same
+            Assert.AreNotEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // But now the state changed because unit data is different
             sm.UndoPreviousStep();
             Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Finally hash should've reverted and known
             Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetGameStateHash()); // Finally hash should've reverted and known

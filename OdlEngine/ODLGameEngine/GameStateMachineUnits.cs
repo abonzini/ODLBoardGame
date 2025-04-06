@@ -15,7 +15,7 @@ namespace ODLGameEngine
         /// <param name="unit">Unit</param>
         /// <param name="chosenTarget">Lane that was chosen</param>
         /// <returns>The generated unit</returns>
-        Unit UNIT_PlayUnit(int player, Unit unit, CardTargets chosenTarget)
+        Unit UNIT_PlayUnit(int player, Unit unit, TargetLocation chosenTarget)
         {
             // To spawn a unit, first you get the playable ID
             // Clone the unit, add to board
@@ -58,10 +58,10 @@ namespace ODLGameEngine
                 while(advanceCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
                     // Exiting current tile
-                    if (lane.GetTileAbsolute(unit.TileCoordinate).PlayerUnits[opponentId].Count > 0) // If enemy unit in tile, will stop advance here (and also attack)
+                    if (lane.GetTileAbsolute(unit.TileCoordinate).GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop advance here (and also attack)
                     {
                         advanceCtx.CurrentMovement = 0;
-                        Unit enemyUnit = (Unit)DetailedState.BoardState.EntityData[lane.PlayerUnits[opponentId].First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
+                        Unit enemyUnit = (Unit)DetailedState.EntityData[lane.GetPlacedEntities(EntityType.UNIT,opponentId).First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
                         UNIT_Combat(unit, enemyUnit); // Let them fight.
                     }
                     else if (lane.GetAbsoluteTileCoord(-1, unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
@@ -76,9 +76,9 @@ namespace ODLGameEngine
                         BOARDENTITY_InsertInTile(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
                         // Entering new tile
                         Tile newTile = DetailedState.BoardState.GetLane(unit.LaneCoordinate).GetTileAbsolute(unit.TileCoordinate);
-                        if (newTile.AllBuildings.Count != 0) // If tile has a building, do potential building effects
+                        if (newTile.GetPlacedEntities(EntityType.BUILDING).Count != 0) // If tile has a building, do potential building effects
                         {
-                            Building bldg = (Building)GetBoardEntity(newTile.AllBuildings.First()); // Get building (if real, always first and only)
+                            Building bldg = (Building)DetailedState.EntityData[newTile.GetPlacedEntities(EntityType.BUILDING).First()]; // Get building
                             if(bldg.Owner == opponentId)
                             {
                                 UNIT_Combat(unit, bldg);

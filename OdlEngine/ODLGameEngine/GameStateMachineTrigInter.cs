@@ -33,7 +33,7 @@ namespace ODLGameEngine
             {
                 foreach (int entity in entities)
                 {
-                    PlacedEntity entityData = GetBoardEntity(entity); // Triger will only apply when entity still exists
+                    BoardEntity entityData = DetailedState.EntityData[entity]; // Triger will only apply when entity still exists
                     if (entityData != null)
                     {
                         List<Effect> effects = entityData.Triggers[trigger]; // Get unit's effects for this trigger
@@ -51,28 +51,29 @@ namespace ODLGameEngine
         /// <param name="specificContext">Additional context that accompanies the desired effect (e.g. when killed, implies killed by someone, etc)</param>
         void TRIGINTER_ProcessEffects(EntityBase entity, List<Effect> effects, EffectContext specificContext)
         {
+            List<int> targets; // Potential target for potential card effects
             foreach (Effect effect in effects) // Execute series of events for the card in question
             {
                 switch (effect.EffectType)
                 {
-                    // TODO: Targetting will move to a more universal situation when more cases and target filters are applied
-                    // Possibly, a function that gets all possible entities (class, so we can do players too) in a BoardElement (e.g. board, lane, even a tile, whatever)
-                    // For lane targets, a function that returns all possible lanes maybe?
                     case EffectType.DEBUG:
                         ENGINE_AddDebugEvent();
+                        break;
+                    case EffectType.FIND_ENTITIES:
+                        targets = TRIGINTER_GetTargets(entity, effect);
                         break;
                     case EffectType.SUMMON_UNIT:
                         // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
                         for (int i = 0; i < 2; i++) // Check for which order is the summon
                         {
-                            PlayerTarget nextPossibleOwner = (PlayerTarget)(1 << i);
+                            EntityOwner nextPossibleOwner = (EntityOwner)(1 << i);
                             int playerOwner;
                             if(effect.TargetPlayer.HasFlag(nextPossibleOwner)) // Valid owner!
                             {
                                 playerOwner = effect.TargetPlayer switch
                                 {
-                                    PlayerTarget.OWNER => entity.Owner,
-                                    PlayerTarget.OPPONENT => 1 - entity.Owner,
+                                    EntityOwner.OWNER => entity.Owner,
+                                    EntityOwner.OPPONENT => 1 - entity.Owner,
                                     _ => throw new NotImplementedException("Invalid player target"),
                                 };
                             }
@@ -83,8 +84,8 @@ namespace ODLGameEngine
                             Unit auxCardData = (Unit)CardDb.GetCard(effect.CardNumber);
                             for (int j = 0; j < GameConstants.BOARD_LANES_NUMBER; j++)
                             {
-                                CardTargets nextLane = (CardTargets)(1 << j); // Get lanes in order, can be randomized if needed
-                                if(effect.LaneTargets.HasFlag(nextLane)) // If this lane is a valid target for this unt
+                                TargetLocation nextLane = (TargetLocation)(1 << j); // Get lanes in order, can be randomized if needed
+                                if(effect.TargetLocation.HasFlag(nextLane)) // If this lane is a valid target for this unt
                                 {
                                     UNIT_PlayUnit(playerOwner, auxCardData, nextLane); // Plays the unit
                                 }
@@ -95,6 +96,18 @@ namespace ODLGameEngine
                         throw new NotImplementedException("Effect type not implemented yet");
                 }
             }
+        }
+        /// <summary>
+        /// Function that gets serch parameters as well as reference observer, and returns a series of valid entity targets.
+        /// </summary>
+        /// <param name="entityRef">Observer, i.e. which side of the board</param>
+        /// <param name="searchParameters">Contains extra info necessary for the search</param>
+        /// <returns></returns>
+        List<int> TRIGINTER_GetTargets(EntityBase entityRef, Effect searchParameters)
+        {
+            List<int> res = new List<int>();
+            // Obviously TODO
+            return res;
         }
     }
 }

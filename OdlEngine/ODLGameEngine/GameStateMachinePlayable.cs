@@ -35,12 +35,12 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Card to play</param>
         /// <returns>If playable, and where (if playable)</returns>
-        public Tuple<PlayOutcome, CardTargets> GetPlayableOptions(int card, PlayType playType)
+        public Tuple<PlayOutcome, TargetLocation> GetPlayableOptions(int card, PlayType playType)
         {
             // Check whether we're in the right place first (can only do this on play state)
             if(DetailedState.CurrentState != States.ACTION_PHASE)
             {
-                return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_GAME_STATE, CardTargets.INVALID); // Return
+                return new Tuple<PlayOutcome, TargetLocation>(PlayOutcome.INVALID_GAME_STATE, TargetLocation.INVALID); // Return
             }
             // An extra check first, whether card actually exists in hand (if applicable)
             if(playType == PlayType.PLAY_FROM_HAND)
@@ -48,14 +48,14 @@ namespace ODLGameEngine
                 AssortedCardCollection hand = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Hand;
                 if (!hand.HasCard(card)) // Card not in hand!
                 {
-                    return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.INVALID_CARD, CardTargets.INVALID); // Return this (invalid card in hand!)
+                    return new Tuple<PlayOutcome, TargetLocation>(PlayOutcome.INVALID_CARD, TargetLocation.INVALID); // Return this (invalid card in hand!)
                 }
             }
             else if (playType == PlayType.ACTIVE_POWER)
             {
                 if (!DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].PowerAvailable) // Power not available!
                 {
-                    return new Tuple<PlayOutcome, CardTargets>(PlayOutcome.POWER_ALREADY_USED, CardTargets.INVALID); // Return this (invalid card in hand!)
+                    return new Tuple<PlayOutcome, TargetLocation>(PlayOutcome.POWER_ALREADY_USED, TargetLocation.INVALID); // Return this (invalid card in hand!)
                 }
             }
             else
@@ -66,7 +66,7 @@ namespace ODLGameEngine
             EntityBase cardData = CardDb.GetCard(card);
             return PLAYABLE_GetOptions(cardData);
         }
-        public Tuple<PlayOutcome, StepResult> PlayFromHand(int card, CardTargets chosenTarget)
+        public Tuple<PlayOutcome, StepResult> PlayFromHand(int card, TargetLocation chosenTarget)
         {
             return PlayCard(card, chosenTarget, PlayType.PLAY_FROM_HAND);
         }
@@ -76,7 +76,7 @@ namespace ODLGameEngine
         /// <returns>Like PlayCard, chain of effects after power was played</returns>
         public Tuple<PlayOutcome, StepResult> PlayActivePower()
         {
-            return PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerCast, CardTargets.BOARD, PlayType.ACTIVE_POWER);
+            return PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerCast, TargetLocation.BOARD, PlayType.ACTIVE_POWER);
         }
         // Back-end (private)
         /// <summary>
@@ -87,16 +87,16 @@ namespace ODLGameEngine
         /// <param name="chosenTarget">Where to play card</param>
         /// <param name="playType">The type of play, default is standard "play from hand"</param>
         /// <returns>Outcome, and Step result (as in step() if successful</returns>
-        Tuple<PlayOutcome, StepResult> PlayCard(int card, CardTargets chosenTarget, PlayType playType)
+        Tuple<PlayOutcome, StepResult> PlayCard(int card, TargetLocation chosenTarget, PlayType playType)
         {
             // I need to verify whether chosen card is playable
-            Tuple<PlayOutcome, CardTargets> cardOptions = GetPlayableOptions(card, playType); // Does same checks as before, whether a card can be played, and where
+            Tuple<PlayOutcome, TargetLocation> cardOptions = GetPlayableOptions(card, playType); // Does same checks as before, whether a card can be played, and where
             if (cardOptions.Item1 != PlayOutcome.OK)
             {
                 return new Tuple<PlayOutcome, StepResult>(cardOptions.Item1, null); // If failure, return type of failure, can't be played!
             }
             // Then, make sure chosen target makes sense
-            if (((chosenTarget & chosenTarget - 1) != 0) || (chosenTarget > CardTargets.ALL_LANES))
+            if (((chosenTarget & chosenTarget - 1) != 0) || (chosenTarget > TargetLocation.ALL_LANES))
             {
                 // Invalid target, either 0 or a specific single lane, not multiple or values higher than the allowed lanes!
                 return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
@@ -142,7 +142,7 @@ namespace ODLGameEngine
         /// <param name="card"></param>
         /// <param name="chosenTarget"></param>
         /// <returns>The entity that was generated for this play</returns>
-        EntityBase PLAYABLE_PlayCard(EntityBase card, CardTargets chosenTarget)
+        EntityBase PLAYABLE_PlayCard(EntityBase card, TargetLocation chosenTarget)
         {
             switch (card.EntityPlayInfo.EntityType)
             {
@@ -164,43 +164,43 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Card they want to play</param>
         /// <returns>Whether the play outcome would be ok, and which targets could be picked</returns>
-        Tuple<PlayOutcome, CardTargets> PLAYABLE_GetOptions(EntityBase card)
+        Tuple<PlayOutcome, TargetLocation> PLAYABLE_GetOptions(EntityBase card)
         {
             PlayOutcome outcome = PlayOutcome.CANT_AFFORD;
-            CardTargets possibleTargets = CardTargets.INVALID;
+            TargetLocation possibleTargets = TargetLocation.INVALID;
             // First check if player can afford
             if (!PLAYABLE_PlayerCanAfford(card))
             {
                 // Can't afford!
-                return new Tuple<PlayOutcome, CardTargets>(outcome, possibleTargets);
+                return new Tuple<PlayOutcome, TargetLocation>(outcome, possibleTargets);
             }
             // Otherwise I can def afford, check if playable
             outcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (card.EntityPlayInfo.TargetOptions == CardTargets.BOARD)
+            if (card.EntityPlayInfo.TargetOptions == TargetLocation.BOARD)
             {
                 outcome = PLAYABLE_IsPlayableGlobal(card) ? PlayOutcome.OK : outcome;
-                possibleTargets = CardTargets.BOARD;
+                possibleTargets = TargetLocation.BOARD;
                 // If filled requirements, card playable
             }
-            else if (card.EntityPlayInfo.TargetOptions <= CardTargets.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
+            else if (card.EntityPlayInfo.TargetOptions <= TargetLocation.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
             {
                 int laneCandidate;
-                CardTargets validTargetsIfPossible = CardTargets.BOARD;
+                TargetLocation validTargetsIfPossible = TargetLocation.BOARD;
                 for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
                 {
                     laneCandidate = 1 << i;
-                    if (card.EntityPlayInfo.TargetOptions.HasFlag((CardTargets)laneCandidate)) // If this lane is one of the possible ones
+                    if (card.EntityPlayInfo.TargetOptions.HasFlag((TargetLocation)laneCandidate)) // If this lane is one of the possible ones
                     {
-                        if (PLAYABLE_IsPlayableLane(card, (CardTargets)laneCandidate))
+                        if (PLAYABLE_IsPlayableLane(card, (TargetLocation)laneCandidate))
                         {
                             outcome = PlayOutcome.OK; // Card is playable atleast somewhere!
-                            validTargetsIfPossible |= (CardTargets)laneCandidate; // Add this option to list
+                            validTargetsIfPossible |= (TargetLocation)laneCandidate; // Add this option to list
                         }
                     }
                 }
-                possibleTargets = (validTargetsIfPossible != CardTargets.BOARD) ? validTargetsIfPossible : CardTargets.INVALID;
+                possibleTargets = (validTargetsIfPossible != TargetLocation.BOARD) ? validTargetsIfPossible : TargetLocation.INVALID;
             }
-            return new Tuple<PlayOutcome, CardTargets>(outcome, possibleTargets); // Return my findings
+            return new Tuple<PlayOutcome, TargetLocation>(outcome, possibleTargets); // Return my findings
         }
         /// <summary>
         /// Checks if the player can afford to play a card
@@ -247,7 +247,7 @@ namespace ODLGameEngine
         /// <param name="card">Which card</param>
         /// <param name="lane">Which lane</param>
         /// <returns>True if can be played in this lane</returns>
-        bool PLAYABLE_IsPlayableLane(EntityBase card, CardTargets laneCandidate)
+        bool PLAYABLE_IsPlayableLane(EntityBase card, TargetLocation laneCandidate)
         {
             //Lane laneToCheck = _detailedState.BoardState.GetLane(laneCandidate);
             bool playable; // By default playable unless something happens

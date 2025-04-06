@@ -97,8 +97,8 @@ namespace ODLGameEngine
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    DetailedState.BoardState.InsertEntity(auxPlacedEntity);
-                    DetailedState.BoardState.EntityData.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
+                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
+                    DetailedState.EntityData.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
                     ENGINE_RegisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
@@ -109,13 +109,13 @@ namespace ODLGameEngine
                     ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue = auxPlacedEntity.LaneCoordinate; // Store old value first
                     if(auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
                     {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).RemoveEntity(auxPlacedEntity);
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
                     }
                     auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).newValue; // unit now has new value
                     // Finally, update count in lane(s)
                     if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
                     {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).InsertEntity(auxPlacedEntity);
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
                     }
                     break;
                 case EventType.ENTITY_TILE_TRANSITION:
@@ -123,19 +123,19 @@ namespace ODLGameEngine
                     ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue = auxPlacedEntity.TileCoordinate; // Store old value first
                     if (auxPlacedEntity.TileCoordinate >= 0) // Remove count from old tile if applicable
                     {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).RemoveEntity(auxPlacedEntity);
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
                     }
                     auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).newValue; // unit now has new value
                     // Finally, update count in tile
                     if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).InsertEntity(auxPlacedEntity);
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
                     }
                     break;
                 case EventType.DEINIT_ENTITY: // Unit simply leaves field and user loses the unit
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    DetailedState.BoardState.RemoveEntity(auxPlacedEntity);
-                    DetailedState.BoardState.EntityData.Remove(auxPlacedEntity.UniqueId);
+                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
+                    DetailedState.EntityData.Remove(auxPlacedEntity.UniqueId);
                     ENGINE_DeregisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
@@ -226,8 +226,8 @@ namespace ODLGameEngine
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    DetailedState.BoardState.RemoveEntity(auxPlacedEntity);
-                    DetailedState.BoardState.EntityData.Remove(auxPlacedEntity.UniqueId);
+                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
+                    DetailedState.EntityData.Remove(auxPlacedEntity.UniqueId);
                     ENGINE_DeregisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
@@ -237,13 +237,13 @@ namespace ODLGameEngine
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).entity;
                     if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
                     {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).RemoveEntity(auxPlacedEntity);
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
                     }
                     auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue; // unit now has prev value
                     // Finally, update count in lane(s)
                     if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
                     {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).InsertEntity(auxPlacedEntity);
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
                     }
                     break;
                 case EventType.ENTITY_TILE_TRANSITION:
@@ -251,18 +251,18 @@ namespace ODLGameEngine
                     // Update count of tile
                     if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
                     {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).RemoveEntity(auxPlacedEntity);
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
                     }
                     auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue; // unit now has prev value
                     if (auxPlacedEntity.TileCoordinate >= 0) // Update its count if applicable
                     {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).InsertEntity(auxPlacedEntity);
+                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
                     }
                     break;
                 case EventType.DEINIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    DetailedState.BoardState.InsertEntity(auxPlacedEntity);
-                    DetailedState.BoardState.EntityData.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
+                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
+                    DetailedState.EntityData.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
                     ENGINE_RegisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
@@ -293,8 +293,7 @@ namespace ODLGameEngine
             {
                 foreach (TriggerType trigger in entity.Triggers.Keys) // Register this unit's trigger
                 {
-                    SortedSet<int> subscribedEntities;
-                    if (DetailedState.Triggers.TryGetValue(trigger, out subscribedEntities)) // If tigger already created, just add to list
+                    if (DetailedState.Triggers.TryGetValue(trigger, out SortedSet<int> subscribedEntities)) // If tigger already created, just add to list
                     {
                         subscribedEntities.Add(entity.UniqueId);
                     }

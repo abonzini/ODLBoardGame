@@ -86,8 +86,10 @@ namespace ODLGameEngine
         [JsonProperty]
         public Board BoardState { get; set; } = new Board();
         [JsonProperty]
-        public Dictionary<TriggerType, SortedSet<int>> Triggers = new Dictionary<TriggerType, SortedSet<int>>(); 
-
+        public Dictionary<TriggerType, SortedSet<int>> Triggers = new Dictionary<TriggerType, SortedSet<int>>();
+        // Entities
+        [JsonProperty]
+        public readonly SortedList<int, BoardEntity> EntityData = new SortedList<int, BoardEntity>();
         public int GetGameStateHash()
         {
             HashCode hash = new HashCode();
@@ -95,10 +97,13 @@ namespace ODLGameEngine
             hash.Add(Seed);
             hash.Add(NextUniqueIndex);
             hash.Add(CurrentPlayer);
-            hash.Add(PlayerStates[0].GetGameStateHash());
-            hash.Add(PlayerStates[1].GetGameStateHash());
             hash.Add(BoardState.GetGameStateHash());
-            foreach(KeyValuePair< TriggerType, SortedSet<int>> trigger in Triggers)
+            foreach (KeyValuePair<int, BoardEntity> kvp in EntityData)
+            {
+                hash.Add(kvp.Key);
+                hash.Add(kvp.Value.GetGameStateHash());
+            }
+            foreach (KeyValuePair< TriggerType, SortedSet<int>> trigger in Triggers)
             {
                 hash.Add(trigger.Key);
                 foreach(int entity in  trigger.Value)

@@ -49,7 +49,7 @@ namespace EngineTests
                 };
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Brick with cost 9
-                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 9, CardTargets.BOARD));
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 9, TargetLocation.BOARD));
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 sm.DetailedState.PlayerStates[(int)player].ActivePowerCast = 1; // Use expensive brick as placeholder active effect
@@ -127,7 +127,7 @@ namespace EngineTests
             {
                 CardFinder cardDb = new CardFinder();
                 // Card 1: 5-cost brick
-                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 5, CardTargets.BOARD));
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 5, TargetLocation.BOARD));
                 PlayerState pl1 = new PlayerState()
                 {
                     Gold = 10, // Let them afford the power
@@ -146,12 +146,12 @@ namespace EngineTests
                 };
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                // Pre rush assert
+                // Pre power assert
                 int stateHash = sm.DetailedState.GetGameStateHash();
                 PlayerState currentPlayer = sm.DetailedState.PlayerStates[(int)sm.DetailedState.CurrentPlayer];
                 Assert.AreEqual(currentPlayer.Gold, 10);
                 Assert.AreEqual(currentPlayer.PowerAvailable, true);
-                // Now, rush
+                // Now, power
                 Tuple<PlayOutcome, StepResult> res = sm.PlayActivePower();
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);

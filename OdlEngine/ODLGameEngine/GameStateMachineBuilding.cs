@@ -16,14 +16,14 @@ namespace ODLGameEngine
         /// <param name="laneTarget">Which lane is attempted</param>
         /// <returns></returns>
         /// <exception cref="InvalidDataException"></exception>
-        public ConstructionContext BUILDING_GetBuildingOptions(int player, Building building, CardTargets laneTarget)
+        public ConstructionContext BUILDING_GetBuildingOptions(int player, Building building, TargetLocation laneTarget)
         {
             ConstructionContext res = new ConstructionContext();
             int[] bp = laneTarget switch // get the right BP
             {
-                CardTargets.PLAINS => building.PlainsBp,
-                CardTargets.FOREST => building.ForestBp,
-                CardTargets.MOUNTAIN => building.MountainBp,
+                TargetLocation.PLAINS => building.PlainsBp,
+                TargetLocation.FOREST => building.ForestBp,
+                TargetLocation.MOUNTAIN => building.MountainBp,
                 _ => throw new InvalidDataException("Invalid lane target fot building!"),
             };
             Lane lane = DetailedState.BoardState.GetLane(laneTarget);
@@ -31,13 +31,13 @@ namespace ODLGameEngine
             for (i = 0; i < bp.Length; i++)
             {
                 Tile tile = lane.GetTileRelative(bp[i], player); // Gets next tile candidate
-                if (tile.AllBuildings.Count == 0 && tile.PlayerUnits[player].Count > 0) // Condition is, tile can't have building already, and there has to be atleast one unit to build it
+                if (tile.GetPlacedEntities(EntityType.BUILDING).Count == 0 && tile.GetPlacedEntities(EntityType.UNIT, player).Count > 0) // Condition is, tile can't have building already, and there has to be atleast one unit to build it
                 {
                     res.Building = building;
                     res.FirstAvailableOption = i;
                     res.RelativeTile = bp[i];
                     res.AbsoluteTile = lane.GetAbsoluteTileCoord(bp[i], player);
-                    res.Builder = (Unit)GetBoardEntity(tile.PlayerUnits[player].First());
+                    res.Builder = (Unit)DetailedState.EntityData[tile.GetPlacedEntities(EntityType.UNIT, player).First()];
                     break;
                 }
             }
@@ -50,7 +50,7 @@ namespace ODLGameEngine
         /// <param name="bldg">Building</param>
         /// <param name="chosenTarget">Target chosen for building</param>
         /// <returns>The created building</returns>
-        Building BUILDING_PlayBuilding(int player, Building bldg, CardTargets chosenTarget)
+        Building BUILDING_PlayBuilding(int player, Building bldg, TargetLocation chosenTarget)
         {
             // To spawn a building, first you get the playable ID
             Building newSpawnedBuilding = (Building)bldg.Clone(); // Clone in order to not break the same species

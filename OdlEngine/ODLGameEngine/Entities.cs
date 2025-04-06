@@ -19,7 +19,6 @@ namespace ODLGameEngine
         SKILL       = 4,
         PLAYER      = 8
     }
-
     /// <summary>
     /// Which expansion the card belongs to
     /// </summary>
@@ -34,7 +33,7 @@ namespace ODLGameEngine
     /// </summary>
     [Flags]
     [JsonConverter(typeof(FlagEnumJsonConverter))]
-    public enum CardTargets
+    public enum TargetLocation
     {
         BOARD = 0,
         PLAINS = 1,
@@ -88,7 +87,7 @@ namespace ODLGameEngine
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EntityType EntityType { get; set; } = EntityType.NONE;
         [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public CardTargets TargetOptions { get; set; } = CardTargets.BOARD; // Which lane(s) if any the card could work on
+        public TargetLocation TargetOptions { get; set; } = TargetLocation.BOARD; // Which lane(s) if any the card could work on
         [JsonConverter(typeof(StringEnumConverter))]
         public TargetCondition TargetConditions { get; set; } = TargetCondition.NONE; // What needs to happen for a card to be "playable" in a lane
     }
@@ -130,6 +129,11 @@ namespace ODLGameEngine
         public int Hp { get; set; } = 0;
         [JsonProperty]
         public int DamageTokens { get; set; } = 0;
+        [JsonProperty]
+        public int UniqueId { get; set; } = 0;
+        [JsonProperty]
+        public Dictionary<TriggerType, List<Effect>> Triggers { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
+
         /// <summary>
         /// Gets the hash of the entity
         /// </summary>
@@ -138,6 +142,7 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(base.GetGameStateHash());
+            hash.Add(UniqueId);
             hash.Add(Name);
             hash.Add(Owner);
             hash.Add(Hp);
@@ -150,14 +155,10 @@ namespace ODLGameEngine
     public class PlacedEntity : BoardEntity
     {
         [JsonProperty]
-        public int UniqueId { get; set; } = 0;
-        [JsonProperty]
         public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE; // Non serialized, doesn't define unit and info is kept in the board serialization
         [JsonProperty]
         public int TileCoordinate { get; set; } = -1; // Non serialized, doesn't define unit and info is kept in the board serialization
-        [JsonProperty]
-        public Dictionary<TriggerType, List<Effect>> Triggers { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
-
+        
         public override object Clone()
         {
             object newEntity = MemberwiseClone();
@@ -171,7 +172,6 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(base.GetGameStateHash());
-            hash.Add(UniqueId);
             hash.Add(DamageTokens);
             return hash.ToHashCode();
         }

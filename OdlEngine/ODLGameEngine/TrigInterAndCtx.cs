@@ -30,15 +30,27 @@ namespace ODLGameEngine
     public enum EffectType
     {
         DEBUG,
+        FIND_ENTITIES,
         SUMMON_UNIT
+    }
+    /// <summary>
+    /// When searching for a target, which entity is found
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum SearchCriterion
+    {
+        ORDINAL,
+        NUMBERED,
+        ALL
     }
     /// <summary>
     /// Player who is target of a card effect
     /// </summary>
     [JsonConverter(typeof(FlagEnumJsonConverter))]
     [Flags]
-    public enum PlayerTarget
+    public enum EntityOwner
     {
+        NONE = 0,
         OWNER = 1,
         OPPONENT = 2,
         BOTH = 3,
@@ -50,17 +62,16 @@ namespace ODLGameEngine
     {
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EffectType EffectType;
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public TargetLocation TargetLocation;
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public EntityOwner TargetPlayer;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public SearchCriterion SearchCriterion;
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public EntityType TargetType;
         public int CardNumber;
-        [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public PlayerTarget TargetPlayer;
-        [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public CardTargets LaneTargets;
-        /*
-         * TODO:
-         * Entity targets, first, last, random, all (create enum)
-         * Entity type filter, unit, building, player, (spell?!)
-         * Combined with lane and player, we can quickly do a series of filterings and get target(s) for an effect
-         */
+        public int Value;
     }
 
     // CONTEXT CONTANERS
@@ -71,7 +82,7 @@ namespace ODLGameEngine
     /// </summary>
     public class PlayContext : EffectContext
     {
-        public CardTargets LaneTargets;
+        public TargetLocation LaneTargets;
     }
     /// <summary>
     /// When a damage step ocurred, maybe also death

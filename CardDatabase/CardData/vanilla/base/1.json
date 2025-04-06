@@ -20,7 +20,7 @@
 				"EffectType": "SUMMON_UNIT",
 				"TargetPlayer": "CARD_OWNER",
 				"CardNumber": 2,
-				"LaneTargets": "ALL_LANES"
+				"TargetLocation": "ALL_LANES"
 			}
 		]
 	}

@@ -1,4 +1,8 @@
 Ongoing tasks in order of priority:
+- Targeting mechanics:
+  - WIP, make sure we get the right lists, and the right iterations, add players and so on
+- Damage mechanics:
+  - Will need to implement anyway and good way of testing targeting in a simple way, big todo
 - Implement complex effects:
     - Need to deal with cloning, make sure stats are properly and easily cloned, maybe chain cloning from stat, chain inheritance too
     - Stat class, hashed & serialized, value + modifier, function that alters it

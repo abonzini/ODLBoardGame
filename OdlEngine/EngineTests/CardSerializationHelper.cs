@@ -19,9 +19,9 @@ namespace EngineTests
             Effect effect = new Effect()
             {
                 EffectType = EffectType.SUMMON_UNIT,
-                TargetPlayer = PlayerTarget.OWNER,
+                TargetPlayer = EntityOwner.OWNER,
                 CardNumber = 1,
-                LaneTargets = CardTargets.ALL_LANES
+                TargetLocation = TargetLocation.ALL_LANES
             };
             dict.Add(InteractionType.WHEN_PLAYED, new List<Effect>() { effect });
 
@@ -30,7 +30,7 @@ namespace EngineTests
                 EntityPlayInfo = new EntityPlayInfo()
                 {
                     EntityType = EntityType.SKILL,
-                    TargetOptions = CardTargets.BOARD
+                    TargetOptions = TargetLocation.BOARD
                 },
                 EntityPrintInfo = new EntityPrintInfo()
                 {
