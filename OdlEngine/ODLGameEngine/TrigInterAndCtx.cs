@@ -40,7 +40,7 @@ namespace ODLGameEngine
     public enum SearchCriterion
     {
         ORDINAL,
-        NUMBERED,
+        QUANTITY,
         ALL
     }
     /// <summary>
@@ -114,5 +114,13 @@ namespace ODLGameEngine
         public int AbsoluteTile = -1;
         public int RelativeTile = -1;
         public int FirstAvailableOption = -1;
+    }
+    /// <summary>
+    /// Of an ongoing effect chain resolution, may contain important info
+    /// </summary>
+    public class OngoingEffectContext : EffectContext
+    {
+        public EffectContext BaseEffectContext;
+        public List<int> EffectTargets;
     }
 }
