@@ -51,16 +51,19 @@ namespace ODLGameEngine
         /// <param name="specificContext">Additional context that accompanies the desired effect (e.g. when killed, implies killed by someone, etc)</param>
         void TRIGINTER_ProcessEffects(EntityBase entity, List<Effect> effects, EffectContext specificContext)
         {
-            List<int> targets; // Potential target for potential card effects
+            OngoingEffectContext ctx = new OngoingEffectContext()
+            {
+                BaseEffectContext = specificContext
+            };
             foreach (Effect effect in effects) // Execute series of events for the card in question
             {
                 switch (effect.EffectType)
                 {
                     case EffectType.DEBUG:
-                        ENGINE_AddDebugEvent();
+                        ENGINE_AddDebugEvent(ctx);
                         break;
                     case EffectType.FIND_ENTITIES:
-                        targets = TRIGINTER_GetTargets(entity, effect);
+                        ctx.EffectTargets = TRIGINTER_GetTargets(entity, effect);
                         break;
                     case EffectType.SUMMON_UNIT:
                         // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
@@ -98,6 +101,18 @@ namespace ODLGameEngine
             }
         }
         /// <summary>
+        /// Just a bunch of enums for the target-finding state machine
+        /// </summary>
+        enum TargetingStateMachine
+        {
+            BEGIN,
+            INITIAL_PLAYER,
+            GET_ENTITIES_IN_REGION,
+            TARGETS_IN_REGION,
+            LAST_PLAYER,
+            END
+        }
+        /// <summary>
         /// Function that gets serch parameters as well as reference observer, and returns a series of valid entity targets.
         /// </summary>
         /// <param name="entityRef">Observer, i.e. which side of the board</param>
@@ -106,7 +121,153 @@ namespace ODLGameEngine
         List<int> TRIGINTER_GetTargets(EntityBase entityRef, Effect searchParameters)
         {
             List<int> res = new List<int>();
-            // Obviously TODO
+            // Search variables
+            bool reverseSearch = false; // Order of search
+            int requiredTargets; // How many targets I'll extract maximum
+            bool tileSectioning = false; // When searching along a lane, check tile-by-tile or the whole body as is
+            BoardElement targetBoardArea; // The board area that will be searched
+            int referencePlayer; // Order reference depends on indexing
+            int playerFilter = -1; // Filter of which player to search for (defautl is -1 both players)
+            // Prepare settings/masks for this target search
+            switch (searchParameters.TargetLocation)
+            {
+                case TargetLocation.BOARD: // Return board
+                    targetBoardArea = DetailedState.BoardState;
+                    break;
+                case TargetLocation.PLAINS: // For lane-based, get the lane
+                case TargetLocation.FOREST:
+                case TargetLocation.MOUNTAIN:
+                    targetBoardArea = DetailedState.BoardState.GetLane(searchParameters.TargetLocation);
+                    if(searchParameters.SearchCriterion != SearchCriterion.ALL) // If target is everything, no need to check rile by tile
+                    {
+                        tileSectioning = true;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException("Search not yet implemented for other targets!"); // This may be a later TODO once new needs appear
+            }
+            if (searchParameters.Value < 0) // Negative indexing implies reverse indexing
+            {
+                searchParameters.Value *= -1;
+                reverseSearch = true;
+            }
+            referencePlayer = reverseSearch ? 1 - entityRef.Owner : entityRef.Owner;
+            requiredTargets = searchParameters.SearchCriterion switch
+            {
+                SearchCriterion.ORDINAL => 1, // Only one target in position N
+                SearchCriterion.QUANTITY => searchParameters.Value, // First/last N
+                SearchCriterion.ALL => int.MaxValue, // Get everything possible
+                _ => throw new NotImplementedException("Invalid search criterion"),
+            };
+            if(searchParameters.TargetPlayer == EntityOwner.OWNER)
+            {
+                playerFilter = entityRef.Owner;
+            }
+            else if (searchParameters.TargetPlayer == EntityOwner.OPPONENT)
+            {
+                playerFilter = 1 - entityRef.Owner;
+            }
+            // Search loop, continues until I get the number of targets I want or nothing else to look for
+            TargetingStateMachine currentSearchState = TargetingStateMachine.BEGIN;
+            SortedSet<int> entities = null; // Container of location's entities
+            int tileCounter = 0; // Aux counter to explore lane in order
+            int localOrdinal = 0, totalOrdinal = 0;
+            while (res.Count < requiredTargets && currentSearchState != TargetingStateMachine.END)
+            {
+                int nextCandidateEntity = -1; // Start with a (invalid possible unit candidate)
+                switch (currentSearchState) // Checks values, last thing it does is to add candidate to evaluate, and possible next state
+                {
+                    case TargetingStateMachine.BEGIN:
+                        currentSearchState = TargetingStateMachine.INITIAL_PLAYER; // Nothign to do but to go to next state
+                        break;
+                    case TargetingStateMachine.INITIAL_PLAYER:
+                        if (searchParameters.TargetType.HasFlag(EntityType.PLAYER)) // Player targeting enabled, check if player is valid
+                        {
+                            // Need to add if player (w.r.t to card ownership) are valid targets 
+                            if (reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OPPONENT)) // If searching backwards and opponent enabled, then add opp
+                            {
+                                nextCandidateEntity = 1 - entityRef.Owner;
+                            }
+                            else if (!reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OWNER)) // If searching normally and owner enabled, then add it
+                            {
+                                nextCandidateEntity = entityRef.Owner;
+                            }
+                        }
+                        currentSearchState = TargetingStateMachine.GET_ENTITIES_IN_REGION; // Once finished, go to next state (get elements to search for entities)
+                        break;
+                    case TargetingStateMachine.GET_ENTITIES_IN_REGION: // Gets the list of entities in the desired board element, also checks if need to subdivide lane
+                        if(tileSectioning) // Lane needs to be divided in tiles
+                        {
+                            if(tileCounter < ((Lane)targetBoardArea).Len) // Check if I still have ongoing lane available
+                            {
+                                entities = ((Lane)targetBoardArea).GetTileRelative(tileCounter, referencePlayer).GetPlacedEntities(searchParameters.TargetType, playerFilter); // Search for requested target for requested players
+                                tileCounter++;
+                                currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
+                            }
+                            else // Ran out of lane, finished region
+                            {
+                                currentSearchState = TargetingStateMachine.LAST_PLAYER;
+                            }
+                        }
+                        else // Otherwise just get units in the region
+                        {
+                            entities = targetBoardArea.GetPlacedEntities(searchParameters.TargetType, playerFilter);
+                            currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
+                        }
+                        localOrdinal = 0;
+                        break;
+                    case TargetingStateMachine.TARGETS_IN_REGION: // This searches the region to add as many entities as it can find
+                        if(localOrdinal < entities.Count) // Can still explore this one
+                        {
+                            nextCandidateEntity = entities.ElementAt(localOrdinal); // Get next element
+                            localOrdinal++;
+                        }
+                        else // Means I finished region
+                        {
+                            if(tileSectioning) // May want to look for next tile (if available)
+                            {
+                                currentSearchState = TargetingStateMachine.GET_ENTITIES_IN_REGION;
+                            }
+                            else // Finished whole region, go to next part
+                            {
+                                currentSearchState = TargetingStateMachine.LAST_PLAYER;
+                            }
+                        }
+                        break;
+                    case TargetingStateMachine.LAST_PLAYER: // Identical to other player but reverse logic
+                        if (searchParameters.TargetType.HasFlag(EntityType.PLAYER))
+                        {
+                            if (!reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
+                            {
+                                nextCandidateEntity = 1 - entityRef.Owner;
+                            }
+                            else if (reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OWNER))
+                            {
+                                nextCandidateEntity = entityRef.Owner;
+                            }
+                        }
+                        currentSearchState = TargetingStateMachine.END; // Finished the board.. nothign else to look for
+                        break;
+                    case TargetingStateMachine.END:
+                        break;
+                }
+                if(nextCandidateEntity != -1) // Found next potential candidate entity, need to verify if applies
+                {
+                    bool addEntity = true;
+                    if(searchParameters.SearchCriterion == SearchCriterion.ORDINAL) // Need to ensure the unit # matches!
+                    {
+                        if(totalOrdinal != searchParameters.Value) // Not the entity I was looking for, unfortunately
+                        {
+                            addEntity = false;
+                        }
+                    }
+                    if (addEntity) // Found a valid candidate, so i add the entity
+                    {
+                        res.Add(nextCandidateEntity);
+                    }
+                    totalOrdinal++; // Regardless, I already examined this entity, update the global ordinal
+                }
+            }
             return res;
         }
     }

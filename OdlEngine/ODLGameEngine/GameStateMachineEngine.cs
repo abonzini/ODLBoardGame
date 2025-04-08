@@ -608,13 +608,14 @@ namespace ODLGameEngine
                     newValue = powerAvailability
                 });
         }
-        void ENGINE_AddDebugEvent()
+        void ENGINE_AddDebugEvent(OngoingEffectContext ctx)
         {
             ENGINE_ExecuteEvent(
-                    new GameEngineEvent()
-                    {
-                        eventType = EventType.DEBUG_CHECK,
-                    });
+                new EntityEvent<OngoingEffectContext>()
+                {
+                    eventType = EventType.DEBUG_CHECK,
+                    entity = ctx
+                });
         }
     }
 }

@@ -45,7 +45,7 @@ Besides card-specific fields (explained below), these mandatory fields serve the
     - ```Expansion:``` Expansion name in card language
     - ```ClassType:``` Card class (or BASE)
 - **EntityPlayInfo**
-    - ```CardType:``` Type of card, for now UNIT, SKILL, BUILDING
+    - ```EntityType:``` Type of card, for now ```UNIT```, ```SKILL```, ```BUILDING```
     - ```TargetOptions:``` Where the card can be targeted. Options:
         - ```BOARD```
         - ```PLAINS```
@@ -141,14 +141,33 @@ When an effect is ongoing (either because of a Trigger or an Interaction), the g
 
 ## Interaction/Trigger types
 
-- ```WHEN_PLAYED:``` Will be executed when the card is played for the first time. Examples: Every single ```skill``` card
+- ```WHEN_PLAYED:``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
 
 ## Effect Types
+Search in the next section for what the fields mean and the possible values they may take
 
-- ```FIND_ENTITIES:``` Finds a series of targets for this effect.
-For example, skills that deal direct damage or buff someone, or similar.
-In order to use this, the ```FIND_ENTITIES``` effect needs to be used, followed by the effect in question that uses these targets.
-- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes. ```CardNumber``` is the card number of the unit summoned, ```TargetPlayer``` is the player who will own the unit, and ```TargetLocation``` is one or more lane targets where the card(s) will be summoned. Examples: **RUSH**
+- ```FIND_ENTITIES:``` Task that finds all valid entities to be targetd for an effect.
+For example, skills that deal damage to an unit, or to the enemy hero, or destroy all buildings, etc.
+These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of search criteria.
+Parameters:
+    - ```TargetLocation``` where to search for the entity in question
+    - ```TargetPlayer``` serves as a filter where you only get the entities of the player owner in question
+    - ```TargetType``` the type of entities that can be targeted 
+    - ```SearchCriterion``` determines which target(s) can be found as valid targets
+    - ```Value``` is used alongside ```SearchCriterion``` as the value $n$. Negative values imply the search is done in reverse order.
+
+    This may seem convoluted but it's a robust way to target arbitrary combination of target conditions.
+    Keep in mind that, no matter the ```TargetLocation```, the order of valid targets will be: ***[PLAYER]->[LOCATION]->[PLAYER]*** where which player is first is determined by the sign of ```Value```.
+    When looking for entities on a lane, the system traverses the lane in order determined by ```Value``` sign.
+    In case of multiple entities in the same position, the unit that was played first is targeted first.
+
+- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes.
+Parameters:
+    - ```CardNumber``` is the card number of the unit summoned
+    - ```TargetPlayer``` is the player who will own the unit
+    - ```TargetLocation``` is one or more lane targets where the card(s) will be summoned
+    
+    Examples: **RUSH**
 
 ## Enum Values
 
@@ -165,9 +184,21 @@ In order to use this, the ```FIND_ENTITIES``` effect needs to be used, followed 
     These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
     For example, ```PLAINS|FOREST``` would work exactly like ```ALL_BUT_MOUNTAIN```.
 - ```TargetPlayer```
-    -```OWNER```: Owner of the card receives the effect
-    -```OPPONENT```: Player opposing the card owner will receive the effect
-    -```BOTH```: Both players receive the effect
+    - ```OWNER```: Owner of the card receives the effect
+    - ```OPPONENT```: Player opposing the card owner will receive the effect
+    - ```BOTH```: Both players receive the effect
 
     These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
     For example, ```OWNER|OPPONENT``` would work exactly like ```BOTH```.
+- ```SearchCriterion```
+    - ```ORDINAL``` targets the $n^{th}$ element found
+    - ```QUANTITY``` targets the first $n$ elements
+    - ```ALL``` targets everything found
+- ```EntityType```
+    - ```NONE```
+    - ```UNIT```
+    - ```BUILDING```
+    - ```PLAYER```
+
+    These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
+    For example, ```UNIT|BUILDING``` means both units and buildings will be accepted.

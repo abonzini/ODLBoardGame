@@ -18,11 +18,10 @@ namespace ODLGameEngine
     }
     public abstract class BoardElement : IHashable
     {
-        Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities = new Dictionary<(EntityType, int), SortedSet<int>>();
+        readonly Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities = new Dictionary<(EntityType, int), SortedSet<int>>();
         public SortedSet<int> GetPlacedEntities(EntityType entityTypes, int owner = -1)
         {
-            SortedSet<int> arr;
-            if (!PlacedEntities.TryGetValue((entityTypes, owner), out arr))
+            if (!PlacedEntities.ContainsKey((entityTypes, owner)))
             {
                 PlacedEntities[(entityTypes, owner)] = new SortedSet<int>(); // Returns an empty list if nothing there
             }
@@ -49,12 +48,11 @@ namespace ODLGameEngine
                     }
                 }
                 // At this point a new combination has been created, check if any of them is new and needs to be init
-                SortedSet<int> arr;
-                if (!PlacedEntities.TryGetValue((nextEntityCombination, allOwners), out arr))
+                if (!PlacedEntities.ContainsKey((nextEntityCombination, allOwners)))
                 {
                     PlacedEntities[(nextEntityCombination, allOwners)] = new SortedSet<int>();
                 }
-                if (!PlacedEntities.TryGetValue((nextEntityCombination, owner), out  arr))
+                if (!PlacedEntities.ContainsKey((nextEntityCombination, owner)))
                 {
                     PlacedEntities[(nextEntityCombination, owner)] = new SortedSet<int>();
                 }
