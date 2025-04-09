@@ -63,11 +63,11 @@ namespace ODLGameEngine
                         ENGINE_AddDebugEvent(ctx);
                         break;
                     case EffectType.FIND_ENTITIES:
-                        ctx.EffectTargets = TRIGINTER_GetTargets(entity, effect);
+                        ctx.EffectTargets = TRIGINTER_GetTargets(entity, effect, specificContext);
                         break;
                     case EffectType.SUMMON_UNIT:
                         // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
-                        for (int i = 0; i < 2; i++) // Check for which order is the summon
+                        for (int i = 0; i < 2; i++) // Check for which player is the summon
                         {
                             EntityOwner nextPossibleOwner = (EntityOwner)(1 << i);
                             int playerOwner;
@@ -85,12 +85,20 @@ namespace ODLGameEngine
                                 continue;
                             }
                             Unit auxCardData = (Unit)CardDb.GetCard(effect.CardNumber);
-                            for (int j = 0; j < GameConstants.BOARD_LANES_NUMBER; j++)
+                            // Find where to play unit
+                            if(effect.TargetLocation == TargetLocation.PLAY_TARGET) // If card has the "played" target
                             {
-                                TargetLocation nextLane = (TargetLocation)(1 << j); // Get lanes in order, can be randomized if needed
-                                if(effect.TargetLocation.HasFlag(nextLane)) // If this lane is a valid target for this unt
+                                UNIT_PlayUnit(playerOwner, auxCardData, ((PlayContext)specificContext).LaneTargets); // Plays the unit same played as original card
+                            }
+                            else // Otherwise, could be hardcoded lanes
+                            {
+                                for (int j = 0; j < GameConstants.BOARD_LANES_NUMBER; j++)
                                 {
-                                    UNIT_PlayUnit(playerOwner, auxCardData, nextLane); // Plays the unit
+                                    TargetLocation nextLane = (TargetLocation)(1 << j); // Get lanes in order, can be randomized if needed
+                                    if(effect.TargetLocation.HasFlag(nextLane)) // If this lane is a valid target for this unt
+                                    {
+                                        UNIT_PlayUnit(playerOwner, auxCardData, nextLane); // Plays the unit
+                                    }
                                 }
                             }
                         }
@@ -118,16 +126,23 @@ namespace ODLGameEngine
         /// <param name="entityRef">Observer, i.e. which side of the board</param>
         /// <param name="searchParameters">Contains extra info necessary for the search</param>
         /// <returns></returns>
-        List<int> TRIGINTER_GetTargets(EntityBase entityRef, Effect searchParameters)
+        List<int> TRIGINTER_GetTargets(EntityBase entityRef, Effect searchParameters, EffectContext specificContext)
         {
+            // If nothing to search for, just return an empty list
+            if(searchParameters.TargetPlayer == EntityOwner.NONE || searchParameters.TargetType == EntityType.NONE || (searchParameters.SearchCriterion == SearchCriterion.QUANTITY && searchParameters.Value == 0))
+            {
+                return new List<int>();
+            }
             List<int> res = new List<int>();
             // Search variables
             bool reverseSearch = false; // Order of search
             int requiredTargets; // How many targets I'll extract maximum
+            bool laneIsTarget = false; // Target is a lane
             bool tileSectioning = false; // When searching along a lane, check tile-by-tile or the whole body as is
             BoardElement targetBoardArea; // The board area that will be searched
             int referencePlayer; // Order reference depends on indexing
             int playerFilter = -1; // Filter of which player to search for (defautl is -1 both players)
+            int n = searchParameters.Value;
             // Prepare settings/masks for this target search
             switch (searchParameters.TargetLocation)
             {
@@ -138,24 +153,33 @@ namespace ODLGameEngine
                 case TargetLocation.FOREST:
                 case TargetLocation.MOUNTAIN:
                     targetBoardArea = DetailedState.BoardState.GetLane(searchParameters.TargetLocation);
-                    if(searchParameters.SearchCriterion != SearchCriterion.ALL) // If target is everything, no need to check rile by tile
-                    {
-                        tileSectioning = true;
-                    }
+                    laneIsTarget = true;
+                    break;
+                case TargetLocation.PLAY_TARGET: // Need to check where the card had been played
+                    targetBoardArea = DetailedState.BoardState.GetLane(((PlayContext)specificContext).LaneTargets);
+                    laneIsTarget = true;
                     break;
                 default:
                     throw new NotImplementedException("Search not yet implemented for other targets!"); // This may be a later TODO once new needs appear
             }
-            if (searchParameters.Value < 0) // Negative indexing implies reverse indexing
+            if (laneIsTarget && (searchParameters.SearchCriterion != SearchCriterion.ALL)) // If target is everything, no need to check tile by tile
             {
-                searchParameters.Value *= -1;
+                tileSectioning = true;
+            }
+            if (n < 0) // Negative indexing implies reverse indexing
+            {
+                n *= -1;
+                if(searchParameters.SearchCriterion == SearchCriterion.ORDINAL) // In ordinals, -1 is 0 from reverse. In quant, -1 is 1 in reverse
+                {
+                    n -= 1; // Need to index starting from 0!
+                }
                 reverseSearch = true;
             }
             referencePlayer = reverseSearch ? 1 - entityRef.Owner : entityRef.Owner;
             requiredTargets = searchParameters.SearchCriterion switch
             {
                 SearchCriterion.ORDINAL => 1, // Only one target in position N
-                SearchCriterion.QUANTITY => searchParameters.Value, // First/last N
+                SearchCriterion.QUANTITY => n, // First/last N
                 SearchCriterion.ALL => int.MaxValue, // Get everything possible
                 _ => throw new NotImplementedException("Invalid search criterion"),
             };
@@ -256,7 +280,7 @@ namespace ODLGameEngine
                     bool addEntity = true;
                     if(searchParameters.SearchCriterion == SearchCriterion.ORDINAL) // Need to ensure the unit # matches!
                     {
-                        if(totalOrdinal != searchParameters.Value) // Not the entity I was looking for, unfortunately
+                        if(totalOrdinal != n) // Not the entity I was looking for, unfortunately
                         {
                             addEntity = false;
                         }

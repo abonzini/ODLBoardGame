@@ -43,7 +43,8 @@ namespace ODLGameEngine
         ALL_BUT_FOREST = 5,
         ALL_BUT_PLAINS = 6,
         ALL_LANES = 7,
-        INVALID = 8
+        INVALID = 8,
+        PLAY_TARGET
     }
 
     /// <summary>

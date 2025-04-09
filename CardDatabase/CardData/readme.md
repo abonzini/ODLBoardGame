@@ -141,12 +141,12 @@ When an effect is ongoing (either because of a Trigger or an Interaction), the g
 
 ## Interaction/Trigger types
 
-- ```WHEN_PLAYED:``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
+- ```WHEN_PLAYED``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
 
 ## Effect Types
 Search in the next section for what the fields mean and the possible values they may take
 
-- ```FIND_ENTITIES:``` Task that finds all valid entities to be targetd for an effect.
+- ```FIND_ENTITIES``` Task that finds all valid entities to be targeted for an effect.
 For example, skills that deal damage to an unit, or to the enemy hero, or destroy all buildings, etc.
 These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of search criteria.
 Parameters:
@@ -161,7 +161,7 @@ Parameters:
     When looking for entities on a lane, the system traverses the lane in order determined by ```Value``` sign.
     In case of multiple entities in the same position, the unit that was played first is targeted first.
 
-- ```SUMMON_UNIT:``` Summons a unit in a desired lane or set of lanes.
+- ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes.
 Parameters:
     - ```CardNumber``` is the card number of the unit summoned
     - ```TargetPlayer``` is the player who will own the unit
@@ -180,6 +180,7 @@ Parameters:
     - ```ALL_BUT_FOREST```
     - ```ALL_BUT_PLAINS```
     - ```ALL_LANES```
+    - ```PLAY_TARGET```. Effect target is the same as the played card. Only makes sense in cards with effects ```WHEN_PLAYED```.
 
     These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
     For example, ```PLAINS|FOREST``` would work exactly like ```ALL_BUT_MOUNTAIN```.

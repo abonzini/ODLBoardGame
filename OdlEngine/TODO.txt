@@ -1,9 +1,5 @@
 Ongoing tasks in order of priority:
-- Targeting mechanics:
-  - Add tons of targeting test scenarios, ensure debug ctx looks ok
-- Damage mechanics:
-  - Will need to implement anyway and good way of testing targeting in a simple way, big todo
-- Implement complex effects:
+- Implement complex effects, stat buff:
     - Need to deal with cloning, make sure stats are properly and easily cloned, maybe chain cloning from stat, chain inheritance too
     - Stat class, hashed & serialized, value + modifier, function that alters it
     - Unified treatment of stats

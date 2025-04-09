@@ -21,6 +21,8 @@ namespace ODLGameEngine
         readonly Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities = new Dictionary<(EntityType, int), SortedSet<int>>();
         public SortedSet<int> GetPlacedEntities(EntityType entityTypes, int owner = -1)
         {
+            EntityType entityMask = EntityType.UNIT | EntityType.BUILDING; // Ignore noise as it can't be in board anyway
+            entityTypes &= entityMask;
             if (!PlacedEntities.ContainsKey((entityTypes, owner)))
             {
                 PlacedEntities[(entityTypes, owner)] = new SortedSet<int>(); // Returns an empty list if nothing there
@@ -32,43 +34,46 @@ namespace ODLGameEngine
             // Also define the flags to allow into generalised lists
             int allOwners = -1;
             List<EntityType> allowedEntities = new List<EntityType>([EntityType.UNIT, EntityType.BUILDING]);
-            allowedEntities.Remove(entity.EntityPlayInfo.EntityType); // This one is always 1 so I don't need to iterate on it
-            int index = entity.UniqueId;
-            int owner = entity.Owner;
-
-            int numberOfCombinations = 1 << allowedEntities.Count; // 2^count
-            for (int i = 0; i < numberOfCombinations; i++)
+            if(allowedEntities.Remove(entity.EntityPlayInfo.EntityType)) // This one is always 1 so I don't need to iterate on it
             {
-                EntityType nextEntityCombination = entity.EntityPlayInfo.EntityType; // This flag is always 1
-                for (int bit = 1; bit <= allowedEntities.Count; bit++)
+                // Only continue if entity type was really present
+                int index = entity.UniqueId;
+                int owner = entity.Owner;
+
+                int numberOfCombinations = 1 << allowedEntities.Count; // 2^count
+                for (int i = 0; i < numberOfCombinations; i++)
                 {
-                    if ((i & bit) != 0) // Entity is present in this combination
+                    EntityType nextEntityCombination = entity.EntityPlayInfo.EntityType; // This flag is always 1
+                    for (int bit = 1; bit <= allowedEntities.Count; bit++)
                     {
-                        nextEntityCombination |= allowedEntities[bit-1]; // In this case, it's added to a combination
+                        if ((i & bit) != 0) // Entity is present in this combination
+                        {
+                            nextEntityCombination |= allowedEntities[bit-1]; // In this case, it's added to a combination
+                        }
                     }
-                }
-                // At this point a new combination has been created, check if any of them is new and needs to be init
-                if (!PlacedEntities.ContainsKey((nextEntityCombination, allOwners)))
-                {
-                    PlacedEntities[(nextEntityCombination, allOwners)] = new SortedSet<int>();
-                }
-                if (!PlacedEntities.ContainsKey((nextEntityCombination, owner)))
-                {
-                    PlacedEntities[(nextEntityCombination, owner)] = new SortedSet<int>();
-                }
-                // Then add the elements where they belong
-                switch (op)
-                {
-                    case ODLGameEngine.EntityListOperation.ADD:
-                        PlacedEntities[(nextEntityCombination, allOwners)].Add(index);
-                        PlacedEntities[(nextEntityCombination, owner)].Add(index);
-                        break;
-                    case ODLGameEngine.EntityListOperation.REMOVE:
-                        PlacedEntities[(nextEntityCombination, allOwners)].Remove(index);
-                        PlacedEntities[(nextEntityCombination, owner)].Remove(index);
-                        break;
-                    default:
-                        throw new NotImplementedException("Invalid list operation");
+                    // At this point a new combination has been created, check if any of them is new and needs to be init
+                    if (!PlacedEntities.ContainsKey((nextEntityCombination, allOwners)))
+                    {
+                        PlacedEntities[(nextEntityCombination, allOwners)] = new SortedSet<int>();
+                    }
+                    if (!PlacedEntities.ContainsKey((nextEntityCombination, owner)))
+                    {
+                        PlacedEntities[(nextEntityCombination, owner)] = new SortedSet<int>();
+                    }
+                    // Then add the elements where they belong
+                    switch (op)
+                    {
+                        case ODLGameEngine.EntityListOperation.ADD:
+                            PlacedEntities[(nextEntityCombination, allOwners)].Add(index);
+                            PlacedEntities[(nextEntityCombination, owner)].Add(index);
+                            break;
+                        case ODLGameEngine.EntityListOperation.REMOVE:
+                            PlacedEntities[(nextEntityCombination, allOwners)].Remove(index);
+                            PlacedEntities[(nextEntityCombination, owner)].Remove(index);
+                            break;
+                        default:
+                            throw new NotImplementedException("Invalid list operation");
+                    }
                 }
             }
         }
