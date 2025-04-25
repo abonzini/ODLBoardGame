@@ -1,16 +1,18 @@
 Ongoing tasks in order of priority:
-- Implement complex effects, stat buff:
-    - Need to deal with cloning, make sure stats are properly and easily cloned, maybe chain cloning from stat, chain inheritance too
-    - Stat class, hashed & serialized, value + modifier, function that alters it
-    - Unified treatment of stats
-    - Remove Hp damage from readme, wont be serialized. Discuss, is damage a modifier? Token? could be...
-      If so, this unifies deserialization and value
-    - Add effect that buffs an entity stat, need few extra variables like how much and the buffed stat/relation
-    - Also, add targeting, probably a random one or sth, play the test effect where a buff is applied
+- Finish implementing stat class:
+    - Aply stat class to all entities
+    - Build project, use Total in all calculations
+    - Resolve chain cloning of Entities and inheriting (for stat)
+    - Modify deserialization readme for cards
+-Implementing Buffing/Debuffing:
+    - Add STAT state amchine, deals with buffing and changing stats overall, with functions such as doubling stats or etc. Passes through engine (for reversion). Stat as reference
+    - In triginter, add effects that buff a stat for target(s)
+        - Value (already there)
+        - Stat to change (of target)
+        - Type of buff (setting, addition, multiplication, hard setting)
+        - HP buffing situation, need a HP verification on top
     - Tests:
-        - Massive test case of all stat buffing/debuffing with the chosen proportion
-        - Test case of targetting
-    
+        - Given: specific target(s): Massive test case of all stat buffing/debuffing with the chosen proportion, all stats, all situations
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it
