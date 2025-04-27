@@ -53,9 +53,11 @@ namespace ODLGameEngine
             if (cooldown == 0)
             {
                 ENGINE_AddMessageEvent($"P{unitOwnerId + 1}'s {unit.Name} advances");
-                advanceCtx.InitialMovement = advanceCtx.CurrentMovement = unit.Movement.Total; // How much to advance
+                advanceCtx.InitialMovement = unit.Movement.Total; // How much to advance
                 Lane lane = DetailedState.BoardState.GetLane(unit.LaneCoordinate); // Which lane
-                while(advanceCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
+                // Ready to advance!
+                advanceCtx.CurrentMovement = advanceCtx.InitialMovement;
+                while (advanceCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
                     // Exiting current tile
                     if (lane.GetTileAbsolute(unit.TileCoordinate).GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop advance here (and also attack)

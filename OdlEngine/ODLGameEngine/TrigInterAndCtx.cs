@@ -31,7 +31,8 @@ namespace ODLGameEngine
     {
         DEBUG,
         FIND_ENTITIES,
-        SUMMON_UNIT
+        SUMMON_UNIT,
+        MODIFIER
     }
     /// <summary>
     /// When searching for a target, which entity is found
@@ -56,6 +57,29 @@ namespace ODLGameEngine
         BOTH = 3,
     }
     /// <summary>
+    /// Type of modifier the effect has
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum ModifierOperation
+    {
+        SET,
+        ADD,
+        MULTIPLY,
+        ABSOLUTE_SET
+    }
+    /// <summary>
+    /// What will be modified
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum ModifierTarget
+    {
+        TARGET_HP,
+        TARGET_ATTACK,
+        TARGET_MOVEMENT,
+        TARGET_MOVEMENT_DENOMINATOR,
+        // Todo, damage, advancement, etc
+    }
+    /// <summary>
     /// Effect is described by a type and a series of modifiers that define the effect
     /// </summary>
     public class Effect
@@ -70,6 +94,10 @@ namespace ODLGameEngine
         public SearchCriterion SearchCriterion;
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EntityType TargetType;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ModifierOperation ModifierOperation;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ModifierTarget ModifierTarget;
         public int CardNumber;
         public int Value;
     }

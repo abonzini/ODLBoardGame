@@ -73,6 +73,10 @@ namespace ODLGameEngine
         {
             BaseValue = _minTotalCap = 1;
         }
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
     [JsonConverter(typeof(StatJsonConverter))]
     public class Min0Stat : Stat
@@ -80,6 +84,10 @@ namespace ODLGameEngine
         public Min0Stat()
         {
             BaseValue = _minTotalCap = 0;
+        }
+        public override string ToString()
+        {
+            return base.ToString();
         }
     }
 

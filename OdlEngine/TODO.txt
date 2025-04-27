@@ -1,11 +1,4 @@
 Ongoing tasks in order of priority:
--Implementing Buffing/Debuffing:
-	- In triginter, add effects that buff a stat for target(s)
-        - Value (already there)
-        - Stat to change (of target)
-        - Type of buff (setting, addition, multiplication)
-    - Tests:
-        - Given: specific target(s): Massive test case of all stat buffing/debuffing with the chosen proportion, all stats, all situations
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it

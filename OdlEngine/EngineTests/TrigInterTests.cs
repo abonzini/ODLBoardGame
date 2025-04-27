@@ -877,7 +877,7 @@ namespace EngineTests
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
                     List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
-                    Assert.AreEqual(Math.Abs(num), searchResultList.Count); // Ordinals return a single value regardless
+                    Assert.AreEqual(Math.Abs(num), searchResultList.Count);
                     // Check correct results
                     if(num != 0) // Nothing to assert if searching for 0
                     {
@@ -897,6 +897,223 @@ namespace EngineTests
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash());
+                }
+            }
+        }
+        [TestMethod]
+        public void BuffingDifferentStats()
+        {
+            Random _rng = new Random();
+            // Will buff (SET) each stat
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Values
+                int statValue = _rng.Next(1, 100); // Initial value will be a specific number
+                int newValue;
+                do
+                {
+                    newValue = _rng.Next(1, 100);
+                } while (newValue == statValue); // Will set to a new but different value
+                // Card 1: Skill that performs a search and buffs the specific stat of a unit
+                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, TargetLocation.BOARD);
+                Effect searchEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    SearchCriterion = SearchCriterion.ALL, // All of them,
+                    TargetLocation = TargetLocation.BOARD, // Everywhere
+                    TargetPlayer = EntityOwner.OWNER, // Whoever played the card
+                    TargetType = EntityType.UNIT // Get unit (as this has all stats)
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                Effect buffEffect = new Effect() // Operation that'll replace the stat for the new value
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Value = newValue,
+                    ModifierOperation = ModifierOperation.SET
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect, buffEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Add stuff to board. In a random lane, add a few units for player
+                int lane = _rng.Next(0, 3);
+                TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
+                Unit theUnit = new Unit() // This is the unit that'll be created
+                {
+                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT }, 
+                };
+                theUnit.Attack.BaseValue = statValue;
+                theUnit.Hp.BaseValue = statValue;
+                theUnit.Movement.BaseValue = statValue;
+                theUnit.MovementDenominator.BaseValue = statValue;
+                ManualInitEntity(state, targetLocation, 0, 2, playerIndex, (PlacedEntity)theUnit.Clone());
+                ManualInitEntity(state, targetLocation, 1, 3, playerIndex, (PlacedEntity)theUnit.Clone());
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Set of stat targeting
+                List<ModifierTarget> modifierTargets = [ModifierTarget.TARGET_HP, ModifierTarget.TARGET_ATTACK, ModifierTarget.TARGET_MOVEMENT, ModifierTarget.TARGET_MOVEMENT_DENOMINATOR];
+                foreach (ModifierTarget modifierTarget in modifierTargets) // Will buff all things, one by one
+                {
+                    buffEffect.ModifierTarget = modifierTarget; // Buff will now target this stat
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    // Play
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                    GameEngineEvent debugEvent = null;
+                    foreach (GameEngineEvent ev in res.Item2.events)
+                    {
+                        if (ev.eventType == EventType.DEBUG_CHECK)
+                        {
+                            debugEvent = ev;
+                            break;
+                        }
+                    }
+                    Assert.IsNotNull(debugEvent); // Found it!
+                    // Check returned targets
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                    foreach (int entityId in searchResultList)
+                    { // Check if the buff did it's job
+                        Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
+                        Stat statToChech = modifierTarget switch
+                        {
+                            ModifierTarget.TARGET_HP => unitToCheck.Hp,
+                            ModifierTarget.TARGET_ATTACK => unitToCheck.Attack,
+                            ModifierTarget.TARGET_MOVEMENT => unitToCheck.Movement,
+                            ModifierTarget.TARGET_MOVEMENT_DENOMINATOR => unitToCheck.MovementDenominator,
+                            _ => throw new NotImplementedException("Modifier type not implemented yet")
+                        };
+                        Assert.AreEqual(statToChech.Total, newValue);
+                    }
+                    // Revert and hash check
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                }
+            }
+        }
+        [TestMethod]
+        public void BuffingModes()
+        {
+            Random _rng = new Random();
+            // Will buff (SET) each stat
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Values
+                int statValue = _rng.Next(2, 100); // Initial value will be a specific number
+                int buffValue;
+                do
+                {
+                    buffValue = _rng.Next(2, 100);
+                } while (buffValue == statValue); // Will set to a new but different value
+                // Card 1: Skill that performs a search and buffs the specific stat of a unit
+                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, TargetLocation.BOARD);
+                Effect searchEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    SearchCriterion = SearchCriterion.ALL, // All of them,
+                    TargetLocation = TargetLocation.BOARD, // Everywhere
+                    TargetPlayer = EntityOwner.OWNER, // Whoever played the card
+                    TargetType = EntityType.UNIT // Get unit (as this has all stats)
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                Effect buffEffect = new Effect() // Operation that'll replace the stat for the new value
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Value = buffValue,
+                    ModifierTarget = ModifierTarget.TARGET_HP
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect, buffEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Add stuff to board. In a random lane, add a few units for player
+                int lane = _rng.Next(0, 3);
+                TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
+                Unit theUnit = new Unit() // This is the unit that'll be created
+                {
+                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                };
+                theUnit.Attack.BaseValue = statValue;
+                theUnit.Hp.BaseValue = statValue;
+                theUnit.Movement.BaseValue = statValue;
+                theUnit.MovementDenominator.BaseValue = statValue;
+                ManualInitEntity(state, targetLocation, 0, 2, playerIndex, (PlacedEntity)theUnit.Clone());
+                ManualInitEntity(state, targetLocation, 1, 3, playerIndex, (PlacedEntity)theUnit.Clone());
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Set of stat targeting
+                List<ModifierOperation> modifierOperations = [ModifierOperation.ADD, ModifierOperation.ABSOLUTE_SET, ModifierOperation.SET, ModifierOperation.MULTIPLY];
+                foreach (ModifierOperation modifierOperation in modifierOperations) // Will buff in all ways, one by one
+                {
+                    buffEffect.ModifierOperation = modifierOperation; // Buff will do this
+                    int desiredValue = modifierOperation switch
+                    {
+                        ModifierOperation.ADD => statValue + buffValue,
+                        ModifierOperation.MULTIPLY => statValue * buffValue,
+                        ModifierOperation.SET => buffValue,
+                        ModifierOperation.ABSOLUTE_SET => buffValue,
+                        _ => throw new NotImplementedException("Modifier op not implemented yet")
+                    };
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    // Play
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                    GameEngineEvent debugEvent = null;
+                    foreach (GameEngineEvent ev in res.Item2.events)
+                    {
+                        if (ev.eventType == EventType.DEBUG_CHECK)
+                        {
+                            debugEvent = ev;
+                            break;
+                        }
+                    }
+                    Assert.IsNotNull(debugEvent); // Found it!
+                    // Check returned targets
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                    foreach (int entityId in searchResultList)
+                    { // Check if the buff did it's job
+                        Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
+                        Stat statToChech = unitToCheck.Hp;
+                        Assert.AreEqual(statToChech.Total, desiredValue);
+                    }
+                    // Revert and hash check
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
                 }
             }
         }

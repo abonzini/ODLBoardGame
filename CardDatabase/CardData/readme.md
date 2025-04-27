@@ -154,7 +154,7 @@ Parameters:
     - ```TargetPlayer``` serves as a filter where you only get the entities of the player owner in question
     - ```TargetType``` the type of entities that can be targeted 
     - ```SearchCriterion``` determines which target(s) can be found as valid targets
-    - ```Value``` is used alongside ```SearchCriterion``` as the value $n$. Negative values imply the search is done in reverse order.
+    - ```Value``` is used alongside ```SearchCriterion``` as the value $n$. Negative values imply the search is done in reverse order
 
     This may seem convoluted but it's a robust way to target arbitrary combination of target conditions.
     Keep in mind that, no matter the ```TargetLocation```, the order of valid targets will be: ***[PLAYER]->[LOCATION]->[PLAYER]*** where which player is first is determined by the sign of ```Value```.
@@ -167,7 +167,16 @@ Parameters:
     - ```TargetPlayer``` is the player who will own the unit
     - ```TargetLocation``` is one or more lane targets where the card(s) will be summoned
     
-    Examples: **RUSH**
+    Examples:
+    - **RUSH** summons a unit in all lanes
+
+- ```MODIFIER``` Applies a modifier (i.e. buff or debuff) to something. Usually stats but can be other things.
+Parameters:
+    - ```Value``` is the value $n$ of the modifier itself
+    - ```ModifierOperation``` how the modifier's value is applied (i.e. whether it's a multiplaction, addition, etc)
+    - ```ModifierTarget``` defines *what* is modified, if a stat, a damage value, etc
+
+    Keep in mind that when buffing/debuffing something, the buff target will need to be found via a ```FIND_ENTITIES``` operation.
 
 ## Enum Values
 
@@ -195,11 +204,21 @@ Parameters:
     - ```ORDINAL``` targets the $n^{th}$ element found
     - ```QUANTITY``` targets the first $n$ elements
     - ```ALL``` targets everything found
-- ```EntityType```
+- ```TargetType```
     - ```NONE```
     - ```UNIT```
     - ```BUILDING```
     - ```PLAYER```
+
+    These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
+    For example, ```BUILDING|UNIT``` would search for both buildings and units
+- ```ModifierOperation```
+    - ```SET``` will modify the target to have the value $n$
+    - ```ADD``` adds $n$ to the target
+    - ```MULTIPLY``` multiplies tagret by $n$
+    - ```ABSOLUTE_SET``` very similar to ```SET``` but it is a harsher operation: it overwrites the base value to $n$ and this becomes the new value. Only makes sense in specific buffs and should really not be used except in some very specific situations
+- ```ModifierTarget```
+    - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```FIND_ENTITIES``` operation, this corresponding stat is modified
 
     These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
     For example, ```UNIT|BUILDING``` means both units and buildings will be accepted.

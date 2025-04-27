@@ -18,7 +18,34 @@ namespace ODLGameEngine
             ENGINE_SetStatModifierValue(stat, 0); // Clears modifier as the stat  will be the unmodified value
             ENGINE_SetStatBaseValue(stat, value); // Then set the set value, now stat will be (total = value + 0)
         }
-
-        // TODO: Buff additive, buff multiply, buff set, buff absolute HP set (also clears damage)?
+        /// <summary>
+        /// Adds the value to the stat as a modifier
+        /// </summary>
+        /// <param name="stat">The stat</param>
+        /// <param name="value">The value to add</param>
+        void STATS_AddToStat(Stat stat, int value)
+        {
+            ENGINE_SetStatModifierValue(stat, stat.Modifier + value);
+        }
+        /// <summary>
+        /// Multiplies the stat by a value
+        /// </summary>
+        /// <param name="stat">The stat</param>
+        /// <param name="value">The value to multiply</param>
+        void STATS_MultiplyStat(Stat stat, int value)
+        {
+            int total = stat.Total;
+            total *= value; // This is the new total amount
+            ENGINE_SetStatModifierValue(stat, total - stat.BaseValue);
+        }
+        /// <summary>
+        /// Modifies stat so that it's exactly equal to the value
+        /// </summary>
+        /// <param name="stat">The stat</param>
+        /// <param name="value">The new value</param>
+        void STATS_SetStat(Stat stat, int value)
+        {
+            ENGINE_SetStatModifierValue(stat, value - stat.BaseValue);
+        }
     }
 }

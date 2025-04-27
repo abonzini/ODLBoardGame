@@ -103,6 +103,42 @@ namespace ODLGameEngine
                             }
                         }
                         break;
+                    case EffectType.MODIFIER:
+                        switch (effect.ModifierTarget) // Will check wxactly what I need to modify!
+                        {
+                            case ModifierTarget.TARGET_HP:
+                            case ModifierTarget.TARGET_ATTACK:
+                            case ModifierTarget.TARGET_MOVEMENT:
+                            case ModifierTarget.TARGET_MOVEMENT_DENOMINATOR:
+                                { // Ok this means I need to change a stat of a series of targets obtained by FIND_ENTITIES
+                                    Action<Stat, int> functionToApply = effect.ModifierOperation switch // Get correct operation
+                                    {
+                                        ModifierOperation.SET => STATS_SetStat,
+                                        ModifierOperation.ADD => STATS_AddToStat,
+                                        ModifierOperation.MULTIPLY => STATS_MultiplyStat,
+                                        ModifierOperation.ABSOLUTE_SET => STATS_SetAbsoluteBaseStat,
+                                        _ => throw new NotImplementedException("Modifier operation not implemented yet"),
+                                    };
+                                    foreach (int entityTarget in ctx.EffectTargets)
+                                    {
+                                        BoardEntity nextEntity = DetailedState.EntityData[entityTarget];
+                                        Stat targetStat = effect.ModifierTarget switch
+                                        {
+                                            ModifierTarget.TARGET_HP => nextEntity.Hp,
+                                            ModifierTarget.TARGET_ATTACK => ((Unit)nextEntity).Attack,
+                                            ModifierTarget.TARGET_MOVEMENT => ((Unit)nextEntity).Movement,
+                                            ModifierTarget.TARGET_MOVEMENT_DENOMINATOR => ((Unit)nextEntity).MovementDenominator,
+                                            _ => throw new NotImplementedException("Modifier type not implemented yet")
+                                        };
+                                        // Got the stat, now modify it
+                                        functionToApply(targetStat, effect.Value);
+                                    }
+                                }
+                                break;
+                            default:
+                                throw new NotImplementedException("Modifier type not implemented yet");
+                        }
+                        break;
                     default:
                         throw new NotImplementedException("Effect type not implemented yet");
                 }
