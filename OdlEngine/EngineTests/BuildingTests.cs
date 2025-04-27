@@ -473,16 +473,16 @@ namespace EngineTests
                 UniqueId = 1,
                 Owner = 0,
                 LaneCoordinate = LaneID.PLAINS,
-                TileCoordinate = 2,
-                Hp = 10
+                TileCoordinate = 2
             };
+            b1.Hp.BaseValue = 10;
             b2 = (Building)b1.Clone();
             Assert.AreEqual(b1.GetGameStateHash(), b2.GetGameStateHash());
             // Now change a few things
-            b2.Hp = 1;
+            b2.Hp.BaseValue = 1;
             Assert.AreNotEqual(b1.GetGameStateHash(), b2.GetGameStateHash());
             // Revert
-            b2.Hp = b1.Hp;
+            b2.Hp.BaseValue = b1.Hp.BaseValue;
             Assert.AreEqual(b1.GetGameStateHash(), b2.GetGameStateHash());
         }
     }

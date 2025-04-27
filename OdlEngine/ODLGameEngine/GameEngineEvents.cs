@@ -50,7 +50,6 @@ namespace ODLGameEngine
         STATE_TRANSITION,
         PLAYER_TRANSITION,
         RNG_TRANSITION,
-        PLAYER_HP_TRANSITION,
         PLAYER_GOLD_TRANSITION,
         MESSAGE,
         CARD_DECK_SWAP,
@@ -66,7 +65,9 @@ namespace ODLGameEngine
         UNIT_MOVEMENT_COOLDOWN_VALUE,
         ENTITY_DAMAGE_COUNTER_CHANGE,
         PLAYER_POWER_AVAILABILITY,
-        DEBUG_CHECK
+        DEBUG_CHECK,
+        STAT_BASE_TRANSITION,
+        STAT_MODIFIER_TRANSITION
     }
 
     public class GameEngineEvent

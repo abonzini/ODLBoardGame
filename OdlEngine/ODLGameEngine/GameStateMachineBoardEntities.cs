@@ -47,7 +47,7 @@ namespace ODLGameEngine
         /// <returns>True if unit still alive</returns>
         public bool BOARDENTITY_CheckIfUnitAlive(BoardEntity entity)
         {
-            if (entity.Hp - entity.DamageTokens <= 0) // Entity is dead, will process death and return accordingly
+            if (entity.Hp.Total - entity.DamageTokens <= 0) // Entity is dead, will process death and return accordingly
             {
                 BOARDENTITY_CleanUnit(entity);
                 return false;
@@ -98,7 +98,7 @@ namespace ODLGameEngine
                 DamageAmount = damage
             };
 
-            int remainingHp = defender.Hp - defender.DamageTokens;
+            int remainingHp = defender.Hp.Total - defender.DamageTokens;
             if (damage > remainingHp)
             {
                 damageCtx.OverflowDamage = damage - remainingHp;
@@ -110,7 +110,7 @@ namespace ODLGameEngine
                 remainingHp -= damage;
             }
 
-            ENGINE_ChangeEntityDamageTokens(defender, defender.Hp - remainingHp);
+            ENGINE_ChangeEntityDamageTokens(defender, defender.Hp.Total - remainingHp);
             damageCtx.TargetDead = !BOARDENTITY_CheckIfUnitAlive(defender);
             return damageCtx;
         }

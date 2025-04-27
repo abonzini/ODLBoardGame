@@ -1,16 +1,9 @@
 Ongoing tasks in order of priority:
-- Finish implementing stat class:
-    - Aply stat class to all entities
-    - Build project, use Total in all calculations
-    - Resolve chain cloning of Entities and inheriting (for stat)
-    - Modify deserialization readme for cards
 -Implementing Buffing/Debuffing:
-    - Add STAT state amchine, deals with buffing and changing stats overall, with functions such as doubling stats or etc. Passes through engine (for reversion). Stat as reference
-    - In triginter, add effects that buff a stat for target(s)
+	- In triginter, add effects that buff a stat for target(s)
         - Value (already there)
         - Stat to change (of target)
-        - Type of buff (setting, addition, multiplication, hard setting)
-        - HP buffing situation, need a HP verification on top
+        - Type of buff (setting, addition, multiplication)
     - Tests:
         - Given: specific target(s): Massive test case of all stat buffing/debuffing with the chosen proportion, all stats, all situations
 - Implement rest of rulebook

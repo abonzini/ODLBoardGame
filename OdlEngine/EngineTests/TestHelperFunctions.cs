@@ -45,7 +45,7 @@ namespace EngineTests
         /// <returns>True if properly init</returns>
         public static void VerifyPlayerInitialised(PlayerState p)
         {
-            Assert.AreEqual(p.Hp, GameConstants.STARTING_HP);
+            Assert.AreEqual(p.Hp.Total, GameConstants.STARTING_HP);
             Assert.AreEqual(p.Gold, GameConstants.STARTING_GOLD);
             Assert.AreEqual(p.Hand.CardCount, GameConstants.STARTING_CARDS);
             Assert.AreEqual(p.Deck.DeckSize, GameConstants.DECK_SIZE - GameConstants.STARTING_CARDS);

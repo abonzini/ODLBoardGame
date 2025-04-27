@@ -42,7 +42,7 @@ namespace ODLGameEngine
             int unitOwnerId = unit.Owner;
             int opponentId = 1 - unitOwnerId;
             int cooldown = unit.MvtCooldownTimer;
-            if(cooldown > unit.MovementDenominator) // if denominator was reduced, need to make sure unit can advance properly
+            if(cooldown > unit.MovementDenominator.Total) // if denominator was reduced, need to make sure unit can advance properly
             {
                 cooldown = 0;
             }
@@ -53,7 +53,7 @@ namespace ODLGameEngine
             if (cooldown == 0)
             {
                 ENGINE_AddMessageEvent($"P{unitOwnerId + 1}'s {unit.Name} advances");
-                advanceCtx.InitialMovement = advanceCtx.CurrentMovement = unit.Movement; // How much to advance
+                advanceCtx.InitialMovement = advanceCtx.CurrentMovement = unit.Movement.Total; // How much to advance
                 Lane lane = DetailedState.BoardState.GetLane(unit.LaneCoordinate); // Which lane
                 while(advanceCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
@@ -88,7 +88,7 @@ namespace ODLGameEngine
                 }
             }
             cooldown++; // Cycle the timer so that next advance it's updated!
-            cooldown %= unit.MovementDenominator;
+            cooldown %= unit.MovementDenominator.Total;
             if(unit.MvtCooldownTimer != cooldown) // If unit has changed cooldown, need to activate this
             {
                 ENGINE_UnitMovementCooldownChange(unit, cooldown);
@@ -105,11 +105,11 @@ namespace ODLGameEngine
             ENGINE_AddMessageEvent($"Combat between P{attacker.Owner + 1}'s {attacker.Name} and P{defender.Owner + 1}'s {defender.Name}");
 
             // Surely, unit will apply damage to the victim
-            attackerDmgCtx = BOARDENTITY_DamageStep(attacker, defender, attacker.Attack); // TODO: GetAttack fn to incorporate buffs and such
+            attackerDmgCtx = BOARDENTITY_DamageStep(attacker, defender, attacker.Attack.Total); // TODO: GetAttack fn to incorporate buffs and such
             if(defender is Unit defendingUnit)
             {
                 // If defender was also a unit, then the attacker also receives damage
-                defenderDmgCtx = BOARDENTITY_DamageStep(defender, attacker, defendingUnit.Attack);
+                defenderDmgCtx = BOARDENTITY_DamageStep(defender, attacker, defendingUnit.Attack.Total);
             }
 
             // TODO: Contexts are checked here! even death and damage taking, to avoid Units doing stuff in this critical damage step

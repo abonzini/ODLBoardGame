@@ -184,7 +184,7 @@ namespace ODLGameEngine
         /// <param name="player">The player to init</param>
         void STATE_InitializePlayer(int player)
         {
-            ENGINE_SetPlayerHp(player, GameConstants.STARTING_HP);
+            STATS_SetAbsoluteBaseStat(DetailedState.PlayerStates[player].Hp, GameConstants.STARTING_HP);
             ENGINE_SetPlayerGold(player, GameConstants.STARTING_GOLD);
             STATE_ShufflePlayerDeck(player);
             STATE_DeckDrawMultiple(player, GameConstants.STARTING_CARDS);

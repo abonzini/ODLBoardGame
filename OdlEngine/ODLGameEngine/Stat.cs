@@ -15,7 +15,7 @@ namespace ODLGameEngine
     [JsonObject(MemberSerialization.OptIn)]
     public class Stat : ICloneable, IHashable
     {
-        protected int _minTotalCap = int.MinValue;
+        protected int _minTotalCap = 0;
         int _baseValue = 0;
         [JsonProperty]
         public int BaseValue
@@ -26,7 +26,7 @@ namespace ODLGameEngine
             }
             set
             {
-                _baseValue = ((Modifier + value) < _minTotalCap) ? (_minTotalCap - Modifier) : value;
+                _baseValue = (value < _minTotalCap) ? _minTotalCap : value;
             }
         }
         int _modifier = 0;
@@ -71,7 +71,7 @@ namespace ODLGameEngine
     {
         public Min1Stat()
         {
-            _minTotalCap = 1;
+            BaseValue = _minTotalCap = 1;
         }
     }
     [JsonConverter(typeof(StatJsonConverter))]
@@ -79,7 +79,7 @@ namespace ODLGameEngine
     {
         public Min0Stat()
         {
-            _minTotalCap = 0;
+            BaseValue = _minTotalCap = 0;
         }
     }
 
@@ -94,14 +94,14 @@ namespace ODLGameEngine
         }
         public override Stat ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
+            Stat ret = (Stat)Activator.CreateInstance(objectType);
             if (reader.TokenType == JsonToken.Integer)
             {
                 // Deserialize from a single int
-                return new Stat { BaseValue = Convert.ToInt32(reader.Value) };
+                ret.BaseValue = Convert.ToInt32(reader.Value);
             }
             else if (reader.TokenType == JsonToken.StartObject)
             {
-                Stat stat = new Stat();
                 // Read the JSON object manually
                 while (reader.TokenType != JsonToken.EndObject)
                 {
@@ -112,10 +112,10 @@ namespace ODLGameEngine
                         switch(propertyName)
                         {
                             case "BaseValue":
-                                stat.BaseValue = Convert.ToInt32(reader.Value);
+                                ret.BaseValue = Convert.ToInt32(reader.Value);
                                 break;
                             case "Modifier":
-                                stat.Modifier = Convert.ToInt32(reader.Value);
+                                ret.Modifier = Convert.ToInt32(reader.Value);
                                 break;
                             default:
                                 break;
@@ -123,9 +123,8 @@ namespace ODLGameEngine
                     }
                     reader.Read(); // Move to the next
                 }
-                return stat;
             }
-            throw new JsonSerializationException("Unexpected token type");
+            return ret;
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

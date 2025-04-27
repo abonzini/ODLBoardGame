@@ -332,8 +332,8 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = player
                 };
-                state.PlayerStates[0].Hp = 30; // Just in case
-                state.PlayerStates[1].Hp = 30;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
@@ -359,22 +359,18 @@ namespace EngineTests
                 TargetLocation otherLane2 = (TargetLocation)(1 << lane);
                 ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
@@ -491,8 +487,8 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = player
                 };
-                state.PlayerStates[0].Hp = 30; // Just in case
-                state.PlayerStates[1].Hp = 30;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
@@ -518,22 +514,18 @@ namespace EngineTests
                 TargetLocation otherLane2 = (TargetLocation)(1 << lane);
                 ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
@@ -607,8 +599,8 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = player
                 };
-                state.PlayerStates[0].Hp = 30; // Just in case
-                state.PlayerStates[1].Hp = 30;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
@@ -630,22 +622,18 @@ namespace EngineTests
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
                 ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
@@ -716,8 +704,8 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = player
                 };
-                state.PlayerStates[0].Hp = 30; // Just in case
-                state.PlayerStates[1].Hp = 30;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
@@ -739,22 +727,18 @@ namespace EngineTests
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
                 ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
@@ -824,8 +808,8 @@ namespace EngineTests
                     CurrentState = States.ACTION_PHASE,
                     CurrentPlayer = player
                 };
-                state.PlayerStates[0].Hp = 30; // Just in case
-                state.PlayerStates[1].Hp = 30;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
@@ -847,22 +831,18 @@ namespace EngineTests
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
                 ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
                 ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    Hp = 1,
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;

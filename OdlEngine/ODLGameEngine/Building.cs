@@ -22,5 +22,13 @@ namespace ODLGameEngine
         {
             return Name;
         }
+        public override object Clone()
+        {
+            Building newBuilding = (Building) base.Clone();
+            newBuilding.ForestBp = ForestBp;
+            newBuilding.PlainsBp = PlainsBp;
+            newBuilding.MountainBp = MountainBp;
+            return newBuilding;
+        }
     }
 }

@@ -247,14 +247,10 @@ namespace EngineTests
             {
                 int currentPlayer = (int)id;
                 int playerHp = _rng.Next(GameConstants.DECKOUT_DAMAGE + 1, 31);
-                PlayerState pl1 = new PlayerState
-                {
-                    Hp = playerHp
-                };
-                PlayerState pl2 = new PlayerState
-                {
-                    Hp = playerHp
-                };
+                PlayerState pl1 = new PlayerState();
+                pl1.Hp.BaseValue = playerHp;
+                PlayerState pl2 = new PlayerState();
+                pl2.Hp.BaseValue = playerHp;
                 GameStateStruct state = new GameStateStruct
                 {
                     CurrentState = States.DRAW_PHASE,
@@ -268,21 +264,21 @@ namespace EngineTests
                 // Pre draw
                 int deckHash = plState.Deck.GetGameStateHash();
                 int playerHash = plState.GetGameStateHash();
-                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 1);
                 // Draw
                 sm.Step();
                 Assert.AreNotEqual(deckHash, plState.Deck.GetGameStateHash()); // Changed because card was drawn
                 Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
-                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 // Revert
                 sm.UndoPreviousStep();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
                 Assert.AreEqual(playerHash, plState.GetGameStateHash());
-                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 1);
             }
@@ -295,14 +291,10 @@ namespace EngineTests
             foreach (CurrentPlayer id in ids)
             {
                 int playerHp = _rng.Next(GameConstants.DECKOUT_DAMAGE + 1, 31);
-                PlayerState pl1 = new PlayerState
-                {
-                    Hp = playerHp
-                };
-                PlayerState pl2 = new PlayerState
-                {
-                    Hp = playerHp
-                };
+                PlayerState pl1 = new PlayerState();
+                pl1.Hp.BaseValue = playerHp;
+                PlayerState pl2 = new PlayerState();
+                pl2.Hp.BaseValue = playerHp;
                 GameStateStruct state = new GameStateStruct
                 {
                     CurrentState = States.DRAW_PHASE,
@@ -315,21 +307,21 @@ namespace EngineTests
                 // Pre draw
                 int deckHash = plState.Deck.GetGameStateHash();
                 int playerHash = plState.GetGameStateHash();
-                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 // Draw
                 sm.Step();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
                 Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
-                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 // Revert
                 sm.UndoPreviousStep();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
                 Assert.AreEqual(playerHash, plState.GetGameStateHash());
-                Assert.AreEqual(plState.Hp, playerHp);
+                Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
             }
@@ -340,14 +332,10 @@ namespace EngineTests
             CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
             foreach (CurrentPlayer id in ids)
             {
-                PlayerState pl1 = new PlayerState
-                {
-                    Hp = GameConstants.DECKOUT_DAMAGE
-                };
-                PlayerState pl2 = new PlayerState
-                {
-                    Hp = GameConstants.DECKOUT_DAMAGE
-                };
+                PlayerState pl1 = new PlayerState();
+                pl1.Hp.BaseValue = GameConstants.DECKOUT_DAMAGE;
+                PlayerState pl2 = new PlayerState();
+                pl2.Hp.BaseValue = GameConstants.DECKOUT_DAMAGE;
                 GameStateStruct state = new GameStateStruct
                 {
                     CurrentState = States.DRAW_PHASE,
@@ -360,7 +348,7 @@ namespace EngineTests
                 // Pre draw
                 int deckHash = plState.Deck.GetGameStateHash();
                 int playerHash = plState.GetGameStateHash();
-                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
+                Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
@@ -368,7 +356,7 @@ namespace EngineTests
                 sm.Step();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
                 Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
-                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
+                Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.EOG); // Game ends here
@@ -377,7 +365,7 @@ namespace EngineTests
                 sm.UndoPreviousStep();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
                 Assert.AreEqual(playerHash, plState.GetGameStateHash());
-                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE);
+                Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
@@ -389,14 +377,10 @@ namespace EngineTests
             CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
             foreach (CurrentPlayer id in ids)
             {
-                PlayerState pl1 = new PlayerState
-                {
-                    Hp = GameConstants.DECKOUT_DAMAGE-1
-                };
-                PlayerState pl2 = new PlayerState
-                {
-                    Hp = GameConstants.DECKOUT_DAMAGE-1
-                };
+                PlayerState pl1 = new PlayerState();
+                pl1.Hp.BaseValue = GameConstants.DECKOUT_DAMAGE - 1;
+                PlayerState pl2 = new PlayerState();
+                pl2.Hp.BaseValue = GameConstants.DECKOUT_DAMAGE - 1;
                 GameStateStruct state = new GameStateStruct
                 {
                     CurrentState = States.DRAW_PHASE,
@@ -409,7 +393,7 @@ namespace EngineTests
                 // Pre draw
                 int deckHash = plState.Deck.GetGameStateHash();
                 int playerHash = plState.GetGameStateHash();
-                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
+                Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
@@ -417,7 +401,7 @@ namespace EngineTests
                 sm.Step();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
                 Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
-                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
+                Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.EOG); // Game ends here
@@ -426,7 +410,7 @@ namespace EngineTests
                 sm.UndoPreviousStep();
                 Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
                 Assert.AreEqual(playerHash, plState.GetGameStateHash());
-                Assert.AreEqual(plState.Hp, GameConstants.DECKOUT_DAMAGE - 1);
+                Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
@@ -468,7 +452,7 @@ namespace EngineTests
             Assert.AreEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // Hash would be recalculated but still the same
             // Modify unit (shady)
             int unitIndex = sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).First();
-            ((Unit)sm.DetailedState.EntityData[unitIndex]).Attack += 5; // Add 5 to attack, whatever
+            ((Unit)sm.DetailedState.EntityData[unitIndex]).Attack.BaseValue += 5; // Add 5 to attack, whatever
             Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetGameStateHash()); // Board is 100% positional so this hash should remain the same
             Assert.AreNotEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // But now the state changed because unit data is different
             sm.UndoPreviousStep();

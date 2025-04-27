@@ -24,6 +24,8 @@ namespace ODLGameEngine
             PlacedEntity auxPlacedEntity;
             BoardEntity auxBoardEntity;
             PlayerState auxPlayerState;
+            Stat auxStat;
+
             _currentStep?.events.Add(e);
             switch (e.eventType)
             {
@@ -54,12 +56,6 @@ namespace ODLGameEngine
                     ((TransitionEvent<int>)e).oldValue = DetailedState.Seed;
                     DetailedState.Seed = ((TransitionEvent<int>)e).newValue; // Player transition complete!
                     _rng = new Random(DetailedState.Seed);
-                    break;
-                case EventType.PLAYER_HP_TRANSITION:
-                    auxInt1 = ((EntityTransitionEvent<int,int>)e).entity;
-                    auxInt2 = ((EntityTransitionEvent<int, int>)e).newValue;
-                    ((EntityTransitionEvent<int, int>)e).oldValue = DetailedState.PlayerStates[auxInt1].Hp;
-                    DetailedState.PlayerStates[auxInt1].Hp = auxInt2;
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
@@ -155,6 +151,16 @@ namespace ODLGameEngine
                     ((EntityTransitionEvent<PlayerState, bool>)e).oldValue = auxPlayerState.PowerAvailable;
                     auxPlayerState.PowerAvailable = ((EntityTransitionEvent<PlayerState, bool>)e).newValue;
                     break;
+                case EventType.STAT_BASE_TRANSITION:
+                    auxStat = ((EntityTransitionEvent<Stat, int>)e).entity;
+                    ((EntityTransitionEvent<Stat, int>)e).oldValue = auxStat.BaseValue;
+                    auxStat.BaseValue = ((EntityTransitionEvent<Stat, int>)e).newValue;
+                    break;
+                case EventType.STAT_MODIFIER_TRANSITION:
+                    auxStat = ((EntityTransitionEvent<Stat, int>)e).entity;
+                    ((EntityTransitionEvent<Stat, int>)e).oldValue = auxStat.Modifier;
+                    auxStat.Modifier = ((EntityTransitionEvent<Stat, int>)e).newValue;
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -170,6 +176,8 @@ namespace ODLGameEngine
             PlacedEntity auxPlacedEntity;
             BoardEntity auxBoardEntity;
             PlayerState auxPlayerState;
+            Stat auxStat;
+
             switch (e.eventType)
             {
                 case EventType.STATE_TRANSITION:
@@ -184,10 +192,6 @@ namespace ODLGameEngine
                     // Requested a transition to new rng seed
                     DetailedState.Seed = ((TransitionEvent<int>)e).oldValue; // Player transition complete!
                     _rng = new Random(DetailedState.Seed);
-                    break;
-                case EventType.PLAYER_HP_TRANSITION:
-                    auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    DetailedState.PlayerStates[auxInt1].Hp = ((EntityTransitionEvent<int, int>)e).oldValue;
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
@@ -279,6 +283,14 @@ namespace ODLGameEngine
                     auxPlayerState = ((EntityTransitionEvent<PlayerState, bool>)e).entity;
                     auxPlayerState.PowerAvailable = ((EntityTransitionEvent<PlayerState, bool>)e).oldValue;
                     break;
+                case EventType.STAT_BASE_TRANSITION:
+                    auxStat = ((EntityTransitionEvent<Stat, int>)e).entity;
+                    auxStat.BaseValue = ((EntityTransitionEvent<Stat, int>)e).oldValue;
+                    break;
+                case EventType.STAT_MODIFIER_TRANSITION:
+                    auxStat = ((EntityTransitionEvent<Stat, int>)e).entity;
+                    auxStat.Modifier = ((EntityTransitionEvent<Stat, int>)e).oldValue;
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -366,22 +378,6 @@ namespace ODLGameEngine
                 {
                     eventType = EventType.RNG_TRANSITION,
                     newValue = seed
-                });
-        }
-        /// <summary>
-        /// Sets a player HP to new value
-        /// </summary>
-        /// <param name="p">Which player</param>
-        /// <param name="hp">Which value</param>
-        void ENGINE_SetPlayerHp(int p, int hp)
-        {
-            ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<int, int>()
-                {
-                    eventType = EventType.PLAYER_HP_TRANSITION,
-                    entity = p,
-                    newValue = hp,
-                    description = $"P{p + 1} now has {hp} HP"
                 });
         }
         /// <summary>
@@ -608,6 +604,10 @@ namespace ODLGameEngine
                     newValue = powerAvailability
                 });
         }
+        /// <summary>
+        /// Adds a debug event to the event pile for testing
+        /// </summary>
+        /// <param name="ctx">Contains an effect context, useful for extra debug</param>
         void ENGINE_AddDebugEvent(OngoingEffectContext ctx)
         {
             ENGINE_ExecuteEvent(
@@ -615,6 +615,36 @@ namespace ODLGameEngine
                 {
                     eventType = EventType.DEBUG_CHECK,
                     entity = ctx
+                });
+        }
+        /// <summary>
+        /// Sets a stat's BaseValue to new value
+        /// </summary>
+        /// <param name="stat">The stat</param>
+        /// <param name="value">The value</param>
+        void ENGINE_SetStatBaseValue(Stat stat, int value)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<Stat, int>()
+                {
+                    eventType = EventType.STAT_BASE_TRANSITION,
+                    entity = stat,
+                    newValue = value
+                });
+        }
+        /// <summary>
+        /// Sets a stat's Modifier to new value
+        /// </summary>
+        /// <param name="stat">The stat</param>
+        /// <param name="value">The value</param>
+        void ENGINE_SetStatModifierValue(Stat stat, int value)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<Stat, int>()
+                {
+                    eventType = EventType.STAT_MODIFIER_TRANSITION,
+                    entity = stat,
+                    newValue = value
                 });
         }
     }

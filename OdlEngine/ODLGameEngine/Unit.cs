@@ -15,11 +15,14 @@ namespace ODLGameEngine
     {
         // Stats
         [JsonProperty]
-        public int Movement { get; set; } = 0;
+        [JsonConverter(typeof(StatJsonConverter))]
+        public Min0Stat Movement { get; set; } = new Min0Stat();
         [JsonProperty]
-        public int MovementDenominator { get; set; } = 1;
+        [JsonConverter(typeof(StatJsonConverter))]
+        public Min1Stat MovementDenominator { get; set; } = new Min1Stat();
         [JsonProperty]
-        public int Attack { get; set; } = 0;
+        [JsonConverter(typeof(StatJsonConverter))]
+        public Min0Stat Attack { get; set; } = new Min0Stat();
         [JsonProperty]
         public int MvtCooldownTimer { get; set; } = 0;
         /// <summary>
@@ -30,15 +33,24 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(base.GetGameStateHash());
-            hash.Add(Movement);
-            hash.Add(MovementDenominator);
-            hash.Add(Attack);
+            hash.Add(Movement.GetGameStateHash());
+            hash.Add(MovementDenominator.GetGameStateHash());
+            hash.Add(Attack.GetGameStateHash());
             hash.Add(MvtCooldownTimer);
             return hash.ToHashCode();
         }
         public override string ToString()
         {
             return Name;
+        }
+        public override object Clone()
+        {
+            Unit newUnit = (Unit)base.Clone();
+            newUnit.Movement = (Min0Stat)Movement.Clone();
+            newUnit.MovementDenominator = (Min1Stat)MovementDenominator.Clone();
+            newUnit.Attack = (Min0Stat)Attack.Clone();
+            newUnit.MvtCooldownTimer = MvtCooldownTimer;
+            return newUnit;
         }
     }
 }

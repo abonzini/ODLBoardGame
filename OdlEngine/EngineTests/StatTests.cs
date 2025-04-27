@@ -74,14 +74,6 @@ namespace EngineTests
             Assert.AreEqual(_stat.BaseValue, 10);
             Assert.AreEqual(_stat.Modifier, -9);
             Assert.AreEqual(_stat.Total, 1);
-            _stat.BaseValue = 11; // Now base has increased
-            Assert.AreEqual(_stat.BaseValue, 11);
-            Assert.AreEqual(_stat.Modifier, -9);
-            Assert.AreEqual(_stat.Total, 2);
-            _stat.BaseValue = 9; // Wouldn't be possible
-            Assert.AreEqual(_stat.BaseValue, 10);
-            Assert.AreEqual(_stat.Modifier, -9);
-            Assert.AreEqual(_stat.Total, 1);
         }
         [TestMethod]
         public void Min0StatCheck()
@@ -105,18 +97,6 @@ namespace EngineTests
             Assert.AreEqual(_stat.BaseValue, 10);
             Assert.AreEqual(_stat.Modifier, -10);
             Assert.AreEqual(_stat.Total, 0);
-            _stat.BaseValue = 11; // Now base has increased
-            Assert.AreEqual(_stat.BaseValue, 11);
-            Assert.AreEqual(_stat.Modifier, -10);
-            Assert.AreEqual(_stat.Total, 1);
-            _stat.BaseValue = 10;
-            Assert.AreEqual(_stat.BaseValue, 10);
-            Assert.AreEqual(_stat.Modifier, -10);
-            Assert.AreEqual(_stat.Total, 0);
-            _stat.BaseValue = 9; // Wouldnt be possible
-            Assert.AreEqual(_stat.BaseValue, 10);
-            Assert.AreEqual(_stat.Modifier, -10);
-            Assert.AreEqual(_stat.Total, 0);
         }
         [TestMethod]
         public void StatCloningConservesProperty()
@@ -137,6 +117,32 @@ namespace EngineTests
             Assert.AreEqual(_stat.BaseValue, 10);
             Assert.AreEqual(_stat.Modifier, -9);
             Assert.AreEqual(_stat.Total, 1);
+        }
+        [TestMethod]
+        public void StatInEntityDeserializing()
+        {
+            // Deserializing stat but in entity to make sure all's good (try HP)
+            Random _rng = new Random();
+            // Create 3 random numbers
+            int _v1 = _rng.Next(1, 100);
+            int _v2 = _rng.Next(1, 100);
+            int _v3 = _rng.Next(1, 100);
+            string _singleStatJson = $"{_v1}";
+            string _fullStatJson = $"{{\"BaseValue\": {_v2}, \"Modifier\": {_v3}}}";
+            _singleStatJson = "{\"Name\": \"TEST\", \"Hp\": " + _singleStatJson + "}";
+            _fullStatJson = "{\"Name\": \"TEST\", \"Hp\": " + _fullStatJson + "}";
+
+            BoardEntity _entity1 = JsonConvert.DeserializeObject<BoardEntity>(_singleStatJson);
+            Assert.AreEqual(_entity1.Name, "TEST");
+            Assert.AreEqual(_entity1.Hp.Total, _v1);
+            Assert.AreEqual(_entity1.Hp.BaseValue, _v1);
+            Assert.AreEqual(_entity1.Hp.Modifier, 0);
+
+            BoardEntity _entity2 = JsonConvert.DeserializeObject<BoardEntity>(_fullStatJson);
+            Assert.AreEqual(_entity2.Name, "TEST");
+            Assert.AreEqual(_entity2.Hp.Total, _v2 + _v3);
+            Assert.AreEqual(_entity2.Hp.BaseValue, _v2);
+            Assert.AreEqual(_entity2.Hp.Modifier, _v3);
         }
     }
 }

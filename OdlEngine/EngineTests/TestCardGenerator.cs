@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using ODLGameEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -65,15 +66,17 @@ namespace EngineTests
                 EntityType = EntityType.UNIT,
                 TargetOptions = target
             };
-            return new Unit()
+            Unit unit = new Unit()
             {
                 EntityPlayInfo = playInfo,
-                EntityPrintInfo = printInfo,
-                Hp = hp,
-                Attack = attack,
-                Movement = movement,
-                MovementDenominator = denominator
+                EntityPrintInfo = printInfo
             };
+            unit.Hp.BaseValue = hp;
+            unit.Attack.BaseValue = attack;
+            unit.Movement.BaseValue = movement;
+            unit.MovementDenominator.BaseValue = denominator;
+
+            return unit;
         }
         /// <summary>
         /// Creates basic building
@@ -101,15 +104,16 @@ namespace EngineTests
                 TargetOptions = target,
                 TargetConditions = TargetCondition.BLUEPRINT,
             };
-            return new Building() // Returns "TOKEN_BUILDING" card
+            Building building = new Building() // Returns "TOKEN_BUILDING" card
             {
                 EntityPlayInfo = playInfo,
                 EntityPrintInfo = printInfo,
-                Hp = hp,
                 PlainsBp = plainBp,
                 ForestBp = forestBp,
                 MountainBp = mountainBp,
             };
+            building.Hp.BaseValue = hp;
+            return building;
         }
     }
 }

@@ -107,7 +107,7 @@ namespace ODLGameEngine
 
         public virtual object Clone()
         {
-            object newEntity = MemberwiseClone();
+            EntityBase newEntity = (EntityBase)MemberwiseClone();
             return newEntity;
         }
         /// <summary>
@@ -127,7 +127,8 @@ namespace ODLGameEngine
         [JsonProperty]
         public string Name { get; set; } = "";
         [JsonProperty]
-        public int Hp { get; set; } = 0;
+        [JsonConverter(typeof(StatJsonConverter))]
+        public Min0Stat Hp { get; set; } = new Min0Stat();
         [JsonProperty]
         public int DamageTokens { get; set; } = 0;
         [JsonProperty]
@@ -146,9 +147,19 @@ namespace ODLGameEngine
             hash.Add(UniqueId);
             hash.Add(Name);
             hash.Add(Owner);
-            hash.Add(Hp);
+            hash.Add(Hp.GetGameStateHash());
             hash.Add(DamageTokens);
             return hash.ToHashCode();
+        }
+        public override object Clone()
+        {
+            BoardEntity newEntity = (BoardEntity) base.Clone(); // Clones parent first
+            // Now my individual elements
+            newEntity.Name = Name;
+            newEntity.Hp = (Min0Stat) Hp.Clone();
+            newEntity.DamageTokens = DamageTokens;
+            newEntity.UniqueId = UniqueId;
+            return newEntity;
         }
     }
 
@@ -162,7 +173,9 @@ namespace ODLGameEngine
         
         public override object Clone()
         {
-            object newEntity = MemberwiseClone();
+            PlacedEntity newEntity = (PlacedEntity) base.Clone();
+            newEntity.LaneCoordinate = LaneCoordinate;
+            newEntity.TileCoordinate = TileCoordinate;
             return newEntity;
         }
         /// <summary>
