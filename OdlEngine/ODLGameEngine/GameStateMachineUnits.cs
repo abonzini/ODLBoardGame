@@ -48,7 +48,7 @@ namespace ODLGameEngine
             }
             AdvancingContext advanceCtx = new AdvancingContext() // Set context for advance-related interactions/triggers
             {
-                AdvancingUnit = unit,
+                Actor = unit,
             };
             if (cooldown == 0)
             {

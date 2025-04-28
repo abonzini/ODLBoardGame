@@ -33,11 +33,11 @@ namespace ODLGameEngine
                 Tile tile = lane.GetTileRelative(bp[i], player); // Gets next tile candidate
                 if (tile.GetPlacedEntities(EntityType.BUILDING).Count == 0 && tile.GetPlacedEntities(EntityType.UNIT, player).Count > 0) // Condition is, tile can't have building already, and there has to be atleast one unit to build it
                 {
-                    res.Building = building;
+                    res.Affected = building;
                     res.FirstAvailableOption = i;
                     res.RelativeTile = bp[i];
                     res.AbsoluteTile = lane.GetAbsoluteTileCoord(bp[i], player);
-                    res.Builder = (Unit)DetailedState.EntityData[tile.GetPlacedEntities(EntityType.UNIT, player).First()];
+                    res.Actor = (Unit)DetailedState.EntityData[tile.GetPlacedEntities(EntityType.UNIT, player).First()];
                     break;
                 }
             }

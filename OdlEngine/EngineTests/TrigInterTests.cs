@@ -1117,5 +1117,128 @@ namespace EngineTests
                 }
             }
         }
+        [TestMethod]
+        public void SelectActor()
+        {
+            // Will play a card and then make sure this is a valid actor of a "when played" effect
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit with very basic stats
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Effect selectEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.SELECT_ENTITY,
+                    SearchCriterion = SearchCriterion.ACTOR_ENTITY, // Selects actor entity, in this case, myself when played
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                unit.Interactions.Add(InteractionType.WHEN_PLAYED, [selectEffect, debugEffect]); // Add interaction to card
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Do the selection
+                // Pre-play prep
+                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                // Play
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play search card anywhere (PLAINS)
+                Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                GameEngineEvent debugEvent = null;
+                foreach (GameEngineEvent ev in res.Item2.events)
+                {
+                    if (ev.eventType == EventType.DEBUG_CHECK)
+                    {
+                        debugEvent = ev;
+                        break;
+                    }
+                }
+                Assert.IsNotNull(debugEvent); // Found it!
+                // Check returned targets
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                Assert.AreEqual(searchResultList.Count, 1);
+                Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
+                // Revert and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+            }
+        }
+        [TestMethod]
+        public void TriggeredUnitSelection()
+        {
+            // Testing of a debug trigger and selection of unit
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that has a debug trigger effect
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Effect selectEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.SELECT_ENTITY,
+                    SearchCriterion = SearchCriterion.TRIGGERED_ENTITY, // Selects triggered entity, in this case, the unit
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
+                unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [selectEffect, debugEffect]);
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Pre play assert ( specific state and no triggers )
+                int stateHash = sm.DetailedState.GetGameStateHash();
+                // Play
+                sm.PlayFromHand(1, TargetLocation.PLAINS); // Play the unit in any lane
+                Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // State hash has changed
+                // Now check trigger
+                StepResult res = sm.TriggerDebugStep();
+                GameEngineEvent debugEvent = null;
+                foreach (GameEngineEvent ev in res.events)
+                {
+                    if (ev.eventType == EventType.DEBUG_CHECK)
+                    {
+                        debugEvent = ev;
+                        break;
+                    }
+                }
+                Assert.IsNotNull(debugEvent); // Found it!
+                // Check returned targets
+                Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                Assert.AreEqual(searchResultList.Count, 1);
+                Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
+                // Reversion
+                sm.UndoPreviousStep(); // Undoes the debug trigger
+                sm.UndoPreviousStep(); // Undoes card play
+                Assert.AreEqual(stateHash, sm.DetailedState.GetGameStateHash());
+                Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
+            }
+        }
     }
 }

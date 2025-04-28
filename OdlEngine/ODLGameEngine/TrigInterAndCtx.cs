@@ -30,6 +30,7 @@ namespace ODLGameEngine
     public enum EffectType
     {
         DEBUG,
+        SELECT_ENTITY,
         FIND_ENTITIES,
         SUMMON_UNIT,
         MODIFIER
@@ -42,7 +43,10 @@ namespace ODLGameEngine
     {
         ORDINAL,
         QUANTITY,
-        ALL
+        ALL,
+        TRIGGERED_ENTITY,
+        ACTOR_ENTITY,
+        AFFECTED_ENTITY
     }
     /// <summary>
     /// Player who is target of a card effect
@@ -100,10 +104,23 @@ namespace ODLGameEngine
         public ModifierTarget ModifierTarget;
         public int CardNumber;
         public int Value;
+
+        public override string ToString()
+        {
+            return EffectType.ToString();
+        }
     }
 
     // CONTEXT CONTANERS
-    public abstract class EffectContext { }
+    /// <summary>
+    /// An effect, contains an actor (i.e. a doer of the activity in question).
+    /// Also contains a Triggered entity which is either the actor in interactions, but in triggers it can be a third party.
+    /// </summary>
+    public class EffectContext
+    {
+        public EntityBase TriggeredEntity = null;
+        public EntityBase Actor = null;
+    }
     /// <summary>
     /// When card is played, contains extra info about playability of card.
     /// TODO: In future may contain extra info or even modifiers depending what happens
@@ -113,12 +130,17 @@ namespace ODLGameEngine
         public TargetLocation LaneTargets;
     }
     /// <summary>
+    /// An action that occurs upon an affected entity (like when an entity is being built, attacked, etc). Logically these can only be BoardEntities
+    /// </summary>
+    public class AffectingEffectContext : EffectContext
+    {
+        public BoardEntity Affected = null;
+    }
+    /// <summary>
     /// When a damage step ocurred, maybe also death
     /// </summary>
-    public class DamageContext : EffectContext
+    public class DamageContext : AffectingEffectContext
     {
-        public EntityBase AttackingEntity = null;
-        public BoardEntity DefendingEntity = null;
         public int DamageAmount = 0;
         public int OverflowDamage = 0;
         public bool TargetDead = false;
@@ -128,17 +150,14 @@ namespace ODLGameEngine
     /// </summary>
     public class AdvancingContext : EffectContext
     {
-        public Unit AdvancingUnit = null;
         public int InitialMovement = 0;
         public int CurrentMovement = 0;
     }
     /// <summary>
     /// When a construction takes place
     /// </summary>
-    public class ConstructionContext : EffectContext
+    public class ConstructionContext : AffectingEffectContext
     {
-        public Building Building = null;
-        public Unit Builder = null;
         public int AbsoluteTile = -1;
         public int RelativeTile = -1;
         public int FirstAvailableOption = -1;

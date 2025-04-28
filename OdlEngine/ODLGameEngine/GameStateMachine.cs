@@ -162,7 +162,7 @@ namespace ODLGameEngine
         /// <returns>Actions occurring during this debug step</returns>
         public StepResult TriggerDebugStep()
         {
-            TRIGINTER_ProcessTrigger(TriggerType.DEBUG_TRIGGER, null); // No debug context (for now?)
+            TRIGINTER_ProcessTrigger(TriggerType.DEBUG_TRIGGER, new EffectContext()); // No debug context (for now?)
             ENGINE_ChangeState(DetailedState.CurrentState); // Reiterate whatever the current state is now
             return _stepHistory.Last();
         }

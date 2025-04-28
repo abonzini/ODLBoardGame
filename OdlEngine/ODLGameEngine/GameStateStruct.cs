@@ -86,7 +86,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public Board BoardState { get; set; } = new Board();
         [JsonProperty]
-        public Dictionary<TriggerType, SortedSet<int>> Triggers = new Dictionary<TriggerType, SortedSet<int>>();
+        public Dictionary<TriggerType, SortedSet<int>> Triggers { get; set; } = new Dictionary<TriggerType, SortedSet<int>>();
         // Entities
         [JsonProperty]
         public readonly SortedList<int, BoardEntity> EntityData = new SortedList<int, BoardEntity>();

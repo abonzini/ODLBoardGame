@@ -4,3 +4,6 @@ Ongoing tasks in order of priority:
 		- Propose card, way to code it
 		- Add triginters if not there already
 		- No individual card testing! Game must be mechanically robust even if cards are completely revamped
+- TODO some tests:
+    - Affected entity selection test (when there's an actual affecting event going on, such as construction, or whatever is implemented first)
+    

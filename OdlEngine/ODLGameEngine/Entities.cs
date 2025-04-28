@@ -35,6 +35,7 @@ namespace ODLGameEngine
     [JsonConverter(typeof(FlagEnumJsonConverter))]
     public enum TargetLocation
     {
+        // Absolute targets (For playing and TrigInter)
         BOARD = 0,
         PLAINS = 1,
         FOREST = 2,
@@ -44,6 +45,8 @@ namespace ODLGameEngine
         ALL_BUT_PLAINS = 6,
         ALL_LANES = 7,
         INVALID = 8,
+        // Only for TrinInter...
+        // Relative targets
         PLAY_TARGET
     }
 

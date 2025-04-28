@@ -139,17 +139,18 @@ An effect is described as an effect type, and a series of parameters that may be
 This way, any card can be described in a dynamic, human readable way.
 When an effect is ongoing (either because of a Trigger or an Interaction), the game remembers the card running the effects, this means the owner, the card's location, etc.
 
-## Interaction/Trigger types
+## Interaction Types
 
 - ```WHEN_PLAYED``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
 
-## Effect Types
+## Effect Description
 Search in the next section for what the fields mean and the possible values they may take
 
 - ```FIND_ENTITIES``` Task that finds all valid entities to be targeted for an effect.
 For example, skills that deal damage to an unit, or to the enemy hero, or destroy all buildings, etc.
 These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of search criteria.
-Parameters:
+    
+    Parameters:
     - ```TargetLocation``` where to search for the entity in question
     - ```TargetPlayer``` serves as a filter where you only get the entities of the player owner in question
     - ```TargetType``` the type of entities that can be targeted 
@@ -161,6 +162,12 @@ Parameters:
     When looking for entities on a lane, the system traverses the lane in order determined by ```Value``` sign.
     In case of multiple entities in the same position, the unit that was played first is targeted first.
 
+- ```SELECT_ENTITY``` Is very similar to ```FIND_ENTITIES``` but instead of looking for potential valid entities in a board, it selects a single target out of known entities that participate in a trigger or interaction.
+For example if a unit attacks another, ```SELECT_ENTITY``` can be used to target either the unit that attacked or the affected unit.
+    
+    Parameter:
+    - ```SearchCriterion``` determines which entity will be targeted by this
+
 - ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes.
 Parameters:
     - ```CardNumber``` is the card number of the unit summoned
@@ -171,7 +178,8 @@ Parameters:
     - **RUSH** summons a unit in all lanes
 
 - ```MODIFIER``` Applies a modifier (i.e. buff or debuff) to something. Usually stats but can be other things.
-Parameters:
+
+    Parameters:
     - ```Value``` is the value $n$ of the modifier itself
     - ```ModifierOperation``` how the modifier's value is applied (i.e. whether it's a multiplaction, addition, etc)
     - ```ModifierTarget``` defines *what* is modified, if a stat, a damage value, etc
@@ -201,9 +209,17 @@ Parameters:
     These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
     For example, ```OWNER|OPPONENT``` would work exactly like ```BOTH```.
 - ```SearchCriterion```
+
+    For board searching:
     - ```ORDINAL``` targets the $n^{th}$ element found
     - ```QUANTITY``` targets the first $n$ elements
     - ```ALL``` targets everything found
+
+    When selecting a specific known entity:
+    - ```TRIGGERED_ENTITY``` will target the entity that was triggered 
+    - ```ACTOR_ENTITY``` will target the entity that "does something"
+    - ```AFFECTED_ENTITY``` will targeted the entity that was affected by an interaction
+
 - ```TargetType```
     - ```NONE```
     - ```UNIT```

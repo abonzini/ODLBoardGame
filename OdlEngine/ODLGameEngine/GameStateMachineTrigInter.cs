@@ -14,11 +14,11 @@ namespace ODLGameEngine
         /// <param name="entity">The enitity whose interactions were triggered</param>
         /// <param name="inter">What interaction</param>
         /// <param name="specificContext">Specific context of that interaction</param>
-        void TRIGINTER_ProcessInteraction(EntityBase entity, InteractionType inter, EffectContext specificContext)
+        void TRIGINTER_ProcessInteraction(InteractionType inter, EffectContext specificContext)
         {
-            if (entity.Interactions != null && entity.Interactions.TryGetValue(inter, out List<Effect> effects)) // This entity has an interaction
+            if (specificContext.Actor.Interactions != null && specificContext.Actor.Interactions.TryGetValue(inter, out List<Effect> effects)) // This entity has an interaction
             {
-                TRIGINTER_ProcessEffects(entity, effects, specificContext);
+                TRIGINTER_ProcessEffects(effects, specificContext);
             }
         }
 
@@ -36,11 +36,11 @@ namespace ODLGameEngine
                     BoardEntity entityData = DetailedState.EntityData[entity]; // Triger will only apply when entity still exists
                     if (entityData != null)
                     {
+                        specificContext.TriggeredEntity = entityData; // For the next trigger, this entity is the one
                         List<Effect> effects = entityData.Triggers[trigger]; // Get unit's effects for this trigger
-                        TRIGINTER_ProcessEffects(entityData, effects, specificContext);
+                        TRIGINTER_ProcessEffects(effects, specificContext);
                     }
                 }
-
             }
         }
         /// <summary>
@@ -49,7 +49,7 @@ namespace ODLGameEngine
         /// <param name="entity">The entity that is going to "perform" the effects</param>
         /// <param name="effects">List of effects to execute</param>
         /// <param name="specificContext">Additional context that accompanies the desired effect (e.g. when killed, implies killed by someone, etc)</param>
-        void TRIGINTER_ProcessEffects(EntityBase entity, List<Effect> effects, EffectContext specificContext)
+        void TRIGINTER_ProcessEffects(List<Effect> effects, EffectContext specificContext)
         {
             OngoingEffectContext ctx = new OngoingEffectContext()
             {
@@ -62,8 +62,20 @@ namespace ODLGameEngine
                     case EffectType.DEBUG:
                         ENGINE_AddDebugEvent(ctx);
                         break;
+                    case EffectType.SELECT_ENTITY:
+                        { // In this case there's a simple, single BoardEntity target related to the ctx in question
+                            BoardEntity tgt = effect.SearchCriterion switch
+                            {
+                                SearchCriterion.TRIGGERED_ENTITY => (BoardEntity)specificContext.TriggeredEntity,
+                                SearchCriterion.ACTOR_ENTITY => (BoardEntity)specificContext.Actor,
+                                SearchCriterion.AFFECTED_ENTITY => ((AffectingEffectContext)specificContext).Affected,
+                                _ => throw new NotImplementedException("Invalid target for entity selection")
+                            };
+                            ctx.EffectTargets = [tgt.UniqueId]; // This is now the target
+                        }
+                        break;
                     case EffectType.FIND_ENTITIES:
-                        ctx.EffectTargets = TRIGINTER_GetTargets(entity, effect, specificContext);
+                        ctx.EffectTargets = TRIGINTER_GetTargets(effect, specificContext);
                         break;
                     case EffectType.SUMMON_UNIT:
                         // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
@@ -75,8 +87,8 @@ namespace ODLGameEngine
                             {
                                 playerOwner = effect.TargetPlayer switch
                                 {
-                                    EntityOwner.OWNER => entity.Owner,
-                                    EntityOwner.OPPONENT => 1 - entity.Owner,
+                                    EntityOwner.OWNER => specificContext.Actor.Owner,
+                                    EntityOwner.OPPONENT => 1 - specificContext.Actor.Owner,
                                     _ => throw new NotImplementedException("Invalid player target"),
                                 };
                             }
@@ -162,7 +174,7 @@ namespace ODLGameEngine
         /// <param name="entityRef">Observer, i.e. which side of the board</param>
         /// <param name="searchParameters">Contains extra info necessary for the search</param>
         /// <returns></returns>
-        List<int> TRIGINTER_GetTargets(EntityBase entityRef, Effect searchParameters, EffectContext specificContext)
+        List<int> TRIGINTER_GetTargets(Effect searchParameters, EffectContext specificContext)
         {
             // If nothing to search for, just return an empty list
             if(searchParameters.TargetPlayer == EntityOwner.NONE || searchParameters.TargetType == EntityType.NONE || (searchParameters.SearchCriterion == SearchCriterion.QUANTITY && searchParameters.Value == 0))
@@ -211,7 +223,7 @@ namespace ODLGameEngine
                 }
                 reverseSearch = true;
             }
-            referencePlayer = reverseSearch ? 1 - entityRef.Owner : entityRef.Owner;
+            referencePlayer = reverseSearch ? 1 - specificContext.Actor.Owner : specificContext.Actor.Owner;
             requiredTargets = searchParameters.SearchCriterion switch
             {
                 SearchCriterion.ORDINAL => 1, // Only one target in position N
@@ -221,11 +233,11 @@ namespace ODLGameEngine
             };
             if(searchParameters.TargetPlayer == EntityOwner.OWNER)
             {
-                playerFilter = entityRef.Owner;
+                playerFilter = specificContext.Actor.Owner;
             }
             else if (searchParameters.TargetPlayer == EntityOwner.OPPONENT)
             {
-                playerFilter = 1 - entityRef.Owner;
+                playerFilter = 1 - specificContext.Actor.Owner;
             }
             // Search loop, continues until I get the number of targets I want or nothing else to look for
             TargetingStateMachine currentSearchState = TargetingStateMachine.BEGIN;
@@ -246,11 +258,11 @@ namespace ODLGameEngine
                             // Need to add if player (w.r.t to card ownership) are valid targets 
                             if (reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OPPONENT)) // If searching backwards and opponent enabled, then add opp
                             {
-                                nextCandidateEntity = 1 - entityRef.Owner;
+                                nextCandidateEntity = 1 - specificContext.Actor.Owner;
                             }
                             else if (!reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OWNER)) // If searching normally and owner enabled, then add it
                             {
-                                nextCandidateEntity = entityRef.Owner;
+                                nextCandidateEntity = specificContext.Actor.Owner;
                             }
                         }
                         currentSearchState = TargetingStateMachine.GET_ENTITIES_IN_REGION; // Once finished, go to next state (get elements to search for entities)
@@ -299,11 +311,11 @@ namespace ODLGameEngine
                         {
                             if (!reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
                             {
-                                nextCandidateEntity = 1 - entityRef.Owner;
+                                nextCandidateEntity = 1 - specificContext.Actor.Owner;
                             }
                             else if (reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OWNER))
                             {
-                                nextCandidateEntity = entityRef.Owner;
+                                nextCandidateEntity = specificContext.Actor.Owner;
                             }
                         }
                         currentSearchState = TargetingStateMachine.END; // Finished the board.. nothign else to look for

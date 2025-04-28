@@ -93,8 +93,8 @@ namespace ODLGameEngine
         {
             DamageContext damageCtx = new DamageContext() // Create info of the result of this action
             {
-                AttackingEntity = attacker,
-                DefendingEntity = defender,
+                Actor = attacker,
+                Affected = defender,
                 DamageAmount = damage
             };
 
