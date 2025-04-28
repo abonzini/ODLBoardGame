@@ -120,7 +120,7 @@ namespace ODLGameEngine
                     // Then the play effects
                     EntityBase createdEntity = PLAYABLE_PlayCard(cardData, chosenTarget);
                     // INTERACTION: CARD IS PLAYED
-                    PlayContext playCtx = new PlayContext() { Actor = createdEntity, LaneTargets = chosenTarget };
+                    PlayContext playCtx = new PlayContext() { ActivatedEntity = createdEntity, Actor = createdEntity, LaneTargets = chosenTarget };
                     TRIGINTER_ProcessInteraction(InteractionType.WHEN_PLAYED, playCtx);
                     // Ends by transitioning to next action phase
                     ENGINE_ChangeState(States.ACTION_PHASE);

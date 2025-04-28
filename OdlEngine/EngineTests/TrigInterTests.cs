@@ -1141,6 +1141,8 @@ namespace EngineTests
                 {
                     EffectType = EffectType.SELECT_ENTITY,
                     SearchCriterion = SearchCriterion.ACTOR_ENTITY, // Selects actor entity, in this case, myself when played
+                    TargetPlayer = EntityOwner.OWNER,
+                    TargetType = EntityType.UNIT,
                 };
                 Effect debugEffect = new Effect()
                 {
@@ -1199,7 +1201,9 @@ namespace EngineTests
                 Effect selectEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.SELECT_ENTITY,
-                    SearchCriterion = SearchCriterion.TRIGGERED_ENTITY, // Selects triggered entity, in this case, the unit
+                    SearchCriterion = SearchCriterion.EFFECT_OWNING_ENTITY, // Selects triggered entity, in this case, the unit
+                    TargetPlayer = EntityOwner.OWNER,
+                    TargetType = EntityType.UNIT,
                 };
                 Effect debugEffect = new Effect()
                 {

@@ -44,7 +44,7 @@ namespace ODLGameEngine
         ORDINAL,
         QUANTITY,
         ALL,
-        TRIGGERED_ENTITY,
+        EFFECT_OWNING_ENTITY,
         ACTOR_ENTITY,
         AFFECTED_ENTITY
     }
@@ -118,7 +118,7 @@ namespace ODLGameEngine
     /// </summary>
     public class EffectContext
     {
-        public EntityBase TriggeredEntity = null;
+        public EntityBase ActivatedEntity = null;
         public EntityBase Actor = null;
     }
     /// <summary>
@@ -168,6 +168,6 @@ namespace ODLGameEngine
     public class OngoingEffectContext : EffectContext
     {
         public EffectContext BaseEffectContext;
-        public List<int> EffectTargets;
+        public List<int> EffectTargets = [];
     }
 }

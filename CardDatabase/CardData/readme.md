@@ -144,7 +144,8 @@ When an effect is ongoing (either because of a Trigger or an Interaction), the g
 - ```WHEN_PLAYED``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
 
 ## Effect Description
-Search in the next section for what the fields mean and the possible values they may take
+These are the following supported effects.
+All effects are relative to the card executing the effect, so the meaning of ```TargetPlayer```, for example, depends on this.
 
 - ```FIND_ENTITIES``` Task that finds all valid entities to be targeted for an effect.
 For example, skills that deal damage to an unit, or to the enemy hero, or destroy all buildings, etc.
@@ -164,9 +165,12 @@ These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of sea
 
 - ```SELECT_ENTITY``` Is very similar to ```FIND_ENTITIES``` but instead of looking for potential valid entities in a board, it selects a single target out of known entities that participate in a trigger or interaction.
 For example if a unit attacks another, ```SELECT_ENTITY``` can be used to target either the unit that attacked or the affected unit.
+Owner and target type filters can be used for slightly more complex effects, such as "When a **friendly unit** does X".
     
-    Parameter:
+    Parameters:
     - ```SearchCriterion``` determines which entity will be targeted by this
+    - ```TargetPlayer``` serves as a filter where you only target entities of the player owner in question
+    - ```TargetType``` the type of entities that can be targeted
 
 - ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes.
 Parameters:
@@ -216,7 +220,7 @@ Parameters:
     - ```ALL``` targets everything found
 
     When selecting a specific known entity:
-    - ```TRIGGERED_ENTITY``` will target the entity that was triggered 
+    - ```EFFECT_OWNING_ENTITY``` will target the entity that owns the effect
     - ```ACTOR_ENTITY``` will target the entity that "does something"
     - ```AFFECTED_ENTITY``` will targeted the entity that was affected by an interaction
 

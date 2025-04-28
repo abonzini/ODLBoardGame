@@ -6,4 +6,5 @@ Ongoing tasks in order of priority:
 		- No individual card testing! Game must be mechanically robust even if cards are completely revamped
 - TODO some tests:
     - Affected entity selection test (when there's an actual affecting event going on, such as construction, or whatever is implemented first)
+    - Selection filtered (e.g. given a unit stepping on a building, and some tricky manual editing, prove that the unit/building/owner/opp filters in selection work ok)
     
