@@ -29,6 +29,12 @@ namespace ODLGameEngine
             BOARDENTITY_InsertInLane(newSpawnedUnit, unitLane.Id);
             int tileCoord = unitLane.GetAbsoluteTileCoord(0,player); // Get tile coord
             BOARDENTITY_InsertInTile(newSpawnedUnit, tileCoord);
+            // Now, verify if unit has just entered a tile where there's a building
+            SortedSet<int> buildingsInUnitTile = unitLane.GetTileAbsolute(tileCoord).GetPlacedEntities(EntityType.BUILDING);
+            if (buildingsInUnitTile.Count > 0) // Found a building, means unit has stepped on it
+            {
+                UNIT_EnterBuilding(newSpawnedUnit, (Building)DetailedState.EntityData[buildingsInUnitTile.First()]);
+            }
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             BOARDENTITY_CheckIfUnitAlive(newSpawnedUnit);
             return newSpawnedUnit;
@@ -78,13 +84,10 @@ namespace ODLGameEngine
                         BOARDENTITY_InsertInTile(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
                         // Entering new tile
                         Tile newTile = DetailedState.BoardState.GetLane(unit.LaneCoordinate).GetTileAbsolute(unit.TileCoordinate);
-                        if (newTile.GetPlacedEntities(EntityType.BUILDING).Count != 0) // If tile has a building, do potential building effects
+                        if (newTile.GetPlacedEntities(EntityType.BUILDING).Count != 0) // If tile has a building, do potential building effects and/or combat
                         {
                             Building bldg = (Building)DetailedState.EntityData[newTile.GetPlacedEntities(EntityType.BUILDING).First()]; // Get building
-                            if(bldg.Owner == opponentId)
-                            {
-                                UNIT_Combat(unit, bldg);
-                            }
+                            UNIT_EnterBuilding(unit, bldg);
                         }
                     }
                 }
@@ -115,6 +118,35 @@ namespace ODLGameEngine
             }
 
             // TODO: Contexts are checked here! even death and damage taking, to avoid Units doing stuff in this critical damage step
+        }
+        /// <summary>
+        /// The event that occurs when a unit steps on a building
+        /// </summary>
+        /// <param name="unit">The unit</param>
+        /// <param name="building">The building</param>
+        void UNIT_EnterBuilding(Unit unit, Building building)
+        {
+            // First, unit enters building
+            EntersBuildingContext enterCtx = new EntersBuildingContext()
+            {
+                ActivatedEntity = unit,
+                Actor = unit,
+                Affected = building
+            };
+            TRIGINTER_ProcessInteraction(InteractionType.UNIT_ENTERS_BUILDING, enterCtx);
+            // Then, building is entered, context from POV of building
+            enterCtx = new EntersBuildingContext()
+            {
+                ActivatedEntity = building,
+                Actor = unit,
+                Affected = building
+            };
+            TRIGINTER_ProcessInteraction(InteractionType.UNIT_ENTERS_BUILDING, enterCtx);
+            // Also, when 
+            if (building.Owner == 1 - unit.Owner) // If building and unit have different owners, then the unit attacks
+            {
+                UNIT_Combat(unit, building);
+            }
         }
     }
 }

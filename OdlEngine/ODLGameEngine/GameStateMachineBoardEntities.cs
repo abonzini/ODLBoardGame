@@ -32,7 +32,7 @@ namespace ODLGameEngine
             ENGINE_EntityLaneTransition(entity, laneId);
         }
         /// <summary>
-        /// Inserts entity in tile RELATIVE TO LATE so Lane always needs to be correct when this is called
+        /// Inserts entity in tile RELATIVE TO LANE so Lane always needs to be correct when this is called
         /// </summary>
         /// <param name="entity">The entity</param>
         /// <param name="tileCoord">The tile coord</param>

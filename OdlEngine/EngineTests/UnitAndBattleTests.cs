@@ -1614,6 +1614,64 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void BuildingDamagedOnSummon()
+        {
+            // Unit summoned on top of building, damages building
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int attack = _rng.Next(1, 9); // Attack between 1-8
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = (CurrentPlayer)playerIndex
+                };
+                // Will try this in any lane
+                TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                for (int i = 0; i < 5; i++)
+                {
+                    // Insert to both players hands and decks. Both have attack but they can't kill themselves
+                    state.PlayerStates[playerIndex].Hand.InsertCard(0);
+                    state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add unit too
+                    state.PlayerStates[playerIndex].Deck.InsertCard(0);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(0);
+                    state.PlayerStates[otherPlayerIndex].Hand.InsertCard(1); // Add unit too
+                    state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
+                }
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, attack, 2, 1);
+                CardFinder cardDb = new CardFinder(); // Card holder
+                cardDb.InjectCard(1, testUnit); // Add to cardDb
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, TargetLocation.ALL_LANES, attack + 1, [], [], []);
+                testBldg.Owner = otherPlayerIndex;
+                // Initialize building in first tile
+                TestHelperFunctions.ManualInitEntity(state, target, -1, 2, otherPlayerIndex, testBldg); // Insert building in field, in beginning of player
+                state.NextUniqueIndex = 3;
+                // Create a new blank SM from load game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                // Pre summon
+                state = sm.DetailedState;
+                int hash = state.GetGameStateHash();
+                Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0); // No units
+                Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.BUILDING, otherPlayerIndex).Count, 1); // A building
+                // Summon
+                sm.PlayFromHand(1, target); // Player will summon the unit
+                Assert.AreNotEqual(hash, sm.DetailedState.GetGameStateHash()); // Hash changed
+                Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1); // Now unit
+                Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.BUILDING, otherPlayerIndex).Count, 1); // Now building
+                Assert.AreEqual(testBldg.DamageTokens, attack); // Bldg has now damage tokens
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(hash, sm.DetailedState.GetGameStateHash()); // Hash reverted
+                Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0); // No unit
+                Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.BUILDING, otherPlayerIndex).Count, 1);
+                Assert.AreEqual(testBldg.DamageTokens, 0);
+            }
+        }
+        [TestMethod]
         public void BuildingDamagedOnAdvance()
         {
             // A unit advances, damages building

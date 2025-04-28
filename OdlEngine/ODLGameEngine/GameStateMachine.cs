@@ -65,7 +65,6 @@ namespace ODLGameEngine
             DetailedState.PlayerStates[1].Owner = 1;
             DetailedState.PlayerStates[0].UniqueId = 1;
             DetailedState.EntityData[1] = DetailedState.PlayerStates[1];
-            DetailedState.NextUniqueIndex = 2; // Next one
         }
         // --------------------------------------------------------------------------------------
         // ------------------------  STATE, ACTIONS AND STEP OPERATORS --------------------------

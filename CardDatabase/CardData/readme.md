@@ -142,6 +142,7 @@ When an effect is ongoing (either because of a Trigger or an Interaction), the g
 ## Interaction Types
 
 - ```WHEN_PLAYED``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
+- ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during advance). This interaction happens first from the POV of the unit and then the POV of the building.
 
 ## Effect Description
 These are the following supported effects.

@@ -46,6 +46,169 @@ namespace EngineTests
                 Assert.IsTrue(debugFlagFound);
             }
         }
+        [TestMethod]
+        public void UnitEnterBuildingOnSummonInteraction()
+        {
+            // Building is on the board, unit is summoned, both the unit and the building should be triggered accordingly when stepping in
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit with very basic stats (movt 9)
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, TargetLocation.ALL_LANES, 1, 1, 9, 1);
+                // Card 2, a building, just casually placed on first tile
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, TargetLocation.ALL_LANES, 1, [], [], []);
+                // Now add the building into the board
+                TestHelperFunctions.ManualInitEntity(state, TargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
+                state.NextUniqueIndex = 3;
+                // Create the "on step" effect
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                Dictionary<InteractionType, List<Effect>>  stepInteraction = new Dictionary<InteractionType, List<Effect>>();
+                stepInteraction.Add(InteractionType.UNIT_ENTERS_BUILDING, [debugEffect]); // Add interaction to card
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                List<EntityType> effectEntities = [EntityType.UNIT, EntityType.BUILDING]; // Who I want to test
+                foreach (EntityType entityType in effectEntities)
+                {
+                    switch(entityType) // Will add interaction to correct entity
+                    {
+                        case EntityType.UNIT:
+                            unit.Interactions = stepInteraction;
+                            building.Interactions = null;
+                            break;
+                        case EntityType.BUILDING:
+                            building.Interactions = stepInteraction;
+                            unit.Interactions = null;
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                    // I'll load the game
+                    GameStateMachine sm = new GameStateMachine(cardDb);
+                    sm.LoadGame(state); // Start from here
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    // Play
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
+                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                    GameEngineEvent debugEvent = null;
+                    foreach (GameEngineEvent ev in res.Item2.events)
+                    {
+                        if (ev.eventType == EventType.DEBUG_CHECK)
+                        {
+                            debugEvent = ev;
+                            break;
+                        }
+                    }
+                    Assert.IsNotNull(debugEvent); // Found it!
+                    // Check returned targets
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
+                    Assert.AreEqual(entityType, ((EntityEvent<OngoingEffectContext>)debugEvent).entity.BaseEffectContext.ActivatedEntity.EntityPlayInfo.EntityType);
+                    // Revert and hash check
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                }
+            }
+        }
+        [TestMethod]
+        public void UnitEnterBuildingOnAdvanceInteraction()
+        {
+            // Building is on the board, unit is summoned, both the unit and the building should be triggered accordingly when stepping in
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit with very basic stats (movt 9)
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, TargetLocation.ALL_LANES, 1, 1, 9, 1);
+                // Card 2, a building, just casually placed on second tile
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, TargetLocation.ALL_LANES, 1, [], [], []);
+                // Now add the building into the board
+                TestHelperFunctions.ManualInitEntity(state, TargetLocation.PLAINS, 1, 2, playerIndex, building); // Now building is in place
+                state.NextUniqueIndex = 3;
+                // Create the "on step" effect
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                Dictionary<InteractionType, List<Effect>> stepInteraction = new Dictionary<InteractionType, List<Effect>>();
+                stepInteraction.Add(InteractionType.UNIT_ENTERS_BUILDING, [debugEffect]); // Add interaction to card
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                List<EntityType> effectEntities = [EntityType.UNIT, EntityType.BUILDING]; // Who I want to test
+                foreach (EntityType entityType in effectEntities)
+                {
+                    switch (entityType) // Will add interaction to correct entity
+                    {
+                        case EntityType.UNIT:
+                            unit.Interactions = stepInteraction;
+                            building.Interactions = null;
+                            break;
+                        case EntityType.BUILDING:
+                            building.Interactions = stepInteraction;
+                            unit.Interactions = null;
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                    // I'll load the game
+                    GameStateMachine sm = new GameStateMachine(cardDb);
+                    sm.LoadGame(state); // Start from here
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    // Play
+                    sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
+                    sm.EndTurn(); // Ends turn
+                    sm.Step(); // Opp draw phase
+                    sm.EndTurn(); // End opp turn
+                    StepResult res = sm.Step(); // Do my draw phase, trigger advance now
+                    GameEngineEvent debugEvent = null;
+                    foreach (GameEngineEvent ev in res.events)
+                    {
+                        if (ev.eventType == EventType.DEBUG_CHECK)
+                        {
+                            debugEvent = ev;
+                            break;
+                        }
+                    }
+                    Assert.IsNotNull(debugEvent); // Found it!
+                    // Check returned targets
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
+                    Assert.AreEqual(entityType, ((EntityEvent<OngoingEffectContext>)debugEvent).entity.BaseEffectContext.ActivatedEntity.EntityPlayInfo.EntityType);
+                    // Revert EVERYTHING and hash check
+                    sm.UndoPreviousStep();
+                    sm.UndoPreviousStep();
+                    sm.UndoPreviousStep();
+                    sm.UndoPreviousStep();
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                }
+            }
+        }
         // Triggers
         [TestMethod]
         public void UnitTriggers()
@@ -294,29 +457,6 @@ namespace EngineTests
                 }
             }
         }
-        /// <summary>
-        /// Adds entity to board, no checks
-        /// </summary>
-        /// <param name="state">GameState</param>
-        /// <param name="lane">Which lane</param>
-        /// <param name="tileCoord">Which tile</param>
-        /// <param name="uniqueId">Desired ID</param>
-        /// <param name="owner">Entity owner index</param>
-        /// <param name="entity">Entity to add</param>
-        static public void ManualInitEntity(GameStateStruct state, TargetLocation lane, int tileCoord, int uniqueId, int owner, PlacedEntity entity)
-        {
-            entity.Owner = owner;
-            entity.UniqueId = uniqueId;
-            // Add to board and sm
-            state.EntityData.Add(uniqueId, entity);
-            state.BoardState.EntityListOperation(entity, EntityListOperation.ADD);
-            // Add to lane
-            entity.LaneCoordinate = (LaneID)lane;
-            state.BoardState.GetLane(lane).EntityListOperation(entity, EntityListOperation.ADD);
-            // Add to tile
-            entity.TileCoordinate = state.BoardState.GetLane(lane).GetAbsoluteTileCoord(tileCoord, entity.Owner);
-            state.BoardState.GetLane(lane).GetTileAbsolute(entity.TileCoordinate).EntityListOperation(entity, EntityListOperation.ADD);
-        }
         [TestMethod]
         public void TestTargetingFilters()
         {
@@ -357,19 +497,19 @@ namespace EngineTests
                 TargetLocation otherLane1 = (TargetLocation)(1 << lane); // Get the other lanes for extra testing
                 lane++; lane %= 3;
                 TargetLocation otherLane2 = (TargetLocation)(1 << lane);
-                ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
-                ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
@@ -512,19 +652,19 @@ namespace EngineTests
                 TargetLocation otherLane1 = (TargetLocation)(1 << lane); // Get the other lanes for extra testing
                 lane++; lane %= 3;
                 TargetLocation otherLane2 = (TargetLocation)(1 << lane);
-                ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
-                ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
@@ -620,19 +760,19 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
-                ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
-                ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
@@ -725,19 +865,19 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
-                ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
-                ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
@@ -829,19 +969,19 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
-                ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
                 });
-                ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
-                ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
                     EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
                 });
@@ -961,8 +1101,8 @@ namespace EngineTests
                 theUnit.Hp.BaseValue = statValue;
                 theUnit.Movement.BaseValue = statValue;
                 theUnit.MovementDenominator.BaseValue = statValue;
-                ManualInitEntity(state, targetLocation, 0, 2, playerIndex, (PlacedEntity)theUnit.Clone());
-                ManualInitEntity(state, targetLocation, 1, 3, playerIndex, (PlacedEntity)theUnit.Clone());
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 2, playerIndex, (PlacedEntity)theUnit.Clone());
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, playerIndex, (PlacedEntity)theUnit.Clone());
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1069,8 +1209,8 @@ namespace EngineTests
                 theUnit.Hp.BaseValue = statValue;
                 theUnit.Movement.BaseValue = statValue;
                 theUnit.MovementDenominator.BaseValue = statValue;
-                ManualInitEntity(state, targetLocation, 0, 2, playerIndex, (PlacedEntity)theUnit.Clone());
-                ManualInitEntity(state, targetLocation, 1, 3, playerIndex, (PlacedEntity)theUnit.Clone());
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 2, playerIndex, (PlacedEntity)theUnit.Clone());
+                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, playerIndex, (PlacedEntity)theUnit.Clone());
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1182,6 +1322,73 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void SelectAffected()
+        {
+            // Will step on building and make sure I can obtain affected (building)
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit with very basic stats
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Effect selectEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.SELECT_ENTITY,
+                    SearchCriterion = SearchCriterion.AFFECTED_ENTITY, // Selects affected entity, in this case, myself when played
+                    TargetPlayer = EntityOwner.OWNER,
+                    TargetType = EntityType.BUILDING,
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Now I init a building in first tile
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, TargetLocation.ALL_LANES, 1, [], [], []);
+                TestHelperFunctions.ManualInitEntity(state, TargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
+                state.NextUniqueIndex = 3;
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Do the selection
+                // Pre-play prep
+                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                // Play
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
+                GameEngineEvent debugEvent = null;
+                foreach (GameEngineEvent ev in res.Item2.events)
+                {
+                    if (ev.eventType == EventType.DEBUG_CHECK)
+                    {
+                        debugEvent = ev;
+                        break;
+                    }
+                }
+                Assert.IsNotNull(debugEvent); // Found it!
+                // Check returned targets
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                Assert.AreEqual(searchResultList.Count, 1);
+                Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
+                // Revert and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+            }
+        }
+        [TestMethod]
         public void TriggeredUnitSelection()
         {
             // Testing of a debug trigger and selection of unit
@@ -1242,6 +1449,174 @@ namespace EngineTests
                 sm.UndoPreviousStep(); // Undoes card play
                 Assert.AreEqual(stateHash, sm.DetailedState.GetGameStateHash());
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
+            }
+        }
+        [TestMethod]
+        public void SelectEntityTypeFilters()
+        {
+            // Like the building enter test, but I trick the building into being weird thigns to make sure entitty type filter works
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit with very basic stats
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Effect selectEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.SELECT_ENTITY,
+                    SearchCriterion = SearchCriterion.AFFECTED_ENTITY, // Selects affected entity, in this case, myself when played
+                    TargetPlayer = EntityOwner.OWNER,
+                    TargetType = EntityType.BUILDING,
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Now I init a building in first tile
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, TargetLocation.ALL_LANES, 1, [], [], []);
+                TestHelperFunctions.ManualInitEntity(state, TargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
+                state.NextUniqueIndex = 3; 
+                List<EntityType> buildingEntityTypes = [EntityType.UNIT, EntityType.BUILDING];
+                List<EntityType> filterEntityTypes = [EntityType.UNIT, EntityType.BUILDING];
+                foreach (EntityType buildingEntityType in buildingEntityTypes)
+                {
+                    foreach (EntityType filterEntityType in filterEntityTypes)
+                    {
+                        selectEffect.TargetType = filterEntityType;
+                        building.EntityPlayInfo.EntityType = buildingEntityType;
+                        // Finally load the game
+                        GameStateMachine sm = new GameStateMachine(cardDb);
+                        sm.LoadGame(state); // Start from here
+                        // Do the selection
+                        // Pre-play prep
+                        int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                        // Play
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
+                        GameEngineEvent debugEvent = null;
+                        foreach (GameEngineEvent ev in res.Item2.events)
+                        {
+                            if (ev.eventType == EventType.DEBUG_CHECK)
+                            {
+                                debugEvent = ev;
+                                break;
+                            }
+                        }
+                        Assert.IsNotNull(debugEvent); // Found it!
+                        // Check returned targets
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                        List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                        if(buildingEntityType == filterEntityType) // Then, if types match, id get sth as target, otherwise no
+                        {
+                            Assert.AreEqual(searchResultList.Count, 1);
+                            Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
+                        }
+                        else
+                        {
+                            Assert.AreEqual(searchResultList.Count, 0);
+                        }
+                        // Revert and hash check
+                        sm.UndoPreviousStep();
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                    }
+                }
+            }
+        }
+        [TestMethod]
+        public void SelectEntityOwnerFilters()
+        {
+            // Like the building enter test, but I trick the building into being weird thigns to make sure entitty type filter works
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit with very basic stats
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Effect selectEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.SELECT_ENTITY,
+                    SearchCriterion = SearchCriterion.AFFECTED_ENTITY, // Selects affected entity, in this case, myself when played
+                    TargetPlayer = EntityOwner.OWNER,
+                    TargetType = EntityType.BUILDING,
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                };
+                unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Now I init a building in first tile
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, TargetLocation.ALL_LANES, 1, [], [], []);
+                TestHelperFunctions.ManualInitEntity(state, TargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
+                state.NextUniqueIndex = 3; 
+                List<EntityOwner> buildingEntityOwners = [EntityOwner.OWNER, EntityOwner.OPPONENT]; // This is weird and never should happen in real code
+                List<EntityOwner> filterEntityOwners = [EntityOwner.OWNER, EntityOwner.OPPONENT];
+                foreach (EntityOwner buildingEntityOwner in buildingEntityOwners)
+                {
+                    foreach (EntityOwner filterEntityOwner in filterEntityOwners)
+                    {
+                        selectEffect.TargetPlayer = filterEntityOwner;
+                        building.Owner = (buildingEntityOwner == EntityOwner.OWNER) ? playerIndex : opponentIndex;
+                        // Finally load the game
+                        GameStateMachine sm = new GameStateMachine(cardDb);
+                        sm.LoadGame(state); // Start from here
+                        // Do the selection
+                        // Pre-play prep
+                        int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                        // Play
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
+                        GameEngineEvent debugEvent = null;
+                        foreach (GameEngineEvent ev in res.Item2.events)
+                        {
+                            if (ev.eventType == EventType.DEBUG_CHECK)
+                            {
+                                debugEvent = ev;
+                                break;
+                            }
+                        }
+                        Assert.IsNotNull(debugEvent); // Found it!
+                        // Check returned targets
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                        List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                        if (buildingEntityOwner == filterEntityOwner) // Then, if types match, id get sth as target, otherwise no
+                        {
+                            Assert.AreEqual(searchResultList.Count, 1);
+                            Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
+                        }
+                        else
+                        {
+                            Assert.AreEqual(searchResultList.Count, 0);
+                        }
+                        // Revert and hash check
+                        sm.UndoPreviousStep();
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                    }
+                }
             }
         }
     }

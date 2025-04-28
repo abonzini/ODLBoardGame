@@ -15,7 +15,8 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum InteractionType
     {
-        WHEN_PLAYED
+        WHEN_PLAYED,
+        UNIT_ENTERS_BUILDING,
     }
     [JsonConverter(typeof(StringEnumConverter))]
     public enum TriggerType
@@ -161,6 +162,13 @@ namespace ODLGameEngine
         public int AbsoluteTile = -1;
         public int RelativeTile = -1;
         public int FirstAvailableOption = -1;
+    }
+    /// <summary>
+    /// When something (I guess unit) steps on a building
+    /// </summary>
+    public class EntersBuildingContext : AffectingEffectContext
+    {
+
     }
     /// <summary>
     /// Of an ongoing effect chain resolution, may contain important info

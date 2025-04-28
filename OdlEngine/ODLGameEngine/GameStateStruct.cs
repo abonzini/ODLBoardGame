@@ -78,7 +78,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public int Seed { get; set; } = 0;
         [JsonProperty]
-        public int NextUniqueIndex { get; set; } = 0;
+        public int NextUniqueIndex { get; set; } = 2; // 2 because 0 and 1 are reserved for players
         [JsonProperty]
         public CurrentPlayer CurrentPlayer { get; set; } = CurrentPlayer.OMNISCIENT;
         [JsonProperty]

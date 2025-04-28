@@ -107,5 +107,28 @@ namespace EngineTests
             HashSetVerification(testState.PlayerStates[1].Deck, hashes, true);
             HashSetVerification(testState, hashes, true);
         }
+        /// <summary>
+        /// Adds entity to board, no checks
+        /// </summary>
+        /// <param name="state">GameState</param>
+        /// <param name="lane">Which lane</param>
+        /// <param name="tileCoord">Which tile</param>
+        /// <param name="uniqueId">Desired ID</param>
+        /// <param name="owner">Entity owner index</param>
+        /// <param name="entity">Entity to add</param>
+        static public void ManualInitEntity(GameStateStruct state, TargetLocation lane, int tileCoord, int uniqueId, int owner, PlacedEntity entity)
+        {
+            entity.Owner = owner;
+            entity.UniqueId = uniqueId;
+            // Add to board and sm
+            state.EntityData.Add(uniqueId, entity);
+            state.BoardState.EntityListOperation(entity, EntityListOperation.ADD);
+            // Add to lane
+            entity.LaneCoordinate = (LaneID)lane;
+            state.BoardState.GetLane(lane).EntityListOperation(entity, EntityListOperation.ADD);
+            // Add to tile
+            entity.TileCoordinate = state.BoardState.GetLane(lane).GetAbsoluteTileCoord(tileCoord, entity.Owner);
+            state.BoardState.GetLane(lane).GetTileAbsolute(entity.TileCoordinate).EntityListOperation(entity, EntityListOperation.ADD);
+        }
     }
 }
