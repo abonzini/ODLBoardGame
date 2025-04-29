@@ -85,6 +85,15 @@ namespace ODLGameEngine
         // Todo, damage, advancement, etc
     }
     /// <summary>
+    /// Register to use in an effect
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum Register
+    {
+        TEMP_VARIABLE,
+        ACC
+    }
+    /// <summary>
     /// Effect is described by a type and a series of modifiers that define the effect
     /// </summary>
     public class Effect
@@ -103,8 +112,11 @@ namespace ODLGameEngine
         public ModifierOperation ModifierOperation;
         [JsonConverter(typeof(StringEnumConverter))]
         public ModifierTarget ModifierTarget;
-        public int CardNumber;
-        public int Value;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Register InputRegister;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Register OutputRegister;
+        public int TempVariable;
 
         public override string ToString()
         {
@@ -175,7 +187,9 @@ namespace ODLGameEngine
     /// </summary>
     public class OngoingEffectContext : EffectContext
     {
-        public EffectContext BaseEffectContext;
+        public EffectContext BaseEffectContext = null;
         public List<int> EffectTargets = [];
+        public int TempValue = 0;
+        public int Acc = 0;
     }
 }

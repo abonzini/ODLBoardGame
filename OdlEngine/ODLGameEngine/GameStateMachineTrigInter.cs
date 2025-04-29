@@ -57,6 +57,11 @@ namespace ODLGameEngine
             };
             foreach (Effect effect in effects) // Execute series of events for the card in question
             {
+                // Define values of registers as may be needed
+                ctx.TempValue = effect.TempVariable;
+                ref int sourceReg = ref TRIGINTER_GetRegisterReference(ctx, effect.InputRegister);
+                ref int targetReg = ref TRIGINTER_GetRegisterReference(ctx, effect.OutputRegister);
+                // Now to process the effect
                 switch (effect.EffectType)
                 {
                     case EffectType.DEBUG:
@@ -83,7 +88,7 @@ namespace ODLGameEngine
                         }
                         break;
                     case EffectType.FIND_ENTITIES:
-                        ctx.EffectTargets = TRIGINTER_GetTargets(effect, specificContext);
+                        ctx.EffectTargets = TRIGINTER_GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, effect.TargetLocation, sourceReg, specificContext);
                         break;
                     case EffectType.SUMMON_UNIT:
                         // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
@@ -104,7 +109,7 @@ namespace ODLGameEngine
                             {
                                 continue;
                             }
-                            Unit auxCardData = (Unit)CardDb.GetCard(effect.CardNumber);
+                            Unit auxCardData = (Unit)CardDb.GetCard(sourceReg);
                             // Find where to play unit
                             if(effect.TargetLocation == TargetLocation.PLAY_TARGET) // If card has the "played" target
                             {
@@ -151,7 +156,7 @@ namespace ODLGameEngine
                                             _ => throw new NotImplementedException("Modifier type not implemented yet")
                                         };
                                         // Got the stat, now modify it
-                                        functionToApply(targetStat, effect.Value);
+                                        functionToApply(targetStat, sourceReg);
                                     }
                                 }
                                 break;
@@ -163,6 +168,18 @@ namespace ODLGameEngine
                         throw new NotImplementedException("Effect type not implemented yet");
                 }
             }
+        }
+        static ref int TRIGINTER_GetRegisterReference(OngoingEffectContext ctx, Register reg)
+        {
+            switch(reg)
+            {
+                case Register.TEMP_VARIABLE:
+                    return ref ctx.TempValue;
+                case Register.ACC:
+                    return ref ctx.Acc;
+                default:
+                    throw new NotImplementedException("Invalid register");
+            };
         }
         /// <summary>
         /// Just a bunch of enums for the target-finding state machine
@@ -179,13 +196,17 @@ namespace ODLGameEngine
         /// <summary>
         /// Function that gets serch parameters as well as reference observer, and returns a series of valid entity targets.
         /// </summary>
-        /// <param name="entityRef">Observer, i.e. which side of the board</param>
-        /// <param name="searchParameters">Contains extra info necessary for the search</param>
+        /// <param name="targetPlayer">Target owner relative to card </param>
+        /// <param name="targetType">Entity types to search</param>
+        /// <param name="searchCriterion">Criterion of search</param>
+        /// <param name="targetLocation">Where to search for targets</param>
+        /// <param name="n">The value n whose meaning depends on search criterion</param>
+        /// <param name="specificContext">Extra context of an event useful in some searches</param>
         /// <returns></returns>
-        List<int> TRIGINTER_GetTargets(Effect searchParameters, EffectContext specificContext)
+        List<int> TRIGINTER_GetTargets(EntityOwner targetPlayer, EntityType targetType, SearchCriterion searchCriterion, TargetLocation targetLocation, int n, EffectContext specificContext)
         {
             // If nothing to search for, just return an empty list
-            if(searchParameters.TargetPlayer == EntityOwner.NONE || searchParameters.TargetType == EntityType.NONE || (searchParameters.SearchCriterion == SearchCriterion.QUANTITY && searchParameters.Value == 0))
+            if(targetPlayer == EntityOwner.NONE || targetType == EntityType.NONE || (searchCriterion == SearchCriterion.QUANTITY && n == 0))
             {
                 return new List<int>();
             }
@@ -198,9 +219,8 @@ namespace ODLGameEngine
             BoardElement targetBoardArea; // The board area that will be searched
             int referencePlayer; // Order reference depends on indexing
             int playerFilter = -1; // Filter of which player to search for (defautl is -1 both players)
-            int n = searchParameters.Value;
             // Prepare settings/masks for this target search
-            switch (searchParameters.TargetLocation)
+            switch (targetLocation)
             {
                 case TargetLocation.BOARD: // Return board
                     targetBoardArea = DetailedState.BoardState;
@@ -208,7 +228,7 @@ namespace ODLGameEngine
                 case TargetLocation.PLAINS: // For lane-based, get the lane
                 case TargetLocation.FOREST:
                 case TargetLocation.MOUNTAIN:
-                    targetBoardArea = DetailedState.BoardState.GetLane(searchParameters.TargetLocation);
+                    targetBoardArea = DetailedState.BoardState.GetLane(targetLocation);
                     laneIsTarget = true;
                     break;
                 case TargetLocation.PLAY_TARGET: // Need to check where the card had been played
@@ -218,32 +238,32 @@ namespace ODLGameEngine
                 default:
                     throw new NotImplementedException("Search not yet implemented for other targets!"); // This may be a later TODO once new needs appear
             }
-            if (laneIsTarget && (searchParameters.SearchCriterion != SearchCriterion.ALL)) // If target is everything, no need to check tile by tile
+            if (laneIsTarget && (searchCriterion != SearchCriterion.ALL)) // If target is everything, no need to check tile by tile
             {
                 tileSectioning = true;
             }
             if (n < 0) // Negative indexing implies reverse indexing
             {
                 n *= -1;
-                if(searchParameters.SearchCriterion == SearchCriterion.ORDINAL) // In ordinals, -1 is 0 from reverse. In quant, -1 is 1 in reverse
+                if(searchCriterion == SearchCriterion.ORDINAL) // In ordinals, -1 is 0 from reverse. In quant, -1 is 1 in reverse
                 {
                     n -= 1; // Need to index starting from 0!
                 }
                 reverseSearch = true;
             }
             referencePlayer = reverseSearch ? 1 - specificContext.ActivatedEntity.Owner : specificContext.ActivatedEntity.Owner;
-            requiredTargets = searchParameters.SearchCriterion switch
+            requiredTargets = searchCriterion switch
             {
                 SearchCriterion.ORDINAL => 1, // Only one target in position N
                 SearchCriterion.QUANTITY => n, // First/last N
                 SearchCriterion.ALL => int.MaxValue, // Get everything possible
                 _ => throw new NotImplementedException("Invalid search criterion"),
             };
-            if(searchParameters.TargetPlayer == EntityOwner.OWNER)
+            if(targetPlayer == EntityOwner.OWNER)
             {
                 playerFilter = specificContext.ActivatedEntity.Owner;
             }
-            else if (searchParameters.TargetPlayer == EntityOwner.OPPONENT)
+            else if (targetPlayer == EntityOwner.OPPONENT)
             {
                 playerFilter = 1 - specificContext.ActivatedEntity.Owner;
             }
@@ -261,14 +281,14 @@ namespace ODLGameEngine
                         currentSearchState = TargetingStateMachine.INITIAL_PLAYER; // Nothign to do but to go to next state
                         break;
                     case TargetingStateMachine.INITIAL_PLAYER:
-                        if (searchParameters.TargetType.HasFlag(EntityType.PLAYER)) // Player targeting enabled, check if player is valid
+                        if (targetType.HasFlag(EntityType.PLAYER)) // Player targeting enabled, check if player is valid
                         {
                             // Need to add if player (w.r.t to card ownership) are valid targets 
-                            if (reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OPPONENT)) // If searching backwards and opponent enabled, then add opp
+                            if (reverseSearch && targetPlayer.HasFlag(EntityOwner.OPPONENT)) // If searching backwards and opponent enabled, then add opp
                             {
                                 nextCandidateEntity = 1 - specificContext.ActivatedEntity.Owner;
                             }
-                            else if (!reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OWNER)) // If searching normally and owner enabled, then add it
+                            else if (!reverseSearch && targetPlayer.HasFlag(EntityOwner.OWNER)) // If searching normally and owner enabled, then add it
                             {
                                 nextCandidateEntity = specificContext.ActivatedEntity.Owner;
                             }
@@ -280,7 +300,7 @@ namespace ODLGameEngine
                         {
                             if(tileCounter < ((Lane)targetBoardArea).Len) // Check if I still have ongoing lane available
                             {
-                                entities = ((Lane)targetBoardArea).GetTileRelative(tileCounter, referencePlayer).GetPlacedEntities(searchParameters.TargetType, playerFilter); // Search for requested target for requested players
+                                entities = ((Lane)targetBoardArea).GetTileRelative(tileCounter, referencePlayer).GetPlacedEntities(targetType, playerFilter); // Search for requested target for requested players
                                 tileCounter++;
                                 currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
                             }
@@ -291,7 +311,7 @@ namespace ODLGameEngine
                         }
                         else // Otherwise just get units in the region
                         {
-                            entities = targetBoardArea.GetPlacedEntities(searchParameters.TargetType, playerFilter);
+                            entities = targetBoardArea.GetPlacedEntities(targetType, playerFilter);
                             currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
                         }
                         localOrdinal = 0;
@@ -315,13 +335,13 @@ namespace ODLGameEngine
                         }
                         break;
                     case TargetingStateMachine.LAST_PLAYER: // Identical to other player but reverse logic
-                        if (searchParameters.TargetType.HasFlag(EntityType.PLAYER))
+                        if (targetType.HasFlag(EntityType.PLAYER))
                         {
-                            if (!reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
+                            if (!reverseSearch && targetPlayer.HasFlag(EntityOwner.OPPONENT))
                             {
                                 nextCandidateEntity = 1 - specificContext.ActivatedEntity.Owner;
                             }
-                            else if (reverseSearch && searchParameters.TargetPlayer.HasFlag(EntityOwner.OWNER))
+                            else if (reverseSearch && targetPlayer.HasFlag(EntityOwner.OWNER))
                             {
                                 nextCandidateEntity = specificContext.ActivatedEntity.Owner;
                             }
@@ -334,7 +354,7 @@ namespace ODLGameEngine
                 if(nextCandidateEntity != -1) // Found next potential candidate entity, need to verify if applies
                 {
                     bool addEntity = true;
-                    if(searchParameters.SearchCriterion == SearchCriterion.ORDINAL) // Need to ensure the unit # matches!
+                    if(searchCriterion == SearchCriterion.ORDINAL) // Need to ensure the unit # matches!
                     {
                         if(totalOrdinal != n) // Not the entity I was looking for, unfortunately
                         {
@@ -349,6 +369,26 @@ namespace ODLGameEngine
                 }
             }
             return res;
+        }
+        /// <summary>
+        /// Calculates a new value given a value, modifier and operation. Sort of a mini calculator
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="modifier"></param>
+        /// <param name="operation"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        static int TRIGINTER_GetModifiedValue(int value, int modifier, ModifierOperation operation)
+        {
+            return operation switch // Returns the number depending on the operation
+            {
+                ModifierOperation.SET => modifier,
+                ModifierOperation.ABSOLUTE_SET => modifier,
+                ModifierOperation.ADD => value + modifier,
+                ModifierOperation.MULTIPLY => value * modifier,
+                _ => throw new NotImplementedException("Modifier operation not supported")
+            };
+
         }
     }
 }

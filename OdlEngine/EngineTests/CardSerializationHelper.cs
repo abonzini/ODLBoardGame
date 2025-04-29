@@ -20,7 +20,7 @@ namespace EngineTests
             {
                 EffectType = EffectType.SUMMON_UNIT,
                 TargetPlayer = EntityOwner.OWNER,
-                CardNumber = 1,
+                TempVariable = 1,
                 TargetLocation = TargetLocation.ALL_LANES
             };
             dict.Add(InteractionType.WHEN_PLAYED, new List<Effect>() { effect });

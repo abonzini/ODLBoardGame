@@ -382,7 +382,7 @@ namespace EngineTests
                 Effect summonEffect = new Effect()
                 {
                     EffectType = EffectType.SUMMON_UNIT, // Summons unit
-                    CardNumber = 2, // Always card 2
+                    TempVariable = 2, // Always card 2
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [summonEffect]); // Add interaction to card
@@ -528,7 +528,7 @@ namespace EngineTests
                     searchEffect.TargetLocation = loc;
                     foreach(int dir in directionOptions)
                     {
-                        searchEffect.Value = dir;
+                        searchEffect.TempVariable = dir;
                         for (int i = 0; i < 1 << ownerOptions.Count; i++) // Loop for all owners
                         {
                             // Assemble target player
@@ -586,17 +586,17 @@ namespace EngineTests
                                 // Special cases
                                 if (searchEffect.TargetType.HasFlag(EntityType.PLAYER) && searchEffect.TargetPlayer.HasFlag(EntityOwner.OWNER))
                                 { // Look for myself
-                                    if (searchEffect.Value >= 0) Assert.AreEqual(playerIndex, searchResultList.First());
+                                    if (searchEffect.TempVariable >= 0) Assert.AreEqual(playerIndex, searchResultList.First());
                                     else Assert.AreEqual(playerIndex, searchResultList.Last());
                                 }
                                 if (searchEffect.TargetType.HasFlag(EntityType.PLAYER) && searchEffect.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
                                 { // Look for opp
-                                    if (searchEffect.Value >= 0) Assert.AreEqual(opponentIndex, searchResultList.Last());
+                                    if (searchEffect.TempVariable >= 0) Assert.AreEqual(opponentIndex, searchResultList.Last());
                                     else Assert.AreEqual(opponentIndex, searchResultList.First());
                                 }
                                 if(searchResultList.Count == 6) // In the case everything was found, there's two options
                                 {
-                                    List<int> expectedResult = (searchEffect.Value >= 0) ? [playerIndex,2,3,4,5,opponentIndex] : [opponentIndex,2,3,4,5,playerIndex];
+                                    List<int> expectedResult = (searchEffect.TempVariable >= 0) ? [playerIndex,2,3,4,5,opponentIndex] : [opponentIndex,2,3,4,5,playerIndex];
                                     for(int k =0; k<6; k++)
                                     {
                                         Assert.AreEqual(searchResultList[k], expectedResult[k]);
@@ -675,7 +675,7 @@ namespace EngineTests
                 // Set targeting effects to see if the played lane is checked properly
                 searchEffect.SearchCriterion = SearchCriterion.ALL; // Search for all units in board, no weird lane situations yet
                 searchEffect.TargetLocation = TargetLocation.PLAY_TARGET; // Skill will search where played
-                searchEffect.Value = 0; // Forward
+                searchEffect.TempVariable = 0; // Forward
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
                 searchEffect.TargetType = EntityType.UNIT|EntityType.PLAYER|EntityType.BUILDING; // Search for all
                 List<TargetLocation> playLocations = [targetLocation, otherLane1, otherLane2];
@@ -788,7 +788,7 @@ namespace EngineTests
                 List<int> directionOptions = [6, -6]; // Will try forward and in the reverse, get 6 max (all elems)
                 foreach (int dir in directionOptions)
                 {
-                    searchEffect.Value = dir;
+                    searchEffect.TempVariable = dir;
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash(); // Check hash beforehand
@@ -892,7 +892,7 @@ namespace EngineTests
                 searchEffect.TargetType = EntityType.UNIT | EntityType.BUILDING | EntityType.PLAYER;
                 for(int ord = -6; ord < 6; ord++) // Will look for all units, one by one
                 {
-                    searchEffect.Value = ord;
+                    searchEffect.TempVariable = ord;
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash(); // Check hash beforehand
@@ -996,7 +996,7 @@ namespace EngineTests
                 searchEffect.TargetType = EntityType.UNIT | EntityType.BUILDING | EntityType.PLAYER;
                 for (int num = -6; num <= 6; num++) // Will look for all units, one by one
                 {
-                    searchEffect.Value = num;
+                    searchEffect.TempVariable = num;
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash(); // Check hash beforehand
@@ -1083,7 +1083,7 @@ namespace EngineTests
                 Effect buffEffect = new Effect() // Operation that'll replace the stat for the new value
                 {
                     EffectType = EffectType.MODIFIER,
-                    Value = newValue,
+                    TempVariable = newValue,
                     ModifierOperation = ModifierOperation.SET
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
@@ -1191,7 +1191,7 @@ namespace EngineTests
                 Effect buffEffect = new Effect() // Operation that'll replace the stat for the new value
                 {
                     EffectType = EffectType.MODIFIER,
-                    Value = buffValue,
+                    TempVariable = buffValue,
                     ModifierTarget = ModifierTarget.TARGET_HP
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
@@ -1491,7 +1491,7 @@ namespace EngineTests
                 TestHelperFunctions.ManualInitEntity(state, TargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
                 state.NextUniqueIndex = 3; 
                 List<EntityType> buildingEntityTypes = [EntityType.UNIT, EntityType.BUILDING];
-                List<EntityType> filterEntityTypes = [EntityType.UNIT, EntityType.BUILDING];
+                List<EntityType> filterEntityTypes = [EntityType.UNIT, EntityType.BUILDING, EntityType.BUILDING|EntityType.UNIT];
                 foreach (EntityType buildingEntityType in buildingEntityTypes)
                 {
                     foreach (EntityType filterEntityType in filterEntityTypes)
@@ -1519,7 +1519,7 @@ namespace EngineTests
                         // Check returned targets
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
                         List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
-                        if(buildingEntityType == filterEntityType) // Then, if types match, id get sth as target, otherwise no
+                        if(filterEntityType.HasFlag(buildingEntityType)) // Then, if types match, id get sth as target, otherwise no
                         {
                             Assert.AreEqual(searchResultList.Count, 1);
                             Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
@@ -1575,7 +1575,7 @@ namespace EngineTests
                 TestHelperFunctions.ManualInitEntity(state, TargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
                 state.NextUniqueIndex = 3; 
                 List<EntityOwner> buildingEntityOwners = [EntityOwner.OWNER, EntityOwner.OPPONENT]; // This is weird and never should happen in real code
-                List<EntityOwner> filterEntityOwners = [EntityOwner.OWNER, EntityOwner.OPPONENT];
+                List<EntityOwner> filterEntityOwners = [EntityOwner.OWNER, EntityOwner.OPPONENT, EntityOwner.BOTH];
                 foreach (EntityOwner buildingEntityOwner in buildingEntityOwners)
                 {
                     foreach (EntityOwner filterEntityOwner in filterEntityOwners)
@@ -1603,7 +1603,7 @@ namespace EngineTests
                         // Check returned targets
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
                         List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
-                        if (buildingEntityOwner == filterEntityOwner) // Then, if types match, id get sth as target, otherwise no
+                        if (filterEntityOwner.HasFlag(buildingEntityOwner)) // Then, if types match, id get sth as target, otherwise no
                         {
                             Assert.AreEqual(searchResultList.Count, 1);
                             Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)

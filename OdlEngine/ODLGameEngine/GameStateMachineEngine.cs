@@ -81,10 +81,6 @@ namespace ODLGameEngine
                     auxInt2 = ((EntityValueEvent<int, int>)e).value;
                     DetailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2);
                     break;
-                case EventType.PLAYER_GOLD_CHANGE:
-                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    DetailedState.PlayerStates[auxInt1].Gold += ((EntityValueEvent<int, int>)e).value; // Add gold
-                    break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value; // Card now popped from hand
@@ -217,10 +213,6 @@ namespace ODLGameEngine
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value;
                     DetailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2);
-                    break;
-                case EventType.PLAYER_GOLD_CHANGE:
-                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    DetailedState.PlayerStates[auxInt1].Gold -= ((EntityValueEvent<int, int>)e).value; // Remove gold
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
@@ -452,23 +444,6 @@ namespace ODLGameEngine
                     eventType = EventType.ADD_CARD_TO_HAND,
                     value = card,
                     entity = player
-                });
-        }
-        /// <summary>
-        /// Change the gold of player (gain or loss)
-        /// </summary>
-        /// <param name="p">Player</param>
-        /// <param name="goldDelta">How much gold to gain/lose</param>
-        void ENGINE_PlayerGoldChange(int p, int goldDelta)
-        {
-            if (goldDelta == 0) return; // No need to do anything if there's no change...
-            ENGINE_ExecuteEvent(
-                new EntityValueEvent<int, int>()
-                {
-                    eventType = EventType.PLAYER_GOLD_CHANGE,
-                    entity = p,
-                    value = goldDelta,
-                    description = $"P{p + 1} {((goldDelta > 0) ? "gains" : "loses")} {Math.Abs(goldDelta)} gold"
                 });
         }
         /// <summary>

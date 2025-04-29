@@ -19,8 +19,9 @@
 			{
 				"EffectType": "SUMMON_UNIT",
 				"TargetPlayer": "CARD_OWNER",
-				"CardNumber": 2,
-				"TargetLocation": "ALL_LANES"
+				"TargetLocation": "ALL_LANES",
+				"InputRegister": "TEMP_VARIABLE",
+				"TempVariable": 2
 			}
 		]
 	}

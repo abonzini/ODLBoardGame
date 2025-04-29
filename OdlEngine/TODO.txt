@@ -1,4 +1,6 @@
 Ongoing tasks in order of priority:
+- Implement register modifier arithmetic in effect chain resolver, add tests for this
+- Implement the "player gets gold" effect, use owner player of selected entities
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it

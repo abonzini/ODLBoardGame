@@ -217,7 +217,7 @@ namespace ODLGameEngine
             {
                 BOARDENTITY_DamageStep(player, player, GameConstants.DECKOUT_DAMAGE);
             }
-            ENGINE_PlayerGoldChange(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Current player gets gold
+            ENGINE_SetPlayerGold(playerId, TRIGINTER_GetModifiedValue(player.Gold, GameConstants.DRAW_PHASE_GOLD_OBTAINED, ModifierOperation.ADD));
             ENGINE_ChangePlayerPowerAvailability(player, true); // Player can now use active power again
         }
         /// <summary>

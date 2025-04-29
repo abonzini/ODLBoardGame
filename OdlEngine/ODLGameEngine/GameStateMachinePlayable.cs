@@ -219,7 +219,8 @@ namespace ODLGameEngine
         /// <returns>Cost in gold of card</returns>
         void PLAYABLE_PayCost(EntityBase card)
         {
-            ENGINE_PlayerGoldChange((int)DetailedState.CurrentPlayer, -int.Parse(card.EntityPrintInfo.Cost));
+            PlayerState player = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer];
+            ENGINE_SetPlayerGold(player.Owner, TRIGINTER_GetModifiedValue(player.Gold, -int.Parse(card.EntityPrintInfo.Cost), ModifierOperation.ADD));
         }
         /// <summary>
         /// Checks for a card with "global" tageting whether conditions are fulfilled

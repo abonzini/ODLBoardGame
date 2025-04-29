@@ -55,7 +55,6 @@ namespace ODLGameEngine
         CARD_DECK_SWAP,
         REMOVE_TOPDECK,
         ADD_CARD_TO_HAND,
-        PLAYER_GOLD_CHANGE,
         DISCARD_FROM_HAND,
         INIT_ENTITY,
         INCREMENT_PLACEABLE_COUNTER,

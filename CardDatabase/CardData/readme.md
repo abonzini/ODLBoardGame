@@ -89,8 +89,10 @@ Skills do not contain any other info as they only have effects (I.e. "When playe
 These define a card's "effects".
 The two types are:
 
-- **Triggers:** These will trigger when something happens globally, outside of the card's control. For example cards that are designed as "At the end of turn do X", or "When a player does X, this card does Y".
-- **Interactions:** Effects that are activated when somethign happens with a card. For example, a card that does something when taking damage, or when played. Most skills will have interactions as they will have effects when played.
+- **Triggers:** These will trigger when something happens globally, outside of the card's control.
+For example cards that are designed as "At the end of turn do X", or "When a player does X, this card does Y".
+- **Interactions:** Effects that are activated when something happens with a card. For example, a card that does something when taking damage, or when played.
+Skills will have interactions only as they don't persist after it's effect resolves.
 
 The way to define them on a card is with the same syntax, adding ```Interactions``` or ```Triggers``` effect.
 They are defined in json as a dictionary.
@@ -135,16 +137,38 @@ The key is the type of trigger/interaction, and the value is a list of the effec
 ```
 
 In the example above, the card would contain 2 interactions, and then each would perform a sequence of effects.
-An effect is described as an effect type, and a series of parameters that may be needed for the effect to work.
-This way, any card can be described in a dynamic, human readable way.
-When an effect is ongoing (either because of a Trigger or an Interaction), the game remembers the card running the effects, this means the owner, the card's location, etc.
 
 ## Interaction Types
 
 - ```WHEN_PLAYED``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
 - ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during advance). This interaction happens first from the POV of the unit and then the POV of the building.
 
-## Effect Description
+# Effect Mechanism
+
+In order to be able to create complex card behaviour, an effect chain behaves similarly to a low-level CPU.
+In this scheme, each ```EffectType``` is like an instruction, some of them can have parameters.
+In order to implement complex effects that need to remember previous results (think effects such as *"Damage all enemy buildings, if any is killed, deal 2 damage to enemy player"* or *"Get 1 gold for each unit on the field"*), the effect chain contains a series of **Registers**:
+
+- ```TEMP_VARIABLE```, is volatile and only remembered during the current effect of the chain. However it contains the "value" of many card effects (e.g. if an effect was *"Gain 2 gold"*, the temp variable would contain the value 2 in this case). This value can be used as a parameter in effects and in arithmetic operations
+- ```ACC``` is the **"accumulator"** variable, and retains its value during the effect chain, making it popular as the target of more complex math operations 
+
+Many effects use a **InputRegister's** value as an input, and some also save a result in a **OutputRegister**.
+Due to this, any effect can be configured to choose which register is each.
+For when the ```TEMP_VARIABLE``` is used, it's value should be defined in ```"TempVariable"``` (remember this value is volatile and will be lost when the next effect of the chain begins, so make sure to save it in ACC if needed).
+For example, when defining an effect:
+
+```
+{
+    "EffectType": <...>
+    "InputRegister": "TEMP_VARIABLE"
+    "OutputRegister": "ACC"
+    "TempVariable": 5
+}
+```
+This effect would use the **"TEMP_VARIABLE"** as an input (and it's value is 5 in this case).
+Result/output of the effect (if any) would be saved in **ACC**.
+
+## Effect List
 These are the following supported effects.
 All effects are relative to the card executing the effect, so the meaning of ```TargetPlayer```, for example, depends on this.
 
@@ -156,8 +180,8 @@ These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of sea
     - ```TargetLocation``` where to search for the entity in question
     - ```TargetPlayer``` serves as a filter where you only get the entities of the player owner in question
     - ```TargetType``` the type of entities that can be targeted 
-    - ```SearchCriterion``` determines which target(s) can be found as valid targets
-    - ```Value``` is used alongside ```SearchCriterion``` as the value $n$. Negative values imply the search is done in reverse order
+    - ```SearchCriterion``` determines which target(s) can be found as valid targets. Some search criterions use a value $n$ as an input
+    - The ```InputRegister``` is used alongside ```SearchCriterion``` as the value $n$. Negative values imply the search is done in reverse order
 
     This may seem convoluted but it's a robust way to target arbitrary combination of target conditions.
     Keep in mind that, no matter the ```TargetLocation```, the order of valid targets will be: ***[PLAYER]->[LOCATION]->[PLAYER]*** where which player is first is determined by the sign of ```Value```.
@@ -174,24 +198,26 @@ Owner and target type filters can be used for slightly more complex effects, suc
     - ```TargetType``` the type of entities that can be targeted
 
 - ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes.
-Parameters:
-    - ```CardNumber``` is the card number of the unit summoned
+
+    Parameters:
     - ```TargetPlayer``` is the player who will own the unit
     - ```TargetLocation``` is one or more lane targets where the card(s) will be summoned
+    - ```InputRegister``` contains the card number of the unit summoned
     
     Examples:
     - **RUSH** summons a unit in all lanes
 
-- ```MODIFIER``` Applies a modifier (i.e. buff or debuff) to something. Usually stats but can be other things.
+- ```MODIFIER``` Applies a modifier (i.e. buff or debuff) to something.
+Usually stats but can be other things.
 
     Parameters:
-    - ```Value``` is the value $n$ of the modifier itself
     - ```ModifierOperation``` how the modifier's value is applied (i.e. whether it's a multiplaction, addition, etc)
     - ```ModifierTarget``` defines *what* is modified, if a stat, a damage value, etc
+    - ```InputRegister``` is the value $n$ of the modifier itself
 
-    Keep in mind that when buffing/debuffing something, the buff target will need to be found via a ```FIND_ENTITIES``` operation.
+    Keep in mind that when buffing/debuffing something, the buff target will need to be found via a ```FIND_ENTITIES``` or ```SELECT_ENTITY``` operation.
 
-## Enum Values
+## Possible Parameter Values
 
 - ```TargetLocation```
     - ```BOARD```. For cards where the target is the "whole board" 
@@ -239,7 +265,7 @@ Parameters:
     - ```MULTIPLY``` multiplies tagret by $n$
     - ```ABSOLUTE_SET``` very similar to ```SET``` but it is a harsher operation: it overwrites the base value to $n$ and this becomes the new value. Only makes sense in specific buffs and should really not be used except in some very specific situations
 - ```ModifierTarget```
-    - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```FIND_ENTITIES``` operation, this corresponding stat is modified
+    - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, this corresponding stat is modified
 
     These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
     For example, ```UNIT|BUILDING``` means both units and buildings will be accepted.
