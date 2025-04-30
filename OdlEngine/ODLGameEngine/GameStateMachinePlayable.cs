@@ -118,7 +118,7 @@ namespace ODLGameEngine
                         ENGINE_ChangePlayerPowerAvailability(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer], false);
                     }
                     // Then the play effects
-                    EntityBase createdEntity = PLAYABLE_PlayCard(cardData, chosenTarget);
+                    IngameEntity createdEntity = PLAYABLE_PlayCard(cardData, chosenTarget); // Once played, an entity exists now
                     // INTERACTION: CARD IS PLAYED
                     PlayContext playCtx = new PlayContext() { ActivatedEntity = createdEntity, Actor = createdEntity, LaneTargets = chosenTarget };
                     TRIGINTER_ProcessInteraction(InteractionType.WHEN_PLAYED, playCtx);
@@ -142,7 +142,7 @@ namespace ODLGameEngine
         /// <param name="card"></param>
         /// <param name="chosenTarget"></param>
         /// <returns>The entity that was generated for this play</returns>
-        EntityBase PLAYABLE_PlayCard(EntityBase card, TargetLocation chosenTarget)
+        IngameEntity PLAYABLE_PlayCard(EntityBase card, TargetLocation chosenTarget)
         {
             switch (card.EntityPlayInfo.EntityType)
             {
@@ -151,6 +151,7 @@ namespace ODLGameEngine
                 case EntityType.SKILL: // Nothing needed as skills don't introduce new entities
                     Skill skillData = (Skill)card.Clone(); // Instances a local version of skill
                     skillData.Owner = (int)DetailedState.CurrentPlayer;
+                    skillData.UniqueId = -1; // Default id for a skill (they don't persist after played)
                     return skillData;
                 case EntityType.BUILDING:
                     return BUILDING_PlayBuilding((int)DetailedState.CurrentPlayer, (Building)card, chosenTarget); // Plays building in tile
@@ -220,7 +221,7 @@ namespace ODLGameEngine
         void PLAYABLE_PayCost(EntityBase card)
         {
             PlayerState player = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer];
-            ENGINE_SetPlayerGold(player.Owner, TRIGINTER_GetModifiedValue(player.Gold, -int.Parse(card.EntityPrintInfo.Cost), ModifierOperation.ADD));
+            TRIGINTER_ModifyPlayersGold(player.Owner, -int.Parse(card.EntityPrintInfo.Cost), ModifierOperation.ADD);
         }
         /// <summary>
         /// Checks for a card with "global" tageting whether conditions are fulfilled

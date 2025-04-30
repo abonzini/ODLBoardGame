@@ -22,7 +22,7 @@ namespace ODLGameEngine
             int auxInt1, auxInt2;
             Unit auxUnit;
             PlacedEntity auxPlacedEntity;
-            BoardEntity auxBoardEntity;
+            LivingEntity auxBoardEntity;
             PlayerState auxPlayerState;
             Stat auxStat;
 
@@ -137,9 +137,9 @@ namespace ODLGameEngine
                     auxUnit.MvtCooldownTimer = auxInt1;
                     break;
                 case EventType.ENTITY_DAMAGE_COUNTER_CHANGE:
-                    auxBoardEntity = ((EntityTransitionEvent<BoardEntity, int>)e).entity;
-                    auxInt1 = ((EntityTransitionEvent<BoardEntity, int>)e).newValue;
-                    ((EntityTransitionEvent<BoardEntity, int>)e).oldValue = auxBoardEntity.DamageTokens;
+                    auxBoardEntity = ((EntityTransitionEvent<LivingEntity, int>)e).entity;
+                    auxInt1 = ((EntityTransitionEvent<LivingEntity, int>)e).newValue;
+                    ((EntityTransitionEvent<LivingEntity, int>)e).oldValue = auxBoardEntity.DamageTokens;
                     auxBoardEntity.DamageTokens = auxInt1;
                     break;
                 case EventType.PLAYER_POWER_AVAILABILITY:
@@ -170,7 +170,7 @@ namespace ODLGameEngine
             int auxInt1, auxInt2;
             Unit auxUnit;
             PlacedEntity auxPlacedEntity;
-            BoardEntity auxBoardEntity;
+            LivingEntity auxBoardEntity;
             PlayerState auxPlayerState;
             Stat auxStat;
 
@@ -267,8 +267,8 @@ namespace ODLGameEngine
                     auxUnit.MvtCooldownTimer = auxInt1;
                     break;
                 case EventType.ENTITY_DAMAGE_COUNTER_CHANGE:
-                    auxBoardEntity = ((EntityTransitionEvent<BoardEntity, int>)e).entity;
-                    auxInt1 = ((EntityTransitionEvent<BoardEntity, int>)e).oldValue;
+                    auxBoardEntity = ((EntityTransitionEvent<LivingEntity, int>)e).entity;
+                    auxInt1 = ((EntityTransitionEvent<LivingEntity, int>)e).oldValue;
                     auxBoardEntity.DamageTokens = auxInt1;
                     break;
                 case EventType.PLAYER_POWER_AVAILABILITY:
@@ -552,11 +552,11 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="unit">Unit to damage</param>
         /// <param name="newDamageCounters">How much damage</param>
-        void ENGINE_ChangeEntityDamageTokens(BoardEntity entity, int newDamageCounters)
+        void ENGINE_ChangeEntityDamageTokens(LivingEntity entity, int newDamageCounters)
         {
             int delta = newDamageCounters - entity.DamageTokens;
             ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<BoardEntity, int>()
+                new EntityTransitionEvent<LivingEntity, int>()
                 {
                     eventType = EventType.ENTITY_DAMAGE_COUNTER_CHANGE,
                     entity = entity,

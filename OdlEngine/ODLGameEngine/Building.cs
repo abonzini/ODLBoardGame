@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,14 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class Building : PlacedEntity
     {
+        [JsonProperty]
         public int[] PlainsBp { get; set; } = null;
+        [JsonProperty]
         public int[] ForestBp { get; set; } = null;
+        [JsonProperty]
         public int[] MountainBp { get; set; } = null;
         public override int GetGameStateHash()
         {

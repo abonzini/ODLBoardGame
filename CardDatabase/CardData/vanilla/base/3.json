@@ -1,0 +1,42 @@
+{
+	"EntityPrintInfo":
+	{
+		"Id": 3,
+		"Title": "WORKSHOP",
+		"Cost": "2",
+		"Hp": "3",
+		"Rarity": 1,
+		"Expansion": "VANILLA",
+		"ClassType": "BASE",
+		"Text": "When a friendly unit steps on this building, gain 1 gold"
+	},
+	"EntityPlayInfo":
+	{
+		"EntityType": "BUILDING",
+		"TargetOptions": "ALL_LANES"
+	},
+	"Interactions":
+	{
+		"UNIT_ENTERS_BUILDING":
+		[
+			{
+				"EffectType": "SELECT_ENTITY",
+				"SearchCriterion": "ACTOR_ENTITY",
+				"TargetPlayer": "OWNER",
+				"TargetType": "UNIT"
+			},
+			{
+				"EffectType": "MODIFIER",
+				"ModifierOperation": "ADD",
+				"ModifierTarget": "PLAYERS_GOLD",
+				"InputRegister": "TEMP_VARIABLE",
+				"TempVariable": 2,
+				"TargetPlayer": "OWNER"				
+			}
+		]
+	},
+	"Hp": 3,
+	"PlainsBp": [0],
+	"ForestBp": [0, 1],
+	"MountainBp": [0, 1]
+}

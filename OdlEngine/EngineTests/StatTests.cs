@@ -132,13 +132,13 @@ namespace EngineTests
             _singleStatJson = "{\"Name\": \"TEST\", \"Hp\": " + _singleStatJson + "}";
             _fullStatJson = "{\"Name\": \"TEST\", \"Hp\": " + _fullStatJson + "}";
 
-            BoardEntity _entity1 = JsonConvert.DeserializeObject<BoardEntity>(_singleStatJson);
+            LivingEntity _entity1 = JsonConvert.DeserializeObject<LivingEntity>(_singleStatJson);
             Assert.AreEqual(_entity1.Name, "TEST");
             Assert.AreEqual(_entity1.Hp.Total, _v1);
             Assert.AreEqual(_entity1.Hp.BaseValue, _v1);
             Assert.AreEqual(_entity1.Hp.Modifier, 0);
 
-            BoardEntity _entity2 = JsonConvert.DeserializeObject<BoardEntity>(_fullStatJson);
+            LivingEntity _entity2 = JsonConvert.DeserializeObject<LivingEntity>(_fullStatJson);
             Assert.AreEqual(_entity2.Name, "TEST");
             Assert.AreEqual(_entity2.Hp.Total, _v2 + _v3);
             Assert.AreEqual(_entity2.Hp.BaseValue, _v2);

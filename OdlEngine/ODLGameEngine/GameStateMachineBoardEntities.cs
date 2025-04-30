@@ -45,7 +45,7 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="entity">Enity to verify</param>
         /// <returns>True if unit still alive</returns>
-        public bool BOARDENTITY_CheckIfUnitAlive(BoardEntity entity)
+        public bool BOARDENTITY_CheckIfUnitAlive(LivingEntity entity)
         {
             if (entity.Hp.Total - entity.DamageTokens <= 0) // Entity is dead, will process death and return accordingly
             {
@@ -61,7 +61,7 @@ namespace ODLGameEngine
         /// Unit needs to be killed for whatever reason, this process executes the action
         /// </summary>
         /// <param name="unitId">Which unit</param>
-        void BOARDENTITY_CleanUnit(BoardEntity entity)
+        void BOARDENTITY_CleanUnit(LivingEntity entity)
         {
             ENGINE_AddMessageEvent($"{entity.Name} was destroyed");
             if(entity.EntityPlayInfo.EntityType == EntityType.UNIT || entity.EntityPlayInfo.EntityType == EntityType.BUILDING)
@@ -89,7 +89,7 @@ namespace ODLGameEngine
         /// <param name="defender"></param>
         /// <param name="damage"></param>
         /// <returns>Description of damage & outcome for processing</returns>
-        DamageContext BOARDENTITY_DamageStep(EntityBase attacker, BoardEntity defender, int damage)
+        DamageContext BOARDENTITY_DamageStep(IngameEntity attacker, LivingEntity defender, int damage)
         {
             DamageContext damageCtx = new DamageContext() // Create info of the result of this action
             {

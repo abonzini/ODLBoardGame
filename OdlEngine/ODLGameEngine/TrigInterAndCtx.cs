@@ -84,6 +84,7 @@ namespace ODLGameEngine
         TARGET_ATTACK,
         TARGET_MOVEMENT,
         TARGET_MOVEMENT_DENOMINATOR,
+        PLAYERS_GOLD,
         // Todo, damage, advancement, etc
     }
     /// <summary>
@@ -133,8 +134,8 @@ namespace ODLGameEngine
     /// </summary>
     public class EffectContext
     {
-        public EntityBase ActivatedEntity = null;
-        public EntityBase Actor = null;
+        public IngameEntity ActivatedEntity = null;
+        public IngameEntity Actor = null;
     }
     /// <summary>
     /// When card is played, contains extra info about playability of card.
@@ -149,7 +150,7 @@ namespace ODLGameEngine
     /// </summary>
     public class AffectingEffectContext : EffectContext
     {
-        public BoardEntity Affected = null;
+        public LivingEntity Affected = null;
     }
     /// <summary>
     /// When a damage step ocurred, maybe also death
@@ -190,7 +191,7 @@ namespace ODLGameEngine
     public class CpuState
     {
         public EffectContext DebugEffectReference = null;
-        public List<int> EffectTargets = [];
+        public List<int> EffectTargets;
         public int TempValue = 0;
         public int Acc = 0;
     }

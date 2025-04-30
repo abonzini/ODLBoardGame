@@ -104,7 +104,7 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="attacker">Attacking unit</param>
         /// <param name="defender">Defending unit</param>
-        void UNIT_Combat(Unit attacker, BoardEntity defender)
+        void UNIT_Combat(Unit attacker, LivingEntity defender)
         {
             DamageContext attackerDmgCtx, defenderDmgCtx;
             ENGINE_AddMessageEvent($"Combat between P{attacker.Owner + 1}'s {attacker.Name} and P{defender.Owner + 1}'s {defender.Name}");

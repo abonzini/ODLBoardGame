@@ -33,7 +33,7 @@ namespace ODLGameEngine
             {
                 foreach (int entity in entities)
                 {
-                    BoardEntity entityData = DetailedState.EntityData[entity]; // Triger will only apply when entity still exists
+                    LivingEntity entityData = DetailedState.EntityData[entity]; // Triger will only apply when entity still exists
                     if (entityData != null)
                     {
                         specificContext.ActivatedEntity = entityData; // For the next trigger, this entity is the one
@@ -53,8 +53,13 @@ namespace ODLGameEngine
         /// <param name="specificContext">Additional context that accompanies the desired effect (e.g. when killed, implies killed by someone, etc)</param>
         void TRIGINTER_ProcessEffects(List<Effect> effects, EffectContext specificContext)
         {
+            IngameEntity FetchEntity(int id) // Helper fn that gets the desired entity from an id, can search for skills so I need to operate this properly
+            {
+                // Returns skill data (located in the bottom of effect chains), or just get the entity from the entity database
+                return (id == -1) ? _chainContext[id].DebugEffectReference.ActivatedEntity : DetailedState.EntityData[id];
+            }
             // Get unique ID of activated entity. Skills don't have these as they're volatile, so I assign a temporary value of -1
-            int activatedEntityId = (specificContext.ActivatedEntity.EntityPlayInfo.EntityType == EntityType.SKILL) ? -1 : ((BoardEntity)specificContext.ActivatedEntity).UniqueId;
+            int activatedEntityId = specificContext.ActivatedEntity.UniqueId;
             bool firstEntryInChain = false;
             CpuState cpu;
             if (_chainContext.TryGetValue(activatedEntityId, out CpuState value))
@@ -63,7 +68,10 @@ namespace ODLGameEngine
             }
             else
             {
-                cpu = new CpuState();
+                cpu = new CpuState()
+                {
+                    EffectTargets = [activatedEntityId], // by default, entity starts targeting itself
+                };
                 _chainContext.Add(activatedEntityId, cpu);
                 firstEntryInChain = true;
             }
@@ -86,10 +94,11 @@ namespace ODLGameEngine
                         break;
                     case EffectType.SELECT_ENTITY:
                         { // In this case there's a simple, single BoardEntity target related to the ctx in question
-                            BoardEntity tgt = effect.SearchCriterion switch
+                            List<int> res = new List<int>();
+                            IngameEntity tgt = effect.SearchCriterion switch
                             {
-                                SearchCriterion.EFFECT_OWNING_ENTITY => (BoardEntity)specificContext.ActivatedEntity,
-                                SearchCriterion.ACTOR_ENTITY => (BoardEntity)specificContext.Actor,
+                                SearchCriterion.EFFECT_OWNING_ENTITY => specificContext.ActivatedEntity,
+                                SearchCriterion.ACTOR_ENTITY => specificContext.Actor,
                                 SearchCriterion.AFFECTED_ENTITY => ((AffectingEffectContext)specificContext).Affected,
                                 _ => throw new NotImplementedException("Invalid target for entity selection")
                             };
@@ -99,9 +108,10 @@ namespace ODLGameEngine
                                 EntityOwner owner = (tgt.Owner == specificContext.ActivatedEntity.Owner) ? EntityOwner.OWNER : EntityOwner.OPPONENT;
                                 if(effect.TargetPlayer.HasFlag(owner)) // If it's a valid owner, then target is valid
                                 {
-                                    cpu.EffectTargets = [tgt.UniqueId]; // This is now the target
+                                    res.Add(tgt.UniqueId); // This is now the target
                                 }
                             }
+                            cpu.EffectTargets = res;
                         }
                         break;
                     case EffectType.FIND_ENTITIES:
@@ -166,10 +176,10 @@ namespace ODLGameEngine
                                     };
                                     foreach (int entityTarget in cpu.EffectTargets)
                                     {
-                                        BoardEntity nextEntity = DetailedState.EntityData[entityTarget];
+                                        IngameEntity nextEntity = FetchEntity(entityTarget);
                                         Stat targetStat = effect.ModifierTarget switch
                                         {
-                                            ModifierTarget.TARGET_HP => nextEntity.Hp,
+                                            ModifierTarget.TARGET_HP => ((LivingEntity)nextEntity).Hp,
                                             ModifierTarget.TARGET_ATTACK => ((Unit)nextEntity).Attack,
                                             ModifierTarget.TARGET_MOVEMENT => ((Unit)nextEntity).Movement,
                                             ModifierTarget.TARGET_MOVEMENT_DENOMINATOR => ((Unit)nextEntity).MovementDenominator,
@@ -177,6 +187,20 @@ namespace ODLGameEngine
                                         };
                                         // Got the stat, now modify it
                                         functionToApply(targetStat, inputReg);
+                                    }
+                                }
+                                break;
+                            case ModifierTarget.PLAYERS_GOLD:
+                                foreach (int entityTarget in cpu.EffectTargets) // Modify gold for each entity found (!!)
+                                {
+                                    IngameEntity entity = FetchEntity(entityTarget); // Got the entity
+                                    if(effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Does owner of this entity get gold?
+                                    {
+                                        TRIGINTER_ModifyPlayersGold(entity.Owner, inputReg, effect.ModifierOperation);
+                                    }
+                                    if (effect.TargetPlayer.HasFlag(EntityOwner.OPPONENT)) // Does opp owner of this entity get gold?
+                                    {
+                                        TRIGINTER_ModifyPlayersGold(1 - entity.Owner, inputReg, effect.ModifierOperation);
                                     }
                                 }
                                 break;
@@ -414,6 +438,16 @@ namespace ODLGameEngine
                 _ => throw new NotImplementedException("Modifier operation not supported")
             };
 
+        }
+        /// <summary>
+        /// Modifies a player's gold according to desired op+value
+        /// </summary>
+        /// <param name="playerId">Which player</param>
+        /// <param name="value">What number</param>
+        /// <param name="operation">What to do with the number</param>
+        void TRIGINTER_ModifyPlayersGold(int playerId, int value, ModifierOperation operation)
+        {
+            ENGINE_SetPlayerGold(playerId, TRIGINTER_GetModifiedValue(DetailedState.PlayerStates[playerId].Gold, value, operation));
         }
     }
 }

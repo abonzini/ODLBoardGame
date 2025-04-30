@@ -1874,5 +1874,84 @@ namespace EngineTests
                 Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
             }
         }
+        [TestMethod]
+        public void GoldBuffEffect()
+        {
+            Random _rng = new Random();
+            // Play a spell that will affect a player's gold, given all possible operations and targets
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Gold
+                int startingGold = _rng.Next(2, 100);
+                int goldModifier = _rng.Next(2, 100);
+                state.PlayerStates[0].Gold = startingGold;
+                state.PlayerStates[1].Gold = startingGold;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that will modify  a player's gold
+                Skill skill = TestCardGenerator.CreateSkill(1, "GOLDBUFF", 0, TargetLocation.BOARD);
+                Effect goldModifyEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    InputRegister = Register.TEMP_VARIABLE,
+                    TempVariable = goldModifier,
+                    ModifierTarget = ModifierTarget.PLAYERS_GOLD,
+                };
+                // Add when played inter
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [goldModifyEffect]); // Add interaction to card
+                // Rest of test
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                List<EntityOwner> ownersToCheck = [EntityOwner.OWNER, EntityOwner.OPPONENT, EntityOwner.BOTH];
+                List<ModifierOperation> operationsToCheck = [ModifierOperation.SET, ModifierOperation.ABSOLUTE_SET, ModifierOperation.ADD, ModifierOperation.MULTIPLY];
+                foreach (ModifierOperation operation in operationsToCheck)
+                {
+                    goldModifyEffect.ModifierOperation = operation;
+                    int desiredValue = operation switch
+                    {
+                        ModifierOperation.SET => goldModifier,
+                        ModifierOperation.ABSOLUTE_SET => goldModifier,
+                        ModifierOperation.ADD => startingGold + goldModifier,
+                        ModifierOperation.MULTIPLY => startingGold * goldModifier,
+                        _ => throw new NotImplementedException("Not a valid op")
+                    };
+                    foreach (EntityOwner owner in ownersToCheck)
+                    {
+                        goldModifyEffect.TargetPlayer = owner;
+                        // Pre-play prep
+                        int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                        // Play
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play the skill
+                        Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                        // Check gold then
+                        if (owner.HasFlag(EntityOwner.OWNER)) // Check if this player's gold had to be modified or remains as starting
+                            Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].Gold, desiredValue);
+                        else
+                            Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].Gold, startingGold);
+                        if (owner.HasFlag(EntityOwner.OPPONENT)) // Check if this player's gold had to be modified or remains as starting
+                            Assert.AreEqual(sm.DetailedState.PlayerStates[opponentIndex].Gold, desiredValue);
+                        else
+                            Assert.AreEqual(sm.DetailedState.PlayerStates[opponentIndex].Gold, startingGold);
+                        // Revert and hash check
+                        sm.UndoPreviousStep();
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                    }
+                }
+            }
+        }
     }
 }

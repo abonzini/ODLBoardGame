@@ -100,8 +100,6 @@ namespace ODLGameEngine
     public class EntityBase : ICloneable, IHashable
     {
         [JsonProperty]
-        public int Owner { get; set; } = 0;
-        [JsonProperty]
         public EntityPlayInfo EntityPlayInfo { get; set; } = new EntityPlayInfo(); // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
         public EntityPrintInfo EntityPrintInfo { get; set; } // Non-hashed, non-cloned as I just want to reference once
@@ -123,9 +121,40 @@ namespace ODLGameEngine
             return hash.ToHashCode();
         }
     }
-
     [JsonObject(MemberSerialization.OptIn)]
-    public class BoardEntity : EntityBase
+    public class IngameEntity : EntityBase
+    {
+        [JsonProperty]
+        public int Owner { get; set; } = 0;
+        [JsonProperty]
+        public int UniqueId { get; set; } = 0;
+        /// <summary>
+        /// Gets the hash of the entity
+        /// </summary>
+        /// <returns>Hash code</returns>
+        public override int GetGameStateHash()
+        {
+            HashCode hash = new HashCode();
+            hash.Add(base.GetGameStateHash());
+            hash.Add(Owner);
+            hash.Add(UniqueId);
+            return hash.ToHashCode();
+        }
+        /// <summary>
+        /// Cloning
+        /// </summary>
+        /// <returns></returns>
+        public override object Clone()
+        {
+            IngameEntity newEntity = (IngameEntity)base.Clone(); // Clones parent first
+            // Now my individual elements
+            newEntity.Owner = Owner;
+            newEntity.UniqueId = UniqueId;
+            return newEntity;
+        }
+    }
+    [JsonObject(MemberSerialization.OptIn)]
+    public class LivingEntity : IngameEntity
     {
         [JsonProperty]
         public string Name { get; set; } = "";
@@ -134,8 +163,6 @@ namespace ODLGameEngine
         public Min0Stat Hp { get; set; } = new Min0Stat();
         [JsonProperty]
         public int DamageTokens { get; set; } = 0;
-        [JsonProperty]
-        public int UniqueId { get; set; } = 0;
         [JsonProperty]
         public Dictionary<TriggerType, List<Effect>> Triggers { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 
@@ -147,32 +174,29 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(base.GetGameStateHash());
-            hash.Add(UniqueId);
             hash.Add(Name);
-            hash.Add(Owner);
             hash.Add(Hp.GetGameStateHash());
             hash.Add(DamageTokens);
             return hash.ToHashCode();
         }
         public override object Clone()
         {
-            BoardEntity newEntity = (BoardEntity) base.Clone(); // Clones parent first
+            LivingEntity newEntity = (LivingEntity) base.Clone(); // Clones parent first
             // Now my individual elements
             newEntity.Name = Name;
             newEntity.Hp = (Min0Stat) Hp.Clone();
             newEntity.DamageTokens = DamageTokens;
-            newEntity.UniqueId = UniqueId;
             return newEntity;
         }
     }
 
     [JsonObject(MemberSerialization.OptIn)]
-    public class PlacedEntity : BoardEntity
+    public class PlacedEntity : LivingEntity
     {
         [JsonProperty]
-        public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE; // Non serialized, doesn't define unit and info is kept in the board serialization
+        public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE;
         [JsonProperty]
-        public int TileCoordinate { get; set; } = -1; // Non serialized, doesn't define unit and info is kept in the board serialization
+        public int TileCoordinate { get; set; } = -1;
         
         public override object Clone()
         {

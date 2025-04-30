@@ -137,7 +137,21 @@ namespace ODLGameEngine
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            serializer.Serialize(writer, value);
+            Stat theStat = (Stat)value;
+            if (theStat.Modifier == 0)
+            {
+                writer.WriteValue(theStat.BaseValue);
+            }
+            else
+            {
+                writer.WriteStartObject();
+                writer.WritePropertyName("BaseValue");
+                writer.WriteValue(theStat.BaseValue);
+                writer.WritePropertyName("Modifier");
+                writer.WriteValue(theStat.Modifier);
+                writer.WriteEndObject();
+            }
+            
         }
     }
 }

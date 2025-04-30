@@ -172,6 +172,9 @@ If an effect chain triggers a different effect chain, the CPU context for a spec
 This is useful, as it allows complex behaviours to be shared between effect chains with a single CPU context.
 For example, it would be possible to do effects like *"Deal X damage to all units and get 1 gold for each killed"*, where the count of killed units would be resolved from a different part of the effect chain. 
 
+The CPU context also contains a list of target entities, which can be obtained by specific search/select operators.
+By default the card targets itself but this value can be replaced by more complex search operations as described below.
+
 ## Effect List
 These are the following supported effects.
 All effects are relative to the card executing the effect, so the meaning of ```TargetPlayer```, for example, depends on this.
@@ -213,13 +216,14 @@ Owner and target type filters can be used for slightly more complex effects, suc
 
 - ```MODIFIER``` Applies a modifier (i.e. algebraic operation) to something.
 Usually stats but can be other things.
+In some modifiers, the modification target is dependent on units found via a ```FIND_ENTITIES``` or ```SELECT_ENTITY``` operation.
+For example, if stats need to be buffed/debuffed, or a specific player gets gold.
 
     Parameters:
     - ```ModifierOperation``` how the modifier's value is applied (i.e. whether it's a multiplaction, addition, etc)
     - ```ModifierTarget``` defines *what* is modified, if a stat, a damage value, etc
     - ```InputRegister``` contains the value $n$ of the modifier, needed for some (most?) operations
-
-    Keep in mind that when buffing/debuffing something, the buff target will need to be found via a ```FIND_ENTITIES``` or ```SELECT_ENTITY``` operation.
+    - ```TargetPlayer``` in some cases where you want to modify a player's value (e.g. gold), this field is used to choose whether it's a card's owner or the opponents, whose value can be modified. This allows effects such as *"Destroy a card and refund the owner"*. 
 
 ## Possible Parameter Values
 
@@ -257,6 +261,7 @@ Usually stats but can be other things.
 
 - ```TargetType```
     - ```NONE```
+    - ```SKILL``` (this is a weird target type only makes sense when a skill targets itself during casting)
     - ```UNIT```
     - ```BUILDING```
     - ```PLAYER```
@@ -271,6 +276,7 @@ Usually stats but can be other things.
 - ```ModifierTarget```
     - ```REGISTER``` the target will be whichever register is the ```OutputRegister```
     - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, this corresponding stat is modified for each entity
+    - ```PLAYERS_GOLD``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, modifies the players gold relative to those units and the desired ```TargetPlayer```
 
     These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
     For example, ```UNIT|BUILDING``` means both units and buildings will be accepted.

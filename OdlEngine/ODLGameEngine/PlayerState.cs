@@ -16,7 +16,7 @@ namespace ODLGameEngine
     }
 
     [JsonObject(MemberSerialization.OptIn)]
-    public class PlayerState : BoardEntity
+    public class PlayerState : LivingEntity
     {
         public PlayerState() // Default values of base cards are different
         {

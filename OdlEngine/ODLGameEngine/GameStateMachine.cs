@@ -203,7 +203,7 @@ namespace ODLGameEngine
                 // Obtain all elements in list to iterate on, do it like this to allow iteration even if a unit dies during the advance (iteration integrity)
                 foreach (int unitId in playerUnitsIds)
                 {
-                    if(DetailedState.EntityData.TryGetValue(unitId, out BoardEntity unit)) // Check if unit is still alive, if not, no need to march
+                    if(DetailedState.EntityData.TryGetValue(unitId, out LivingEntity unit)) // Check if unit is still alive, if not, no need to march
                     {
                         UNIT_AdvanceUnit((Unit)unit); // Then the unit advances!
                     }
@@ -217,7 +217,7 @@ namespace ODLGameEngine
             {
                 BOARDENTITY_DamageStep(player, player, GameConstants.DECKOUT_DAMAGE);
             }
-            ENGINE_SetPlayerGold(playerId, TRIGINTER_GetModifiedValue(player.Gold, GameConstants.DRAW_PHASE_GOLD_OBTAINED, ModifierOperation.ADD));
+            TRIGINTER_ModifyPlayersGold(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED, ModifierOperation.ADD);
             ENGINE_ChangePlayerPowerAvailability(player, true); // Player can now use active power again
         }
         /// <summary>
