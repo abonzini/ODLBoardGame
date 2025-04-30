@@ -30,7 +30,8 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum EffectType
     {
-        DEBUG,
+        TRIGGER_DEBUG,
+        DEBUG_STORE,
         SELECT_ENTITY,
         FIND_ENTITIES,
         SUMMON_UNIT,
@@ -78,6 +79,7 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum ModifierTarget
     {
+        REGISTER,
         TARGET_HP,
         TARGET_ATTACK,
         TARGET_MOVEMENT,
@@ -183,11 +185,11 @@ namespace ODLGameEngine
 
     }
     /// <summary>
-    /// Of an ongoing effect chain resolution, may contain important info
+    /// The CPU state of effect chain resolutions
     /// </summary>
-    public class OngoingEffectContext : EffectContext
+    public class CpuState
     {
-        public EffectContext BaseEffectContext = null;
+        public EffectContext DebugEffectReference = null;
         public List<int> EffectTargets = [];
         public int TempValue = 0;
         public int Acc = 0;

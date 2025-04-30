@@ -150,7 +150,8 @@ In this scheme, each ```EffectType``` is like an instruction, some of them can h
 In order to implement complex effects that need to remember previous results (think effects such as *"Damage all enemy buildings, if any is killed, deal 2 damage to enemy player"* or *"Get 1 gold for each unit on the field"*), the effect chain contains a series of **Registers**:
 
 - ```TEMP_VARIABLE```, is volatile and only remembered during the current effect of the chain. However it contains the "value" of many card effects (e.g. if an effect was *"Gain 2 gold"*, the temp variable would contain the value 2 in this case). This value can be used as a parameter in effects and in arithmetic operations
-- ```ACC``` is the **"accumulator"** variable, and retains its value during the effect chain, making it popular as the target of more complex math operations 
+- ```ACC``` is the **"accumulator"** variable, and retains its value during the effect chain, making it popular as the target of more complex math operations.
+It is initialised with a value of 0 at the beginning of the effect chain
 
 Many effects use a **InputRegister's** value as an input, and some also save a result in a **OutputRegister**.
 Due to this, any effect can be configured to choose which register is each.
@@ -167,6 +168,9 @@ For example, when defining an effect:
 ```
 This effect would use the **"TEMP_VARIABLE"** as an input (and it's value is 5 in this case).
 Result/output of the effect (if any) would be saved in **ACC**.
+If an effect chain triggers a different effect chain, the CPU context for a specific card's effect will be unique until the whole thing resolves.
+This is useful, as it allows complex behaviours to be shared between effect chains with a single CPU context.
+For example, it would be possible to do effects like *"Deal X damage to all units and get 1 gold for each killed"*, where the count of killed units would be resolved from a different part of the effect chain. 
 
 ## Effect List
 These are the following supported effects.
@@ -207,13 +211,13 @@ Owner and target type filters can be used for slightly more complex effects, suc
     Examples:
     - **RUSH** summons a unit in all lanes
 
-- ```MODIFIER``` Applies a modifier (i.e. buff or debuff) to something.
+- ```MODIFIER``` Applies a modifier (i.e. algebraic operation) to something.
 Usually stats but can be other things.
 
     Parameters:
     - ```ModifierOperation``` how the modifier's value is applied (i.e. whether it's a multiplaction, addition, etc)
     - ```ModifierTarget``` defines *what* is modified, if a stat, a damage value, etc
-    - ```InputRegister``` is the value $n$ of the modifier itself
+    - ```InputRegister``` contains the value $n$ of the modifier, needed for some (most?) operations
 
     Keep in mind that when buffing/debuffing something, the buff target will need to be found via a ```FIND_ENTITIES``` or ```SELECT_ENTITY``` operation.
 
@@ -262,10 +266,11 @@ Usually stats but can be other things.
 - ```ModifierOperation```
     - ```SET``` will modify the target to have the value $n$
     - ```ADD``` adds $n$ to the target
-    - ```MULTIPLY``` multiplies tagret by $n$
+    - ```MULTIPLY``` multiplies target by $n$
     - ```ABSOLUTE_SET``` very similar to ```SET``` but it is a harsher operation: it overwrites the base value to $n$ and this becomes the new value. Only makes sense in specific buffs and should really not be used except in some very specific situations
 - ```ModifierTarget```
-    - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, this corresponding stat is modified
+    - ```REGISTER``` the target will be whichever register is the ```OutputRegister```
+    - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, this corresponding stat is modified for each entity
 
     These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
     For example, ```UNIT|BUILDING``` means both units and buildings will be accepted.

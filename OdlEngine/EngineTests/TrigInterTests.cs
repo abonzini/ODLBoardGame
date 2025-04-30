@@ -24,7 +24,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing
                 Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, TargetLocation.BOARD);
-                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
+                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG_STORE };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
@@ -74,7 +74,7 @@ namespace EngineTests
                 // Create the "on step" effect
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 Dictionary<InteractionType, List<Effect>>  stepInteraction = new Dictionary<InteractionType, List<Effect>>();
                 stepInteraction.Add(InteractionType.UNIT_ENTERS_BUILDING, [debugEffect]); // Add interaction to card
@@ -117,7 +117,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
-                    Assert.AreEqual(entityType, ((EntityEvent<OngoingEffectContext>)debugEvent).entity.BaseEffectContext.ActivatedEntity.EntityPlayInfo.EntityType);
+                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.EntityPlayInfo.EntityType);
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
@@ -152,7 +152,7 @@ namespace EngineTests
                 // Create the "on step" effect
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 Dictionary<InteractionType, List<Effect>> stepInteraction = new Dictionary<InteractionType, List<Effect>>();
                 stepInteraction.Add(InteractionType.UNIT_ENTERS_BUILDING, [debugEffect]); // Add interaction to card
@@ -198,7 +198,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
-                    Assert.AreEqual(entityType, ((EntityEvent<OngoingEffectContext>)debugEvent).entity.BaseEffectContext.ActivatedEntity.EntityPlayInfo.EntityType);
+                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.EntityPlayInfo.EntityType);
                     // Revert EVERYTHING and hash check
                     sm.UndoPreviousStep();
                     sm.UndoPreviousStep();
@@ -227,7 +227,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
                 Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
-                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
+                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG_STORE };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
                 cardDb.InjectCard(1, unit); // Add to cardDb
@@ -277,7 +277,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect. However will die the moment it's summoned so trigger would be deleted immediately
                 Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, TargetLocation.ALL_LANES, 0, 1, 1, 1);
-                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
+                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG_STORE };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
                 cardDb.InjectCard(1, unit); // Add to cardDb
@@ -328,7 +328,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
                 Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
-                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG };
+                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG_STORE };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [debugEffect]);
                 cardDb.InjectCard(1, unit); // Add to cardDb
@@ -484,7 +484,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -581,7 +581,7 @@ namespace EngineTests
                                 // Check returned targets
                                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
                                 Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
-                                List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                                 Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                                 // Special cases
                                 if (searchEffect.TargetType.HasFlag(EntityType.PLAYER) && searchEffect.TargetPlayer.HasFlag(EntityOwner.OWNER))
@@ -639,7 +639,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -701,7 +701,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                     // Special cases
                     List<int> expectedResult;
@@ -751,7 +751,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -808,7 +808,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     Assert.AreEqual(6, searchResultList.Count);
                     // Check correct results
                     List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0,4,2,3,5,1] : [0,5,3,2,4,1]; // The 2 options of how board looks in absolute
@@ -856,7 +856,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -912,7 +912,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     Assert.AreEqual(1, searchResultList.Count); // Ordinals return a single value regardless
                     // Check correct results
                     List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0, 4, 2, 3, 5, 1] : [0, 5, 3, 2, 4, 1]; // The 2 options of how board looks in absolute
@@ -960,7 +960,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -1016,7 +1016,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     Assert.AreEqual(Math.Abs(num), searchResultList.Count);
                     // Check correct results
                     if(num != 0) // Nothing to assert if searching for 0
@@ -1078,7 +1078,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 Effect buffEffect = new Effect() // Operation that'll replace the stat for the new value
                 {
@@ -1128,7 +1128,7 @@ namespace EngineTests
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
-                    List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     foreach (int entityId in searchResultList)
                     { // Check if the buff did it's job
                         Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
@@ -1186,7 +1186,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 Effect buffEffect = new Effect() // Operation that'll replace the stat for the new value
                 {
@@ -1244,7 +1244,7 @@ namespace EngineTests
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
-                    List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     foreach (int entityId in searchResultList)
                     { // Check if the buff did it's job
                         Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
@@ -1265,7 +1265,6 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                int opponentIndex = 1 - playerIndex;
                 GameStateStruct state = new GameStateStruct
                 {
                     CurrentState = States.ACTION_PHASE,
@@ -1286,7 +1285,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.WHEN_PLAYED, [selectEffect, debugEffect]); // Add interaction to card
@@ -1313,7 +1312,7 @@ namespace EngineTests
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
                 // Revert and hash check
@@ -1329,7 +1328,6 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                int opponentIndex = 1 - playerIndex;
                 GameStateStruct state = new GameStateStruct
                 {
                     CurrentState = States.ACTION_PHASE,
@@ -1350,7 +1348,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
@@ -1380,7 +1378,7 @@ namespace EngineTests
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
                 // Revert and hash check
@@ -1414,7 +1412,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
                 unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [selectEffect, debugEffect]);
@@ -1441,7 +1439,7 @@ namespace EngineTests
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
                 // Reversion
@@ -1480,7 +1478,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
@@ -1518,7 +1516,7 @@ namespace EngineTests
                         Assert.IsNotNull(debugEvent); // Found it!
                         // Check returned targets
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
-                        List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                        List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                         if(filterEntityType.HasFlag(buildingEntityType)) // Then, if types match, id get sth as target, otherwise no
                         {
                             Assert.AreEqual(searchResultList.Count, 1);
@@ -1564,7 +1562,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG, // Pops debug results, useful
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
                 };
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
@@ -1602,7 +1600,7 @@ namespace EngineTests
                         Assert.IsNotNull(debugEvent); // Found it!
                         // Check returned targets
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
-                        List<int> searchResultList = ((EntityEvent<OngoingEffectContext>)debugEvent).entity.EffectTargets;
+                        List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                         if (filterEntityOwner.HasFlag(buildingEntityOwner)) // Then, if types match, id get sth as target, otherwise no
                         {
                             Assert.AreEqual(searchResultList.Count, 1);
@@ -1617,6 +1615,263 @@ namespace EngineTests
                         Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
                     }
                 }
+            }
+        }
+        [TestMethod]
+        public void RegisterModifierArithmetic()
+        {
+            Random _rng = new Random();
+            // Performs operations on ACC to check register targetting
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Values
+                int firstValue = _rng.Next(2, 100); // First will set the ACC
+                int secondValue = _rng.Next(2, 100); // Then ACC (op)= secondValue
+                // Card 1: Calculator skill, will set the value of ACC and return it as a debug trigger
+                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, TargetLocation.BOARD);
+                Effect setFirstValueEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    ModifierOperation = ModifierOperation.SET,
+                    InputRegister = Register.TEMP_VARIABLE,
+                    TempVariable = firstValue,
+                    OutputRegister = Register.ACC, // Stores into ACC
+                };
+                Effect operationEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    InputRegister = Register.TEMP_VARIABLE,
+                    TempVariable = secondValue,
+                    OutputRegister = Register.ACC, // Stores into ACC
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, operationEffect, debugEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Set of stat targeting
+                List<ModifierOperation> modifierOperations = [ModifierOperation.ADD, ModifierOperation.ABSOLUTE_SET, ModifierOperation.SET, ModifierOperation.MULTIPLY];
+                foreach (ModifierOperation modifierOperation in modifierOperations) // Will buff in all ways, one by one
+                {
+                    operationEffect.ModifierOperation = modifierOperation; // Select calculator op
+                    int desiredValue = modifierOperation switch
+                    {
+                        ModifierOperation.ADD => firstValue + secondValue,
+                        ModifierOperation.MULTIPLY => firstValue * secondValue,
+                        ModifierOperation.SET => secondValue,
+                        ModifierOperation.ABSOLUTE_SET => secondValue,
+                        _ => throw new NotImplementedException("Modifier op not implemented yet")
+                    };
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    // Play
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                    GameEngineEvent debugEvent = null;
+                    foreach (GameEngineEvent ev in res.Item2.events)
+                    {
+                        if (ev.eventType == EventType.DEBUG_CHECK)
+                        {
+                            debugEvent = ev;
+                            break;
+                        }
+                    }
+                    Assert.IsNotNull(debugEvent); // Found it!
+                    // Check returned targets
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly
+                    // Revert and hash check
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                }
+            }
+        }
+        [TestMethod]
+        public void EffectChainContextSharing()
+        {
+            // Triggers mid-interaction to ensure CPU context of a secific entity persists
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Values
+                int firstValue = 5; // First will set the ACC
+                int secondValue = 2; // Then ACC *= secondValue
+                // Card 1: Calculator skill, will set the value of ACC and return it as a debug trigger
+                Unit unit = TestCardGenerator.CreateUnit(1, "WHENPLAYED", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Effect setFirstValueEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    ModifierOperation = ModifierOperation.SET,
+                    InputRegister = Register.TEMP_VARIABLE,
+                    TempVariable = firstValue,
+                    OutputRegister = Register.ACC, // Stores into ACC
+                };
+                Effect secondOperationEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    ModifierOperation = ModifierOperation.MULTIPLY,
+                    InputRegister = Register.TEMP_VARIABLE,
+                    TempVariable = secondValue,
+                    OutputRegister = Register.ACC, // Stores into ACC
+                };
+                Effect debugPushEffect = new Effect()
+                {
+                    EffectType = EffectType.TRIGGER_DEBUG,
+                };
+                Effect debugPopEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                };
+                // Add when played inter
+                unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                unit.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, debugPushEffect, debugPopEffect]); // Add interaction to card
+                // Add debug trigger!
+                unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
+                unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [secondOperationEffect]);
+                // Rest of test
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Test
+                int desiredValue = firstValue * secondValue; 
+                // Pre-play prep
+                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                // Play
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit in any lane idc
+                Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                GameEngineEvent debugEvent = null;
+                foreach (GameEngineEvent ev in res.Item2.events)
+                {
+                    if (ev.eventType == EventType.DEBUG_CHECK)
+                    {
+                        debugEvent = ev;
+                        break;
+                    }
+                }
+                Assert.IsNotNull(debugEvent); // Found it!
+                // Check returned targets
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly
+                // Revert and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+            }
+        }
+        [TestMethod]
+        public void EffectChainContextIndependence()
+        {
+            // Triggers mid-interaction to ensure CPU contexts of different entities are independend
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = new GameStateStruct
+                {
+                    CurrentState = States.ACTION_PHASE,
+                    CurrentPlayer = player
+                };
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Values
+                int firstValue = 5; // First will set the ACC
+                int secondValue = 2; // Then ACC *= secondValue
+                // Card 1: Calculator skill, will set the value of ACC and return it as a debug trigger
+                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, TargetLocation.BOARD);
+                Unit unit = TestCardGenerator.CreateUnit(2, "ONTRIGGER", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Effect setFirstValueEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    ModifierOperation = ModifierOperation.SET,
+                    InputRegister = Register.TEMP_VARIABLE,
+                    TempVariable = firstValue,
+                    OutputRegister = Register.ACC, // Stores into ACC
+                };
+                Effect secondOperationEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    ModifierOperation = ModifierOperation.MULTIPLY,
+                    InputRegister = Register.TEMP_VARIABLE,
+                    TempVariable = secondValue,
+                    OutputRegister = Register.ACC, // Stores into ACC
+                };
+                Effect debugPushEffect = new Effect()
+                {
+                    EffectType = EffectType.TRIGGER_DEBUG,
+                };
+                Effect debugPopEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                };
+                // Add when played inter
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, debugPushEffect, debugPopEffect]); // Add interaction to card
+                // Add debug trigger!
+                unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
+                unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [secondOperationEffect]);
+                // Rest of test
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                cardDb.InjectCard(2, unit);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                state.PlayerStates[playerIndex].Hand.InsertCard(2);
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Test
+                int desiredValue = firstValue;
+                // Pre-play prep
+                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                // Play
+                sm.PlayFromHand(2, TargetLocation.PLAINS); // Play unit in any lane idc
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play the skill
+                Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                GameEngineEvent debugEvent = null;
+                foreach (GameEngineEvent ev in res.Item2.events)
+                {
+                    if (ev.eventType == EventType.DEBUG_CHECK)
+                    {
+                        debugEvent = ev;
+                        break;
+                    }
+                }
+                Assert.IsNotNull(debugEvent); // Found it!
+                // Check returned targets
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly, and no interference from trigger
+                // Revert and hash check
+                sm.UndoPreviousStep();
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
             }
         }
     }

@@ -43,6 +43,8 @@ namespace ODLGameEngine
                 }
             }
         }
+        
+        readonly Dictionary<int, CpuState> _chainContext = new Dictionary<int, CpuState>(); // To be used only in effect resolution chain
         /// <summary>
         /// Executes a list of effects for triggers or interactions
         /// </summary>
@@ -51,21 +53,36 @@ namespace ODLGameEngine
         /// <param name="specificContext">Additional context that accompanies the desired effect (e.g. when killed, implies killed by someone, etc)</param>
         void TRIGINTER_ProcessEffects(List<Effect> effects, EffectContext specificContext)
         {
-            OngoingEffectContext ctx = new OngoingEffectContext()
+            // Get unique ID of activated entity. Skills don't have these as they're volatile, so I assign a temporary value of -1
+            int activatedEntityId = (specificContext.ActivatedEntity.EntityPlayInfo.EntityType == EntityType.SKILL) ? -1 : ((BoardEntity)specificContext.ActivatedEntity).UniqueId;
+            bool firstEntryInChain = false;
+            CpuState cpu;
+            if (_chainContext.TryGetValue(activatedEntityId, out CpuState value))
             {
-                BaseEffectContext = specificContext
-            };
+                cpu = value;
+            }
+            else
+            {
+                cpu = new CpuState();
+                _chainContext.Add(activatedEntityId, cpu);
+                firstEntryInChain = true;
+            }
+            cpu.DebugEffectReference = specificContext;
+            // Now that the CPU has been configured, can execute effect chain
             foreach (Effect effect in effects) // Execute series of events for the card in question
             {
                 // Define values of registers as may be needed
-                ctx.TempValue = effect.TempVariable;
-                ref int sourceReg = ref TRIGINTER_GetRegisterReference(ctx, effect.InputRegister);
-                ref int targetReg = ref TRIGINTER_GetRegisterReference(ctx, effect.OutputRegister);
+                cpu.TempValue = effect.TempVariable;
+                ref int inputReg = ref TRIGINTER_GetRegisterReference(cpu, effect.InputRegister);
+                ref int outputReg = ref TRIGINTER_GetRegisterReference(cpu, effect.OutputRegister);
                 // Now to process the effect
                 switch (effect.EffectType)
                 {
-                    case EffectType.DEBUG:
-                        ENGINE_AddDebugEvent(ctx);
+                    case EffectType.TRIGGER_DEBUG:
+                        TRIGINTER_ProcessTrigger(TriggerType.DEBUG_TRIGGER, new EffectContext()); // Triggers a debug step, to test trigger hooks
+                        break;
+                    case EffectType.DEBUG_STORE:
+                        ENGINE_AddDebugEvent(cpu); // Stores triginter CPU context for checking of intermediate values
                         break;
                     case EffectType.SELECT_ENTITY:
                         { // In this case there's a simple, single BoardEntity target related to the ctx in question
@@ -82,13 +99,13 @@ namespace ODLGameEngine
                                 EntityOwner owner = (tgt.Owner == specificContext.ActivatedEntity.Owner) ? EntityOwner.OWNER : EntityOwner.OPPONENT;
                                 if(effect.TargetPlayer.HasFlag(owner)) // If it's a valid owner, then target is valid
                                 {
-                                    ctx.EffectTargets = [tgt.UniqueId]; // This is now the target
+                                    cpu.EffectTargets = [tgt.UniqueId]; // This is now the target
                                 }
                             }
                         }
                         break;
                     case EffectType.FIND_ENTITIES:
-                        ctx.EffectTargets = TRIGINTER_GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, effect.TargetLocation, sourceReg, specificContext);
+                        cpu.EffectTargets = TRIGINTER_GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, effect.TargetLocation, inputReg, specificContext);
                         break;
                     case EffectType.SUMMON_UNIT:
                         // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
@@ -109,7 +126,7 @@ namespace ODLGameEngine
                             {
                                 continue;
                             }
-                            Unit auxCardData = (Unit)CardDb.GetCard(sourceReg);
+                            Unit auxCardData = (Unit)CardDb.GetCard(inputReg);
                             // Find where to play unit
                             if(effect.TargetLocation == TargetLocation.PLAY_TARGET) // If card has the "played" target
                             {
@@ -131,6 +148,9 @@ namespace ODLGameEngine
                     case EffectType.MODIFIER:
                         switch (effect.ModifierTarget) // Will check wxactly what I need to modify!
                         {
+                            case ModifierTarget.REGISTER:
+                                outputReg = TRIGINTER_GetModifiedValue(outputReg, inputReg, effect.ModifierOperation);
+                                break;
                             case ModifierTarget.TARGET_HP:
                             case ModifierTarget.TARGET_ATTACK:
                             case ModifierTarget.TARGET_MOVEMENT:
@@ -144,7 +164,7 @@ namespace ODLGameEngine
                                         ModifierOperation.ABSOLUTE_SET => STATS_SetAbsoluteBaseStat,
                                         _ => throw new NotImplementedException("Modifier operation not implemented yet"),
                                     };
-                                    foreach (int entityTarget in ctx.EffectTargets)
+                                    foreach (int entityTarget in cpu.EffectTargets)
                                     {
                                         BoardEntity nextEntity = DetailedState.EntityData[entityTarget];
                                         Stat targetStat = effect.ModifierTarget switch
@@ -156,7 +176,7 @@ namespace ODLGameEngine
                                             _ => throw new NotImplementedException("Modifier type not implemented yet")
                                         };
                                         // Got the stat, now modify it
-                                        functionToApply(targetStat, sourceReg);
+                                        functionToApply(targetStat, inputReg);
                                     }
                                 }
                                 break;
@@ -168,8 +188,13 @@ namespace ODLGameEngine
                         throw new NotImplementedException("Effect type not implemented yet");
                 }
             }
+            // End of effect chain
+            if(firstEntryInChain) // It was I who created this so I need to remove context now
+            {
+                _chainContext.Remove(activatedEntityId);
+            }
         }
-        static ref int TRIGINTER_GetRegisterReference(OngoingEffectContext ctx, Register reg)
+        static ref int TRIGINTER_GetRegisterReference(CpuState ctx, Register reg)
         {
             switch(reg)
             {

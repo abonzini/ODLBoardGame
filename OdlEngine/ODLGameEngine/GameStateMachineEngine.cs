@@ -583,10 +583,10 @@ namespace ODLGameEngine
         /// Adds a debug event to the event pile for testing
         /// </summary>
         /// <param name="ctx">Contains an effect context, useful for extra debug</param>
-        void ENGINE_AddDebugEvent(OngoingEffectContext ctx)
+        void ENGINE_AddDebugEvent(CpuState ctx)
         {
             ENGINE_ExecuteEvent(
-                new EntityEvent<OngoingEffectContext>()
+                new EntityEvent<CpuState>()
                 {
                     eventType = EventType.DEBUG_CHECK,
                     entity = ctx
