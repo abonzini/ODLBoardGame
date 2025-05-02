@@ -15,12 +15,14 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum InteractionType
     {
+        NONE,
         WHEN_PLAYED,
         UNIT_ENTERS_BUILDING,
     }
     [JsonConverter(typeof(StringEnumConverter))]
     public enum TriggerType
     {
+        NONE,
         DEBUG_TRIGGER
     }
     // Effects
@@ -43,6 +45,7 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum SearchCriterion
     {
+        NOTHING,
         ORDINAL,
         QUANTITY,
         ALL,
@@ -68,6 +71,7 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum ModifierOperation
     {
+        NONE,
         SET,
         ADD,
         MULTIPLY,

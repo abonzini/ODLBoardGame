@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.ComponentModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -70,12 +71,18 @@ namespace ODLGameEngine
     public class EntityPrintInfo
     {
         public int Id { get; set; } = 0;
+        [DefaultValue("")]
         public string Title { get; set; } = "";
+        [DefaultValue("")]
         public string Text { get; set; } = "";
         // Playable info (will be in card)
+        [DefaultValue("")]
         public string Cost { get; set; } = "";
+        [DefaultValue("")]
         public string Hp { get; set; } = "";
+        [DefaultValue("")]
         public string Movement { get; set; } = "";
+        [DefaultValue("")]
         public string Attack { get; set; } = "";
         public int Rarity { get; set; } = 0;
         [JsonConverter(typeof(StringEnumConverter))]
@@ -102,7 +109,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public EntityPlayInfo EntityPlayInfo { get; set; } = new EntityPlayInfo(); // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
-        public EntityPrintInfo EntityPrintInfo { get; set; } // Non-hashed, non-cloned as I just want to reference once
+        public EntityPrintInfo EntityPrintInfo { get; set; } = new EntityPrintInfo(); // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
         public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 
@@ -157,6 +164,7 @@ namespace ODLGameEngine
     public class LivingEntity : IngameEntity
     {
         [JsonProperty]
+        [DefaultValue("")]
         public string Name { get; set; } = "";
         [JsonProperty]
         [JsonConverter(typeof(StatJsonConverter))]
@@ -196,6 +204,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE;
         [JsonProperty]
+        [DefaultValue(-1)]
         public int TileCoordinate { get; set; } = -1;
         
         public override object Clone()
