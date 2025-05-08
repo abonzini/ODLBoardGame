@@ -218,20 +218,20 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Ensure all in order before EOT
                 GameStateStruct preEotState = sm.DetailedState;
-                int preEotHash = preEotState.GetGameStateHash(); // Keep hash
+                int preEotHash = preEotState.GetHashCode(); // Keep hash
                 Assert.AreEqual(preEotState.CurrentState, States.ACTION_PHASE); // in action phase
                 Assert.AreEqual(preEotState.CurrentPlayer, id); // Current player
                 // Now I activate end of turn!
                 sm.EndTurn();
                 GameStateStruct postEotState = sm.DetailedState;
-                int postEotHash = preEotState.GetGameStateHash(); // Keep hash
+                int postEotHash = preEotState.GetHashCode(); // Keep hash
                 Assert.AreEqual(postEotState.CurrentState, States.DRAW_PHASE); // in draw phase now!
                 Assert.AreEqual(postEotState.CurrentPlayer, (CurrentPlayer)otherPlayerIndex); // Current player has changed and will soon initialize drawing (draw phase already tested)
                 Assert.AreNotEqual(preEotHash, postEotHash); // Hope hash are different (only because new current player)
                 // Reversion should also apply
                 sm.UndoPreviousStep();
                 postEotState = sm.DetailedState;
-                postEotHash = preEotState.GetGameStateHash();
+                postEotHash = preEotState.GetHashCode();
                 Assert.AreEqual(postEotState.CurrentState, States.ACTION_PHASE); // Back to action
                 Assert.AreEqual(postEotState.CurrentPlayer, id); // Current player back to original
                 Assert.AreEqual(preEotHash, postEotHash); // Hash repeatability check
@@ -262,22 +262,22 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
-                int deckHash = plState.Deck.GetGameStateHash();
-                int playerHash = plState.GetGameStateHash();
+                int deckHash = plState.Deck.GetHashCode();
+                int playerHash = plState.GetHashCode();
                 Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 1);
                 // Draw
                 sm.Step();
-                Assert.AreNotEqual(deckHash, plState.Deck.GetGameStateHash()); // Changed because card was drawn
-                Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreNotEqual(deckHash, plState.Deck.GetHashCode()); // Changed because card was drawn
+                Assert.AreNotEqual(playerHash, plState.GetHashCode());
                 Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 // Revert
                 sm.UndoPreviousStep();
-                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
-                Assert.AreEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(deckHash, plState.Deck.GetHashCode());
+                Assert.AreEqual(playerHash, plState.GetHashCode());
                 Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 1);
@@ -305,22 +305,22 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
-                int deckHash = plState.Deck.GetGameStateHash();
-                int playerHash = plState.GetGameStateHash();
+                int deckHash = plState.Deck.GetHashCode();
+                int playerHash = plState.GetHashCode();
                 Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 // Draw
                 sm.Step();
-                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
-                Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(deckHash, plState.Deck.GetHashCode()); // No change in deck contents
+                Assert.AreNotEqual(playerHash, plState.GetHashCode());
                 Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 // Revert
                 sm.UndoPreviousStep();
-                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
-                Assert.AreEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(deckHash, plState.Deck.GetHashCode());
+                Assert.AreEqual(playerHash, plState.GetHashCode());
                 Assert.AreEqual(plState.Hp.Total, playerHp);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
@@ -346,16 +346,16 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
-                int deckHash = plState.Deck.GetGameStateHash();
-                int playerHash = plState.GetGameStateHash();
+                int deckHash = plState.Deck.GetHashCode();
+                int playerHash = plState.GetHashCode();
                 Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
                 // Draw
                 sm.Step();
-                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
-                Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(deckHash, plState.Deck.GetHashCode()); // No change in deck contents
+                Assert.AreNotEqual(playerHash, plState.GetHashCode());
                 Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
@@ -363,8 +363,8 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.CurrentPlayer, (CurrentPlayer)(1-(int)id)); // other player won
                 // Revert
                 sm.UndoPreviousStep();
-                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
-                Assert.AreEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(deckHash, plState.Deck.GetHashCode());
+                Assert.AreEqual(playerHash, plState.GetHashCode());
                 Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
@@ -391,16 +391,16 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
-                int deckHash = plState.Deck.GetGameStateHash();
-                int playerHash = plState.GetGameStateHash();
+                int deckHash = plState.Deck.GetHashCode();
+                int playerHash = plState.GetHashCode();
                 Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.DRAW_PHASE);
                 // Draw
                 sm.Step();
-                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash()); // No change in deck contents
-                Assert.AreNotEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(deckHash, plState.Deck.GetHashCode()); // No change in deck contents
+                Assert.AreNotEqual(playerHash, plState.GetHashCode());
                 Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
@@ -408,8 +408,8 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.CurrentPlayer, (CurrentPlayer)(1 - (int)id)); // other player won
                 // Revert
                 sm.UndoPreviousStep();
-                Assert.AreEqual(deckHash, plState.Deck.GetGameStateHash());
-                Assert.AreEqual(playerHash, plState.GetGameStateHash());
+                Assert.AreEqual(deckHash, plState.Deck.GetHashCode());
+                Assert.AreEqual(playerHash, plState.GetHashCode());
                 Assert.AreEqual(plState.Hp.Total, GameConstants.DECKOUT_DAMAGE - 1);
                 Assert.AreEqual(plState.DamageTokens, 0);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
@@ -434,30 +434,30 @@ namespace EngineTests
             GameStateMachine sm = new GameStateMachine(cardDb);
             sm.LoadGame(state); // Start from here
             // HASH CHECK
-            int emptyBoardHash = sm.DetailedState.BoardState.GetGameStateHash();
-            int emptyBoardStateHash = sm.DetailedState.GetGameStateHash();
-            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
-            Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetGameStateHash()); // Hash would be recalculated but still the same
+            int emptyBoardHash = sm.DetailedState.BoardState.GetHashCode();
+            int emptyBoardStateHash = sm.DetailedState.GetHashCode();
+            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash would be recalculated but still the same
+            Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetHashCode()); // Hash would be recalculated but still the same
             // Will play card now
             Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play it
             // Make sure card was played ok
             Assert.AreEqual(res.Item1, PlayOutcome.OK);
             Assert.IsNotNull(res.Item2);
             // And check hash again
-            int boardWUnitHash = sm.DetailedState.BoardState.GetGameStateHash();
-            int stateWUnitHash = sm.DetailedState.GetGameStateHash();
+            int boardWUnitHash = sm.DetailedState.BoardState.GetHashCode();
+            int stateWUnitHash = sm.DetailedState.GetHashCode();
             Assert.AreNotEqual(emptyBoardHash, boardWUnitHash);
             Assert.AreNotEqual(emptyBoardStateHash, stateWUnitHash);
-            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash would be recalculated but still the same
-            Assert.AreEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // Hash would be recalculated but still the same
+            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetHashCode()); // Hash would be recalculated but still the same
+            Assert.AreEqual(stateWUnitHash, sm.DetailedState.GetHashCode()); // Hash would be recalculated but still the same
             // Modify unit (shady)
             int unitIndex = sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).First();
             ((Unit)sm.DetailedState.EntityData[unitIndex]).Attack.BaseValue += 5; // Add 5 to attack, whatever
-            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetGameStateHash()); // Board is 100% positional so this hash should remain the same
-            Assert.AreNotEqual(stateWUnitHash, sm.DetailedState.GetGameStateHash()); // But now the state changed because unit data is different
+            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetHashCode()); // Board is 100% positional so this hash should remain the same
+            Assert.AreNotEqual(stateWUnitHash, sm.DetailedState.GetHashCode()); // But now the state changed because unit data is different
             sm.UndoPreviousStep();
-            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Finally hash should've reverted and known
-            Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetGameStateHash()); // Finally hash should've reverted and known
+            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Finally hash should've reverted and known
+            Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetHashCode()); // Finally hash should've reverted and known
         }
     }
     public static class InitialStatesGenerator // Generates a game state for test

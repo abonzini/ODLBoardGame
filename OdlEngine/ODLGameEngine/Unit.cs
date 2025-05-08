@@ -25,17 +25,13 @@ namespace ODLGameEngine
         public Min0Stat Attack { get; set; } = new Min0Stat();
         [JsonProperty]
         public int MvtCooldownTimer { get; set; } = 0;
-        /// <summary>
-        /// Gets the hash of the entity
-        /// </summary>
-        /// <returns>Hash code</returns>
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetGameStateHash());
-            hash.Add(Movement.GetGameStateHash());
-            hash.Add(MovementDenominator.GetGameStateHash());
-            hash.Add(Attack.GetGameStateHash());
+            hash.Add(base.GetHashCode());
+            hash.Add(Movement.GetHashCode());
+            hash.Add(MovementDenominator.GetHashCode());
+            hash.Add(Attack.GetHashCode());
             hash.Add(MvtCooldownTimer);
             return hash.ToHashCode();
         }

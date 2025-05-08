@@ -53,14 +53,6 @@ namespace ODLGameEngine
     }
 
     /// <summary>
-    /// Hashable stuff can give you a hash which attempts to guarantee hash uniqueness and so on
-    /// </summary>
-    public interface IHashable
-    {
-        public int GetGameStateHash();
-    }
-
-    /// <summary>
     /// Contains all data about a game state, copyable and small, no methods.
     /// The "moving parts" (actions, full board stste, decks, hands) are stored elsewhere
     /// Can be serialized to clients to render full game state.
@@ -69,12 +61,12 @@ namespace ODLGameEngine
     /// With this, a game state can be completely retrieved and any game can be started from any point (as well as from scratch)
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class GameStateStruct : IHashable
+    public class GameStateStruct
     {
         [JsonProperty]
         public States CurrentState { get; set; } = States.START;
         [JsonProperty]
-        public int StateHash { get { return GetGameStateHash(); } }
+        public int StateHash { get { return GetHashCode(); } }
         [JsonProperty]
         public int Seed { get; set; } = 0;
         [JsonProperty]
@@ -90,18 +82,18 @@ namespace ODLGameEngine
         // Entities
         [JsonProperty]
         public readonly SortedList<int, LivingEntity> EntityData = new SortedList<int, LivingEntity>();
-        public int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
             hash.Add(CurrentState);
             hash.Add(Seed);
             hash.Add(NextUniqueIndex);
             hash.Add(CurrentPlayer);
-            hash.Add(BoardState.GetGameStateHash());
+            hash.Add(BoardState.GetHashCode());
             foreach (KeyValuePair<int, LivingEntity> kvp in EntityData)
             {
                 hash.Add(kvp.Key);
-                hash.Add(kvp.Value.GetGameStateHash());
+                hash.Add(kvp.Value.GetHashCode());
             }
             foreach (KeyValuePair< TriggerType, SortedSet<int>> trigger in Triggers)
             {

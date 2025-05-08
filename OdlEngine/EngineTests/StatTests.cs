@@ -40,17 +40,17 @@ namespace EngineTests
             Stat _stat = new Stat();
             _stat.BaseValue = v1;
             _stat.Modifier = v2;
-            int _statHash = _stat.GetGameStateHash(); // Gets Hash
+            int _statHash = _stat.GetHashCode(); // Gets Hash
             // Is hash dependent on base value only?
             _stat.BaseValue++;
-            Assert.AreNotEqual(_statHash, _stat.GetGameStateHash());
+            Assert.AreNotEqual(_statHash, _stat.GetHashCode());
             // How about modifier?
             _stat.BaseValue--;
             _stat.Modifier++;
-            Assert.AreNotEqual(_statHash, _stat.GetGameStateHash());
+            Assert.AreNotEqual(_statHash, _stat.GetHashCode());
             // Is it deterministic and reversible?
             _stat.Modifier--;
-            Assert.AreEqual(_statHash, _stat.GetGameStateHash());
+            Assert.AreEqual(_statHash, _stat.GetHashCode());
         }
         [TestMethod]
         public void Min1StatCheck()

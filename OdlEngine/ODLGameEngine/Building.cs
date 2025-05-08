@@ -17,10 +17,10 @@ namespace ODLGameEngine
         public int[] ForestBp { get; set; } = null;
         [JsonProperty]
         public int[] MountainBp { get; set; } = null;
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetGameStateHash());
+            hash.Add(base.GetHashCode());
             return hash.ToHashCode();
         }
         public override string ToString()

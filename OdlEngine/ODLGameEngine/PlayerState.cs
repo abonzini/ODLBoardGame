@@ -38,16 +38,16 @@ namespace ODLGameEngine
         [JsonProperty]
         public int ActivePowerCast { get; set; } = GameConstants.RUSH_CARD_ID;
 
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetGameStateHash());
+            hash.Add(base.GetHashCode());
             hash.Add(PlayerClass);
             hash.Add(Gold);
             hash.Add(PowerAvailable);
-            hash.Add(Hand.GetGameStateHash());
-            hash.Add(Deck.GetGameStateHash());
-            hash.Add(DiscardPile.GetGameStateHash());
+            hash.Add(Hand.GetHashCode());
+            hash.Add(Deck.GetHashCode());
+            hash.Add(DiscardPile.GetHashCode());
             hash.Add(ActivePowerCast);
             return hash.ToHashCode();
         }

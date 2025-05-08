@@ -5,7 +5,7 @@ namespace DeserializationVerifier
 {
     public class DeserializationHelper
     {
-        CardFinder cardFinderToTest = new CardFinder("C:\\Users\\augus\\Documents\\Boardgame\\ODLBoardGame\\CardDatabase");
+        CardFinder cardFinderToTest = new CardFinder(".\\..\\..\\..\\..\\..\\CardDatabase");
         public bool IsJsonValid(int cardId)
         {
             bool valid = false;

@@ -13,7 +13,7 @@ namespace ODLGameEngine
     /// </summary>
     [JsonConverter(typeof(StatJsonConverter))]
     [JsonObject(MemberSerialization.OptIn)]
-    public class Stat : ICloneable, IHashable
+    public class Stat : ICloneable
     {
         protected int _minTotalCap = 0;
         int _baseValue = 0;
@@ -54,11 +54,7 @@ namespace ODLGameEngine
         {
             return BaseValue.ToString() + ((Modifier >= 0) ? "+" : "") + Modifier.ToString() + $" ({Total})";
         }
-        /// <summary>
-        /// Gets Hash of stat
-        /// </summary>
-        /// <returns>Hash, didn't add dirty flag because it's probably pointless</returns>
-        public int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
             hash.Add(_baseValue);

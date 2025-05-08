@@ -115,9 +115,9 @@ namespace EngineTests
             {
                 PowerAvailable = true
             };
-            int plHash = pl.GetGameStateHash();
+            int plHash = pl.GetHashCode();
             pl.PowerAvailable = false;
-            Assert.AreNotEqual(plHash, pl.GetGameStateHash()); // Verify hash is now different
+            Assert.AreNotEqual(plHash, pl.GetHashCode()); // Verify hash is now different
         }
         [TestMethod]
         public void ActivePowerCast()
@@ -147,7 +147,7 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Pre power assert
-                int stateHash = sm.DetailedState.GetGameStateHash();
+                int stateHash = sm.DetailedState.GetHashCode();
                 PlayerState currentPlayer = sm.DetailedState.PlayerStates[(int)sm.DetailedState.CurrentPlayer];
                 Assert.AreEqual(currentPlayer.Gold, 10);
                 Assert.AreEqual(currentPlayer.PowerAvailable, true);
@@ -156,13 +156,13 @@ namespace EngineTests
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 currentPlayer = sm.DetailedState.PlayerStates[(int)sm.DetailedState.CurrentPlayer];
-                Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode());
                 Assert.AreEqual(currentPlayer.Gold, 5);
                 Assert.AreEqual(currentPlayer.PowerAvailable, false);
                 // Now, revert it
                 sm.UndoPreviousStep();
                 currentPlayer = sm.DetailedState.PlayerStates[(int)sm.DetailedState.CurrentPlayer];
-                Assert.AreEqual(stateHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(stateHash, sm.DetailedState.GetHashCode());
                 Assert.AreEqual(currentPlayer.Gold, 10);
                 Assert.AreEqual(currentPlayer.PowerAvailable, true);
             }

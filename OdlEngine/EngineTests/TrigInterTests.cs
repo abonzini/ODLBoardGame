@@ -100,7 +100,7 @@ namespace EngineTests
                     GameStateMachine sm = new GameStateMachine(cardDb);
                     sm.LoadGame(state); // Start from here
                     // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
                     Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
                     Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -115,12 +115,12 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
                     Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.EntityPlayInfo.EntityType);
                     // Revert and hash check
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
             }
         }
@@ -178,7 +178,7 @@ namespace EngineTests
                     GameStateMachine sm = new GameStateMachine(cardDb);
                     sm.LoadGame(state); // Start from here
                     // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
                     sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
                     sm.EndTurn(); // Ends turn
@@ -196,7 +196,7 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
                     Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.EntityPlayInfo.EntityType);
                     // Revert EVERYTHING and hash check
@@ -205,7 +205,7 @@ namespace EngineTests
                     sm.UndoPreviousStep();
                     sm.UndoPreviousStep();
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
             }
         }
@@ -235,11 +235,11 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Pre play assert ( specific state and no triggers )
-                int stateHash = sm.DetailedState.GetGameStateHash();
+                int stateHash = sm.DetailedState.GetHashCode();
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
                 // Play
                 sm.PlayFromHand(1, TargetLocation.PLAINS); // Play the unit in any lane
-                Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // State hash has changed
+                Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // State hash has changed
                 Assert.IsTrue(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER)); // And the state is there!
                 // Now to trigger
                 bool debugFlagFound = false; // Check if the debug check was added when card was played
@@ -256,7 +256,7 @@ namespace EngineTests
                 // Reversion
                 sm.UndoPreviousStep(); // Undoes the debug trigger
                 sm.UndoPreviousStep(); // Undoes card play
-                Assert.AreEqual(stateHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(stateHash, sm.DetailedState.GetHashCode());
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
             }
         }
@@ -285,11 +285,11 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Pre play assert ( specific state and no triggers )
-                int stateHash = sm.DetailedState.GetGameStateHash();
+                int stateHash = sm.DetailedState.GetHashCode();
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
                 // Play
                 sm.PlayFromHand(1, TargetLocation.PLAINS); // Play the unit in any lane
-                Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // State hash has changed because hand and placeable counter changed
+                Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // State hash has changed because hand and placeable counter changed
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER)); // However this is the same
                 // Now to trigger
                 bool debugFlagFound = false; // Check if the debug check was added when card was played (should not be!)
@@ -306,7 +306,7 @@ namespace EngineTests
                 // Reversion
                 sm.UndoPreviousStep(); // Undoes the debug trigger
                 sm.UndoPreviousStep(); // Undoes card play
-                Assert.AreEqual(stateHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(stateHash, sm.DetailedState.GetHashCode());
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
             }
         }
@@ -397,7 +397,7 @@ namespace EngineTests
                 // Resulting hash board will be compared with pre-play hash and non-repeated
                 // Will check: Player count, lane count, tile count, init unit count
                 state = sm.DetailedState;
-                int prePlayHash = state.GetGameStateHash();
+                int prePlayHash = state.GetHashCode();
                 HashSet<int> hashes = new HashSet<int>();
                 hashes.Add(prePlayHash);
                 List<EntityOwner> playerTargets = [EntityOwner.OWNER, EntityOwner.OPPONENT];
@@ -430,7 +430,7 @@ namespace EngineTests
                         Assert.AreEqual(PlayOutcome.OK, playRes.Item1);
                         Assert.IsNotNull(playRes.Item2);
                         // Hash assert
-                        int newHash = state.GetGameStateHash();
+                        int newHash = state.GetHashCode();
                         Assert.IsFalse(hashes.Contains(newHash));
                         hashes.Add(newHash);
                         // Location assert
@@ -444,7 +444,7 @@ namespace EngineTests
                         Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(TargetLocation.MOUNTAIN) ? 1 : 0);
                         // Revert
                         sm.UndoPreviousStep();
-                        Assert.AreEqual(prePlayHash, state.GetGameStateHash());
+                        Assert.AreEqual(prePlayHash, state.GetHashCode());
                         Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, 0);
                         Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
@@ -563,8 +563,8 @@ namespace EngineTests
                                     EntityOwner.BOTH => 2,
                                     _ => 1,
                                 };
-                                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
-                                int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash(); // Check hash beforehand
+                                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                                int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                                 // Play
                                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
                                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -579,8 +579,8 @@ namespace EngineTests
                                 }
                                 Assert.IsNotNull(debugEvent); // Found it!
                                 // Check returned targets
-                                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
-                                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
+                                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
+                                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
                                 List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                                 Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                                 // Special cases
@@ -604,8 +604,8 @@ namespace EngineTests
                                 }
                                 // Revert and hash check
                                 sm.UndoPreviousStep();
-                                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
-                                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash());
+                                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
                             }
                         }
                     }
@@ -683,8 +683,8 @@ namespace EngineTests
                 {
                     // Pre-play prep
                     int expectedEntityNumber = (targetLocation == loc) ? 6 : 2; // 6 things if correct lane, otherwise only players
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
-                    int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                    int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
                     Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, loc); // Play search card
                     Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -699,8 +699,8 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
                     List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                     // Special cases
@@ -719,8 +719,8 @@ namespace EngineTests
                     }
                     // Revert and hash check
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
                 }
             }
         }
@@ -790,8 +790,8 @@ namespace EngineTests
                 {
                     searchEffect.TempVariable = dir;
                     // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
-                    int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                    int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
                     Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
                     Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -806,8 +806,8 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
                     List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     Assert.AreEqual(6, searchResultList.Count);
                     // Check correct results
@@ -824,8 +824,8 @@ namespace EngineTests
                     }
                     // Revert and hash check
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
                 }
             }
         }
@@ -894,8 +894,8 @@ namespace EngineTests
                 {
                     searchEffect.TempVariable = ord;
                     // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
-                    int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                    int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
                     Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
                     Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -910,8 +910,8 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
                     List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     Assert.AreEqual(1, searchResultList.Count); // Ordinals return a single value regardless
                     // Check correct results
@@ -928,8 +928,8 @@ namespace EngineTests
                     Assert.AreEqual(searchResultList[0], expectedResult[idx]);
                     // Revert and hash check
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
                 }
             }
         }
@@ -998,8 +998,8 @@ namespace EngineTests
                 {
                     searchEffect.TempVariable = num;
                     // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
-                    int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                    int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
                     Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
                     Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -1014,8 +1014,8 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash rchanged because discard pile changed
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Hash remains the same as search shouldnt modify board or entities at all
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
                     List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     Assert.AreEqual(Math.Abs(num), searchResultList.Count);
                     // Check correct results
@@ -1035,8 +1035,8 @@ namespace EngineTests
                     }
                     // Revert and hash check
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
                 }
             }
         }
@@ -1112,7 +1112,7 @@ namespace EngineTests
                 {
                     buffEffect.ModifierTarget = modifierTarget; // Buff will now target this stat
                     // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
                     Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
                     Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -1127,7 +1127,7 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     foreach (int entityId in searchResultList)
                     { // Check if the buff did it's job
@@ -1144,7 +1144,7 @@ namespace EngineTests
                     }
                     // Revert and hash check
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
             }
         }
@@ -1228,7 +1228,7 @@ namespace EngineTests
                         _ => throw new NotImplementedException("Modifier op not implemented yet")
                     };
                     // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
                     Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
                     Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -1243,7 +1243,7 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                     foreach (int entityId in searchResultList)
                     { // Check if the buff did it's job
@@ -1253,7 +1253,7 @@ namespace EngineTests
                     }
                     // Revert and hash check
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
             }
         }
@@ -1296,7 +1296,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Do the selection
                 // Pre-play prep
-                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play search card anywhere (PLAINS)
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -1311,13 +1311,13 @@ namespace EngineTests
                 }
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
-                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                 List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
                 // Revert and hash check
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
             }
         }
         [TestMethod]
@@ -1363,7 +1363,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Do the selection
                 // Pre-play prep
-                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
                 GameEngineEvent debugEvent = null;
@@ -1377,13 +1377,13 @@ namespace EngineTests
                 }
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
-                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                 List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
                 // Revert and hash check
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
             }
         }
         [TestMethod]
@@ -1421,10 +1421,10 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Pre play assert ( specific state and no triggers )
-                int stateHash = sm.DetailedState.GetGameStateHash();
+                int stateHash = sm.DetailedState.GetHashCode();
                 // Play
                 sm.PlayFromHand(1, TargetLocation.PLAINS); // Play the unit in any lane
-                Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // State hash has changed
+                Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // State hash has changed
                 // Now check trigger
                 StepResult res = sm.TriggerDebugStep();
                 GameEngineEvent debugEvent = null;
@@ -1438,14 +1438,14 @@ namespace EngineTests
                 }
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
-                Assert.AreNotEqual(stateHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                 List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
                 // Reversion
                 sm.UndoPreviousStep(); // Undoes the debug trigger
                 sm.UndoPreviousStep(); // Undoes card play
-                Assert.AreEqual(stateHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(stateHash, sm.DetailedState.GetHashCode());
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
             }
         }
@@ -1501,7 +1501,7 @@ namespace EngineTests
                         sm.LoadGame(state); // Start from here
                         // Do the selection
                         // Pre-play prep
-                        int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                        int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
                         Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
                         GameEngineEvent debugEvent = null;
@@ -1515,7 +1515,7 @@ namespace EngineTests
                         }
                         Assert.IsNotNull(debugEvent); // Found it!
                         // Check returned targets
-                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                         List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                         if(filterEntityType.HasFlag(buildingEntityType)) // Then, if types match, id get sth as target, otherwise no
                         {
@@ -1528,7 +1528,7 @@ namespace EngineTests
                         }
                         // Revert and hash check
                         sm.UndoPreviousStep();
-                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                     }
                 }
             }
@@ -1585,7 +1585,7 @@ namespace EngineTests
                         sm.LoadGame(state); // Start from here
                         // Do the selection
                         // Pre-play prep
-                        int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                        int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
                         Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit anywhere (PLAINS)
                         GameEngineEvent debugEvent = null;
@@ -1599,7 +1599,7 @@ namespace EngineTests
                         }
                         Assert.IsNotNull(debugEvent); // Found it!
                         // Check returned targets
-                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                         List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
                         if (filterEntityOwner.HasFlag(buildingEntityOwner)) // Then, if types match, id get sth as target, otherwise no
                         {
@@ -1612,7 +1612,7 @@ namespace EngineTests
                         }
                         // Revert and hash check
                         sm.UndoPreviousStep();
-                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                     }
                 }
             }
@@ -1680,7 +1680,7 @@ namespace EngineTests
                         _ => throw new NotImplementedException("Modifier op not implemented yet")
                     };
                     // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
                     Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
                     Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -1695,11 +1695,11 @@ namespace EngineTests
                     }
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly
                     // Revert and hash check
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
             }
         }
@@ -1764,7 +1764,7 @@ namespace EngineTests
                 // Test
                 int desiredValue = firstValue * secondValue; 
                 // Pre-play prep
-                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play unit in any lane idc
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -1779,11 +1779,11 @@ namespace EngineTests
                 }
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
-                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                 Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly
                 // Revert and hash check
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
             }
         }
         [TestMethod]
@@ -1850,7 +1850,7 @@ namespace EngineTests
                 // Test
                 int desiredValue = firstValue;
                 // Pre-play prep
-                int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
                 sm.PlayFromHand(2, TargetLocation.PLAINS); // Play unit in any lane idc
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play the skill
@@ -1866,12 +1866,12 @@ namespace EngineTests
                 }
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
-                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash obviously changed
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                 Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly, and no interference from trigger
                 // Revert and hash check
                 sm.UndoPreviousStep();
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
             }
         }
         [TestMethod]
@@ -1933,7 +1933,7 @@ namespace EngineTests
                     {
                         goldModifyEffect.TargetPlayer = owner;
                         // Pre-play prep
-                        int prePlayHash = sm.DetailedState.GetGameStateHash(); // Check hash beforehand
+                        int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
                         Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play the skill
                         Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -1948,7 +1948,7 @@ namespace EngineTests
                             Assert.AreEqual(sm.DetailedState.PlayerStates[opponentIndex].Gold, startingGold);
                         // Revert and hash check
                         sm.UndoPreviousStep();
-                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                     }
                 }
             }

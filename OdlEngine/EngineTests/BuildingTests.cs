@@ -131,19 +131,19 @@ namespace EngineTests
                     TargetLocation[] targetTest = [TargetLocation.PLAINS, TargetLocation.FOREST, TargetLocation.MOUNTAIN];
                     foreach (TargetLocation target in targetTest)
                     {
-                        int prePlayHash = sm.DetailedState.GetGameStateHash();
+                        int prePlayHash = sm.DetailedState.GetHashCode();
                         Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, target);
                         if (wouldBeValidTarget.HasFlag(target)) // if target is correct
                         {
                             // Building should've played ok
                             Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
                             Assert.IsNotNull(playRes.Item2);
-                            Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash should've changed
+                            Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash should've changed
                             Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Player has building
                             Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Lane has building
                             // Revert this, assert reversion
                             sm.UndoPreviousStep();
-                            Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                            Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                             Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                             Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                         }
@@ -261,19 +261,19 @@ namespace EngineTests
                 // I finally attempt to actually play the building which would only succeed in the right lane
                 foreach (TargetLocation playTarget in targetTest)
                 {
-                    int prePlayHash = sm.DetailedState.GetGameStateHash();
+                    int prePlayHash = sm.DetailedState.GetHashCode();
                     Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, playTarget);
                     if (target.HasFlag(playTarget)) // if target is correct
                     {
                         // Building should've played ok
                         Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
                         Assert.IsNotNull(playRes.Item2);
-                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetGameStateHash()); // Hash should've changed
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash should've changed
                         Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Player has building
                         Assert.AreEqual(sm.DetailedState.BoardState.GetLane(playTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Lane has building
                         // Revert this, assert reversion
                         sm.UndoPreviousStep();
-                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetGameStateHash());
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                         Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                         Assert.AreEqual(sm.DetailedState.BoardState.GetLane(playTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                     }
@@ -323,23 +323,23 @@ namespace EngineTests
                 Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);
                 Assert.AreEqual(optionRes.Item2, laneTarget);
                 // Pre play, ensure building's not there
-                int prePlayBoardHash = sm.DetailedState.BoardState.GetGameStateHash();
-                int prePlayStateHash = sm.DetailedState.GetGameStateHash();
+                int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode();
+                int prePlayStateHash = sm.DetailedState.GetHashCode();
                 int nextEntityIndex = sm.DetailedState.NextUniqueIndex;
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 // Now I play the building
                 sm.PlayFromHand(1, laneTarget);
                 // Post play, building should STILL not be there because it insta-died
-                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Board shouldn't have changed at all
-                Assert.AreNotEqual(prePlayStateHash, sm.DetailedState.GetGameStateHash()); // Gamestate definitely changed because hands changed, unit, etc
+                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Board shouldn't have changed at all
+                Assert.AreNotEqual(prePlayStateHash, sm.DetailedState.GetHashCode()); // Gamestate definitely changed because hands changed, unit, etc
                 Assert.AreNotEqual(nextEntityIndex, sm.DetailedState.NextUniqueIndex); // Also ensure building was at some point instantiated
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 // Finally, revert
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetGameStateHash()); // Board shouldn't have changed at all
-                Assert.AreEqual(prePlayStateHash, sm.DetailedState.GetGameStateHash()); // Gamestate definitely changed because hands changed, unit, etc
+                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Board shouldn't have changed at all
+                Assert.AreEqual(prePlayStateHash, sm.DetailedState.GetHashCode()); // Gamestate definitely changed because hands changed, unit, etc
                 Assert.AreEqual(nextEntityIndex, sm.DetailedState.NextUniqueIndex); // Also ensure building was at some point instantiated
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
@@ -434,12 +434,12 @@ namespace EngineTests
                 Tuple<PlayOutcome, TargetLocation> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
                 Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);
                 Assert.AreEqual(optionRes.Item2, laneTarget);
-                int prePlayHash1 = sm.DetailedState.GetGameStateHash();
+                int prePlayHash1 = sm.DetailedState.GetHashCode();
                 // Now I play the building
                 Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, laneTarget);
                 Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(playRes.Item2);
-                int prePlayHash2 = sm.DetailedState.GetGameStateHash();
+                int prePlayHash2 = sm.DetailedState.GetHashCode();
                 Assert.AreNotEqual(prePlayHash1, prePlayHash2); // Hash should've changed
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Player has building
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Lane has building
@@ -447,19 +447,19 @@ namespace EngineTests
                 playRes = sm.PlayFromHand(1, laneTarget);
                 Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(playRes.Item2);
-                Assert.AreNotEqual(prePlayHash1, sm.DetailedState.GetGameStateHash()); // Hash should've changed
-                Assert.AreNotEqual(prePlayHash2, sm.DetailedState.GetGameStateHash()); // Hash should've changed
+                Assert.AreNotEqual(prePlayHash1, sm.DetailedState.GetHashCode()); // Hash should've changed
+                Assert.AreNotEqual(prePlayHash2, sm.DetailedState.GetHashCode()); // Hash should've changed
                 Assert.AreNotEqual(prePlayHash1, prePlayHash2); // Hash should've changed
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 2); // Player has 2 buildings
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 2); // Lane has 2 buildings
                 // Revert 2nd Building
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayHash2, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(prePlayHash2, sm.DetailedState.GetHashCode());
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Player has 1 building
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Lane has building
                 // Revert first building
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayHash1, sm.DetailedState.GetGameStateHash());
+                Assert.AreEqual(prePlayHash1, sm.DetailedState.GetHashCode());
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
             }
@@ -477,13 +477,13 @@ namespace EngineTests
             };
             b1.Hp.BaseValue = 10;
             b2 = (Building)b1.Clone();
-            Assert.AreEqual(b1.GetGameStateHash(), b2.GetGameStateHash());
+            Assert.AreEqual(b1.GetHashCode(), b2.GetHashCode());
             // Now change a few things
             b2.Hp.BaseValue = 1;
-            Assert.AreNotEqual(b1.GetGameStateHash(), b2.GetGameStateHash());
+            Assert.AreNotEqual(b1.GetHashCode(), b2.GetHashCode());
             // Revert
             b2.Hp.BaseValue = b1.Hp.BaseValue;
-            Assert.AreEqual(b1.GetGameStateHash(), b2.GetGameStateHash());
+            Assert.AreEqual(b1.GetHashCode(), b2.GetHashCode());
         }
     }
 }

@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace ODLGameEngine
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class AssortedCardCollection : IHashable
+    public class AssortedCardCollection
     {
         private int _hash;
         private bool _dirtyHash = true;
@@ -67,11 +67,7 @@ namespace ODLGameEngine
         {
             return _cards[card];
         }
-        /// <summary>
-        /// Gets the hash of hand
-        /// </summary>
-        /// <returns>Hash code</returns>
-        public int GetGameStateHash()
+        public override int GetHashCode()
         {
             if (_dirtyHash) // Recalculates only when dirty
             {

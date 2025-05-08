@@ -68,14 +68,14 @@ namespace EngineTests
                 col1.InsertCard(rn);
                 col2.InsertCard(rn);
             }
-            Assert.AreEqual(col1.GetGameStateHash(), col2.GetGameStateHash());
+            Assert.AreEqual(col1.GetHashCode(), col2.GetHashCode());
             // Now add an extra random card
             int rCard = _rng.Next(100);
             col2.InsertCard(rCard);
-            Assert.AreNotEqual(col1.GetGameStateHash(), col2.GetGameStateHash());
+            Assert.AreNotEqual(col1.GetHashCode(), col2.GetHashCode());
             // Revert this, should be back to equal
             col2.RemoveCard(rCard);
-            Assert.AreEqual(col1.GetGameStateHash(), col2.GetGameStateHash());
+            Assert.AreEqual(col1.GetHashCode(), col2.GetHashCode());
         }
         [TestMethod]
         public void HashOrderTest()
@@ -87,7 +87,7 @@ namespace EngineTests
                 col1.InsertCard(i);
                 col2.InsertCard(9-i);
             }
-            Assert.AreEqual(col1.GetGameStateHash(), col2.GetGameStateHash()); // Still should have same hash
+            Assert.AreEqual(col1.GetHashCode(), col2.GetHashCode()); // Still should have same hash
         }
         //[TestMethod]
         //public void HashStressTest()

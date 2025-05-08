@@ -15,12 +15,12 @@ namespace EngineTests
         /// <param name="st">State of player</param>
         /// <param name="set">Hash set</param>
         /// <param name="shouldBe">Should it be present?</param>
-        public static void HashSetVerification(IHashable st, HashSet<int> set, bool shouldBe)
+        public static void HashSetVerification(object st, HashSet<int> set, bool shouldBe)
         {
-            Assert.IsTrue(shouldBe == set.Contains(st.GetGameStateHash()));
-            if (!set.Contains(st.GetGameStateHash()))
+            Assert.IsTrue(shouldBe == set.Contains(st.GetHashCode()));
+            if (!set.Contains(st.GetHashCode()))
             {
-                set.Add(st.GetGameStateHash());
+                set.Add(st.GetHashCode());
             }
         }
         /// <summary>

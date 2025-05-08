@@ -16,7 +16,7 @@ namespace ODLGameEngine
         ADD,
         REMOVE
     }
-    public abstract class BoardElement : IHashable
+    public abstract class BoardElement
     {
         readonly Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities = new Dictionary<(EntityType, int), SortedSet<int>>();
         public SortedSet<int> GetPlacedEntities(EntityType entityTypes, int owner = -1)
@@ -77,7 +77,10 @@ namespace ODLGameEngine
                 }
             }
         }
-        public abstract int GetGameStateHash();
+        public override int GetHashCode()
+        {
+            return 0;
+        }
         public override string ToString()
         {
             return $"P1: {GetPlacedEntities(EntityType.UNIT, 0).Count} P2: {GetPlacedEntities(EntityType.UNIT, 1).Count} B: {GetPlacedEntities(EntityType.BUILDING).Count})";
@@ -85,7 +88,7 @@ namespace ODLGameEngine
     }
     public class Tile : BoardElement
     {
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
             foreach(int entity in GetPlacedEntities(EntityType.UNIT|EntityType.BUILDING))
@@ -163,12 +166,12 @@ namespace ODLGameEngine
         {
             return (player == 0) ? 1 : -1;
         }
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
             foreach (Tile tile in Tiles)
             {
-                hash.Add(tile.GetGameStateHash());
+                hash.Add(tile.GetHashCode());
             }
             return hash.ToHashCode();
         }
@@ -223,12 +226,12 @@ namespace ODLGameEngine
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(PlainsLane.GetGameStateHash());
-            hash.Add(ForestLane.GetGameStateHash());
-            hash.Add(MountainLane.GetGameStateHash());
+            hash.Add(PlainsLane.GetHashCode());
+            hash.Add(ForestLane.GetHashCode());
+            hash.Add(MountainLane.GetHashCode());
             return hash.ToHashCode();
         }
     }

@@ -104,7 +104,7 @@ namespace ODLGameEngine
     }
 
     [JsonObject(MemberSerialization.OptIn)]
-    public class EntityBase : ICloneable, IHashable
+    public class EntityBase : ICloneable
     {
         [JsonProperty]
         public EntityPlayInfo EntityPlayInfo { get; set; } = new EntityPlayInfo(); // Non-hashed, non-cloned as I just want to reference once
@@ -118,11 +118,7 @@ namespace ODLGameEngine
             EntityBase newEntity = (EntityBase)MemberwiseClone();
             return newEntity;
         }
-        /// <summary>
-        /// Gets the hash of the entity
-        /// </summary>
-        /// <returns>Hash code</returns>
-        public virtual int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
             return hash.ToHashCode();
@@ -139,10 +135,10 @@ namespace ODLGameEngine
         /// Gets the hash of the entity
         /// </summary>
         /// <returns>Hash code</returns>
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetGameStateHash());
+            hash.Add(base.GetHashCode());
             hash.Add(Owner);
             hash.Add(UniqueId);
             return hash.ToHashCode();
@@ -174,16 +170,12 @@ namespace ODLGameEngine
         [JsonProperty]
         public Dictionary<TriggerType, List<Effect>> Triggers { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 
-        /// <summary>
-        /// Gets the hash of the entity
-        /// </summary>
-        /// <returns>Hash code</returns>
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetGameStateHash());
+            hash.Add(base.GetHashCode());
             hash.Add(Name);
-            hash.Add(Hp.GetGameStateHash());
+            hash.Add(Hp.GetHashCode());
             hash.Add(DamageTokens);
             return hash.ToHashCode();
         }
@@ -214,14 +206,10 @@ namespace ODLGameEngine
             newEntity.TileCoordinate = TileCoordinate;
             return newEntity;
         }
-        /// <summary>
-        /// Gets the hash of the entity
-        /// </summary>
-        /// <returns>Hash code</returns>
-        public override int GetGameStateHash()
+        public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetGameStateHash());
+            hash.Add(base.GetHashCode());
             hash.Add(DamageTokens);
             return hash.ToHashCode();
         }

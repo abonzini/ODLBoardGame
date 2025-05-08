@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace ODLGameEngine
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class Deck : IHashable
+    public class Deck
     {
         private bool _dirtyHash = true;
         private int _hash;
@@ -172,7 +172,7 @@ namespace ODLGameEngine
                 return 0;
             }
         }
-        public int GetGameStateHash()
+        public override int GetHashCode()
         {
             if (_dirtyHash) // Recalculates only when dirty
             {
