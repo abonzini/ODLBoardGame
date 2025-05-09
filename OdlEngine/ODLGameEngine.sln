@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeserializationVerifier", "
 		{4B2FD118-7491-4F35-A7DF-4B9BBB9932FC} = {4B2FD118-7491-4F35-A7DF-4B9BBB9932FC}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardGenerationHelper", "CardGenerationHelper\CardGenerationHelper.csproj", "{71707879-796D-495F-A07C-5714784E644C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{C39226B9-A16C-43CF-9EB5-3AE8293ABA66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C39226B9-A16C-43CF-9EB5-3AE8293ABA66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C39226B9-A16C-43CF-9EB5-3AE8293ABA66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71707879-796D-495F-A07C-5714784E644C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71707879-796D-495F-A07C-5714784E644C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71707879-796D-495F-A07C-5714784E644C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71707879-796D-495F-A07C-5714784E644C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

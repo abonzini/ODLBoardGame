@@ -1,4 +1,10 @@
 Ongoing tasks in order of priority:
+- Card maker UI:
+	- Load correct class from the card type selector, will later pop the rest of menus
+	- In the middle of the process of drawing image, stats, according to class type
+	- load image function
+	- save image function
+	- events and triggers rest of stuff
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it
