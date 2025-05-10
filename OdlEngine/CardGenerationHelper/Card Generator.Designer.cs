@@ -29,9 +29,14 @@
         private void InitializeComponent()
         {
             ImageSelectorSplit = new SplitContainer();
+            CardPicturePathLoadButton = new Button();
             CardPicture = new PictureBox();
             SavePictureButton = new Button();
             PrintInfo = new GroupBox();
+            RarityUpDown = new NumericUpDown();
+            label6 = new Label();
+            label5 = new Label();
+            EffectDescriptionBox = new TextBox();
             ClassDropdown = new ComboBox();
             label4 = new Label();
             ExpansionDropdown = new ComboBox();
@@ -53,6 +58,7 @@
             ImageSelectorSplit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)CardPicture).BeginInit();
             PrintInfo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)RarityUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)CardIdUpdown).BeginInit();
             PlayInfo.SuspendLayout();
             SuspendLayout();
@@ -67,6 +73,7 @@
             // 
             // ImageSelectorSplit.Panel1
             // 
+            ImageSelectorSplit.Panel1.Controls.Add(CardPicturePathLoadButton);
             ImageSelectorSplit.Panel1.Controls.Add(CardPicture);
             ImageSelectorSplit.Panel1.Controls.Add(SavePictureButton);
             // 
@@ -78,12 +85,23 @@
             ImageSelectorSplit.SplitterDistance = 300;
             ImageSelectorSplit.TabIndex = 0;
             // 
+            // CardPicturePathLoadButton
+            // 
+            CardPicturePathLoadButton.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            CardPicturePathLoadButton.Location = new Point(12, 12);
+            CardPicturePathLoadButton.Name = "CardPicturePathLoadButton";
+            CardPicturePathLoadButton.Size = new Size(285, 29);
+            CardPicturePathLoadButton.TabIndex = 2;
+            CardPicturePathLoadButton.Text = "Card Image Folder";
+            CardPicturePathLoadButton.UseVisualStyleBackColor = true;
+            CardPicturePathLoadButton.Click += CardPicturePathLoadButton_Click;
+            // 
             // CardPicture
             // 
             CardPicture.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            CardPicture.Location = new Point(12, 12);
+            CardPicture.Location = new Point(12, 47);
             CardPicture.Name = "CardPicture";
-            CardPicture.Size = new Size(285, 594);
+            CardPicture.Size = new Size(285, 559);
             CardPicture.SizeMode = PictureBoxSizeMode.Zoom;
             CardPicture.TabIndex = 1;
             CardPicture.TabStop = false;
@@ -101,6 +119,10 @@
             // PrintInfo
             // 
             PrintInfo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            PrintInfo.Controls.Add(RarityUpDown);
+            PrintInfo.Controls.Add(label6);
+            PrintInfo.Controls.Add(label5);
+            PrintInfo.Controls.Add(EffectDescriptionBox);
             PrintInfo.Controls.Add(ClassDropdown);
             PrintInfo.Controls.Add(label4);
             PrintInfo.Controls.Add(ExpansionDropdown);
@@ -111,10 +133,46 @@
             PrintInfo.Controls.Add(label1);
             PrintInfo.Location = new Point(3, 143);
             PrintInfo.Name = "PrintInfo";
-            PrintInfo.Size = new Size(753, 125);
+            PrintInfo.Size = new Size(753, 161);
             PrintInfo.TabIndex = 1;
             PrintInfo.TabStop = false;
             PrintInfo.Text = "PrintInfo";
+            // 
+            // RarityUpDown
+            // 
+            RarityUpDown.Location = new Point(59, 79);
+            RarityUpDown.Maximum = new decimal(new int[] { 3, 0, 0, 0 });
+            RarityUpDown.Name = "RarityUpDown";
+            RarityUpDown.Size = new Size(33, 27);
+            RarityUpDown.TabIndex = 11;
+            RarityUpDown.ValueChanged += RarityUpDown_ValueChanged;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(6, 81);
+            label6.Name = "label6";
+            label6.Size = new Size(47, 20);
+            label6.TabIndex = 10;
+            label6.Text = "Rarity";
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(4, 54);
+            label5.Name = "label5";
+            label5.Size = new Size(127, 20);
+            label5.TabIndex = 9;
+            label5.Text = "Effect Description";
+            // 
+            // EffectDescriptionBox
+            // 
+            EffectDescriptionBox.Location = new Point(137, 54);
+            EffectDescriptionBox.Multiline = true;
+            EffectDescriptionBox.Name = "EffectDescriptionBox";
+            EffectDescriptionBox.Size = new Size(598, 96);
+            EffectDescriptionBox.TabIndex = 8;
+            EffectDescriptionBox.TextChanged += EffectDescriptionBox_TextChanged;
             // 
             // ClassDropdown
             // 
@@ -155,6 +213,7 @@
             // CardNameBox
             // 
             CardNameBox.Location = new Point(137, 21);
+            CardNameBox.Multiline = true;
             CardNameBox.Name = "CardNameBox";
             CardNameBox.Size = new Size(154, 27);
             CardNameBox.TabIndex = 3;
@@ -275,6 +334,7 @@
             ((System.ComponentModel.ISupportInitialize)CardPicture).EndInit();
             PrintInfo.ResumeLayout(false);
             PrintInfo.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)RarityUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)CardIdUpdown).EndInit();
             PlayInfo.ResumeLayout(false);
             PlayInfo.PerformLayout();
@@ -302,5 +362,10 @@
         private Label label3;
         private ComboBox ClassDropdown;
         private Label label4;
+        private Button CardPicturePathLoadButton;
+        private Label label5;
+        private TextBox EffectDescriptionBox;
+        private Label label6;
+        private NumericUpDown RarityUpDown;
     }
 }
