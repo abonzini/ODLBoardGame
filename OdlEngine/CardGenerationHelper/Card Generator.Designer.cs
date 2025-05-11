@@ -52,6 +52,7 @@
             TargetOptionsDropdown = new ComboBox();
             EntityTypeLabel = new Label();
             EntityTypeDropdown = new ComboBox();
+            DebugCheckBox = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)ImageSelectorSplit).BeginInit();
             ImageSelectorSplit.Panel1.SuspendLayout();
             ImageSelectorSplit.Panel2.SuspendLayout();
@@ -73,6 +74,7 @@
             // 
             // ImageSelectorSplit.Panel1
             // 
+            ImageSelectorSplit.Panel1.Controls.Add(DebugCheckBox);
             ImageSelectorSplit.Panel1.Controls.Add(CardPicturePathLoadButton);
             ImageSelectorSplit.Panel1.Controls.Add(CardPicture);
             ImageSelectorSplit.Panel1.Controls.Add(SavePictureButton);
@@ -99,9 +101,9 @@
             // CardPicture
             // 
             CardPicture.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            CardPicture.Location = new Point(12, 47);
+            CardPicture.Location = new Point(12, 77);
             CardPicture.Name = "CardPicture";
-            CardPicture.Size = new Size(285, 559);
+            CardPicture.Size = new Size(285, 529);
             CardPicture.SizeMode = PictureBoxSizeMode.Zoom;
             CardPicture.TabIndex = 1;
             CardPicture.TabStop = false;
@@ -316,6 +318,17 @@
             EntityTypeDropdown.TabIndex = 0;
             EntityTypeDropdown.SelectedIndexChanged += EntityTypeDropdown_SelectedIndexChanged;
             // 
+            // DebugCheckBox
+            // 
+            DebugCheckBox.AutoSize = true;
+            DebugCheckBox.Location = new Point(12, 47);
+            DebugCheckBox.Name = "DebugCheckBox";
+            DebugCheckBox.Size = new Size(76, 24);
+            DebugCheckBox.TabIndex = 4;
+            DebugCheckBox.Text = "Debug";
+            DebugCheckBox.UseVisualStyleBackColor = true;
+            DebugCheckBox.CheckedChanged += DebugCheckBox_CheckedChanged;
+            // 
             // CardGenerator
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -328,6 +341,7 @@
             Text = "Card Generator";
             Load += CardGenerator_Load;
             ImageSelectorSplit.Panel1.ResumeLayout(false);
+            ImageSelectorSplit.Panel1.PerformLayout();
             ImageSelectorSplit.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ImageSelectorSplit).EndInit();
             ImageSelectorSplit.ResumeLayout(false);
@@ -367,5 +381,6 @@
         private TextBox EffectDescriptionBox;
         private Label label6;
         private NumericUpDown RarityUpDown;
+        private CheckBox DebugCheckBox;
     }
 }

@@ -58,6 +58,99 @@ namespace CardGenerationHelper
                 }
             }
         }
+
+        /// <summary>
+        /// Draws text that auto fits on a text box, also allows borders and alignments (for most standalone floating words)
+        /// </summary>
+        /// <param name="g"></param>
+        /// <param name="text"></param>
+        /// <param name="textBox"></param>
+        /// <param name="font"></param>
+        /// <param name="textColor"></param>
+        /// <param name="borderColor"></param>
+        /// <param name="borderWidth"></param>
+        /// <param name="hAlignment"></param>
+        /// <param name="vAlignment"></param>
+        /// <param name="alignmentSpace"></param>
+        /// /// <param name="debug"></param>
+        /// <exception cref="Exception"></exception>
+        public static void DrawAutoFitText(Graphics g, string text, Rectangle textBox, Font font, Color textColor, Color borderColor, int borderWidth, StringAlignment hAlignment, StringAlignment vAlignment, int alignmentSpace = 0, bool debug = false)
+        {
+            string[] textToPrint = [];
+            SizeF[] textSizes = [];
+
+            Font autoFont = font;
+            textToPrint = text.Split("\r\n"); // Get all lines
+            textSizes = new SizeF[textToPrint.Length];
+            // Now, find a size so that every line fits in a chunk of the bounding box
+            float maxX = 0, maxY = 0;
+            for (int i = 0; i < textToPrint.Length; i++)
+            {
+                textSizes[i] = g.MeasureString(textToPrint[i], autoFont);
+                maxX = Math.Max(maxX, textSizes[i].Width);
+                maxY = Math.Max(maxY, textSizes[i].Height);
+            }
+            float fontSize = autoFont.Size;
+            // Reduce font size until text fits into all bounding boxes
+            while (maxX > textBox.Width || maxY > textBox.Height / textToPrint.Length)
+            {
+                fontSize -= 1; // Reduce size step-by-step
+                autoFont = new Font(autoFont.FontFamily, fontSize, autoFont.Style);
+                maxX = 0; maxY = 0;
+                for (int i = 0; i < textToPrint.Length; i++)
+                {
+                    textSizes[i] = g.MeasureString(textToPrint[i], autoFont);
+                    maxX = Math.Max(maxX, textSizes[i].Width);
+                    maxY = Math.Max(maxY, textSizes[i].Height);
+                }
+            }
+
+            // Formatted text, either one single line or multiple centered lines
+            GraphicsPath path = new GraphicsPath(); // Create path to draw
+            for (int i = 0; i < textToPrint.Length; i++)
+            {
+                float textX = hAlignment switch
+                {
+                    StringAlignment.Center => textBox.X + (textBox.Width - textSizes[i].Width) / 2,
+                    StringAlignment.Near => textBox.X + alignmentSpace,
+                    StringAlignment.Far => textBox.X + (textBox.Width - textSizes[i].Width - alignmentSpace),
+                    _ => throw new Exception("Incorrect alignment")
+                };
+                float textY = vAlignment switch // If multi strings, this is done in chunks
+                {
+                    StringAlignment.Center => textBox.Y + (i * textBox.Height / textToPrint.Length) + ((textBox.Height / textToPrint.Length) - textSizes[i].Height) / 2,
+                    StringAlignment.Near => textBox.Y + (i * textBox.Height / textToPrint.Length) + alignmentSpace,
+                    StringAlignment.Far => textBox.Y + (i * textBox.Height / textToPrint.Length) + (textBox.Height - textSizes[i].Height - alignmentSpace),
+                    _ => throw new Exception("Incorrect alignment")
+                };
+                // Creates the string in correct pixels
+                path.AddString(textToPrint[i], autoFont.FontFamily, (int)autoFont.Style, g.DpiY * autoFont.SizeInPoints / 72, new PointF(textX, textY), StringFormat.GenericDefault);
+            } // Obtained path
+            // Fill text
+            using (Brush brush = new SolidBrush(textColor))
+            {
+                g.FillPath(brush, path);
+            }
+            // Draw border on top (because it's inset)
+            using (Pen pen = new Pen(borderColor, borderWidth))
+            {
+                pen.Alignment = PenAlignment.Inset;
+                g.DrawPath(pen, path);
+            }
+            if(debug)
+            {
+                // Draw textbox (debug)
+                using (Pen pen = new Pen(textColor, 5))
+                {
+                    pen.Alignment = PenAlignment.Inset;
+                    for (int i = 0; i < textToPrint.Length; i++)
+                    {
+                        Rectangle bound = new Rectangle(textBox.X, textBox.Y + (i * textBox.Height / textToPrint.Length), textBox.Width, textBox.Height / textToPrint.Length);
+                        g.DrawRectangle(pen, bound);
+                    }
+                }
+            }
+        }
         public static void DrawTextBox(Graphics g, string text, Rectangle bounds, Font font, Color textColor, Color borderColor, int borderWidth, StringAlignment hAlignment, StringAlignment vAlignment, int alignmentSpace, bool autoFontHorizontalFit)
         {
             string[] textToPrint = [];

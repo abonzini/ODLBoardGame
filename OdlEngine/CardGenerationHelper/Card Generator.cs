@@ -7,29 +7,32 @@ namespace CardGenerationHelper
 {
     public partial class CardGenerator : Form
     {
-        EntityBase currentEntity;
-        EntityPlayInfo currentPlayInfo;
-        EntityPrintInfo currentPrintInfo;
+        EntityBase _currentEntity;
+        EntityPlayInfo _currentPlayInfo;
+        EntityPrintInfo _currentPrintInfo;
 
-        EntityBase emptyEntity = new EntityBase();
-        Unit unit = new Unit();
-        Building building = new Building();
-        PlayerState player = new PlayerState();
-        Skill skill = new Skill();
+        EntityBase _emptyEntity = new EntityBase();
+        Unit _unit = new Unit();
+        Building _building = new Building();
+        PlayerState _player = new PlayerState();
+        Skill _skill = new Skill();
 
-        string CardImagePath = Properties.Settings.Default.ImagePath;
+        string _cardImagePath = Properties.Settings.Default.ImagePath;
+        bool _debug = Properties.Settings.Default.Debug;
         public CardGenerator()
         {
             InitializeComponent();
-            currentEntity = emptyEntity;
-            currentPlayInfo = emptyEntity.EntityPlayInfo;
-            currentPrintInfo = emptyEntity.EntityPrintInfo;
-            List<EntityBase> entities = [unit, building, player, skill];
+            _currentEntity = _emptyEntity;
+            _currentPlayInfo = _emptyEntity.EntityPlayInfo;
+            _currentPrintInfo = _emptyEntity.EntityPrintInfo;
+            List<EntityBase> entities = [_unit, _building, _player, _skill];
             foreach (EntityBase entity in entities) // Set all to same info and fuck it
             {
-                entity.EntityPlayInfo = currentPlayInfo;
-                entity.EntityPrintInfo = currentPrintInfo;
+                entity.EntityPlayInfo = _currentPlayInfo;
+                entity.EntityPrintInfo = _currentPrintInfo;
             }
+
+            DebugCheckBox.Checked = _debug; // Load last setting
 
             DrawCard(); // Draw empty card
         }
@@ -51,7 +54,7 @@ namespace CardGenerationHelper
             public const float TextBoxBorder = 0.006f;
             public const float TextSizeDivider = 6; // How many lines approx fit
             public const float TextBoxMargin = 0.05f;
-            public const float ExtraBoxMargins = 0.05f;
+            public const float ExtraBoxMargins = 0.00f;
             // Data Box
             public const float ImageToStatRatio = 2f;
             public const float ImageBorder = 0.006f;
@@ -74,7 +77,7 @@ namespace CardGenerationHelper
                 DrawHelper.DrawRoundedRectangle(g, bounds, cardRadius, Color.Black, new SolidFillHelper() { FillColor = Color.LightGray }, cardBorder);
 
                 // Then, all non-invalid cards have picture, cost, name, textbox, rarity, etc
-                if (typeof(IngameEntity).IsAssignableFrom(currentEntity.GetType()))
+                if (typeof(IngameEntity).IsAssignableFrom(_currentEntity.GetType()))
                 {
                     // Ok it's a real card so let's draw the basics!
                     int horizontalMargin = (int)(width * DrawConstants.HorizontalMarginProportion); // For reference
@@ -85,11 +88,11 @@ namespace CardGenerationHelper
                     int boxesStartX = cardBorder + horizontalMargin;
                     int imageBoxStartY = cardBorder + verticalMargin;
                     FillHelper brush;
-                    if (Path.Exists(Path.Combine(CardImagePath, currentPrintInfo.Id.ToString() + ".png"))) // Check if image exists
+                    if (Path.Exists(Path.Combine(_cardImagePath, _currentPrintInfo.Id.ToString() + ".png"))) // Check if image exists
                     {
                         brush = new ImageFillHelper()
                         {
-                            ImagePath = Path.Combine(CardImagePath, currentPrintInfo.Id.ToString() + ".png"),
+                            ImagePath = Path.Combine(_cardImagePath, _currentPrintInfo.Id.ToString() + ".png"),
                             Height = imageBoxSize,
                             Width = imageBoxSize,
                             StartX = boxesStartX,
@@ -114,7 +117,7 @@ namespace CardGenerationHelper
                     float titleFontSize = titleAreaHeight; // 1.333 because titleHeight is in pixels and I need pt
                     Font titleFont = new Font("Georgia", titleFontSize, FontStyle.Bold, GraphicsUnit.Pixel);
                     Rectangle nameBox = new Rectangle(boxesStartX, usedCardHeight + verticalMargin, restOfCardWidth, titleAreaHeight - verticalMargin);
-                    DrawHelper.DrawTextBox(g, currentPrintInfo.Title, nameBox, titleFont, Color.Black, Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, true);
+                    DrawHelper.DrawAutoFitText(g, _currentPrintInfo.Title, nameBox, titleFont, Color.Black, Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
                     usedCardHeight += titleAreaHeight;
                     // Effect:
                     Rectangle textBox = new Rectangle(boxesStartX, usedCardHeight + verticalMargin, restOfCardWidth, textAreaHeight - verticalMargin);
@@ -123,15 +126,15 @@ namespace CardGenerationHelper
                     DrawHelper.DrawRoundedRectangle(g, textBox, (int)(minTextBoxSize * DrawConstants.BoxRoundedPercentage), Color.Black, brush, (int)(minTextBoxSize * DrawConstants.TextBoxBorder));
                     float textFontSize = textAreaHeight / (DrawConstants.TextSizeDivider * 1.33333f); // 1.333 because text is in pixels and I need pt
                     Font textFont = new Font("Georgia", textFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-                    DrawHelper.DrawTextBox(g, currentPrintInfo.Text, textBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Near, StringAlignment.Near, (int)(minTextBoxSize * DrawConstants.TextBoxMargin), false);
+                    DrawHelper.DrawTextBox(g, _currentPrintInfo.Text, textBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Near, StringAlignment.Near, (int)(minTextBoxSize * DrawConstants.TextBoxMargin), false);
                     usedCardHeight += textAreaHeight;
                     // Extras:
                     Rectangle extrasBox = new Rectangle(boxesStartX, usedCardHeight + verticalMargin, restOfCardWidth, extraAreaHeight - verticalMargin);
                     float extraFontSize = extraAreaHeight;
                     Font extraFont = new Font("Georgia", extraFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-                    DrawHelper.DrawTextBox(g, $"#{currentPrintInfo.Id}", extrasBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Far, StringAlignment.Center, (int)(restOfCardWidth * DrawConstants.ExtraBoxMargins), true);
-                    string rarityString = new string('\u2605', currentPrintInfo.Rarity);
-                    DrawHelper.DrawTextBox(g, rarityString, extrasBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Near, StringAlignment.Center, (int)(restOfCardWidth * DrawConstants.ExtraBoxMargins), true);
+                    DrawHelper.DrawAutoFitText(g, $"#{_currentPrintInfo.Id}", extrasBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Far, StringAlignment.Center, (int)(restOfCardWidth * DrawConstants.ExtraBoxMargins), _debug);
+                    string rarityString = new string('\u2605', _currentPrintInfo.Rarity);
+                    DrawHelper.DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Near, StringAlignment.Center, (int)(restOfCardWidth * DrawConstants.ExtraBoxMargins), _debug);
                 }
             }
             CardPicture.Image = bitmap;
@@ -153,14 +156,14 @@ namespace CardGenerationHelper
 
         private void EntityTypeDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            currentPlayInfo.EntityType = (EntityType)EntityTypeDropdown.SelectedItem;
-            currentEntity = currentPlayInfo.EntityType switch
+            _currentPlayInfo.EntityType = (EntityType)EntityTypeDropdown.SelectedItem;
+            _currentEntity = _currentPlayInfo.EntityType switch
             {
-                EntityType.NONE => emptyEntity,
-                EntityType.PLAYER => player,
-                EntityType.SKILL => skill,
-                EntityType.UNIT => unit,
-                EntityType.BUILDING => building,
+                EntityType.NONE => _emptyEntity,
+                EntityType.PLAYER => _player,
+                EntityType.SKILL => _skill,
+                EntityType.UNIT => _unit,
+                EntityType.BUILDING => _building,
                 _ => throw new NotImplementedException("Incorrect entity type selected")
             };
             // TODO: Later force UI redraw of elements
@@ -169,35 +172,35 @@ namespace CardGenerationHelper
 
         private void TargetOptionsDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            currentPlayInfo.TargetOptions = (TargetLocation)TargetOptionsDropdown.SelectedItem;
+            _currentPlayInfo.TargetOptions = (TargetLocation)TargetOptionsDropdown.SelectedItem;
         }
 
         private void TargetConditionDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            currentPlayInfo.TargetConditions = (TargetCondition)TargetConditionDropdown.SelectedItem;
+            _currentPlayInfo.TargetConditions = (TargetCondition)TargetConditionDropdown.SelectedItem;
         }
 
         private void CardIdUpdown_ValueChanged(object sender, EventArgs e)
         {
-            currentPrintInfo.Id = Convert.ToInt32(CardIdUpdown.Value);
+            _currentPrintInfo.Id = Convert.ToInt32(CardIdUpdown.Value);
             DrawCard();
         }
 
         private void CardNameBox_TextChanged(object sender, EventArgs e)
         {
-            currentPrintInfo.Title = CardNameBox.Text.ToUpper();
+            _currentPrintInfo.Title = CardNameBox.Text.ToUpper();
             DrawCard();
         }
 
         private void ExpansionDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            currentPrintInfo.Expansion = (ExpansionId)ExpansionDropdown.SelectedItem;
+            _currentPrintInfo.Expansion = (ExpansionId)ExpansionDropdown.SelectedItem;
             DrawCard();
         }
 
         private void ClassDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            currentPrintInfo.ClassType = (PlayerClassType)ClassDropdown.SelectedItem;
+            _currentPrintInfo.ClassType = (PlayerClassType)ClassDropdown.SelectedItem;
             DrawCard();
         }
 
@@ -209,8 +212,8 @@ namespace CardGenerationHelper
 
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
                 {
-                    CardImagePath = folderDialog.SelectedPath;
-                    Properties.Settings.Default.ImagePath = CardImagePath;
+                    _cardImagePath = folderDialog.SelectedPath;
+                    Properties.Settings.Default.ImagePath = _cardImagePath;
                     Properties.Settings.Default.Save();
                 }
             }
@@ -218,13 +221,21 @@ namespace CardGenerationHelper
 
         private void EffectDescriptionBox_TextChanged(object sender, EventArgs e)
         {
-            currentPrintInfo.Text = EffectDescriptionBox.Text;
+            _currentPrintInfo.Text = EffectDescriptionBox.Text;
             DrawCard();
         }
 
         private void RarityUpDown_ValueChanged(object sender, EventArgs e)
         {
-            currentPrintInfo.Rarity = Convert.ToInt32(RarityUpDown.Value);
+            _currentPrintInfo.Rarity = Convert.ToInt32(RarityUpDown.Value);
+            DrawCard();
+        }
+
+        private void DebugCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            _debug = DebugCheckBox.Checked;
+            Properties.Settings.Default.Debug = _debug;
+            Properties.Settings.Default.Save();
             DrawCard();
         }
     }
