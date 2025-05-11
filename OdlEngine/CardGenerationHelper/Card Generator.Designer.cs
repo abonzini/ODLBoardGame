@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             ImageSelectorSplit = new SplitContainer();
+            CardIconFolders = new Button();
+            DebugCheckBox = new CheckBox();
             CardPicturePathLoadButton = new Button();
             CardPicture = new PictureBox();
             SavePictureButton = new Button();
@@ -52,7 +54,6 @@
             TargetOptionsDropdown = new ComboBox();
             EntityTypeLabel = new Label();
             EntityTypeDropdown = new ComboBox();
-            DebugCheckBox = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)ImageSelectorSplit).BeginInit();
             ImageSelectorSplit.Panel1.SuspendLayout();
             ImageSelectorSplit.Panel2.SuspendLayout();
@@ -74,6 +75,7 @@
             // 
             // ImageSelectorSplit.Panel1
             // 
+            ImageSelectorSplit.Panel1.Controls.Add(CardIconFolders);
             ImageSelectorSplit.Panel1.Controls.Add(DebugCheckBox);
             ImageSelectorSplit.Panel1.Controls.Add(CardPicturePathLoadButton);
             ImageSelectorSplit.Panel1.Controls.Add(CardPicture);
@@ -87,14 +89,34 @@
             ImageSelectorSplit.SplitterDistance = 300;
             ImageSelectorSplit.TabIndex = 0;
             // 
+            // CardIconFolders
+            // 
+            CardIconFolders.Location = new Point(158, 12);
+            CardIconFolders.Name = "CardIconFolders";
+            CardIconFolders.Size = new Size(139, 29);
+            CardIconFolders.TabIndex = 5;
+            CardIconFolders.Text = "Layout Folder";
+            CardIconFolders.UseVisualStyleBackColor = true;
+            CardIconFolders.Click += CardIconFolders_Click;
+            // 
+            // DebugCheckBox
+            // 
+            DebugCheckBox.AutoSize = true;
+            DebugCheckBox.Location = new Point(12, 47);
+            DebugCheckBox.Name = "DebugCheckBox";
+            DebugCheckBox.Size = new Size(76, 24);
+            DebugCheckBox.TabIndex = 4;
+            DebugCheckBox.Text = "Debug";
+            DebugCheckBox.UseVisualStyleBackColor = true;
+            DebugCheckBox.CheckedChanged += DebugCheckBox_CheckedChanged;
+            // 
             // CardPicturePathLoadButton
             // 
-            CardPicturePathLoadButton.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             CardPicturePathLoadButton.Location = new Point(12, 12);
             CardPicturePathLoadButton.Name = "CardPicturePathLoadButton";
-            CardPicturePathLoadButton.Size = new Size(285, 29);
+            CardPicturePathLoadButton.Size = new Size(140, 29);
             CardPicturePathLoadButton.TabIndex = 2;
-            CardPicturePathLoadButton.Text = "Card Image Folder";
+            CardPicturePathLoadButton.Text = "Picture Folder";
             CardPicturePathLoadButton.UseVisualStyleBackColor = true;
             CardPicturePathLoadButton.Click += CardPicturePathLoadButton_Click;
             // 
@@ -120,7 +142,7 @@
             // 
             // PrintInfo
             // 
-            PrintInfo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            PrintInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             PrintInfo.Controls.Add(RarityUpDown);
             PrintInfo.Controls.Add(label6);
             PrintInfo.Controls.Add(label5);
@@ -318,17 +340,6 @@
             EntityTypeDropdown.TabIndex = 0;
             EntityTypeDropdown.SelectedIndexChanged += EntityTypeDropdown_SelectedIndexChanged;
             // 
-            // DebugCheckBox
-            // 
-            DebugCheckBox.AutoSize = true;
-            DebugCheckBox.Location = new Point(12, 47);
-            DebugCheckBox.Name = "DebugCheckBox";
-            DebugCheckBox.Size = new Size(76, 24);
-            DebugCheckBox.TabIndex = 4;
-            DebugCheckBox.Text = "Debug";
-            DebugCheckBox.UseVisualStyleBackColor = true;
-            DebugCheckBox.CheckedChanged += DebugCheckBox_CheckedChanged;
-            // 
             // CardGenerator
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -382,5 +393,6 @@
         private Label label6;
         private NumericUpDown RarityUpDown;
         private CheckBox DebugCheckBox;
+        private Button CardIconFolders;
     }
 }

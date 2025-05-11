@@ -1,6 +1,8 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
+using static CardGenerationHelper.CardGenerator;
 
 namespace CardGenerationHelper
 {
@@ -23,12 +25,29 @@ namespace CardGenerationHelper
         public int Height = 0;
         public int StartX = 0;
         public int StartY = 0;
+        public Color WhiteTint = Color.White;
         public override Brush GetBrush()
         {
-            Image img = Image.FromFile(ImagePath);
-            float scaleX = ((float)Width) / img.Width;
-            float scaleY = ((float)Height) / img.Height;
-            TextureBrush brush = new TextureBrush(img);
+            Bitmap bitmap = new Bitmap(ImagePath);
+            if(WhiteTint != Color.White)
+            {
+                for (int x = 0; x < bitmap.Width; x++)
+                {
+                    for (int y = 0; y < bitmap.Height; y++)
+                    {
+                        // Get pixel
+                        Color originalColor = bitmap.GetPixel(x, y);
+                        if (originalColor == Color.Black) continue; // Black doesn't tint
+                        // Tint it
+                        Color newColor = Color.FromArgb(WhiteTint.R * originalColor.R/255, WhiteTint.G * originalColor.G / 255, WhiteTint.B * originalColor.B / 255);
+                        // Re-apply
+                        bitmap.SetPixel(x, y, newColor);
+                    }
+                }
+            }
+            float scaleX = ((float)Width) / bitmap.Width;
+            float scaleY = ((float)Height) / bitmap.Height;
+            TextureBrush brush = new TextureBrush(bitmap);
             brush.TranslateTransform(StartX, StartY);
             brush.ScaleTransform(scaleX, scaleY);
             return brush;
@@ -36,8 +55,32 @@ namespace CardGenerationHelper
     }
     public static class DrawHelper
     {
-        public static void DrawRoundedRectangle(Graphics g, Rectangle bounds, int radius, Color borderColor, FillHelper filler, int borderWidth)
+        public static FillHelper GetImageBrushOrColor(Rectangle container, string path, Color imageColorTint, Color defaultColor)
         {
+            FillHelper brush;
+            if (Path.Exists(path)) // Check if image exists
+            {
+                brush = new ImageFillHelper()
+                {
+                    ImagePath = path,
+                    Height = container.Height,
+                    Width = container.Width,
+                    StartX = container.X,
+                    StartY = container.Y,
+                    WhiteTint = imageColorTint
+                };
+            }
+            else
+            {
+                brush = new SolidFillHelper() { FillColor = defaultColor };
+            }
+            return brush;
+        }
+        public static void DrawRoundedRectangle(Graphics g, Rectangle bounds, float radiusPercentage, Color borderColor, float borderWidthPercentage, FillHelper filler)
+        {
+            int relevantSide = Math.Min(bounds.Width, bounds.Height);
+            int radius = (int)(relevantSide * radiusPercentage);
+            int border = (int)(relevantSide * borderWidthPercentage);
             using (GraphicsPath path = new GraphicsPath())
             {
                 // Create the rounded corners
@@ -51,7 +94,7 @@ namespace CardGenerationHelper
                 g.FillPath(filler.GetBrush(), path);
                 
                 // Draw the border
-                using (Pen pen = new Pen(borderColor, borderWidth))
+                using (Pen pen = new Pen(borderColor, border))
                 {
                     pen.Alignment = PenAlignment.Inset;
                     g.DrawPath(pen, path);
@@ -151,113 +194,90 @@ namespace CardGenerationHelper
                 }
             }
         }
-        public static void DrawTextBox(Graphics g, string text, Rectangle bounds, Font font, Color textColor, Color borderColor, int borderWidth, StringAlignment hAlignment, StringAlignment vAlignment, int alignmentSpace, bool autoFontHorizontalFit)
+        public class WordToDraw
         {
-            string[] textToPrint = [];
-            SizeF[] textSizes = [];
-
-            Font autoFont = font;
-            if (autoFontHorizontalFit)
+            public float X = 0f;
+            public float Y = 0f;
+            public string Word = "";
+            public Font Font = null;
+        }
+        /// <summary>
+        /// Draws a text box, doesnt handle centering or auto-size but handles some rich markup
+        /// E.g. if you use * it allows bold. More to be used later if needed
+        /// </summary>
+        /// <param name="g"></param>
+        /// <param name="text"></param>
+        /// <param name="bounds"></param>
+        /// <param name="font"></param>
+        /// <param name="textColor"></param>
+        /// <param name="hAlignmentSpace"></param>
+        /// <param name="vAlignmentSpace"></param>
+        /// <exception cref="Exception"></exception>
+        public static void DrawRichTextBox(Graphics g, string text, Rectangle bounds, Font font, Color textColor, int hAlignmentSpace, int vAlignmentSpace, bool debug)
+        {
+            // Get sizes
+            Font regularFont = new Font(font, FontStyle.Regular);
+            Font boldFont = new Font(font, FontStyle.Bold);
+            float lineSize = Math.Max(regularFont.GetHeight(), boldFont.GetHeight());
+            // Find out where every word is placed
+            List<WordToDraw> wordsToDraw = new List<WordToDraw>();
+            string[] words = text.Split(' '); // Split text into all words
+            int currentLine = 0;
+            float currentLineWidth = 0;
+            foreach (string word in words)
             {
-                textToPrint = text.Split("\r\n"); // Get all lines
-                textSizes = new SizeF[textToPrint.Length];
-                // Now, find a size so that every line fits in a chunk of the bounding box
-                float maxX = 0, maxY = 0;
-                for(int i = 0; i < textToPrint.Length; i++)
+                string[] auxWords = word.Split("\r\n"); // May be multiple new lines here
+                for(int i = 0; i< auxWords.Length; i++)
                 {
-                    textSizes[i] = g.MeasureString(textToPrint[i], autoFont);
-                    maxX = Math.Max(maxX, textSizes[i].Width);
-                    maxY = Math.Max(maxY, textSizes[i].Height);
-                }                
-                float fontSize = autoFont.Size;
-                // Reduce font size until text fits into all bounding boxes
-                while (maxX > bounds.Width || maxY > bounds.Height / textToPrint.Length)
-                {
-                    fontSize -= 1; // Reduce size step-by-step
-                    autoFont = new Font(autoFont.FontFamily, fontSize, autoFont.Style);
-                    maxX = 0; maxY = 0;
-                    for (int i = 0; i < textToPrint.Length; i++)
+                    WordToDraw theWord = new WordToDraw();
+                    if (auxWords[i].StartsWith('*'))
                     {
-                        textSizes[i] = g.MeasureString(textToPrint[i], autoFont);
-                        maxX = Math.Max(maxX, textSizes[i].Width);
-                        maxY = Math.Max(maxY, textSizes[i].Height);
+                        auxWords[i] = auxWords[i].Replace("*","");
+                        theWord.Font = boldFont;
                     }
+                    else
+                    {
+                        theWord.Font = regularFont;
+                    }
+                    SizeF wordSize = g.MeasureString(auxWords[i], theWord.Font);
+                    // If adding this word would exceed maxWidth, start a new line
+                    // Also this may have been result of a newline so need to make sure to do so if split more than once
+                    if ((i > 0) || ((currentLineWidth + wordSize.Width) > (bounds.Width - 2 * hAlignmentSpace))) // 2* alignment because words escape slightly
+                    {
+                        currentLineWidth = 0;  // Reset width tracking
+                        currentLine++;
+                    }
+                    theWord.Word += auxWords[i]; // Add word
+                    theWord.X = currentLineWidth; // Add X location
+                    theWord.Y = currentLine * lineSize; // Add Y location
+                    wordsToDraw.Add(theWord);
+                    currentLineWidth += wordSize.Width;
                 }
             }
-            else // Instead I use the algorithm to auto break lines horizontally to fit within bounds
-            {
-                string[] words = text.Split(' '); // Split text into words
-                StringBuilder formattedText = new StringBuilder();
-                float currentWidth = 0;
-                float spaceWidth = g.MeasureString(" ", font).Width;
 
-                foreach (string word in words)
-                {
-                    string[] auxWords = word.Split("\r\n"); // May be multiple new lines here
-                    for(int i = 0; i< auxWords.Length; i++)
-                    {
-                        SizeF wordSize = g.MeasureString(auxWords[i], autoFont);
-                        // If adding this word would exceed maxWidth, start a new line
-                        // Also this may have been result of a newline so need to make sure to do so if split more than once
-                        if ((i > 0) || (currentWidth + wordSize.Width > bounds.Width))
-                        {
-                            formattedText.Append("\n");  // Insert newline
-                            currentWidth = 0;  // Reset width tracking
-                        }
-                        formattedText.Append(auxWords[i]); // Add word
-                        currentWidth += wordSize.Width;
-                        if((i + 1) == auxWords.Length) // Means this is the last word of a possible multiline
-                        {
-                            formattedText.Append(" ");
-                            currentWidth += spaceWidth;
-                        }
-                    }
-                }
-                textToPrint = [formattedText.ToString().Trim()]; // Returns formatted dingle text with newlines
-                textSizes = [g.MeasureString(textToPrint[0], autoFont)]; // One last measure to know the final width/height 
-            }
-            // Formatted text, either one single line or multiple centered lines
+            // Formatted text, print word by word in right place
+            float textXStart = bounds.X + hAlignmentSpace;
+            float textYStart = bounds.Y + vAlignmentSpace;
             GraphicsPath path = new GraphicsPath(); // Create path to draw
-            for (int i = 0; i < textToPrint.Length; i++)
+            foreach (WordToDraw wordToDraw in wordsToDraw)
             {
-                float textX = hAlignment switch
-                {
-                    StringAlignment.Center => bounds.X + (bounds.Width - textSizes[i].Width) / 2,
-                    StringAlignment.Near => bounds.X + alignmentSpace,
-                    StringAlignment.Far => bounds.X + (bounds.Width - textSizes[i].Width - alignmentSpace),
-                    _ => throw new Exception("Incorrect alignment")
-                };
-                float textY = vAlignment switch // If multi strings, this is done in chunks
-                {
-                    StringAlignment.Center => bounds.Y + (i * bounds.Height / textToPrint.Length) + ((bounds.Height / textToPrint.Length) - textSizes[i].Height) / 2,
-                    StringAlignment.Near => bounds.Y + (i * bounds.Height / textToPrint.Length) + alignmentSpace,
-                    StringAlignment.Far => bounds.Y + (i * bounds.Height / textToPrint.Length) + (bounds.Height - textSizes[i].Height - alignmentSpace),
-                    _ => throw new Exception("Incorrect alignment")
-                };
                 // Creates the string in correct pixels
-                path.AddString(textToPrint[i], autoFont.FontFamily, (int)autoFont.Style, g.DpiY * autoFont.SizeInPoints / 72, new PointF(textX, textY), StringFormat.GenericDefault);
+                path.AddString(wordToDraw.Word, wordToDraw.Font.FontFamily, (int)wordToDraw.Font.Style, g.DpiY * wordToDraw.Font.SizeInPoints / 72, new PointF(textXStart + wordToDraw.X, textYStart + wordToDraw.Y), StringFormat.GenericDefault);
             } // Obtained path
-            // Fill text
+            // Fill texts
             using (Brush brush = new SolidBrush(textColor))
             {
                 g.FillPath(brush, path);
             }
-            // Draw border on top (because it's inset)
-            using (Pen pen = new Pen(borderColor, borderWidth))
+            // Finally draw textbox (debug)
+            if (debug)
             {
-                pen.Alignment = PenAlignment.Inset;
-                g.DrawPath(pen, path);
+                using (Pen pen = new Pen(textColor, 5))
+                {
+                    pen.Alignment = PenAlignment.Inset;
+                    g.DrawRectangle(pen, bounds);
+                }
             }
-            // Draw textbox (debug)
-            //using (Pen pen = new Pen(textColor, 5))
-            //{
-            //    pen.Alignment = PenAlignment.Inset;
-            //    for (int i = 0; i < textToPrint.Length; i++)
-            //    {
-            //        Rectangle bound = new Rectangle(bounds.X, bounds.Y + (i * bounds.Height / textToPrint.Length), bounds.Width, bounds.Height / textToPrint.Length);
-            //        g.DrawRectangle(pen, bound);
-            //    }
-            //}
         }
     }
 }

@@ -1,7 +1,7 @@
 Ongoing tasks in order of priority:
 - Card maker UI:
-	- rest of card stats
-	- draw blueprint
+	- rest of card stats, reposition gold
+	- draw blueprint checkbox, separate
 	- save image function
 	- events and triggers rest of stuff
 	- export json
