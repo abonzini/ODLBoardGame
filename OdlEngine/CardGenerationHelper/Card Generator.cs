@@ -19,7 +19,7 @@ namespace CardGenerationHelper
         bool _debug = Properties.Settings.Default.Debug;
 
         System.Windows.Forms.Timer _drawUpdateTimer = new System.Windows.Forms.Timer();
-        private void TimerTick(object sender, EventArgs e)
+        private void DrawTimeout(object sender, EventArgs e)
         {
             _drawUpdateTimer.Stop();
             DrawCard();
@@ -45,11 +45,11 @@ namespace CardGenerationHelper
             DebugCheckBox.Checked = _debug; // Load last setting
 
             // Timer
-            _drawUpdateTimer.Tick += TimerTick;
+            _drawUpdateTimer.Tick += DrawTimeout;
             _drawUpdateTimer.Interval = 100; // 100ms
             _drawUpdateTimer.Stop();
 
-            RefreshDrawTimer(); // Draw empty card
+            DrawCard(); // Draw empty card
         }
         public static class DrawConstants
         {
@@ -171,7 +171,7 @@ namespace CardGenerationHelper
                 _ => throw new NotImplementedException("Incorrect entity type selected")
             };
             // TODO: Later force UI redraw of elements
-            RefreshDrawTimer();
+            DrawCard();
         }
 
         private void TargetOptionsDropdown_SelectedIndexChanged(object sender, EventArgs e)
@@ -187,7 +187,7 @@ namespace CardGenerationHelper
         private void CardIdUpdown_ValueChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.Id = Convert.ToInt32(CardIdUpdown.Value);
-            RefreshDrawTimer();
+            DrawCard();
         }
 
         private void CardNameBox_TextChanged(object sender, EventArgs e)
@@ -199,13 +199,13 @@ namespace CardGenerationHelper
         private void ExpansionDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.Expansion = (ExpansionId)ExpansionDropdown.SelectedItem;
-            RefreshDrawTimer();
+            DrawCard();
         }
 
         private void ClassDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.ClassType = (PlayerClassType)ClassDropdown.SelectedItem;
-            RefreshDrawTimer();
+            DrawCard();
         }
 
         private void CardPicturePathLoadButton_Click(object sender, EventArgs e)
@@ -232,7 +232,7 @@ namespace CardGenerationHelper
         private void RarityUpDown_ValueChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.Rarity = Convert.ToInt32(RarityUpDown.Value);
-            RefreshDrawTimer();
+            DrawCard();
         }
 
         private void DebugCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -240,7 +240,7 @@ namespace CardGenerationHelper
             _debug = DebugCheckBox.Checked;
             Properties.Settings.Default.Debug = _debug;
             Properties.Settings.Default.Save();
-            RefreshDrawTimer();
+            DrawCard();
         }
 
         private void CardIconFolders_Click(object sender, EventArgs e)
