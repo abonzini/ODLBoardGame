@@ -169,16 +169,16 @@ namespace CardGenerationHelper
                 // Creates the string in correct pixels
                 path.AddString(textToPrint[i], autoFont.FontFamily, (int)autoFont.Style, g.DpiY * autoFont.SizeInPoints / 72, new PointF(textX, textY), StringFormat.GenericDefault);
             } // Obtained path
-            // Fill text
+            // Draw border as outset
+            using (Pen pen = new Pen(borderColor, borderWidth))
+            {
+                pen.Alignment = PenAlignment.Outset;
+                g.DrawPath(pen, path);
+            }
+            // Then fill text
             using (Brush brush = new SolidBrush(textColor))
             {
                 g.FillPath(brush, path);
-            }
-            // Draw border on top (because it's inset)
-            using (Pen pen = new Pen(borderColor, borderWidth))
-            {
-                pen.Alignment = PenAlignment.Inset;
-                g.DrawPath(pen, path);
             }
             if(debug)
             {
