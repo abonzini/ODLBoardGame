@@ -46,7 +46,7 @@ namespace CardGenerationHelper
 
             // Timer
             _drawUpdateTimer.Tick += DrawTimeout;
-            _drawUpdateTimer.Interval = 100; // 100ms
+            _drawUpdateTimer.Interval = 150; // 150ms
             _drawUpdateTimer.Stop();
 
             DrawCard(); // Draw empty card
@@ -62,7 +62,7 @@ namespace CardGenerationHelper
             public const float VerticalMarginProportion = 0.015f;
             public const float BoxRoundedPercentage = 0.2f; // For square boxes, how much is it rounded
             // For the rest (non data box)
-            public const float TextBoxProportion = 0.25f; // Card name
+            public const float TextBoxProportion = 0.2f; // Card name
             public const float ExtraBoxProportion = 0.125f; // ID, rarity, expansion
             public const float EffectBoxProportion = 1 - TextBoxProportion - ExtraBoxProportion; // Rest is for description box
             public const float TextBoxOpacity = 0.5f;
@@ -74,8 +74,10 @@ namespace CardGenerationHelper
             public const int NumberOfStats = 4; // How many stats in data box
             public const float ImageBorder = 0.006f;
             // Stats Box
+            public const float StatFontBorderPercentage = 0.1f;
             public const float GoldStatSize = 0.2f;
             public static readonly Color GoldColorTint = Color.Gold;
+            public const float StatRoundedPercentage = 0.5f; // For square boxes, how much is it rounded
         }
         private void DrawCard()
         {
@@ -86,6 +88,7 @@ namespace CardGenerationHelper
 
             Bitmap bitmap = new Bitmap(width, height);
             Graphics g = Graphics.FromImage(bitmap);
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             g.PageUnit = GraphicsUnit.Pixel;
             Rectangle bounds = new Rectangle(0, 0, width, height);
@@ -119,7 +122,18 @@ namespace CardGenerationHelper
                 Rectangle imageBox = new Rectangle(currentDrawPointerX, currentDrawPointerY, imageBoxSize, imageBoxSize);
                 brush = DrawHelper.GetImageBrushOrColor(imageBox, imagePath, Color.White, Color.White);
                 DrawHelper.DrawRoundedRectangle(g, imageBox, DrawConstants.BoxRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
-                // Now Draw all Stats TODO
+                // Now Draw all Stats
+                // Gold
+                int statXpointer = currentDrawPointerX + imageBoxSize + horizontalMargin;
+                int statYpointer = currentDrawPointerY;
+                Rectangle statBox = new Rectangle(statXpointer, statYpointer, statWidth, statWidth);
+                imagePath = Path.Combine(_cardIconsPath, "gold.png");
+                brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.Gold, Color.White);
+                DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                float statFontSize = statWidth / 1.333f; // Fixed size to fit stat box in consistent way. 1.333 is empirical
+                Font statFont = new Font("Coolvetica Heavy Comp", statFontSize, FontStyle.Bold);
+                DrawHelper.DrawFixedText(g, "2/3", statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                // Finished stats
                 currentDrawPointerY += imageBoxSize + verticalMargin; // Move down to the next part
                 drawableHeight -= imageBoxSize + 3 * verticalMargin; // Remaining is the space excluding image box and the remaining separators
                 // Ok now the rest:
@@ -150,6 +164,7 @@ namespace CardGenerationHelper
                 DrawHelper.DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Near, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
             }
             CardPicture.Image = bitmap;
+            bitmap.Save("debug.png");
         }
 
         private void CardGenerator_Load(object sender, EventArgs e)
@@ -179,7 +194,7 @@ namespace CardGenerationHelper
                 _ => throw new NotImplementedException("Incorrect entity type selected")
             };
             // TODO: Later force UI redraw of elements
-            DrawCard();
+            RefreshDrawTimer();
         }
 
         private void TargetOptionsDropdown_SelectedIndexChanged(object sender, EventArgs e)
@@ -195,7 +210,7 @@ namespace CardGenerationHelper
         private void CardIdUpdown_ValueChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.Id = Convert.ToInt32(CardIdUpdown.Value);
-            DrawCard();
+            RefreshDrawTimer();
         }
 
         private void CardNameBox_TextChanged(object sender, EventArgs e)
@@ -207,13 +222,13 @@ namespace CardGenerationHelper
         private void ExpansionDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.Expansion = (ExpansionId)ExpansionDropdown.SelectedItem;
-            DrawCard();
+            RefreshDrawTimer();
         }
 
         private void ClassDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.ClassType = (PlayerClassType)ClassDropdown.SelectedItem;
-            DrawCard();
+            RefreshDrawTimer();
         }
 
         private void CardPicturePathLoadButton_Click(object sender, EventArgs e)
@@ -240,7 +255,7 @@ namespace CardGenerationHelper
         private void RarityUpDown_ValueChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.Rarity = Convert.ToInt32(RarityUpDown.Value);
-            DrawCard();
+            RefreshDrawTimer();
         }
 
         private void DebugCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -248,7 +263,7 @@ namespace CardGenerationHelper
             _debug = DebugCheckBox.Checked;
             Properties.Settings.Default.Debug = _debug;
             Properties.Settings.Default.Save();
-            DrawCard();
+            RefreshDrawTimer();
         }
 
         private void CardIconFolders_Click(object sender, EventArgs e)

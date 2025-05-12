@@ -101,7 +101,65 @@ namespace CardGenerationHelper
                 }
             }
         }
-
+        /// <summary>
+        /// Like AutoFit but fixed text size and no weird line break thing
+        /// </summary>
+        /// <param name="g"></param>
+        /// <param name="text"></param>
+        /// <param name="textBox"></param>
+        /// <param name="font"></param>
+        /// <param name="textColor"></param>
+        /// <param name="borderColor"></param>
+        /// <param name="borderWidth"></param>
+        /// <param name="hAlignment"></param>
+        /// <param name="vAlignment"></param>
+        /// <param name="alignmentSpace"></param>
+        /// <param name="debug"></param>
+        /// <exception cref="Exception"></exception>
+        public static void DrawFixedText(Graphics g, string text, Rectangle textBox, Font font, Color textColor, Color borderColor, float borderWidth, StringAlignment hAlignment, StringAlignment vAlignment, int alignmentSpace = 0, bool debug = false)
+        {
+            SizeF textSize = g.MeasureString(text, font);
+            // Formatted text, either one single line or multiple centered lines
+            GraphicsPath path = new GraphicsPath(); // Create path to draw
+            float textX = hAlignment switch
+            {
+                StringAlignment.Center => textBox.X + (textBox.Width - textSize.Width) / 2,
+                StringAlignment.Near => textBox.X + alignmentSpace,
+                StringAlignment.Far => textBox.X + (textBox.Width - textSize.Width - alignmentSpace),
+                _ => throw new Exception("Incorrect alignment")
+            };
+            float textY = vAlignment switch // If multi strings, this is done in chunks
+            {
+                StringAlignment.Center => textBox.Y + (textBox.Height - textSize.Height) / 2,
+                StringAlignment.Near => textBox.Y + alignmentSpace,
+                StringAlignment.Far => textBox.Y + (textBox.Height - textSize.Height - alignmentSpace),
+                _ => throw new Exception("Incorrect alignment")
+            };
+            // Creates the string in correct pixels
+            path.AddString(text, font.FontFamily, (int)font.Style, g.DpiY * font.SizeInPoints / 72, new PointF(textX, textY), StringFormat.GenericDefault);
+            // Obtained path
+            // Draw border as outset
+            borderWidth *= font.Size;
+            using (Pen pen = new Pen(borderColor, borderWidth))
+            {
+                pen.Alignment = PenAlignment.Outset;
+                g.DrawPath(pen, path);
+            }
+            // Then fill text
+            using (Brush brush = new SolidBrush(textColor))
+            {
+                g.FillPath(brush, path);
+            }
+            if (debug)
+            {
+                // Draw textbox (debug)
+                using (Pen pen = new Pen(textColor, 5))
+                {
+                    pen.Alignment = PenAlignment.Inset;
+                    g.DrawRectangle(pen, textBox);
+                }
+            }
+        }
         /// <summary>
         /// Draws text that auto fits on a text box, also allows borders and alignments (for most standalone floating words)
         /// </summary>
@@ -117,7 +175,7 @@ namespace CardGenerationHelper
         /// <param name="alignmentSpace"></param>
         /// /// <param name="debug"></param>
         /// <exception cref="Exception"></exception>
-        public static void DrawAutoFitText(Graphics g, string text, Rectangle textBox, Font font, Color textColor, Color borderColor, int borderWidth, StringAlignment hAlignment, StringAlignment vAlignment, int alignmentSpace = 0, bool debug = false)
+        public static void DrawAutoFitText(Graphics g, string text, Rectangle textBox, Font font, Color textColor, Color borderColor, float borderWidth, StringAlignment hAlignment, StringAlignment vAlignment, int alignmentSpace = 0, bool debug = false)
         {
             string[] textToPrint = [];
             SizeF[] textSizes = [];
@@ -147,7 +205,6 @@ namespace CardGenerationHelper
                     maxY = Math.Max(maxY, textSizes[i].Height);
                 }
             }
-
             // Formatted text, either one single line or multiple centered lines
             GraphicsPath path = new GraphicsPath(); // Create path to draw
             for (int i = 0; i < textToPrint.Length; i++)
@@ -170,6 +227,7 @@ namespace CardGenerationHelper
                 path.AddString(textToPrint[i], autoFont.FontFamily, (int)autoFont.Style, g.DpiY * autoFont.SizeInPoints / 72, new PointF(textX, textY), StringFormat.GenericDefault);
             } // Obtained path
             // Draw border as outset
+            borderWidth *= fontSize;
             using (Pen pen = new Pen(borderColor, borderWidth))
             {
                 pen.Alignment = PenAlignment.Outset;
@@ -180,7 +238,7 @@ namespace CardGenerationHelper
             {
                 g.FillPath(brush, path);
             }
-            if(debug)
+            if (debug)
             {
                 // Draw textbox (debug)
                 using (Pen pen = new Pen(textColor, 5))
