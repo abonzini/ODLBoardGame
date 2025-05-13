@@ -20,7 +20,7 @@ namespace ODLGameEngine
     {
         public PlayerState() // Default values of base cards are different
         {
-            EntityPlayInfo.EntityType = EntityType.PLAYER;
+            PreInstanceInfo.EntityType = EntityType.PLAYER;
             Hp.BaseValue = GameConstants.STARTING_HP;
         }
         [JsonProperty]

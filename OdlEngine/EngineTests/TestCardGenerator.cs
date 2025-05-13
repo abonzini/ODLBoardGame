@@ -24,21 +24,17 @@ namespace EngineTests
         /// <returns></returns>
         public static Skill CreateSkill(int id, string name, int cost, TargetLocation target)
         {
-            EntityPrintInfo printInfo = new EntityPrintInfo()
+            PreInstanceInfo preInstanceInfo = new PreInstanceInfo()
             {
                 Id = id,
                 Title = name,
-                Cost = cost.ToString()
-            };
-            EntityPlayInfo playInfo = new EntityPlayInfo()
-            {
+                Cost = cost.ToString(),
                 EntityType = EntityType.SKILL,
                 TargetOptions = target,
             };
             return new Skill() // Returns "brick" card
             {
-                EntityPlayInfo = playInfo,
-                EntityPrintInfo = printInfo
+                PreInstanceInfo = preInstanceInfo
             };
         }
         /// <summary>
@@ -55,21 +51,17 @@ namespace EngineTests
         /// <returns></returns>
         public static Unit CreateUnit(int id, string name, int cost, TargetLocation target, int hp, int attack, int movement, int denominator)
         {
-            EntityPrintInfo printInfo = new EntityPrintInfo()
+            PreInstanceInfo preInstanceInfo = new PreInstanceInfo()
             {
                 Id = id,
                 Title = name,
                 Cost = cost.ToString(),
-            };
-            EntityPlayInfo playInfo = new EntityPlayInfo()
-            {
                 EntityType = EntityType.UNIT,
                 TargetOptions = target
             };
             Unit unit = new Unit()
             {
-                EntityPlayInfo = playInfo,
-                EntityPrintInfo = printInfo
+                PreInstanceInfo = preInstanceInfo
             };
             unit.Hp.BaseValue = hp;
             unit.Attack.BaseValue = attack;
@@ -92,22 +84,17 @@ namespace EngineTests
         /// <returns></returns>
         public static Building CreateBuilding(int id, string name, int cost, TargetLocation target, int hp, int[] plainBp, int[] forestBp, int[] mountainBp)
         {
-            EntityPrintInfo printInfo = new EntityPrintInfo()
+            PreInstanceInfo preInstanceInfo = new PreInstanceInfo()
             {
                 Id = id,
                 Title = name,
-                Cost = cost.ToString()
-            };
-            EntityPlayInfo playInfo = new EntityPlayInfo()
-            {
+                Cost = cost.ToString(),
                 EntityType = EntityType.BUILDING,
                 TargetOptions = target,
-                TargetConditions = TargetCondition.BLUEPRINT,
             };
             Building building = new Building() // Returns "TOKEN_BUILDING" card
             {
-                EntityPlayInfo = playInfo,
-                EntityPrintInfo = printInfo,
+                PreInstanceInfo = preInstanceInfo,
                 PlainsBp = plainBp,
                 ForestBp = forestBp,
                 MountainBp = mountainBp,

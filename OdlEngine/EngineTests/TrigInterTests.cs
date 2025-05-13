@@ -117,7 +117,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
-                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.EntityPlayInfo.EntityType);
+                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.PreInstanceInfo.EntityType);
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -198,7 +198,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
-                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.EntityPlayInfo.EntityType);
+                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.PreInstanceInfo.EntityType);
                     // Revert EVERYTHING and hash check
                     sm.UndoPreviousStep();
                     sm.UndoPreviousStep();
@@ -499,19 +499,19 @@ namespace EngineTests
                 TargetLocation otherLane2 = (TargetLocation)(1 << lane);
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
                 // Finally load the game
@@ -654,19 +654,19 @@ namespace EngineTests
                 TargetLocation otherLane2 = (TargetLocation)(1 << lane);
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
                 // Finally load the game
@@ -762,19 +762,19 @@ namespace EngineTests
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
                 // Finally load the game
@@ -867,19 +867,19 @@ namespace EngineTests
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
                 // Finally load the game
@@ -971,19 +971,19 @@ namespace EngineTests
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.BUILDING },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.BUILDING },
                 });
                 state.NextUniqueIndex = 6;
                 // Finally load the game
@@ -1095,7 +1095,7 @@ namespace EngineTests
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
                 Unit theUnit = new Unit() // This is the unit that'll be created
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT }, 
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT }, 
                 };
                 theUnit.Attack.BaseValue = statValue;
                 theUnit.Hp.BaseValue = statValue;
@@ -1203,7 +1203,7 @@ namespace EngineTests
                 TargetLocation targetLocation = (TargetLocation)(1 << lane); // Random lane
                 Unit theUnit = new Unit() // This is the unit that'll be created
                 {
-                    EntityPlayInfo = new EntityPlayInfo() { EntityType = EntityType.UNIT },
+                    PreInstanceInfo = new PreInstanceInfo() { EntityType = EntityType.UNIT },
                 };
                 theUnit.Attack.BaseValue = statValue;
                 theUnit.Hp.BaseValue = statValue;
@@ -1495,7 +1495,7 @@ namespace EngineTests
                     foreach (EntityType filterEntityType in filterEntityTypes)
                     {
                         selectEffect.TargetType = filterEntityType;
-                        building.EntityPlayInfo.EntityType = buildingEntityType;
+                        building.PreInstanceInfo.EntityType = buildingEntityType;
                         // Finally load the game
                         GameStateMachine sm = new GameStateMachine(cardDb);
                         sm.LoadGame(state); // Start from here

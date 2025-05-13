@@ -5,8 +5,7 @@ namespace CardGenerationHelper
     public partial class CardGenerator : Form
     {
         EntityBase _currentEntity;
-        EntityPlayInfo _currentPlayInfo;
-        EntityPrintInfo _currentPrintInfo;
+        PreInstanceInfo _preInstanceInfo;
 
         EntityBase _emptyEntity = new EntityBase();
         Unit _unit = new Unit();
@@ -33,13 +32,11 @@ namespace CardGenerationHelper
         {
             InitializeComponent();
             _currentEntity = _emptyEntity;
-            _currentPlayInfo = _emptyEntity.EntityPlayInfo;
-            _currentPrintInfo = _emptyEntity.EntityPrintInfo;
+            _preInstanceInfo = _emptyEntity.PreInstanceInfo;
             List<EntityBase> entities = [_unit, _building, _player, _skill];
             foreach (EntityBase entity in entities) // Set all to same info and fuck it
             {
-                entity.EntityPlayInfo = _currentPlayInfo;
-                entity.EntityPrintInfo = _currentPrintInfo;
+                entity.PreInstanceInfo = _preInstanceInfo;
             }
 
             DebugCheckBox.Checked = _debug; // Load last setting
@@ -118,7 +115,7 @@ namespace CardGenerationHelper
                 float statWidth = (dataBoxWidth - ((n - 1) * verticalMargin)) / (n + 1);
                 float imageBoxSize = dataBoxWidth - statWidth;
                 FillHelper brush;
-                string imagePath = Path.Combine(_cardImagePath, _currentPrintInfo.Id.ToString() + ".png");
+                string imagePath = Path.Combine(_cardImagePath, _preInstanceInfo.Id.ToString() + ".png");
                 Rectangle imageBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)imageBoxSize, (int)imageBoxSize);
                 brush = DrawHelper.GetImageBrushOrColor(imageBox, imagePath, Color.White, Color.White);
                 DrawHelper.DrawRoundedRectangle(g, imageBox, DrawConstants.BoxRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
@@ -132,7 +129,7 @@ namespace CardGenerationHelper
                 DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
                 float statFontSize = statWidth / 1.333f; // Fixed size to fit stat box in consistent way. 1.333 is empirical
                 Font statFont = new Font("Coolvetica Heavy Comp", statFontSize, FontStyle.Bold);
-                DrawHelper.DrawFixedText(g, _currentPrintInfo.Cost, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                DrawHelper.DrawFixedText(g, _preInstanceInfo.Cost, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
                 statYpointer += statWidth + verticalMargin;
                 // Rest of stats require a specific card
                 if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
@@ -140,9 +137,9 @@ namespace CardGenerationHelper
                     // Then, HP
                     statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
                     imagePath = Path.Combine(_cardIconsPath, "hp.png");
-                    brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.Green, Color.Green, 85);
+                    brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.Red, Color.Red, 85);
                     DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
-                    DrawHelper.DrawFixedText(g, _currentPrintInfo.Hp, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                    DrawHelper.DrawFixedText(g, _preInstanceInfo.Hp, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
                     statYpointer += statWidth + verticalMargin;
                     if (typeof(Unit).IsAssignableFrom(_currentEntity.GetType())) // Units will also have attack and mvt
                     {
@@ -150,13 +147,13 @@ namespace CardGenerationHelper
                         imagePath = Path.Combine(_cardIconsPath, "attack.png");
                         brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.Silver, Color.Silver, 85);
                         DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
-                        DrawHelper.DrawFixedText(g, _currentPrintInfo.Attack, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                        DrawHelper.DrawFixedText(g, _preInstanceInfo.Attack, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
                         statYpointer += statWidth + verticalMargin;
                         statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
                         imagePath = Path.Combine(_cardIconsPath, "movement.png");
                         brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.BurlyWood, Color.BurlyWood, 85);
                         DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
-                        DrawHelper.DrawFixedText(g, _currentPrintInfo.Movement, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                        DrawHelper.DrawFixedText(g, _preInstanceInfo.Movement, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
                     }
                 }
                 currentDrawPointerY += imageBoxSize; // Move down to the next part
@@ -169,7 +166,7 @@ namespace CardGenerationHelper
                 float titleFontSize = titleAreaHeight;
                 Font titleFont = new Font("Georgia", titleFontSize, FontStyle.Bold, GraphicsUnit.Pixel);
                 Rectangle nameBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)titleAreaHeight);
-                DrawHelper.DrawAutoFitText(g, _currentPrintInfo.Title, nameBox, titleFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                DrawHelper.DrawAutoFitText(g, _preInstanceInfo.Title, nameBox, titleFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
                 currentDrawPointerY += titleAreaHeight; // Move down to the next part
                 // Effect:
                 Rectangle textBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)textAreaHeight);
@@ -178,14 +175,14 @@ namespace CardGenerationHelper
                 float textFontSize = textAreaHeight / (DrawConstants.TextSizeDivider * 1.33333f); // 1.333 because text is in pixels and I need pt
                 Font textFont = new Font("Georgia", textFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
                 int minTextBoxSize = Math.Min((int)drawableWidth, (int)textAreaHeight);
-                DrawHelper.DrawRichTextBox(g, _currentPrintInfo.Text, textBox, textFont, Color.Black, (int)(minTextBoxSize * DrawConstants.TextBoxMargin), (int)(minTextBoxSize * DrawConstants.TextBoxMargin), _debug);
+                DrawHelper.DrawRichTextBox(g, _preInstanceInfo.Text, textBox, textFont, Color.Black, (int)(minTextBoxSize * DrawConstants.TextBoxMargin), (int)(minTextBoxSize * DrawConstants.TextBoxMargin), _debug);
                 currentDrawPointerY += textAreaHeight; // Move down to the next part
                 // Extras:
                 Rectangle extrasBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)extraAreaHeight);
                 float extraFontSize = extraAreaHeight;
                 Font extraFont = new Font("Georgia", extraFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-                DrawHelper.DrawAutoFitText(g, $"#{_currentPrintInfo.Id}", extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Far, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
-                string rarityString = new string('\u2605', _currentPrintInfo.Rarity);
+                DrawHelper.DrawAutoFitText(g, $"#{_preInstanceInfo.Id}", extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Far, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
+                string rarityString = new string('\u2605', _preInstanceInfo.Rarity);
                 DrawHelper.DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Near, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
             }
             CardPicture.Image = bitmap;
@@ -201,8 +198,6 @@ namespace CardGenerationHelper
             EntityTypeDropdown.SelectedIndex = 0;
             TargetOptionsDropdown.Items.AddRange(Enum.GetValues(typeof(TargetLocation)).Cast<object>().ToArray());
             TargetOptionsDropdown.SelectedIndex = 0;
-            TargetConditionDropdown.Items.AddRange(Enum.GetValues(typeof(TargetCondition)).Cast<object>().ToArray());
-            TargetConditionDropdown.SelectedIndex = 0;
             ExpansionDropdown.Items.AddRange(Enum.GetValues(typeof(ExpansionId)).Cast<object>().ToArray());
             ExpansionDropdown.SelectedIndex = 0;
             ClassDropdown.Items.AddRange(Enum.GetValues(typeof(PlayerClassType)).Cast<object>().ToArray());
@@ -213,8 +208,8 @@ namespace CardGenerationHelper
 
         private void EntityTypeDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _currentPlayInfo.EntityType = (EntityType)EntityTypeDropdown.SelectedItem;
-            _currentEntity = _currentPlayInfo.EntityType switch
+            _preInstanceInfo.EntityType = (EntityType)EntityTypeDropdown.SelectedItem;
+            _currentEntity = _preInstanceInfo.EntityType switch
             {
                 EntityType.NONE => _emptyEntity,
                 EntityType.PLAYER => _player,
@@ -248,35 +243,30 @@ namespace CardGenerationHelper
 
         private void TargetOptionsDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _currentPlayInfo.TargetOptions = (TargetLocation)TargetOptionsDropdown.SelectedItem;
-        }
-
-        private void TargetConditionDropdown_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            _currentPlayInfo.TargetConditions = (TargetCondition)TargetConditionDropdown.SelectedItem;
+            _preInstanceInfo.TargetOptions = (TargetLocation)TargetOptionsDropdown.SelectedItem;
         }
 
         private void CardIdUpdown_ValueChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.Id = Convert.ToInt32(CardIdUpdown.Value);
+            _preInstanceInfo.Id = Convert.ToInt32(CardIdUpdown.Value);
             RefreshDrawTimer();
         }
 
         private void CardNameBox_TextChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.Title = CardNameBox.Text.ToUpper();
+            _preInstanceInfo.Title = CardNameBox.Text.ToUpper();
             RefreshDrawTimer();
         }
 
         private void ExpansionDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.Expansion = (ExpansionId)ExpansionDropdown.SelectedItem;
+            _preInstanceInfo.Expansion = (ExpansionId)ExpansionDropdown.SelectedItem;
             RefreshDrawTimer();
         }
 
         private void ClassDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.ClassType = (PlayerClassType)ClassDropdown.SelectedItem;
+            _preInstanceInfo.ClassType = (PlayerClassType)ClassDropdown.SelectedItem;
             RefreshDrawTimer();
         }
 
@@ -297,13 +287,13 @@ namespace CardGenerationHelper
 
         private void EffectDescriptionBox_TextChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.Text = EffectDescriptionBox.Text;
+            _preInstanceInfo.Text = EffectDescriptionBox.Text;
             RefreshDrawTimer();
         }
 
         private void RarityUpDown_ValueChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.Rarity = Convert.ToInt32(RarityUpDown.Value);
+            _preInstanceInfo.Rarity = Convert.ToInt32(RarityUpDown.Value);
             RefreshDrawTimer();
         }
 
@@ -332,7 +322,7 @@ namespace CardGenerationHelper
 
         private void CostUpDown_ValueChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.Cost = CostUpDown.Value.ToString();
+            _preInstanceInfo.Cost = CostUpDown.Value.ToString();
             RefreshDrawTimer();
         }
 
@@ -356,14 +346,14 @@ namespace CardGenerationHelper
 
         private void HpUpDown_ValueChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.Hp = HpUpDown.Value.ToString();
+            _preInstanceInfo.Hp = HpUpDown.Value.ToString();
             ((LivingEntity)_currentEntity).Hp.BaseValue = Convert.ToInt32(HpUpDown.Value);
             RefreshDrawTimer();
         }
 
         private void AttackUpDown_ValueChanged(object sender, EventArgs e)
         {
-            _currentPrintInfo.Attack = AttackUpDown.Value.ToString();
+            _preInstanceInfo.Attack = AttackUpDown.Value.ToString();
             ((Unit)_currentEntity).Attack.BaseValue = Convert.ToInt32(AttackUpDown.Value);
             RefreshDrawTimer();
         }
@@ -376,7 +366,7 @@ namespace CardGenerationHelper
             {
                 MovString += "/" + DenominatorUpDown.Value.ToString();
             }
-            _currentPrintInfo.Movement = MovString;
+            _preInstanceInfo.Movement = MovString;
             RefreshDrawTimer();
         }
     }

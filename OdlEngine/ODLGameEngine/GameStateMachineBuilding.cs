@@ -54,7 +54,7 @@ namespace ODLGameEngine
         {
             // To spawn a building, first you get the playable ID
             Building newSpawnedBuilding = (Building)bldg.Clone(); // Clone in order to not break the same species
-            if (newSpawnedBuilding.Name == "") { newSpawnedBuilding.Name = newSpawnedBuilding.EntityPrintInfo.Title; }
+            if (newSpawnedBuilding.Name == "") { newSpawnedBuilding.Name = newSpawnedBuilding.PreInstanceInfo.Title; }
             newSpawnedBuilding.Owner = player;
             // Create the context
             ConstructionContext constructionCtx = BUILDING_GetBuildingOptions(player, newSpawnedBuilding, chosenTarget);

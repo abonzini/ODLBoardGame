@@ -89,7 +89,7 @@ namespace ODLGameEngine
         TARGET_MOVEMENT,
         TARGET_MOVEMENT_DENOMINATOR,
         PLAYERS_GOLD,
-        // Todo, damage, advancement, etc
+        // Todo, damage, advancement, playability check, etc
     }
     /// <summary>
     /// Register to use in an effect

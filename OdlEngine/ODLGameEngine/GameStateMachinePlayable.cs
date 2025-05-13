@@ -144,7 +144,7 @@ namespace ODLGameEngine
         /// <returns>The entity that was generated for this play</returns>
         IngameEntity PLAYABLE_PlayCard(EntityBase card, TargetLocation chosenTarget)
         {
-            switch (card.EntityPlayInfo.EntityType)
+            switch (card.PreInstanceInfo.EntityType)
             {
                 case EntityType.UNIT:
                     return UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
@@ -175,27 +175,34 @@ namespace ODLGameEngine
                 // Can't afford!
                 return new Tuple<PlayOutcome, TargetLocation>(outcome, possibleTargets);
             }
-            // Otherwise I can def afford, check if playable
+            // Otherwise I can def afford, check if playable in the desired place
             outcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (card.EntityPlayInfo.TargetOptions == TargetLocation.BOARD)
+            if (card.PreInstanceInfo.TargetOptions == TargetLocation.BOARD)
             {
-                outcome = PLAYABLE_IsPlayableGlobal(card) ? PlayOutcome.OK : outcome;
+                // TODO: Here we raise a playability context and ask the card
+                outcome = PlayOutcome.OK;
                 possibleTargets = TargetLocation.BOARD;
                 // If filled requirements, card playable
             }
-            else if (card.EntityPlayInfo.TargetOptions <= TargetLocation.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
+            else if (card.PreInstanceInfo.TargetOptions <= TargetLocation.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
             {
                 int laneCandidate;
                 TargetLocation validTargetsIfPossible = TargetLocation.BOARD;
                 for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
                 {
                     laneCandidate = 1 << i;
-                    if (card.EntityPlayInfo.TargetOptions.HasFlag((TargetLocation)laneCandidate)) // If this lane is one of the possible ones
+                    if (card.PreInstanceInfo.TargetOptions.HasFlag((TargetLocation)laneCandidate)) // If this lane is one of the possible ones
                     {
-                        if (PLAYABLE_IsPlayableLane(card, (TargetLocation)laneCandidate))
+                        bool canPlay = true; // By default, can play
+                        if(card.PreInstanceInfo.EntityType == EntityType.BUILDING) // Buildings have an extra check, where they need to see if they can be built
                         {
-                            outcome = PlayOutcome.OK; // Card is playable atleast somewhere!
-                            validTargetsIfPossible |= (TargetLocation)laneCandidate; // Add this option to list
+                            canPlay = (BUILDING_GetBuildingOptions((int)DetailedState.CurrentPlayer, (Building)card, (TargetLocation)laneCandidate).FirstAvailableOption >= 0);
+                        }
+                        if (canPlay) // If building (or card in general) can play normally, then check
+                        {
+                            // TODO: Here we raise a playability context and ask the card
+                            outcome = PlayOutcome.OK;
+                            validTargetsIfPossible |= (TargetLocation)laneCandidate; // Add this lane option to list
                         }
                     }
                 }
@@ -211,7 +218,7 @@ namespace ODLGameEngine
         bool PLAYABLE_PlayerCanAfford(EntityBase card)
         {
             // May need to be made smarter if someone does variable cost cards
-            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Gold >= int.Parse(card.EntityPrintInfo.Cost));
+            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Gold >= int.Parse(card.PreInstanceInfo.Cost));
         }
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
@@ -221,50 +228,7 @@ namespace ODLGameEngine
         void PLAYABLE_PayCost(EntityBase card)
         {
             PlayerState player = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer];
-            TRIGINTER_ModifyPlayersGold(player.Owner, -int.Parse(card.EntityPrintInfo.Cost), ModifierOperation.ADD);
-        }
-        /// <summary>
-        /// Checks for a card with "global" tageting whether conditions are fulfilled
-        /// </summary>
-        /// <param name="card">Card to check</param>
-        /// <returns>True if playable</returns>
-        bool PLAYABLE_IsPlayableGlobal(EntityBase card)
-        {
-            bool playable; // By default playable unless something happens
-            switch (card.EntityPlayInfo.TargetConditions)
-            {
-                case TargetCondition.BLUEPRINT: // Blueprint can't be global!
-                    playable = false;
-                    break;
-                case TargetCondition.NONE:
-                default:
-                    playable = true;
-                    break;
-            }
-            return playable; // If no conditions, all good
-        }
-        /// <summary>
-        /// Whether a card can be played in the desired lane
-        /// </summary>
-        /// <param name="card">Which card</param>
-        /// <param name="lane">Which lane</param>
-        /// <returns>True if can be played in this lane</returns>
-        bool PLAYABLE_IsPlayableLane(EntityBase card, TargetLocation laneCandidate)
-        {
-            //Lane laneToCheck = _detailedState.BoardState.GetLane(laneCandidate);
-            bool playable; // By default playable unless something happens
-            switch (card.EntityPlayInfo.TargetConditions)
-            {
-                case TargetCondition.BLUEPRINT:
-                    // if number is -1 means that we couldn't find a tile to place the building
-                    playable = (BUILDING_GetBuildingOptions((int)DetailedState.CurrentPlayer, (Building)card, laneCandidate).FirstAvailableOption >= 0); // Still asume, for now, that current player is the one playing the card
-                    break;
-                case TargetCondition.NONE:
-                default:
-                    playable = true;
-                    break;
-            }
-            return playable; // If no conditions, all good
+            TRIGINTER_ModifyPlayersGold(player.Owner, -int.Parse(card.PreInstanceInfo.Cost), ModifierOperation.ADD);
         }
     }
 }

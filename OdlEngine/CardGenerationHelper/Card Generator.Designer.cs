@@ -38,8 +38,6 @@
             LoadJsonButton = new Button();
             flowLayoutPanel1 = new FlowLayoutPanel();
             groupBox1 = new GroupBox();
-            TargetConditions = new Label();
-            TargetConditionDropdown = new ComboBox();
             EntityTypeLabel = new Label();
             TargetOptionsDropdown = new ComboBox();
             EntityTypeDropdown = new ComboBox();
@@ -198,36 +196,16 @@
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(TargetConditions);
-            groupBox1.Controls.Add(TargetConditionDropdown);
             groupBox1.Controls.Add(EntityTypeLabel);
             groupBox1.Controls.Add(TargetOptionsDropdown);
             groupBox1.Controls.Add(EntityTypeDropdown);
             groupBox1.Controls.Add(TargetOptionsLabel);
             groupBox1.Location = new Point(3, 3);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(750, 131);
+            groupBox1.Size = new Size(750, 91);
             groupBox1.TabIndex = 0;
             groupBox1.TabStop = false;
             groupBox1.Text = "PlayInfo";
-            // 
-            // TargetConditions
-            // 
-            TargetConditions.AutoSize = true;
-            TargetConditions.Location = new Point(6, 91);
-            TargetConditions.Name = "TargetConditions";
-            TargetConditions.Size = new Size(125, 20);
-            TargetConditions.TabIndex = 5;
-            TargetConditions.Text = "Target Conditions";
-            // 
-            // TargetConditionDropdown
-            // 
-            TargetConditionDropdown.FormattingEnabled = true;
-            TargetConditionDropdown.Location = new Point(137, 88);
-            TargetConditionDropdown.Name = "TargetConditionDropdown";
-            TargetConditionDropdown.Size = new Size(154, 28);
-            TargetConditionDropdown.TabIndex = 4;
-            TargetConditionDropdown.SelectedIndexChanged += TargetConditionDropdown_SelectedIndexChanged;
             // 
             // EntityTypeLabel
             // 
@@ -281,7 +259,7 @@
             groupBox2.Controls.Add(ExpansionDropdown);
             groupBox2.Controls.Add(ClassDropdown);
             groupBox2.Controls.Add(label4);
-            groupBox2.Location = new Point(3, 140);
+            groupBox2.Location = new Point(3, 100);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(753, 171);
             groupBox2.TabIndex = 1;
@@ -418,7 +396,7 @@
             // 
             LivingEntityPanel.Controls.Add(HpUpDown);
             LivingEntityPanel.Controls.Add(label7);
-            LivingEntityPanel.Location = new Point(3, 317);
+            LivingEntityPanel.Location = new Point(3, 277);
             LivingEntityPanel.Name = "LivingEntityPanel";
             LivingEntityPanel.Size = new Size(753, 36);
             LivingEntityPanel.TabIndex = 2;
@@ -448,7 +426,7 @@
             UnitPanel.Controls.Add(AttackUpDown);
             UnitPanel.Controls.Add(label9);
             UnitPanel.Controls.Add(label8);
-            UnitPanel.Location = new Point(3, 359);
+            UnitPanel.Location = new Point(3, 319);
             UnitPanel.Name = "UnitPanel";
             UnitPanel.Size = new Size(753, 68);
             UnitPanel.TabIndex = 3;
@@ -543,8 +521,6 @@
         private PictureBox CardPicture;
         private ComboBox EntityTypeDropdown;
         private Label EntityTypeLabel;
-        private Label TargetConditions;
-        private ComboBox TargetConditionDropdown;
         private Label TargetOptionsLabel;
         private ComboBox TargetOptionsDropdown;
         private Label label1;

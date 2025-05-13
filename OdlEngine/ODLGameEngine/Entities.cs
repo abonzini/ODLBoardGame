@@ -50,26 +50,15 @@ namespace ODLGameEngine
         // Relative targets
         PLAY_TARGET
     }
-
     /// <summary>
-    /// The condition that makes the card say "yes, this (lane?) is a valid target"
+    /// Will define how a card looks and works before it creates an instance in the board
     /// </summary>
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum TargetCondition
+    public class PreInstanceInfo
     {
-        NONE, /// Can be played always
-        BLUEPRINT, /// Subject to blueprint targeting
-        // Could be, but only implement as needed
-        //LANE_HAS_ENEMY_UNIT,
-        //LANE_HAS_ENEMY_BUILDING,
-        //LANE_HAS_FRIENDLY_UNIT,
-        //LANE_HAS_FRIENDLY_BUILDING
-    }
-    /// <summary>
-    /// Will define how a card looks
-    /// </summary>
-    public class EntityPrintInfo
-    {
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public EntityType EntityType { get; set; } = EntityType.NONE;
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public TargetLocation TargetOptions { get; set; } = TargetLocation.BOARD; // Which lane(s) if any the card could work on
         public int Id { get; set; } = 0;
         [DefaultValue("")]
         public string Title { get; set; } = "";
@@ -90,26 +79,12 @@ namespace ODLGameEngine
         [JsonConverter(typeof(StringEnumConverter))]
         public PlayerClassType ClassType { get; set; } = PlayerClassType.BASE;
     }
-    /// <summary>
-    /// Defines how a card is played
-    /// </summary>
-    public class EntityPlayInfo
-    {
-        [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public EntityType EntityType { get; set; } = EntityType.NONE;
-        [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public TargetLocation TargetOptions { get; set; } = TargetLocation.BOARD; // Which lane(s) if any the card could work on
-        [JsonConverter(typeof(StringEnumConverter))]
-        public TargetCondition TargetConditions { get; set; } = TargetCondition.NONE; // What needs to happen for a card to be "playable" in a lane
-    }
 
     [JsonObject(MemberSerialization.OptIn)]
     public class EntityBase : ICloneable
     {
         [JsonProperty]
-        public EntityPlayInfo EntityPlayInfo { get; set; } = new EntityPlayInfo(); // Non-hashed, non-cloned as I just want to reference once
-        [JsonProperty]
-        public EntityPrintInfo EntityPrintInfo { get; set; } = new EntityPrintInfo(); // Non-hashed, non-cloned as I just want to reference once
+        public PreInstanceInfo PreInstanceInfo { get; set; } = new PreInstanceInfo(); // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
         public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 
