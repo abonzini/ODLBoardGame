@@ -1,4 +1,6 @@
 ﻿using ODLGameEngine;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace CardGenerationHelper
 {
@@ -21,7 +23,14 @@ namespace CardGenerationHelper
         private void DrawTimeout(object sender, EventArgs e)
         {
             _drawUpdateTimer.Stop();
-            DrawCard();
+            if (BlueprintCheckBox.Checked)
+            {
+                DrawBlueprint();
+            }
+            else
+            {
+                DrawCard();
+            }
         }
         private void RefreshDrawTimer()
         {
@@ -75,6 +84,24 @@ namespace CardGenerationHelper
             public const float GoldStatSize = 0.2f;
             public static readonly Color GoldColorTint = Color.Gold;
             public const float StatRoundedPercentage = 0.20f; // For square boxes, how much is it rounded
+            // Blueprint Rotulo
+            public const float RotuloWStart = 0.55f;
+            public const float RotuloWEnd = 0.92f;
+            public const float RotuloHStart = 0.75f;
+            public const float RotuloHEnd = 0.9f;
+            public const float RotuloRightSize = 0.25f;
+            public const float RotuloRightSizeBottom = 0.33f;
+            public const int RotuloBorderSize = 10;
+            public const int RotuloTextAlignmentSpace = 150;
+            // Blueprint
+            public const float mapHStart = 0.15f; // Non-centered
+            public const float mapHEnd = 0.72f;
+            public const float mapWidth = 0.9f; // Centered
+            public const float mapHSpaces = 0.15f; // How much % is horizontal spacing
+            public const float mapVSpaces = 0.4f; // How much % is vertical spacing
+            public const float tileRounded = 0.25f;
+            public const float tileBorder = 0.03f;
+            public const float dashedLineSize = 10;
         }
         private void DrawCard()
         {
@@ -191,7 +218,146 @@ namespace CardGenerationHelper
                 bitmap.Save("debug.png");
             }
         }
-
+        private void DrawBlueprint()
+        {
+            string imagePath = Path.Combine(_cardIconsPath, "blueprint.png");
+            if(File.Exists(imagePath)) // Blueprint base found
+            {
+                Bitmap bitmap = new Bitmap(imagePath);
+                Graphics g = Graphics.FromImage(bitmap);
+                int width = bitmap.Width; // Get dims
+                int height = bitmap.Height;
+                // Draw rotulo
+                SolidFillHelper transparentBrush = new SolidFillHelper() { FillColor = Color.Transparent }; // No fill
+                int xRotulo = (int)(width * DrawConstants.RotuloWStart);
+                int yRotulo = (int)(height * DrawConstants.RotuloHStart);
+                int widthRotulo = (int)(width * (DrawConstants.RotuloWEnd - DrawConstants.RotuloWStart));
+                int heightRotulo = (int)(height * (DrawConstants.RotuloHEnd - DrawConstants.RotuloHStart));
+                Rectangle rotuloBox = new Rectangle(xRotulo, yRotulo, widthRotulo, heightRotulo);
+                DrawHelper.DrawRectangleFixedBorder(g, rotuloBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
+                Rectangle rotuloTitle = new Rectangle(xRotulo, yRotulo, (int)(widthRotulo* (1 - DrawConstants.RotuloRightSize)), heightRotulo);
+                Font rotuloFont = new Font("Consolas", heightRotulo);
+                DrawHelper.DrawAutoFitText(g, _preInstanceInfo.Title, rotuloTitle, rotuloFont, Color.White, Color.White, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                xRotulo += (int)(widthRotulo * (1-DrawConstants.RotuloRightSize));
+                widthRotulo = (int)(widthRotulo * DrawConstants.RotuloRightSize);
+                rotuloBox = new Rectangle(xRotulo, yRotulo, widthRotulo, heightRotulo);
+                DrawHelper.DrawRectangleFixedBorder(g, rotuloBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
+                rotuloFont = new Font("Consolas", (int)(heightRotulo * (1 - DrawConstants.RotuloRightSizeBottom)));
+                Rectangle rotuloRightTextBox = new Rectangle(xRotulo, yRotulo, widthRotulo, (int)(heightRotulo* (1 - DrawConstants.RotuloRightSizeBottom)));
+                DrawHelper.DrawAutoFitText(g, "#" + _preInstanceInfo.Id, rotuloRightTextBox, rotuloFont, Color.White, Color.White, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                yRotulo += (int)(heightRotulo * (1 - DrawConstants.RotuloRightSizeBottom));
+                heightRotulo = (int)(heightRotulo * DrawConstants.RotuloRightSizeBottom);
+                rotuloBox = new Rectangle(xRotulo, yRotulo, widthRotulo, heightRotulo);
+                DrawHelper.DrawRectangleFixedBorder(g, rotuloBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
+                rotuloFont = new Font("Georgia", heightRotulo, FontStyle.Regular, GraphicsUnit.Pixel);
+                string rarityString = new string('\u2605', _preInstanceInfo.Rarity);
+                DrawHelper.DrawAutoFitText(g, rarityString, rotuloBox, rotuloFont, Color.White, Color.White, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                // End of rotulo now the actual matrix
+                int yMap = (int)(height * DrawConstants.mapHStart);
+                int heightMap = (int)(height * (DrawConstants.mapHEnd - DrawConstants.mapHStart));
+                int widthMap = (int)(width * DrawConstants.mapWidth);
+                int xMap = (width - widthMap)/2;
+                if(_debug)
+                {
+                    Rectangle mapDebugBox = new Rectangle(xMap, yMap, widthMap, heightMap);
+                    DrawHelper.DrawRectangleFixedBorder(g, mapDebugBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
+                }
+                Rectangle getCoordinateRectangle(int row, int column) // Gives me the desired tile
+                {
+                    // First, calculate coord
+                    int nrows = GameConstants.BOARD_LANES_NUMBER;
+                    int nCols = new[] { GameConstants.PLAINS_TILES_NUMBER, GameConstants.FOREST_TILES_NUMBER, GameConstants.MOUNTAIN_TILES_NUMBER }.Max();
+                    float hSpace = widthMap * DrawConstants.mapHSpaces;
+                    float hSep = hSpace / (nCols + 1);
+                    float x = (widthMap - hSpace) / nCols;
+                    float vSpace = heightMap * DrawConstants.mapVSpaces;
+                    float vSep = vSpace / (nrows + 1);
+                    float y = (heightMap - vSpace) / nrows;
+                    // Now rectangle
+                    Rectangle tile = new Rectangle(
+                        (int)(xMap + hSep + column * (hSep + x)),
+                        (int)(yMap + vSep + row * (vSep + y)),
+                        (int)x, (int)y );
+                    return tile;
+                }
+                int getAdaptedColumn(int row, LaneID lane)
+                {
+                    int maxCol = new[] { GameConstants.PLAINS_TILES_NUMBER, GameConstants.FOREST_TILES_NUMBER, GameConstants.MOUNTAIN_TILES_NUMBER }.Max();
+                    int laneSize = lane switch
+                    {
+                        LaneID.PLAINS => GameConstants.PLAINS_TILES_NUMBER,
+                        LaneID.FOREST => GameConstants.FOREST_TILES_NUMBER,
+                        LaneID.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER,
+                        _ => throw new Exception("Not a lane")
+                    };
+                    int offset = (maxCol - laneSize) / 2;
+                    return row + offset;
+                }
+                // Ok now I need to plot stuff, plot lane by lane
+                for (int i = 0; i < GameConstants.PLAINS_TILES_NUMBER; i++)
+                {
+                    Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(i, LaneID.PLAINS));
+                    DrawHelper.DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                }
+                for (int i = 0; i < GameConstants.FOREST_TILES_NUMBER; i++)
+                {
+                    Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(i, LaneID.FOREST));
+                    DrawHelper.DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                }
+                for (int i = 0; i < GameConstants.MOUNTAIN_TILES_NUMBER; i++)
+                {
+                    Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(i, LaneID.MOUNTAIN));
+                    DrawHelper.DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                }
+                // And now the actual BP
+                int[] bp = ((Building)_currentEntity).PlainsBp;
+                if(bp != null)
+                {
+                    for (int i = 0; i < bp.Length; i++)
+                    {
+                        Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(bp[i], LaneID.PLAINS));
+                        DrawHelper.DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
+                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
+                        DrawHelper.DrawAutoFitText(g, (i+1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                    }
+                }
+                bp = ((Building)_currentEntity).ForestBp;
+                if (bp != null)
+                {
+                    for (int i = 0; i < bp.Length; i++)
+                    {
+                        Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(bp[i], LaneID.FOREST));
+                        DrawHelper.DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
+                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
+                        DrawHelper.DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                    }
+                }
+                bp = ((Building)_currentEntity).MountainBp;
+                if (bp != null)
+                {
+                    for (int i = 0; i < bp.Length; i++)
+                    {
+                        Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(bp[i], LaneID.MOUNTAIN));
+                        DrawHelper.DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
+                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
+                        DrawHelper.DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                    }
+                }
+                // Draw line now
+                Pen dashedPen = new Pen(Color.White, DrawConstants.dashedLineSize);
+                dashedPen.DashStyle = DashStyle.Dash;
+                g.DrawLine(dashedPen, new Point(xMap+(widthMap/2), yMap), new Point(xMap + (widthMap / 2), yMap + heightMap));
+                // Visualize
+                CardPicture.Image = bitmap;
+                if (_debug)
+                {
+                    bitmap.Save("debug.png");
+                }
+            }
+        }
         private void CardGenerator_Load(object sender, EventArgs e)
         {
             EntityTypeDropdown.Items.AddRange(Enum.GetValues(typeof(EntityType)).Cast<object>().ToArray());
@@ -238,6 +404,16 @@ namespace CardGenerationHelper
             else
             {
                 UnitPanel.Hide();
+            }
+            if (typeof(Building).IsAssignableFrom(_currentEntity.GetType())) // Living entities also have HP
+            {
+                BlueprintsPanel.Show();
+                BlueprintCheckBox.Show();
+            }
+            else
+            {
+                BlueprintCheckBox.Hide();
+                BlueprintsPanel.Hide();
             }
         }
 
@@ -362,12 +538,73 @@ namespace CardGenerationHelper
             ((Unit)_currentEntity).Movement.BaseValue = Convert.ToInt32(MovementUpdown.Value);
             ((Unit)_currentEntity).MovementDenominator.BaseValue = Convert.ToInt32(DenominatorUpDown.Value);
             string MovString = MovementUpdown.Value.ToString();
-            if(DenominatorUpDown.Value != 1)
+            if (DenominatorUpDown.Value != 1)
             {
                 MovString += "/" + DenominatorUpDown.Value.ToString();
             }
             _preInstanceInfo.Movement = MovString;
             RefreshDrawTimer();
+        }
+        private void ChangeBlueprint(TargetLocation lane, string bpText)
+        {
+            int[] bpElements;
+            if (bpText == "")
+            {
+                bpElements = null;
+            }
+            else
+            {
+                string[] choices = bpText.Split(','); // Get all inputs
+                int maxTiles = lane switch
+                {
+                    TargetLocation.PLAINS => GameConstants.PLAINS_TILES_NUMBER,
+                    TargetLocation.FOREST => GameConstants.FOREST_TILES_NUMBER,
+                    TargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER,
+                    _ => throw new Exception("Invalid lane BP")
+                };
+                bpElements = new int[Math.Min(choices.Length, maxTiles)]; // Bp limited by tile amount and also by how many fields
+                // Now i parse
+                for (int i = 0; i < bpElements.Length; i++)
+                {
+                    if (int.TryParse(choices[i], out int result))
+                    {
+                        bpElements[i] = result;
+                    }
+                }
+            }
+            // Finally load
+            Building bldg = (Building)_currentEntity;
+            switch (lane) // Load in the correct BP
+            {
+                case TargetLocation.PLAINS:
+                    bldg.PlainsBp = bpElements; break;
+                case TargetLocation.FOREST:
+                    bldg.ForestBp = bpElements; break;
+                case TargetLocation.MOUNTAIN:
+                    bldg.MountainBp = bpElements; break;
+                default:
+                    throw new Exception("Invalid lane BP");
+            }
+            RefreshDrawTimer(); // May need to redraw
+        }
+        private void PlainsBpTextBox_TextChanged(object sender, EventArgs e)
+        {
+            ChangeBlueprint(TargetLocation.PLAINS, PlainsBpTextBox.Text);
+        }
+
+        private void ForestBpTextBox_TextChanged(object sender, EventArgs e)
+        {
+            ChangeBlueprint(TargetLocation.FOREST, ForestBpTextBox.Text);
+        }
+
+        private void MountainBpTextBox_TextChanged(object sender, EventArgs e)
+        {
+            ChangeBlueprint(TargetLocation.MOUNTAIN, MountainBpTextBox.Text);
+        }
+
+        private void BlueprintCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            RefreshDrawTimer(); // Will need to redraw anyway
         }
     }
 }

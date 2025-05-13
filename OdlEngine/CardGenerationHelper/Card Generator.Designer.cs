@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             ImageSelectorSplit = new SplitContainer();
+            BlueprintCheckBox = new CheckBox();
             CardIconFolders = new Button();
             DebugCheckBox = new CheckBox();
             CardPicturePathLoadButton = new Button();
@@ -66,6 +67,13 @@
             AttackUpDown = new NumericUpDown();
             label9 = new Label();
             label8 = new Label();
+            BlueprintsPanel = new GroupBox();
+            label12 = new Label();
+            label11 = new Label();
+            label10 = new Label();
+            MountainBpTextBox = new TextBox();
+            ForestBpTextBox = new TextBox();
+            PlainsBpTextBox = new TextBox();
             ((System.ComponentModel.ISupportInitialize)ImageSelectorSplit).BeginInit();
             ImageSelectorSplit.Panel1.SuspendLayout();
             ImageSelectorSplit.Panel2.SuspendLayout();
@@ -83,6 +91,7 @@
             ((System.ComponentModel.ISupportInitialize)DenominatorUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)MovementUpdown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)AttackUpDown).BeginInit();
+            BlueprintsPanel.SuspendLayout();
             SuspendLayout();
             // 
             // ImageSelectorSplit
@@ -95,6 +104,7 @@
             // 
             // ImageSelectorSplit.Panel1
             // 
+            ImageSelectorSplit.Panel1.Controls.Add(BlueprintCheckBox);
             ImageSelectorSplit.Panel1.Controls.Add(CardIconFolders);
             ImageSelectorSplit.Panel1.Controls.Add(DebugCheckBox);
             ImageSelectorSplit.Panel1.Controls.Add(CardPicturePathLoadButton);
@@ -109,6 +119,17 @@
             ImageSelectorSplit.Size = new Size(1072, 653);
             ImageSelectorSplit.SplitterDistance = 300;
             ImageSelectorSplit.TabIndex = 0;
+            // 
+            // BlueprintCheckBox
+            // 
+            BlueprintCheckBox.AutoSize = true;
+            BlueprintCheckBox.Location = new Point(94, 47);
+            BlueprintCheckBox.Name = "BlueprintCheckBox";
+            BlueprintCheckBox.Size = new Size(91, 24);
+            BlueprintCheckBox.TabIndex = 6;
+            BlueprintCheckBox.Text = "Blueprint";
+            BlueprintCheckBox.UseVisualStyleBackColor = true;
+            BlueprintCheckBox.CheckedChanged += BlueprintCheckBox_CheckedChanged;
             // 
             // CardIconFolders
             // 
@@ -187,6 +208,7 @@
             flowLayoutPanel1.Controls.Add(groupBox2);
             flowLayoutPanel1.Controls.Add(LivingEntityPanel);
             flowLayoutPanel1.Controls.Add(UnitPanel);
+            flowLayoutPanel1.Controls.Add(BlueprintsPanel);
             flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel1.Location = new Point(3, 47);
             flowLayoutPanel1.MaximumSize = new Size(762, 2000);
@@ -478,6 +500,72 @@
             label8.TabIndex = 0;
             label8.Text = "Attack";
             // 
+            // BlueprintsPanel
+            // 
+            BlueprintsPanel.Controls.Add(label12);
+            BlueprintsPanel.Controls.Add(label11);
+            BlueprintsPanel.Controls.Add(label10);
+            BlueprintsPanel.Controls.Add(MountainBpTextBox);
+            BlueprintsPanel.Controls.Add(ForestBpTextBox);
+            BlueprintsPanel.Controls.Add(PlainsBpTextBox);
+            BlueprintsPanel.Location = new Point(3, 393);
+            BlueprintsPanel.Name = "BlueprintsPanel";
+            BlueprintsPanel.Size = new Size(753, 131);
+            BlueprintsPanel.TabIndex = 4;
+            BlueprintsPanel.TabStop = false;
+            BlueprintsPanel.Text = "Building Blueprints";
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Location = new Point(9, 95);
+            label12.Name = "label12";
+            label12.Size = new Size(52, 20);
+            label12.TabIndex = 5;
+            label12.Text = "Mount";
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Location = new Point(9, 62);
+            label11.Name = "label11";
+            label11.Size = new Size(49, 20);
+            label11.TabIndex = 4;
+            label11.Text = "Forest";
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Location = new Point(9, 29);
+            label10.Name = "label10";
+            label10.Size = new Size(47, 20);
+            label10.TabIndex = 3;
+            label10.Text = "Plains";
+            // 
+            // MountainBpTextBox
+            // 
+            MountainBpTextBox.Location = new Point(59, 92);
+            MountainBpTextBox.Name = "MountainBpTextBox";
+            MountainBpTextBox.Size = new Size(480, 27);
+            MountainBpTextBox.TabIndex = 2;
+            MountainBpTextBox.TextChanged += MountainBpTextBox_TextChanged;
+            // 
+            // ForestBpTextBox
+            // 
+            ForestBpTextBox.Location = new Point(59, 59);
+            ForestBpTextBox.Name = "ForestBpTextBox";
+            ForestBpTextBox.Size = new Size(480, 27);
+            ForestBpTextBox.TabIndex = 1;
+            ForestBpTextBox.TextChanged += ForestBpTextBox_TextChanged;
+            // 
+            // PlainsBpTextBox
+            // 
+            PlainsBpTextBox.Location = new Point(59, 26);
+            PlainsBpTextBox.Name = "PlainsBpTextBox";
+            PlainsBpTextBox.Size = new Size(480, 27);
+            PlainsBpTextBox.TabIndex = 0;
+            PlainsBpTextBox.TextChanged += PlainsBpTextBox_TextChanged;
+            // 
             // CardGenerator
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -511,6 +599,8 @@
             ((System.ComponentModel.ISupportInitialize)DenominatorUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)MovementUpdown).EndInit();
             ((System.ComponentModel.ISupportInitialize)AttackUpDown).EndInit();
+            BlueprintsPanel.ResumeLayout(false);
+            BlueprintsPanel.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -554,5 +644,13 @@
         private Label label8;
         private NumericUpDown DenominatorUpDown;
         private NumericUpDown MovementUpdown;
+        private GroupBox BlueprintsPanel;
+        private Label label12;
+        private Label label11;
+        private Label label10;
+        private TextBox MountainBpTextBox;
+        private TextBox ForestBpTextBox;
+        private TextBox PlainsBpTextBox;
+        private CheckBox BlueprintCheckBox;
     }
 }

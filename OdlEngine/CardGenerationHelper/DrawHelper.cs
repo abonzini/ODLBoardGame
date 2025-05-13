@@ -94,6 +94,16 @@ namespace CardGenerationHelper
             }
             return brush;
         }
+        public static void DrawRectangleFixedBorder(Graphics g, Rectangle bounds, Color borderColor, int border, FillHelper filler)
+        {
+            int relevantSide = Math.Min(bounds.Width, bounds.Height);
+            GraphicsPath path = new GraphicsPath();
+            path.AddRectangle(bounds);
+            g.FillPath(filler.GetBrush(), path);
+            Pen pen = new Pen(borderColor, border);
+            pen.Alignment = PenAlignment.Inset;
+            g.DrawPath(pen, path);
+        }
         public static void DrawRoundedRectangle(Graphics g, Rectangle bounds, float radiusPercentage, Color borderColor, float borderWidthPercentage, FillHelper filler)
         {
             int relevantSide = Math.Min(bounds.Width, bounds.Height);
