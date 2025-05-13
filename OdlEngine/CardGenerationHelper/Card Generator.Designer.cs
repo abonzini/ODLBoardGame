@@ -35,6 +35,8 @@
             CardPicture = new PictureBox();
             SavePictureButton = new Button();
             PrintInfo = new GroupBox();
+            CostUpDown = new NumericUpDown();
+            Cost = new Label();
             RarityUpDown = new NumericUpDown();
             label6 = new Label();
             label5 = new Label();
@@ -60,6 +62,7 @@
             ImageSelectorSplit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)CardPicture).BeginInit();
             PrintInfo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)CostUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)RarityUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)CardIdUpdown).BeginInit();
             PlayInfo.SuspendLayout();
@@ -143,6 +146,8 @@
             // PrintInfo
             // 
             PrintInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            PrintInfo.Controls.Add(CostUpDown);
+            PrintInfo.Controls.Add(Cost);
             PrintInfo.Controls.Add(RarityUpDown);
             PrintInfo.Controls.Add(label6);
             PrintInfo.Controls.Add(label5);
@@ -161,6 +166,23 @@
             PrintInfo.TabIndex = 1;
             PrintInfo.TabStop = false;
             PrintInfo.Text = "PrintInfo";
+            // 
+            // CostUpDown
+            // 
+            CostUpDown.Location = new Point(59, 111);
+            CostUpDown.Name = "CostUpDown";
+            CostUpDown.Size = new Size(72, 27);
+            CostUpDown.TabIndex = 13;
+            CostUpDown.ValueChanged += CostUpDown_ValueChanged;
+            // 
+            // Cost
+            // 
+            Cost.AutoSize = true;
+            Cost.Location = new Point(6, 113);
+            Cost.Name = "Cost";
+            Cost.Size = new Size(38, 20);
+            Cost.TabIndex = 12;
+            Cost.Text = "Cost";
             // 
             // RarityUpDown
             // 
@@ -281,7 +303,7 @@
             PlayInfo.Controls.Add(EntityTypeDropdown);
             PlayInfo.Location = new Point(3, 12);
             PlayInfo.Name = "PlayInfo";
-            PlayInfo.Size = new Size(753, 125);
+            PlayInfo.Size = new Size(694, 125);
             PlayInfo.TabIndex = 0;
             PlayInfo.TabStop = false;
             PlayInfo.Text = "PlayInfo";
@@ -359,6 +381,7 @@
             ((System.ComponentModel.ISupportInitialize)CardPicture).EndInit();
             PrintInfo.ResumeLayout(false);
             PrintInfo.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)CostUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)RarityUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)CardIdUpdown).EndInit();
             PlayInfo.ResumeLayout(false);
@@ -394,5 +417,7 @@
         private NumericUpDown RarityUpDown;
         private CheckBox DebugCheckBox;
         private Button CardIconFolders;
+        private NumericUpDown CostUpDown;
+        private Label Cost;
     }
 }

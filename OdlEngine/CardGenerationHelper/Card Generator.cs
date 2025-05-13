@@ -55,12 +55,12 @@ namespace CardGenerationHelper
         {
             public const int CardWidth = 2500; // 2.5x3.5 is resolution of a typical TCG card
             public const int CardHeight = 3500;
-            public const float CardRoundedPercentage = 0.2f;
+            public const float CardRoundedPercentage = 0.1f;
             public const float CardBorder = 0.03f;
             // Then the locations for the rest of things, proportions
             public const float HorizontalMarginProportion = 0.03f;
             public const float VerticalMarginProportion = 0.015f;
-            public const float BoxRoundedPercentage = 0.2f; // For square boxes, how much is it rounded
+            public const float BoxRoundedPercentage = 0.1f; // For square boxes, how much is it rounded
             // For the rest (non data box)
             public const float TextBoxProportion = 0.2f; // Card name
             public const float ExtraBoxProportion = 0.125f; // ID, rarity, expansion
@@ -77,14 +77,14 @@ namespace CardGenerationHelper
             public const float StatFontBorderPercentage = 0.1f;
             public const float GoldStatSize = 0.2f;
             public static readonly Color GoldColorTint = Color.Gold;
-            public const float StatRoundedPercentage = 0.5f; // For square boxes, how much is it rounded
+            public const float StatRoundedPercentage = 0.20f; // For square boxes, how much is it rounded
         }
         private void DrawCard()
         {
             int width = DrawConstants.CardWidth;
             int height = DrawConstants.CardHeight;
             int proportionalCardReference = Math.Min(width, height);
-            int cardBorder = (int)(proportionalCardReference * DrawConstants.CardBorder);
+            float cardBorder = proportionalCardReference * DrawConstants.CardBorder;
 
             Bitmap bitmap = new Bitmap(width, height);
             Graphics g = Graphics.FromImage(bitmap);
@@ -98,14 +98,14 @@ namespace CardGenerationHelper
             if (typeof(IngameEntity).IsAssignableFrom(_currentEntity.GetType()))
             {
                 // Ok it's a real card so let's draw the basics!
-                int horizontalMargin = (int)(width * DrawConstants.HorizontalMarginProportion); // For reference
-                int verticalMargin = (int)(height * DrawConstants.VerticalMarginProportion);
-                int drawableWidth = width - 2 * cardBorder - 2 * horizontalMargin; // This is the actual horizontal space for drawing stuff
-                int drawableHeight = height - 2 * cardBorder - 2 * verticalMargin; // Same, for vertical
-                int currentDrawPointerX = cardBorder + horizontalMargin; // Where drawing pointer is
-                int currentDrawPointerY = cardBorder + verticalMargin;
+                float horizontalMargin = width * DrawConstants.HorizontalMarginProportion; // For reference
+                float verticalMargin = height * DrawConstants.VerticalMarginProportion;
+                float drawableWidth = width - 2 * cardBorder - 2 * horizontalMargin; // This is the actual horizontal space for drawing stuff
+                float drawableHeight = height - 2 * cardBorder - verticalMargin; // Same, for vertical
+                float currentDrawPointerX = cardBorder + horizontalMargin; // Where drawing pointer is
+                float currentDrawPointerY = cardBorder + verticalMargin; // Data box need vertical margin
                 // First the data box
-                int dataBoxWidth = drawableWidth - horizontalMargin; // This is the area where image + stats fit (everyhting is a square)
+                float dataBoxWidth = drawableWidth - horizontalMargin; // This is the area where image + stats fit (everyhting is a square)
                 // This is solved by linear eq, every box a square
                 // H = imgW
                 // H = N * statW + (N-1) vSpace
@@ -115,53 +115,78 @@ namespace CardGenerationHelper
                 // X+Y  = W
                 // Substitution: (n+1)Y = W - (n-1)vsp
                 int n = DrawConstants.NumberOfStats;
-                int statWidth = (dataBoxWidth - ((n-1)*horizontalMargin)) / (n+1);
-                int imageBoxSize = dataBoxWidth - statWidth;
+                float statWidth = (dataBoxWidth - ((n - 1) * verticalMargin)) / (n + 1);
+                float imageBoxSize = dataBoxWidth - statWidth;
                 FillHelper brush;
                 string imagePath = Path.Combine(_cardImagePath, _currentPrintInfo.Id.ToString() + ".png");
-                Rectangle imageBox = new Rectangle(currentDrawPointerX, currentDrawPointerY, imageBoxSize, imageBoxSize);
+                Rectangle imageBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)imageBoxSize, (int)imageBoxSize);
                 brush = DrawHelper.GetImageBrushOrColor(imageBox, imagePath, Color.White, Color.White);
                 DrawHelper.DrawRoundedRectangle(g, imageBox, DrawConstants.BoxRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
                 // Now Draw all Stats
                 // Gold
-                int statXpointer = currentDrawPointerX + imageBoxSize + horizontalMargin;
-                int statYpointer = currentDrawPointerY;
-                Rectangle statBox = new Rectangle(statXpointer, statYpointer, statWidth, statWidth);
+                float statXpointer = currentDrawPointerX + imageBoxSize + horizontalMargin;
+                float statYpointer = currentDrawPointerY;
+                Rectangle statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
                 imagePath = Path.Combine(_cardIconsPath, "gold.png");
-                brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.Gold, Color.White);
+                brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.Gold, Color.Gold, 85);
                 DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
                 float statFontSize = statWidth / 1.333f; // Fixed size to fit stat box in consistent way. 1.333 is empirical
                 Font statFont = new Font("Coolvetica Heavy Comp", statFontSize, FontStyle.Bold);
-                DrawHelper.DrawFixedText(g, "2/3", statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
-                // Finished stats
-                currentDrawPointerY += imageBoxSize + verticalMargin; // Move down to the next part
-                drawableHeight -= imageBoxSize + 3 * verticalMargin; // Remaining is the space excluding image box and the remaining separators
+                DrawHelper.DrawFixedText(g, _currentPrintInfo.Cost, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                statYpointer += statWidth + verticalMargin;
+                // Rest of stats require a specific card
+                if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
+                {
+                    // Then, HP
+                    statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
+                    imagePath = Path.Combine(_cardIconsPath, "hp.png");
+                    brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.Green, Color.Green, 85);
+                    DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                    DrawHelper.DrawFixedText(g, _currentPrintInfo.Hp, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                    statYpointer += statWidth + verticalMargin;
+                    if (typeof(Unit).IsAssignableFrom(_currentEntity.GetType())) // Units will also have attack and mvt
+                    {
+                        statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
+                        imagePath = Path.Combine(_cardIconsPath, "attack.png");
+                        brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.Silver, Color.Silver, 85);
+                        DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                        DrawHelper.DrawFixedText(g, _currentPrintInfo.Attack, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                        statYpointer += statWidth + verticalMargin;
+                        statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
+                        imagePath = Path.Combine(_cardIconsPath, "movement.png");
+                        brush = DrawHelper.GetImageBrushOrColor(statBox, imagePath, Color.BurlyWood, Color.BurlyWood, 85);
+                        DrawHelper.DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                        DrawHelper.DrawFixedText(g, _currentPrintInfo.Movement, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                    }
+                }
+                currentDrawPointerY += imageBoxSize; // Move down to the next part
+                drawableHeight -= imageBoxSize; // Remaining is the space excluding image box and the remaining separators
                 // Ok now the rest:
                 // Name:
-                int titleAreaHeight = (int)(drawableHeight * DrawConstants.TextBoxProportion);
-                int textAreaHeight = (int)(drawableHeight * DrawConstants.EffectBoxProportion);
-                int extraAreaHeight = (int)(drawableHeight * DrawConstants.ExtraBoxProportion);
-                float titleFontSize = titleAreaHeight; // 1.333 because titleHeight is in pixels and I need pt
+                float titleAreaHeight = drawableHeight * DrawConstants.TextBoxProportion;
+                float textAreaHeight = drawableHeight * DrawConstants.EffectBoxProportion;
+                float extraAreaHeight = drawableHeight * DrawConstants.ExtraBoxProportion;
+                float titleFontSize = titleAreaHeight;
                 Font titleFont = new Font("Georgia", titleFontSize, FontStyle.Bold, GraphicsUnit.Pixel);
-                Rectangle nameBox = new Rectangle(currentDrawPointerX, currentDrawPointerY, drawableWidth, titleAreaHeight);
-                DrawHelper.DrawAutoFitText(g, _currentPrintInfo.Title, nameBox, titleFont, Color.Black, Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
-                currentDrawPointerY += titleAreaHeight + verticalMargin; // Move down to the next part
+                Rectangle nameBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)titleAreaHeight);
+                DrawHelper.DrawAutoFitText(g, _currentPrintInfo.Title, nameBox, titleFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                currentDrawPointerY += titleAreaHeight; // Move down to the next part
                 // Effect:
-                Rectangle textBox = new Rectangle(currentDrawPointerX, currentDrawPointerY, drawableWidth, textAreaHeight);
+                Rectangle textBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)textAreaHeight);
                 brush = new SolidFillHelper() { FillColor = Color.FromArgb((int)(255 * DrawConstants.TextBoxOpacity), Color.White) }; // Semi transparent white box
                 DrawHelper.DrawRoundedRectangle(g, textBox, DrawConstants.BoxRoundedPercentage, Color.Black, DrawConstants.TextBoxBorder, brush);
                 float textFontSize = textAreaHeight / (DrawConstants.TextSizeDivider * 1.33333f); // 1.333 because text is in pixels and I need pt
                 Font textFont = new Font("Georgia", textFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-                int minTextBoxSize = Math.Min(drawableWidth, textAreaHeight);
+                int minTextBoxSize = Math.Min((int)drawableWidth, (int)textAreaHeight);
                 DrawHelper.DrawRichTextBox(g, _currentPrintInfo.Text, textBox, textFont, Color.Black, (int)(minTextBoxSize * DrawConstants.TextBoxMargin), (int)(minTextBoxSize * DrawConstants.TextBoxMargin), _debug);
-                currentDrawPointerY += textAreaHeight + verticalMargin; // Move down to the next part
+                currentDrawPointerY += textAreaHeight; // Move down to the next part
                 // Extras:
-                Rectangle extrasBox = new Rectangle(currentDrawPointerX, currentDrawPointerY, drawableWidth, extraAreaHeight);
+                Rectangle extrasBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)extraAreaHeight);
                 float extraFontSize = extraAreaHeight;
                 Font extraFont = new Font("Georgia", extraFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-                DrawHelper.DrawAutoFitText(g, $"#{_currentPrintInfo.Id}", extrasBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Far, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
+                DrawHelper.DrawAutoFitText(g, $"#{_currentPrintInfo.Id}", extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Far, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
                 string rarityString = new string('\u2605', _currentPrintInfo.Rarity);
-                DrawHelper.DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.Black, 0, StringAlignment.Near, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
+                DrawHelper.DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Near, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
             }
             CardPicture.Image = bitmap;
             bitmap.Save("debug.png");
@@ -279,6 +304,12 @@ namespace CardGenerationHelper
                     Properties.Settings.Default.Save();
                 }
             }
+        }
+
+        private void CostUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            _currentPrintInfo.Cost = CostUpDown.Value.ToString();
+            RefreshDrawTimer();
         }
     }
 }

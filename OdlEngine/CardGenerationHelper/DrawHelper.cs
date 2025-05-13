@@ -26,8 +26,11 @@ namespace CardGenerationHelper
         public int StartX = 0;
         public int StartY = 0;
         public Color WhiteTint = Color.White;
+        public int BlackLighten = 0;
+        TextureBrush _brush = null;
         public override Brush GetBrush()
         {
+            if (_brush != null) { return _brush; }
             Bitmap bitmap = new Bitmap(ImagePath);
             if(WhiteTint != Color.White)
             {
@@ -37,7 +40,17 @@ namespace CardGenerationHelper
                     {
                         // Get pixel
                         Color originalColor = bitmap.GetPixel(x, y);
-                        if (originalColor == Color.Black) continue; // Black doesn't tint
+                        if (originalColor.R == 0 && originalColor.G == 0 && originalColor.B == 0) // I black, special case
+                        {
+                            if (BlackLighten != 0)
+                            {
+                                originalColor = Color.FromArgb(BlackLighten, BlackLighten, BlackLighten);
+                            }
+                            else // Black stays black
+                            {
+                                continue;
+                            }
+                        }
                         // Tint it
                         Color newColor = Color.FromArgb(WhiteTint.R * originalColor.R/255, WhiteTint.G * originalColor.G / 255, WhiteTint.B * originalColor.B / 255);
                         // Re-apply
@@ -50,13 +63,16 @@ namespace CardGenerationHelper
             TextureBrush brush = new TextureBrush(bitmap);
             brush.TranslateTransform(StartX, StartY);
             brush.ScaleTransform(scaleX, scaleY);
+            _brush = brush;
             return brush;
         }
     }
     public static class DrawHelper
     {
-        public static FillHelper GetImageBrushOrColor(Rectangle container, string path, Color imageColorTint, Color defaultColor)
+        public static Dictionary<string, FillHelper> _savedBrushes = new Dictionary<string, FillHelper>();
+        public static FillHelper GetImageBrushOrColor(Rectangle container, string path, Color imageColorTint, Color defaultColor, int blackLighten = 0)
         {
+            if(_savedBrushes.ContainsKey(path)) return _savedBrushes[path];
             FillHelper brush;
             if (Path.Exists(path)) // Check if image exists
             {
@@ -67,8 +83,10 @@ namespace CardGenerationHelper
                     Width = container.Width,
                     StartX = container.X,
                     StartY = container.Y,
-                    WhiteTint = imageColorTint
+                    WhiteTint = imageColorTint,
+                    BlackLighten = blackLighten
                 };
+                _savedBrushes.Add(path, brush);
             }
             else
             {
