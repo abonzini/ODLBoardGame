@@ -189,7 +189,10 @@ namespace CardGenerationHelper
                 DrawHelper.DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Near, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), _debug);
             }
             CardPicture.Image = bitmap;
-            bitmap.Save("debug.png");
+            if (_debug)
+            {
+                bitmap.Save("debug.png");
+            }
         }
 
         private void CardGenerator_Load(object sender, EventArgs e)
@@ -204,6 +207,8 @@ namespace CardGenerationHelper
             ExpansionDropdown.SelectedIndex = 0;
             ClassDropdown.Items.AddRange(Enum.GetValues(typeof(PlayerClassType)).Cast<object>().ToArray());
             ClassDropdown.SelectedIndex = 0;
+
+            RedrawUi();
         }
 
         private void EntityTypeDropdown_SelectedIndexChanged(object sender, EventArgs e)
@@ -218,8 +223,27 @@ namespace CardGenerationHelper
                 EntityType.BUILDING => _building,
                 _ => throw new NotImplementedException("Incorrect entity type selected")
             };
-            // TODO: Later force UI redraw of elements
+            RedrawUi();
             RefreshDrawTimer();
+        }
+        void RedrawUi()
+        {
+            if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType())) // Living entities also have HP
+            {
+                LivingEntityPanel.Show();
+            }
+            else
+            {
+                LivingEntityPanel.Hide();
+            }
+            if (typeof(Unit).IsAssignableFrom(_currentEntity.GetType())) // Living entities also have HP
+            {
+                UnitPanel.Show();
+            }
+            else
+            {
+                UnitPanel.Hide();
+            }
         }
 
         private void TargetOptionsDropdown_SelectedIndexChanged(object sender, EventArgs e)
@@ -309,6 +333,50 @@ namespace CardGenerationHelper
         private void CostUpDown_ValueChanged(object sender, EventArgs e)
         {
             _currentPrintInfo.Cost = CostUpDown.Value.ToString();
+            RefreshDrawTimer();
+        }
+
+        private void SavePictureButton_Click(object sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
+                saveFileDialog.Title = "Save card Image";
+                saveFileDialog.DefaultExt = "png"; // Default file type
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = saveFileDialog.FileName;
+
+                    // Example: Assuming you have a PictureBox named pictureBox1
+                    CardPicture.Image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
+                }
+            }
+        }
+
+        private void HpUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            _currentPrintInfo.Hp = HpUpDown.Value.ToString();
+            ((LivingEntity)_currentEntity).Hp.BaseValue = Convert.ToInt32(HpUpDown.Value);
+            RefreshDrawTimer();
+        }
+
+        private void AttackUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            _currentPrintInfo.Attack = AttackUpDown.Value.ToString();
+            ((Unit)_currentEntity).Attack.BaseValue = Convert.ToInt32(AttackUpDown.Value);
+            RefreshDrawTimer();
+        }
+        private void MovementOrDenominatorUpdown_ValueChanged(object sender, EventArgs e)
+        {
+            ((Unit)_currentEntity).Movement.BaseValue = Convert.ToInt32(MovementUpdown.Value);
+            ((Unit)_currentEntity).MovementDenominator.BaseValue = Convert.ToInt32(DenominatorUpDown.Value);
+            string MovString = MovementUpdown.Value.ToString();
+            if(DenominatorUpDown.Value != 1)
+            {
+                MovString += "/" + DenominatorUpDown.Value.ToString();
+            }
+            _currentPrintInfo.Movement = MovString;
             RefreshDrawTimer();
         }
     }
