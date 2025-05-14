@@ -53,7 +53,7 @@ namespace ODLGameEngine
     /// <summary>
     /// Will define how a card looks and works before it creates an instance in the board
     /// </summary>
-    public class PreInstanceInfo
+    public class PrePlayInfo
     {
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EntityType EntityType { get; set; } = EntityType.NONE;
@@ -84,7 +84,7 @@ namespace ODLGameEngine
     public class EntityBase : ICloneable
     {
         [JsonProperty]
-        public PreInstanceInfo PreInstanceInfo { get; set; } = new PreInstanceInfo(); // Non-hashed, non-cloned as I just want to reference once
+        public PrePlayInfo PrePlayInfo { get; set; } = new PrePlayInfo(); // Non-hashed, non-cloned as I just want to reference once
         [JsonProperty]
         public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 

@@ -64,7 +64,7 @@ namespace ODLGameEngine
         void BOARDENTITY_CleanUnit(LivingEntity entity)
         {
             ENGINE_AddMessageEvent($"{entity.Name} was destroyed");
-            if(entity.PreInstanceInfo.EntityType == EntityType.UNIT || entity.PreInstanceInfo.EntityType == EntityType.BUILDING)
+            if(entity.PrePlayInfo.EntityType == EntityType.UNIT || entity.PrePlayInfo.EntityType == EntityType.BUILDING)
             {
                 // Removes unit from its space, first from tile and then from lane!
                 BOARDENTITY_InsertInTile((PlacedEntity)entity, -1);
@@ -72,7 +72,7 @@ namespace ODLGameEngine
                 // Moves unit from living space to dead space
                 ENGINE_DeinitializeEntity((PlacedEntity)entity);
             }
-            else if(entity.PreInstanceInfo.EntityType == EntityType.PLAYER) // Somethign more sinister, this is a game-ending situation, a player just died
+            else if(entity.PrePlayInfo.EntityType == EntityType.PLAYER) // Somethign more sinister, this is a game-ending situation, a player just died
             {
                 throw new EndOfGameException($"{entity.Name} dead by HP", 1 - entity.Owner); // Other player wins!
             }

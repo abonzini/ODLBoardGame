@@ -144,7 +144,7 @@ namespace ODLGameEngine
         /// <returns>The entity that was generated for this play</returns>
         IngameEntity PLAYABLE_PlayCard(EntityBase card, TargetLocation chosenTarget)
         {
-            switch (card.PreInstanceInfo.EntityType)
+            switch (card.PrePlayInfo.EntityType)
             {
                 case EntityType.UNIT:
                     return UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
@@ -177,24 +177,24 @@ namespace ODLGameEngine
             }
             // Otherwise I can def afford, check if playable in the desired place
             outcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (card.PreInstanceInfo.TargetOptions == TargetLocation.BOARD)
+            if (card.PrePlayInfo.TargetOptions == TargetLocation.BOARD)
             {
                 // TODO: Here we raise a playability context and ask the card
                 outcome = PlayOutcome.OK;
                 possibleTargets = TargetLocation.BOARD;
                 // If filled requirements, card playable
             }
-            else if (card.PreInstanceInfo.TargetOptions <= TargetLocation.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
+            else if (card.PrePlayInfo.TargetOptions <= TargetLocation.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
             {
                 int laneCandidate;
                 TargetLocation validTargetsIfPossible = TargetLocation.BOARD;
                 for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
                 {
                     laneCandidate = 1 << i;
-                    if (card.PreInstanceInfo.TargetOptions.HasFlag((TargetLocation)laneCandidate)) // If this lane is one of the possible ones
+                    if (card.PrePlayInfo.TargetOptions.HasFlag((TargetLocation)laneCandidate)) // If this lane is one of the possible ones
                     {
                         bool canPlay = true; // By default, can play
-                        if(card.PreInstanceInfo.EntityType == EntityType.BUILDING) // Buildings have an extra check, where they need to see if they can be built
+                        if(card.PrePlayInfo.EntityType == EntityType.BUILDING) // Buildings have an extra check, where they need to see if they can be built
                         {
                             canPlay = (BUILDING_GetBuildingOptions((int)DetailedState.CurrentPlayer, (Building)card, (TargetLocation)laneCandidate).FirstAvailableOption >= 0);
                         }
@@ -218,7 +218,7 @@ namespace ODLGameEngine
         bool PLAYABLE_PlayerCanAfford(EntityBase card)
         {
             // May need to be made smarter if someone does variable cost cards
-            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Gold >= int.Parse(card.PreInstanceInfo.Cost));
+            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Gold >= int.Parse(card.PrePlayInfo.Cost));
         }
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
@@ -228,7 +228,7 @@ namespace ODLGameEngine
         void PLAYABLE_PayCost(EntityBase card)
         {
             PlayerState player = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer];
-            TRIGINTER_ModifyPlayersGold(player.Owner, -int.Parse(card.PreInstanceInfo.Cost), ModifierOperation.ADD);
+            TRIGINTER_ModifyPlayersGold(player.Owner, -int.Parse(card.PrePlayInfo.Cost), ModifierOperation.ADD);
         }
     }
 }

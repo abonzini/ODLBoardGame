@@ -7,13 +7,15 @@ For example, first expansion base class would be Vanilla/Base, if there's X clas
 Then, you'd look for the specific card.
 The path is deduced by the index.txt previously mentioned.
 
-The json file is somewhat complex, describes the card in its totality, as well as how the card is played and describes the board entity too.
-Every card, no matter the type, has the following elements inside no matter what:
+The json file is somewhat complex, describes the card in its totality.
+Thhis means, it contains all the data needed to describe how a card is played, visualized, and the effects it has once it's actually placed on the board.
+Every card, no matter the type, has the following elements:
 
 ```
-"EntityPrintInfo":
+"PrePlayInfo":
 {
     "Id": 0,
+    "EntityType": "NONE",
     "Title": "",
     "Text": "",
     "Cost": "",
@@ -23,20 +25,13 @@ Every card, no matter the type, has the following elements inside no matter what
     "Rarity": 0,
     "Expansion": "VANILLA",
     "ClassType": "BASE"
-}
-```
-
-```
-"EntityPlayInfo":
-{
-    "CardType": "UNKNOWN",
     "TargetOptions": "BOARD",
-    "TargetConditions": []
 }
 ```
-
 Besides card-specific fields (explained below), these mandatory fields serve the following purpose:
-- **EntityPrintInfo** contains all the visual information of how a card is "printed", includes data such as:
+- **PrePlayInfo** contains all the information that corresponds to the card before it is played. This includes visuals (e.g. Rarity, Text) but also info on where it can be played (TargetOptions) and the cost.
+Some fields are not needed for some cards (e.g. Buildings won't use the Attack stat).
+Data:
     - ```ID:``` Card ID number
     - ```Title:``` I.e. the card "name", or title of the card
     - ```Text:``` Card text/effect if any
@@ -44,8 +39,7 @@ Besides card-specific fields (explained below), these mandatory fields serve the
     - ```Rarity:``` The rarity of the card, ranging from 0 (generated) or 1-3
     - ```Expansion:``` Expansion name in card language
     - ```ClassType:``` Card class (or BASE)
-- **EntityPlayInfo**
-    - ```EntityType:``` Type of card, for now ```UNIT```, ```SKILL```, ```BUILDING```
+    - ```EntityType:``` Type of card, such as ```UNIT```, ```SKILL```, ```BUILDING```
     - ```TargetOptions:``` Where the card can be targeted. Options:
         - ```BOARD```
         - ```PLAINS```
@@ -59,11 +53,10 @@ Besides card-specific fields (explained below), these mandatory fields serve the
 
         These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
         For example, ```PLAINS|FOREST``` would work exactly like ```ALL_BUT_MOUNTAIN```.
-    - ```TargetConditions:``` Some cards are unable to be played without target, e.g. a skill that damages an enemy needs an enemy to be present (maybe in a specific lane), or similar. Options:
-        - ```NONE```, No condition, played always
-        - ```BLUEPRINT```, Can be played only if blueprint condition is satisfied (buildings always have this condition)
 
-Then, depending on the type of cards, additional fields are needed/used. Every type of card also can have **Triggers** and **Interactions** which are additional fields explained below. 
+Depending on the type of cards, additional fields are needed/used. Every type of card also can have **Interactions**.
+Living entities, e.g. entities that are permanent in the board (anything but skills), also have **Triggers**.
+**Interactions** and **Triggers** are quite complex and so will be explained in more detail later in this file.
 
 ## Units
 When card is a unit, the unit needs to contain the following data. This will create a unit with the correct values and effects:
@@ -83,14 +76,16 @@ Building cards are similar to units, they contain the following:
 
 ## Skills
 Skills do not contain any other info as they only have effects (I.e. "When played" interactions), and do not persist in the field.
+This is why also they don't contain triggers.
 
 # Trigger and Interaction Effects
 
-These define a card's "effects".
+These define a card's "effects" and very complex behaviours.
 The two types are:
 
 - **Triggers:** These will trigger when something happens globally, outside of the card's control.
 For example cards that are designed as "At the end of turn do X", or "When a player does X, this card does Y".
+When this event happens, the corresponding entity will be triggered and do the effects.
 - **Interactions:** Effects that are activated when something happens with a card. For example, a card that does something when taking damage, or when played.
 Skills will have interactions only as they don't persist after it's effect resolves.
 
@@ -141,7 +136,7 @@ In the example above, the card would contain 2 interactions, and then each would
 ## Interaction Types
 
 - ```WHEN_PLAYED``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
-- ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during advance). This interaction happens first from the POV of the unit and then the POV of the building.
+- ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during advance). This interaction happens only once, and the Unit/Building will need to each process the effect from their own POV.
 
 # Effect Mechanism
 

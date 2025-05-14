@@ -24,7 +24,7 @@ namespace EngineTests
         /// <returns></returns>
         public static Skill CreateSkill(int id, string name, int cost, TargetLocation target)
         {
-            PreInstanceInfo preInstanceInfo = new PreInstanceInfo()
+            PrePlayInfo preInstanceInfo = new PrePlayInfo()
             {
                 Id = id,
                 Title = name,
@@ -34,7 +34,7 @@ namespace EngineTests
             };
             return new Skill() // Returns "brick" card
             {
-                PreInstanceInfo = preInstanceInfo
+                PrePlayInfo = preInstanceInfo
             };
         }
         /// <summary>
@@ -51,7 +51,7 @@ namespace EngineTests
         /// <returns></returns>
         public static Unit CreateUnit(int id, string name, int cost, TargetLocation target, int hp, int attack, int movement, int denominator)
         {
-            PreInstanceInfo preInstanceInfo = new PreInstanceInfo()
+            PrePlayInfo preInstanceInfo = new PrePlayInfo()
             {
                 Id = id,
                 Title = name,
@@ -61,7 +61,7 @@ namespace EngineTests
             };
             Unit unit = new Unit()
             {
-                PreInstanceInfo = preInstanceInfo
+                PrePlayInfo = preInstanceInfo
             };
             unit.Hp.BaseValue = hp;
             unit.Attack.BaseValue = attack;
@@ -84,7 +84,7 @@ namespace EngineTests
         /// <returns></returns>
         public static Building CreateBuilding(int id, string name, int cost, TargetLocation target, int hp, int[] plainBp, int[] forestBp, int[] mountainBp)
         {
-            PreInstanceInfo preInstanceInfo = new PreInstanceInfo()
+            PrePlayInfo preInstanceInfo = new PrePlayInfo()
             {
                 Id = id,
                 Title = name,
@@ -94,7 +94,7 @@ namespace EngineTests
             };
             Building building = new Building() // Returns "TOKEN_BUILDING" card
             {
-                PreInstanceInfo = preInstanceInfo,
+                PrePlayInfo = preInstanceInfo,
                 PlainsBp = plainBp,
                 ForestBp = forestBp,
                 MountainBp = mountainBp,
