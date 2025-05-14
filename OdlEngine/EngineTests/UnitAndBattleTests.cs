@@ -21,11 +21,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int boardHash;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test unit with 1 in all stats, summonable anywhere
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
@@ -33,7 +31,7 @@ namespace EngineTests
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
                 }
-                state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
+                state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 boardHash = sm.DetailedState.BoardState.GetHashCode(); // Store hash
@@ -67,18 +65,16 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
                 }
-                state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
+                state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Will play one of them
@@ -125,18 +121,16 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
                 }
-                state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
+                state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 TargetLocation chosenTarget = (TargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
@@ -202,11 +196,9 @@ namespace EngineTests
                 HashSet<int> boardHashes = new HashSet<int>();
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 5; i++)
@@ -299,18 +291,16 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int boardHash;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 0, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats but 0 HP, summonable in any lane 
                 }
-                state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
+                state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 boardHash = sm.DetailedState.BoardState.GetHashCode(); // Store hash
@@ -405,11 +395,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 int movement = _rng.Next(1, GameConstants.MOUNTAIN_TILES_NUMBER); // Random movement unit, but want to make it so it never reaches castle
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, movement, 1));
@@ -468,11 +456,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = (CurrentPlayer)otherPlayerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                 // Will try this in mountain!
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 0, 9, 1)); // Max movement bc it's stopped by enemy anyway
@@ -544,11 +530,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 0, 9, 1));
                 // Will try this in all lanes!
@@ -614,11 +598,9 @@ namespace EngineTests
                 HashSet<int> unitHashes = new HashSet<int>();
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 0, 1, 9));
                 // Will try this in all lanes!
@@ -776,11 +758,9 @@ namespace EngineTests
                 int hp = attack + 2; // So that both units survive
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = (CurrentPlayer)otherPlayerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                 // Will try this in mountain as there's space!
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, hp, attack, 9, 1)); // Gets to the end so it clashes
@@ -871,11 +851,9 @@ namespace EngineTests
                     int defenderStat = hp + defenderExtraDmg[i];
                     int playerIndex = (int)player;
                     int otherPlayerIndex = 1 - playerIndex;
-                    GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
-                    {
-                        CurrentState = States.ACTION_PHASE,
-                        CurrentPlayer = (CurrentPlayer)otherPlayerIndex
-                    };
+                    GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                    state.CurrentState = States.ACTION_PHASE;
+                    state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
                     cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, hp, attackerStat, 9, 1)); // Gets to the end so it clashes
@@ -987,11 +965,9 @@ namespace EngineTests
                 {
                     int playerIndex = (int)player;
                     int otherPlayerIndex = 1 - playerIndex;
-                    GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
-                    {
-                        CurrentState = States.ACTION_PHASE,
-                        CurrentPlayer = (CurrentPlayer)otherPlayerIndex
-                    };
+                    GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                    state.CurrentState = States.ACTION_PHASE;
+                    state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
                     cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, stat, stat, 1, 1)); // Gets to the end so it clashes
@@ -1117,11 +1093,9 @@ namespace EngineTests
                 {
                     int playerIndex = (int)player;
                     int otherPlayerIndex = 1 - playerIndex;
-                    GameStateStruct state = new GameStateStruct // This time the opponent starts, so their unit is in the middle of lane
-                    {
-                        CurrentState = States.ACTION_PHASE,
-                        CurrentPlayer = (CurrentPlayer)otherPlayerIndex
-                    };
+                    GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                    state.CurrentState = States.ACTION_PHASE;
+                    state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
                     cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, stat, stat, 1, 1)); // Gets to the end so it clashes
@@ -1223,11 +1197,9 @@ namespace EngineTests
                 int attack = _rng.Next(1, 10); // Attack between 1-9
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = (CurrentPlayer)playerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[playerIndex].Hp.BaseValue = GameConstants.STARTING_HP; // It's important to set this
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = GameConstants.STARTING_HP;
                 // Will try this in any lane
@@ -1250,9 +1222,9 @@ namespace EngineTests
                 sm.Step(); // Finish draw phase of opp
                 sm.EndTurn(); // End opp turn
                 // Now the unit is ready to advance, check before and after
-                PlayerState ps1 = sm.DetailedState.PlayerStates[playerIndex];
+                Player ps1 = sm.DetailedState.PlayerStates[playerIndex];
                 int ps1Hash = ps1.GetHashCode();
-                PlayerState ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
+                Player ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
                 int ps2Hash = ps2.GetHashCode();
                 Assert.AreEqual(ps1.Hp.Total, GameConstants.STARTING_HP);
                 Assert.AreEqual(ps2.Hp.Total, GameConstants.STARTING_HP);
@@ -1297,11 +1269,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = (CurrentPlayer)playerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[playerIndex].Hp.BaseValue = GameConstants.STARTING_HP; // It's important to set this
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = GameConstants.STARTING_HP;
                 // Will try this in any lane
@@ -1325,9 +1295,9 @@ namespace EngineTests
                 sm.PlayFromHand(1, target); // Play the unit for opp
                 sm.EndTurn(); // End opp turn
                 // Now the unit is ready to advance, will collide with enemy tho
-                PlayerState ps1 = sm.DetailedState.PlayerStates[playerIndex];
+                Player ps1 = sm.DetailedState.PlayerStates[playerIndex];
                 int ps1Hash = ps1.GetHashCode();
-                PlayerState ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
+                Player ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
                 int ps2Hash = ps2.GetHashCode();
                 Assert.AreEqual(ps1.Hp.Total, GameConstants.STARTING_HP); // Because they drew card
                 Assert.AreEqual(ps2.Hp.Total, GameConstants.STARTING_HP); // However, this one didn't get any change
@@ -1376,11 +1346,9 @@ namespace EngineTests
                 int attack = _rng.Next(1, 10); // Attack between 1-9
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = (CurrentPlayer)playerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[playerIndex].Hp.BaseValue = GameConstants.STARTING_HP; // It's important to set this
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = attack; // Opp has less HP this time
                 // Will try this in any lane
@@ -1403,9 +1371,9 @@ namespace EngineTests
                 sm.Step(); // Finish draw phase of opp
                 sm.EndTurn(); // End opp turn
                 // Now the unit is ready to advance, check before and after
-                PlayerState ps1 = sm.DetailedState.PlayerStates[playerIndex];
+                Player ps1 = sm.DetailedState.PlayerStates[playerIndex];
                 int ps1Hash = ps1.GetHashCode();
-                PlayerState ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
+                Player ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
                 int ps2Hash = ps2.GetHashCode();
                 Assert.AreEqual(ps1.Hp.Total, GameConstants.STARTING_HP);
                 Assert.AreEqual(ps2.Hp.Total, attack);
@@ -1452,11 +1420,9 @@ namespace EngineTests
                 int attack = _rng.Next(2, 10); // Attack between 1-9
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = (CurrentPlayer)playerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[playerIndex].Hp.BaseValue = GameConstants.STARTING_HP; // It's important to set this
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = attack - 1; // Opp has less HP this time
                                                                       // Will try this in any lane
@@ -1479,9 +1445,9 @@ namespace EngineTests
                 sm.Step(); // Finish draw phase of opp
                 sm.EndTurn(); // End opp turn
                 // Now the unit is ready to advance, check before and after
-                PlayerState ps1 = sm.DetailedState.PlayerStates[playerIndex];
+                Player ps1 = sm.DetailedState.PlayerStates[playerIndex];
                 int ps1Hash = ps1.GetHashCode();
-                PlayerState ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
+                Player ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
                 int ps2Hash = ps2.GetHashCode();
                 Assert.AreEqual(ps1.Hp.Total, GameConstants.STARTING_HP);
                 Assert.AreEqual(ps2.Hp.Total, attack - 1);
@@ -1529,11 +1495,9 @@ namespace EngineTests
                     int attack = 6 / unitThatKills; // That way the unit that kills, kills
                     int playerIndex = (int)player;
                     int otherPlayerIndex = 1 - playerIndex;
-                    GameStateStruct state = new GameStateStruct
-                    {
-                        CurrentState = States.ACTION_PHASE,
-                        CurrentPlayer = (CurrentPlayer)playerIndex
-                    };
+                    GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                    state.CurrentState = States.ACTION_PHASE;
+                    state.CurrentPlayer = player;
                     state.PlayerStates[playerIndex].Hp.BaseValue = GameConstants.STARTING_HP; // It's important to set this
                     state.PlayerStates[otherPlayerIndex].Hp.BaseValue = 6; // Opp has 6HP which is pretty handy for this test
                     CardFinder cardDb = new CardFinder();
@@ -1556,9 +1520,9 @@ namespace EngineTests
                     sm.Step(); // Finish draw phase of opp
                     sm.EndTurn(); // End opp turn
                     // Now untis are ready to advance, check before and after
-                    PlayerState ps1 = sm.DetailedState.PlayerStates[playerIndex];
+                    Player ps1 = sm.DetailedState.PlayerStates[playerIndex];
                     int ps1Hash = ps1.GetHashCode();
-                    PlayerState ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
+                    Player ps2 = sm.DetailedState.PlayerStates[otherPlayerIndex];
                     int ps2Hash = ps2.GetHashCode();
                     Assert.AreEqual(ps1.Hp.Total, GameConstants.STARTING_HP);
                     Assert.AreEqual(ps2.Hp.Total, 6);
@@ -1624,11 +1588,9 @@ namespace EngineTests
                 int attack = _rng.Next(1, 9); // Attack between 1-8
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = (CurrentPlayer)playerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Will try this in any lane
                 TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
@@ -1682,11 +1644,9 @@ namespace EngineTests
                 int attack = _rng.Next(1, 9); // Attack between 1-8
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.DRAW_PHASE,
-                    CurrentPlayer = (CurrentPlayer)playerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentPlayer = player;
                 // Will try this in any lane
                 TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
@@ -1753,11 +1713,9 @@ namespace EngineTests
                 int attack = _rng.Next(1, 10); // Attack between 1-9
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.DRAW_PHASE,
-                    CurrentPlayer = (CurrentPlayer)playerIndex
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentPlayer = player;
                 // Will try this in any lane
                 TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)

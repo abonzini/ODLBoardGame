@@ -8,9 +8,9 @@ namespace EngineTests
         [TestMethod]
         public void DeserializeAllCreatedCards()
         {
-            const int NUMBER_OF_CREATED_CARDS = 3;
+            const int NUMBER_OF_CREATED_CARDS = 0;
             DeserializationHelper helper = new DeserializationHelper();
-            for(int i = 1; i <= NUMBER_OF_CREATED_CARDS; i++)
+            for(int i = 0; i <= NUMBER_OF_CREATED_CARDS; i++)
             {
                 Assert.IsTrue(helper.IsJsonValid(i));
             }

@@ -1,0 +1,12 @@
+{
+	"PrePlayInfo":
+	{
+        "Id": 0,
+		"EntityType": "PLAYER",
+        "Expansion": "VANILLA",
+		"ClassType": "BASE",
+	},
+    "Hp": 20,
+    "CurrentGold": 5,
+    "ActivePowerId": 1
+}

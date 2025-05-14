@@ -76,7 +76,7 @@ namespace ODLGameEngine
         /// <returns>Like PlayCard, chain of effects after power was played</returns>
         public Tuple<PlayOutcome, StepResult> PlayActivePower()
         {
-            return PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerCast, TargetLocation.BOARD, PlayType.ACTIVE_POWER);
+            return PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerId, TargetLocation.BOARD, PlayType.ACTIVE_POWER);
         }
         // Back-end (private)
         /// <summary>
@@ -218,7 +218,7 @@ namespace ODLGameEngine
         bool PLAYABLE_PlayerCanAfford(EntityBase card)
         {
             // May need to be made smarter if someone does variable cost cards
-            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Gold >= int.Parse(card.PrePlayInfo.Cost));
+            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].CurrentGold >= int.Parse(card.PrePlayInfo.Cost));
         }
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
@@ -227,7 +227,7 @@ namespace ODLGameEngine
         /// <returns>Cost in gold of card</returns>
         void PLAYABLE_PayCost(EntityBase card)
         {
-            PlayerState player = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer];
+            Player player = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer];
             TRIGINTER_ModifyPlayersGold(player.Owner, -int.Parse(card.PrePlayInfo.Cost), ModifierOperation.ADD);
         }
     }

@@ -1,12 +1,10 @@
 Ongoing tasks in order of priority:
 - Card maker UI:
-	- rest of card stats, reposition gold
-	- draw blueprint checkbox, separate
-	- save image function
+    - Save player features too (intiial gold, initial hp, initial active)
 	- events and triggers rest of stuff
 	- export json
 	- import json
-- Implement rest of rulebook
+- Implement rest of rulebook (start from scratch, use app)
 	- Procedure:
 		- Propose card, way to code it
 		- Add triginters if not there already

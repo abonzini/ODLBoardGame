@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace ODLGameEngine
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class Deck
+    public class Deck : ICloneable
     {
         private bool _dirtyHash = true;
         private int _hash;
@@ -191,6 +191,12 @@ namespace ODLGameEngine
         public override string ToString()
         {
             return GetDeckHistogramString();
+        }
+        public object Clone()
+        {
+            Deck newDeck = new Deck();
+            newDeck.InitializeDeck(_cards);
+            return newDeck;
         }
     }
 }

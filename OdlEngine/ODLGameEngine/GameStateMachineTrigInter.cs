@@ -447,7 +447,7 @@ namespace ODLGameEngine
         /// <param name="operation">What to do with the number</param>
         void TRIGINTER_ModifyPlayersGold(int playerId, int value, ModifierOperation operation)
         {
-            ENGINE_SetPlayerGold(playerId, TRIGINTER_GetModifiedValue(DetailedState.PlayerStates[playerId].Gold, value, operation));
+            ENGINE_SetPlayerGold(playerId, TRIGINTER_GetModifiedValue(DetailedState.PlayerStates[playerId].CurrentGold, value, operation));
         }
     }
 }

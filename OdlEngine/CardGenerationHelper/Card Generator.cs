@@ -12,7 +12,7 @@ namespace CardGenerationHelper
         EntityBase _emptyEntity = new EntityBase();
         Unit _unit = new Unit();
         Building _building = new Building();
-        PlayerState _player = new PlayerState();
+        Player _player = new Player();
         Skill _skill = new Skill();
 
         string _cardImagePath = Properties.Settings.Default.ImagePath;

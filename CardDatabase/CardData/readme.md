@@ -32,14 +32,14 @@ Besides card-specific fields (explained below), these mandatory fields serve the
 - **PrePlayInfo** contains all the information that corresponds to the card before it is played. This includes visuals (e.g. Rarity, Text) but also info on where it can be played (TargetOptions) and the cost.
 Some fields are not needed for some cards (e.g. Buildings won't use the Attack stat).
 Data:
-    - ```ID:``` Card ID number
+    - ```Id:``` Card ID number
     - ```Title:``` I.e. the card "name", or title of the card
     - ```Text:``` Card text/effect if any
     - ```Cost, Hp, Movement, Attack:``` The "stats" of a card if any, consider that these are strings as a placeholder for more complex effects
     - ```Rarity:``` The rarity of the card, ranging from 0 (generated) or 1-3
     - ```Expansion:``` Expansion name in card language
     - ```ClassType:``` Card class (or BASE)
-    - ```EntityType:``` Type of card, such as ```UNIT```, ```SKILL```, ```BUILDING```
+    - ```EntityType:``` Type of card, such as ```UNIT```, ```SKILL```, ```BUILDING```, ```PLAYER```
     - ```TargetOptions:``` Where the card can be targeted. Options:
         - ```BOARD```
         - ```PLAINS```
@@ -77,6 +77,19 @@ Building cards are similar to units, they contain the following:
 ## Skills
 Skills do not contain any other info as they only have effects (I.e. "When played" interactions), and do not persist in the field.
 This is why also they don't contain triggers.
+
+## Player Class
+Player classes have many similarities to some cards.
+For example, players contain Hp, like Units and Buildings.
+Moreover, player classes may also contain complex mechanics, including Triggers and Interactions, caused either by card effects but also as "Passives" of the class.
+After much deliberation, it was decided to incorporate classes as a *type of card*.
+Naturally, you won't be able to add them into the deck (unless its some sort of weird hearthstone hero-change effect???) but it is loaded and interpreted as such.
+The base class "description card" has an Id of 0, rest of classes will be other things I guess.
+Thay have the following properies:
+- ```Name:``` Name of player (nickname)
+- ```Hp:``` Starting HP of player
+- ```CurrentGold``` Amount of gold they hold
+- ```ActivePowerId``` The card that takes part of the "active power". Has to be a skill with Board targeting
 
 # Trigger and Interaction Effects
 

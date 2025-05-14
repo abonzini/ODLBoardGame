@@ -8,25 +8,18 @@ using System.Threading.Tasks;
 namespace ODLGameEngine
 {
     /// <summary>
-    /// Classes types
+    /// Classes types. Number same as the card number
     /// </summary>
     public enum PlayerClassType
     {
-        BASE
+        BASE = 0
     }
 
     [JsonObject(MemberSerialization.OptIn)]
-    public class PlayerState : LivingEntity
+    public class Player : LivingEntity
     {
-        public PlayerState() // Default values of base cards are different
-        {
-            PrePlayInfo.EntityType = EntityType.PLAYER;
-            Hp.BaseValue = GameConstants.STARTING_HP;
-        }
         [JsonProperty]
-        public PlayerClassType PlayerClass { get; set; } = PlayerClassType.BASE;
-        [JsonProperty]
-        public int Gold { get; set; } = 0;
+        public int CurrentGold { get; set; } = 0;
         [JsonProperty]
         public bool PowerAvailable { get; set; } = true;
         [JsonProperty]
@@ -36,20 +29,30 @@ namespace ODLGameEngine
         [JsonProperty]
         public AssortedCardCollection DiscardPile { get; set; } = new AssortedCardCollection();
         [JsonProperty]
-        public int ActivePowerCast { get; set; } = GameConstants.RUSH_CARD_ID;
+        public int ActivePowerId { get; set; } = GameConstants.RUSH_CARD_ID;
 
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
             hash.Add(base.GetHashCode());
-            hash.Add(PlayerClass);
-            hash.Add(Gold);
+            hash.Add(CurrentGold);
             hash.Add(PowerAvailable);
             hash.Add(Hand.GetHashCode());
             hash.Add(Deck.GetHashCode());
             hash.Add(DiscardPile.GetHashCode());
-            hash.Add(ActivePowerCast);
+            hash.Add(ActivePowerId);
             return hash.ToHashCode();
+        }
+        public override object Clone()
+        {
+            Player newEntity = (Player)base.Clone();
+            newEntity.CurrentGold = CurrentGold;
+            newEntity.PowerAvailable = PowerAvailable;
+            newEntity.Deck = (Deck)Deck.Clone();
+            newEntity.Hand = (AssortedCardCollection)Hand.Clone();
+            newEntity.DiscardPile = (AssortedCardCollection)DiscardPile.Clone();
+            newEntity.ActivePowerId = ActivePowerId;
+            return newEntity;
         }
     }
 }

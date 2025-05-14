@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace ODLGameEngine
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class AssortedCardCollection
+    public class AssortedCardCollection : ICloneable
     {
         private int _hash;
         private bool _dirtyHash = true;
@@ -93,6 +93,16 @@ namespace ODLGameEngine
             };
             retString = System.Text.Json.JsonSerializer.Serialize(_cards, options);
             return retString;
+        }
+        public object Clone()
+        {
+            AssortedCardCollection newCollection = new AssortedCardCollection();
+            newCollection._size = _size;
+            foreach(KeyValuePair<int, int> kvp in _cards)
+            {
+                newCollection._cards[kvp.Key] = kvp.Value;
+            }
+            return newCollection;
         }
     }
 }

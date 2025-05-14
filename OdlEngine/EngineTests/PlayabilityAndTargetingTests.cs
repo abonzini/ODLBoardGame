@@ -18,11 +18,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 for (int i = 0; i < 10; i++)
                 {
@@ -30,7 +28,7 @@ namespace EngineTests
                     cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i,"BRICK", i, TargetLocation.BOARD));
                     state.PlayerStates[playerIndex].Hand.InsertCard(i); // Insert test cards (brick) in hand costs 0-9
                 }
-                state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
+                state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 for(int i = 0; i < sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
@@ -54,11 +52,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 for (int i = 0; i < 10; i++)
                 {
@@ -94,11 +90,9 @@ namespace EngineTests
                 List<States> ls = [.. Enum.GetValues<States>()];
                 foreach(States st in ls)
                 {
-                    GameStateStruct state = new GameStateStruct
-                    {
-                        CurrentState = st,
-                        CurrentPlayer = player
-                    };
+                    GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                    state.CurrentState = st;
+                    state.CurrentPlayer = player;
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert only one card, I don't care
                     GameStateMachine sm = new GameStateMachine();
                     sm.LoadGame(state); // Start from here
@@ -118,11 +112,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 0, TargetLocation.BOARD));
 
@@ -158,11 +150,9 @@ namespace EngineTests
                 List<States> ls = [.. Enum.GetValues<States>()];
                 foreach (States st in ls)
                 {
-                    GameStateStruct state = new GameStateStruct
-                    {
-                        CurrentState = st,
-                        CurrentPlayer = player
-                    };
+                    GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                    state.CurrentState = st;
+                    state.CurrentPlayer = player;
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert only one card, I don't care
                     GameStateMachine sm = new GameStateMachine();
                     sm.LoadGame(state); // Start from here
@@ -182,11 +172,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 0, TargetLocation.BOARD));
                 for (int i = 0; i < 5; i++)
@@ -214,11 +202,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 for (int i = 0; i <= 7; i++)
                 {
@@ -276,18 +262,16 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 for (int i = 0; i < 10; i++)
                 {
                     // Insert test cards (brick) in hand costs 0-9
                     cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i, "BRICK", i, TargetLocation.BOARD));
                 }
-                state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
+                state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
@@ -315,11 +299,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 List<int> possibleCards = new List<int>();
                 CardFinder cardDb = new CardFinder();
                 for (int i = 0; i < 10; i++)
@@ -329,7 +311,7 @@ namespace EngineTests
                     state.PlayerStates[playerIndex].Hand.InsertCard(randomCard); // Insert test cards (brick) in hand with random cost 0-9
                     possibleCards.Add(randomCard); // Add it also to one of my choices
                 }
-                state.PlayerStates[playerIndex].Gold = rng.Next(1000,10000); // Set gold to random but high value
+                state.PlayerStates[playerIndex].CurrentGold = rng.Next(1000,10000); // Set gold to random but high value
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < 5; i++) // Will play 5 random cards
@@ -339,7 +321,7 @@ namespace EngineTests
                     int cardIndexToPlay = rng.Next(handSize);
                     int cardIdToPlay = possibleCards[cardIndexToPlay]; // Get random card of the ones I generated
                     EntityBase cardToPlay = sm.CardDb.GetCard(cardIdToPlay);
-                    int currentGold = sm.DetailedState.PlayerStates[playerIndex].Gold;
+                    int currentGold = sm.DetailedState.PlayerStates[playerIndex].CurrentGold;
                     Tuple <PlayOutcome, StepResult> res = sm.PlayFromHand(cardIdToPlay, TargetLocation.BOARD);
                     possibleCards.RemoveAt(cardIndexToPlay); // Remove this one
                     Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
@@ -347,7 +329,7 @@ namespace EngineTests
                     Assert.IsTrue(sm.DetailedState.PlayerStates[playerIndex].DiscardPile.HasCard(cardIdToPlay)); // Card was discarded
                     Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].DiscardPile.CardCount, i+1); // Discard pile has correct number of cards
                     Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount, handSize-1); // One less card in hand
-                    Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].Gold, currentGold - int.Parse(cardToPlay.PrePlayInfo.Cost)); // Spent the money
+                    Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].CurrentGold, currentGold - int.Parse(cardToPlay.PrePlayInfo.Cost)); // Spent the money
                     Assert.AreEqual(sm.DetailedState.CurrentPlayer, player); // Player still in command
                     Assert.AreEqual(sm.DetailedState.CurrentState, States.ACTION_PHASE); // Still in action phase
                 }

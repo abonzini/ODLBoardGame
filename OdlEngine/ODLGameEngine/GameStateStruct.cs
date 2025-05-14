@@ -74,7 +74,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public CurrentPlayer CurrentPlayer { get; set; } = CurrentPlayer.OMNISCIENT;
         [JsonProperty]
-        public PlayerState[] PlayerStates { get; set; } = [new PlayerState(), new PlayerState()];
+        public Player[] PlayerStates { get; set; } = new Player[2];
         [JsonProperty]
         public Board BoardState { get; set; } = new Board();
         [JsonProperty]

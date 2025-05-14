@@ -18,11 +18,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that cant be targeted anywhere
                 cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1,"TEST", 0, TargetLocation.ALL_LANES, 1, [], [], []));
@@ -53,11 +51,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be built anywhere
                 cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, TargetLocation.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
@@ -87,11 +83,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere
@@ -206,11 +200,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 TargetLocation target = (TargetLocation)(1 << _rng.Next(3)); // Random target
                 CardFinder cardDb = new CardFinder();
@@ -294,11 +286,10 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                // Init game state
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere but has 0 hp
@@ -353,11 +344,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere
@@ -402,11 +391,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere

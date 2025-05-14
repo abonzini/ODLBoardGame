@@ -15,11 +15,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing
@@ -55,11 +53,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -133,11 +129,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -218,11 +212,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
@@ -268,11 +260,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect. However will die the moment it's summoned so trigger would be deleted immediately
@@ -319,11 +309,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
@@ -370,11 +358,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing
@@ -467,11 +453,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -622,11 +606,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -734,11 +716,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -839,11 +819,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -943,11 +921,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1050,11 +1026,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1158,11 +1132,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1265,11 +1237,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1328,11 +1298,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1394,11 +1362,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
@@ -1458,11 +1424,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1542,11 +1506,9 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1626,11 +1588,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1711,11 +1671,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1794,11 +1752,9 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -1884,18 +1840,16 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = player
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Gold
                 int startingGold = _rng.Next(2, 100);
                 int goldModifier = _rng.Next(2, 100);
-                state.PlayerStates[0].Gold = startingGold;
-                state.PlayerStates[1].Gold = startingGold;
+                state.PlayerStates[0].CurrentGold = startingGold;
+                state.PlayerStates[1].CurrentGold = startingGold;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that will modify  a player's gold
@@ -1939,13 +1893,13 @@ namespace EngineTests
                         Assert.AreEqual(res.Item1, PlayOutcome.OK);
                         // Check gold then
                         if (owner.HasFlag(EntityOwner.OWNER)) // Check if this player's gold had to be modified or remains as starting
-                            Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].Gold, desiredValue);
+                            Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].CurrentGold, desiredValue);
                         else
-                            Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].Gold, startingGold);
+                            Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].CurrentGold, startingGold);
                         if (owner.HasFlag(EntityOwner.OPPONENT)) // Check if this player's gold had to be modified or remains as starting
-                            Assert.AreEqual(sm.DetailedState.PlayerStates[opponentIndex].Gold, desiredValue);
+                            Assert.AreEqual(sm.DetailedState.PlayerStates[opponentIndex].CurrentGold, desiredValue);
                         else
-                            Assert.AreEqual(sm.DetailedState.PlayerStates[opponentIndex].Gold, startingGold);
+                            Assert.AreEqual(sm.DetailedState.PlayerStates[opponentIndex].CurrentGold, startingGold);
                         // Revert and hash check
                         sm.UndoPreviousStep();
                         Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());

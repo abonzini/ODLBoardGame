@@ -10,6 +10,47 @@ namespace EngineTests
     public static class TestHelperFunctions
     {
         /// <summary>
+        /// Gets a blank gamestate, with 2 vanilla base players, everythign instantiated in the INITP1 player state
+        /// </summary>
+        /// <returns></returns>
+        static public GameStateStruct GetBlankGameState()
+        {
+            CardFinder cardFinder = new CardFinder();
+            InjectBasePlayerToDb(cardFinder);
+            GameStateMachine sm = new GameStateMachine(cardFinder);
+            PlayerInitialData playerInit = new PlayerInitialData()
+            {
+                Name = "TestPlayer",
+                PlayerClass = PlayerClassType.BASE,
+                InitialDecklist = [],
+            };
+            sm.StartNewGame(playerInit, playerInit);
+            return sm.DetailedState;
+        }
+        /// <summary>
+        /// With the new Player=Card thing, I need to ensure every test now injects the card of base class here
+        /// </summary>
+        /// <param name="cardFinder">Db to inject to</param>
+        public static void InjectBasePlayerToDb(CardFinder cardFinder)
+        {
+            PrePlayInfo playerPrePlayInfo = new PrePlayInfo()
+            {
+                Id = 0,
+                Expansion = ExpansionId.VANILLA,
+                EntityType = EntityType.PLAYER,
+                ClassType = PlayerClassType.BASE,
+            };
+            Player player = new Player()
+            {
+                PrePlayInfo = playerPrePlayInfo,
+                Name = "PlayerName",
+                Hp = new Min0Stat() { BaseValue = GameConstants.STARTING_HP },
+                CurrentGold = GameConstants.STARTING_GOLD,
+                ActivePowerId = GameConstants.RUSH_CARD_ID
+            };
+            cardFinder.InjectCard(0, player);
+        }
+        /// <summary>
         /// Checks if player state has is already present or not in a set
         /// </summary>
         /// <param name="st">State of player</param>
@@ -27,7 +68,7 @@ namespace EngineTests
         /// Checks if deck 1-30 is properly shuffled, has a 2.6525286e+32 chance of messing up because you may get a perfect shuffle
         /// </summary>
         /// <returns>If deck's shuffled</returns>
-        public static bool IsDeckShuffled(PlayerState p)
+        public static bool IsDeckShuffled(Player p)
         {
             for (int i = 0; i < p.Deck.DeckSize; i++)
             {
@@ -43,10 +84,10 @@ namespace EngineTests
         /// </summary>
         /// <param name="p">Player</param>
         /// <returns>True if properly init</returns>
-        public static void VerifyPlayerInitialised(PlayerState p)
+        public static void VerifyPlayerInitialised(Player p)
         {
             Assert.AreEqual(p.Hp.Total, GameConstants.STARTING_HP);
-            Assert.AreEqual(p.Gold, GameConstants.STARTING_GOLD);
+            Assert.AreEqual(p.CurrentGold, GameConstants.STARTING_GOLD);
             Assert.AreEqual(p.Hand.CardCount, GameConstants.STARTING_CARDS);
             Assert.AreEqual(p.Deck.DeckSize, GameConstants.DECK_SIZE - GameConstants.STARTING_CARDS);
         }
@@ -60,7 +101,7 @@ namespace EngineTests
             GameStateStruct testState = sm.DetailedState;
             Assert.AreEqual(testState.CurrentState, States.DRAW_PHASE); // Am I in draw phase
             int preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
-            int preGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
+            int preGold = testState.PlayerStates[(int)testState.CurrentPlayer].CurrentGold;
             int preDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
             // Player hashes init for first time, also hands and decks, also state!
             HashSetVerification(testState.PlayerStates[0], hashes, false);
@@ -74,7 +115,7 @@ namespace EngineTests
             sm.Step();
             testState = sm.DetailedState;
             int postCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
-            int postGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
+            int postGold = testState.PlayerStates[(int)testState.CurrentPlayer].CurrentGold;
             int postDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
             Assert.AreEqual(testState.CurrentState, States.ACTION_PHASE); // Am I in next phase
             Assert.AreEqual(postCards - preCards, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player draw exact amount of cards
@@ -92,7 +133,7 @@ namespace EngineTests
             sm.UndoPreviousStep(); // Go back to beginning of drawphase
             testState = sm.DetailedState;
             preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
-            preGold = testState.PlayerStates[(int)testState.CurrentPlayer].Gold;
+            preGold = testState.PlayerStates[(int)testState.CurrentPlayer].CurrentGold;
             preDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
             Assert.AreEqual(testState.CurrentState, States.DRAW_PHASE); // Am I in draw phase again
             Assert.AreEqual(postCards - preCards, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player restore cards

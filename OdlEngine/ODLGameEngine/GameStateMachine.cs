@@ -59,12 +59,6 @@ namespace ODLGameEngine
             DetailedState = state;
             DetailedState.Seed = seed;
             _rng = new Random(seed);
-            DetailedState.PlayerStates[0].Owner = 0; // Make sure Players are init properly
-            DetailedState.PlayerStates[0].UniqueId = 0;
-            DetailedState.EntityData[0] = DetailedState.PlayerStates[0];
-            DetailedState.PlayerStates[1].Owner = 1;
-            DetailedState.PlayerStates[0].UniqueId = 1;
-            DetailedState.EntityData[1] = DetailedState.PlayerStates[1];
         }
         // --------------------------------------------------------------------------------------
         // ------------------------  STATE, ACTIONS AND STEP OPERATORS --------------------------
@@ -172,10 +166,17 @@ namespace ODLGameEngine
         /// <param name="playerData">Container with initial data needed to start the game</param>
         void STATE_LoadInitialPlayerData(int player, PlayerInitialData playerData)
         {
-            DetailedState.PlayerStates[player].Name = playerData.Name;
-            DetailedState.PlayerStates[player].Owner = player;
-            DetailedState.PlayerStates[player].PlayerClass = playerData.PlayerClass;
-            DetailedState.PlayerStates[player].Deck.InitializeDeck(playerData.InitialDecklist);
+            // Get all the player's card info
+            Player playerInstance = (Player)_cardDb.GetCard((int)playerData.PlayerClass);
+            playerInstance = (Player)playerInstance.Clone();
+            // Fill remaining
+            playerInstance.Name = playerData.Name;
+            playerInstance.Owner = player;
+            playerInstance.UniqueId = player;
+            playerInstance.Deck.InitializeDeck(playerData.InitialDecklist);
+
+            DetailedState.PlayerStates[player] = playerInstance; // Make sure Players are init properly
+            DetailedState.EntityData[player] = playerInstance;
         }
         /// <summary>
         /// Initializes player HP, gold, shuffles deck and draws cards. Needs to use correct RNG
@@ -183,8 +184,6 @@ namespace ODLGameEngine
         /// <param name="player">The player to init</param>
         void STATE_InitializePlayer(int player)
         {
-            STATS_SetAbsoluteBaseStat(DetailedState.PlayerStates[player].Hp, GameConstants.STARTING_HP);
-            ENGINE_SetPlayerGold(player, GameConstants.STARTING_GOLD);
             STATE_ShufflePlayerDeck(player);
             STATE_DeckDrawMultiple(player, GameConstants.STARTING_CARDS);
             ENGINE_NewRngSeed(_rng.Next(int.MinValue, int.MaxValue));
@@ -195,7 +194,7 @@ namespace ODLGameEngine
         void STATE_DrawPhase()
         {
             int playerId = (int)DetailedState.CurrentPlayer;
-            PlayerState player = DetailedState.PlayerStates[playerId];
+            Player player = DetailedState.PlayerStates[playerId];
             // Advance all units of that player
             List<int> playerUnitsIds = DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerId).ToList(); // (Clone)
             if (playerUnitsIds.Count > 0) // Only advance if player has units

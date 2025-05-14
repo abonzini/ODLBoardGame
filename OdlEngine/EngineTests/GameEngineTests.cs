@@ -18,7 +18,9 @@ namespace EngineTests
         {
             HashSet<int> playerHashes = new HashSet<int>(); // Stores all player hashes
             HashSet<int> stateHashes = new HashSet<int>(); // Stores all states
-            GameStateMachine sm = new GameStateMachine();
+            CardFinder cardFinder = new CardFinder();
+            TestHelperFunctions.InjectBasePlayerToDb(cardFinder);
+            GameStateMachine sm = new GameStateMachine(cardFinder);
             Assert.AreEqual(sm.DetailedState.CurrentState, States.START); // Ensure start in start state
             PlayerInitialData dummyPlayer1 = InitialStatesGenerator.GetDummyPlayer("p1");
             PlayerInitialData dummyPlayer2 = InitialStatesGenerator.GetDummyPlayer("p2");
@@ -76,7 +78,9 @@ namespace EngineTests
             {
                 HashSet<int> playerHashes = new HashSet<int>(); // Stores all player hashes
                 HashSet<int> stateHashes = new HashSet<int>(); // Stores all state hashes
-                GameStateMachine sm = new GameStateMachine();
+                CardFinder cardFinder = new CardFinder();
+                TestHelperFunctions.InjectBasePlayerToDb(cardFinder);
+                GameStateMachine sm = new GameStateMachine(cardFinder);
                 sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(id, (int)DateTime.Now.Ticks)); // Don't care about seed in this test
                 // First hashes
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.PlayerStates[0], playerHashes, false);
@@ -133,7 +137,9 @@ namespace EngineTests
         public void TestDeterminismInit() // Start, check seed initial, move forward, then move back, and then forward again. Seeds should remain 100% same
         {
             int p1Seed, p2Seed, drawSeed;
-            GameStateMachine sm = new GameStateMachine();
+            CardFinder cardFinder = new CardFinder();
+            TestHelperFunctions.InjectBasePlayerToDb(cardFinder);
+            GameStateMachine sm = new GameStateMachine(cardFinder);
             PlayerInitialData dummyPlayer1 = InitialStatesGenerator.GetDummyPlayer("p1");
             PlayerInitialData dummyPlayer2 = InitialStatesGenerator.GetDummyPlayer("p2");
             sm.StartNewGame(dummyPlayer1, dummyPlayer2);
@@ -164,7 +170,9 @@ namespace EngineTests
             foreach (CurrentPlayer id in ids)
             {
                 // Seeds pre-loaded already
-                GameStateMachine sm = new GameStateMachine();
+                CardFinder cardFinder = new CardFinder();
+                TestHelperFunctions.InjectBasePlayerToDb(cardFinder);
+                GameStateMachine sm = new GameStateMachine(cardFinder);
                 int seed = (id == CurrentPlayer.PLAYER_2) ? p2Seed : p1Seed;
                 sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(id, seed));
                 if(id  == CurrentPlayer.PLAYER_1)
@@ -188,7 +196,9 @@ namespace EngineTests
         public void TestDrawPhase()
         {
             // Test that draw phase occurs, draws cards and gold, then goes to action phase
-            GameStateMachine sm = new GameStateMachine();
+            CardFinder cardFinder = new CardFinder();
+            TestHelperFunctions.InjectBasePlayerToDb(cardFinder);
+            GameStateMachine sm = new GameStateMachine(cardFinder);
             sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(CurrentPlayer.PLAYER_2, (int)DateTime.Now.Ticks));
             Assert.AreEqual(sm.DetailedState.CurrentState, States.P2_INIT);// In P2 init phase
             // Now advance step and check data pre draw
@@ -247,9 +257,9 @@ namespace EngineTests
             {
                 int currentPlayer = (int)id;
                 int playerHp = _rng.Next(GameConstants.DECKOUT_DAMAGE + 1, 31);
-                PlayerState pl1 = new PlayerState();
+                Player pl1 = new Player();
                 pl1.Hp.BaseValue = playerHp;
-                PlayerState pl2 = new PlayerState();
+                Player pl2 = new Player();
                 pl2.Hp.BaseValue = playerHp;
                 GameStateStruct state = new GameStateStruct
                 {
@@ -260,7 +270,7 @@ namespace EngineTests
                 state.PlayerStates[currentPlayer].Deck.InsertCard(-1); // Adds useless card to player deck
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
+                Player plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
                 int deckHash = plState.Deck.GetHashCode();
                 int playerHash = plState.GetHashCode();
@@ -291,19 +301,14 @@ namespace EngineTests
             foreach (CurrentPlayer id in ids)
             {
                 int playerHp = _rng.Next(GameConstants.DECKOUT_DAMAGE + 1, 31);
-                PlayerState pl1 = new PlayerState();
-                pl1.Hp.BaseValue = playerHp;
-                PlayerState pl2 = new PlayerState();
-                pl2.Hp.BaseValue = playerHp;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.DRAW_PHASE,
-                    CurrentPlayer = id,
-                    PlayerStates = [pl1, pl2]
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentPlayer = id;
+                state.PlayerStates[0].Hp.BaseValue = playerHp;
+                state.PlayerStates[1].Hp.BaseValue = playerHp;
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
+                Player plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
                 int deckHash = plState.Deck.GetHashCode();
                 int playerHash = plState.GetHashCode();
@@ -332,19 +337,14 @@ namespace EngineTests
             CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
             foreach (CurrentPlayer id in ids)
             {
-                PlayerState pl1 = new PlayerState();
-                pl1.Hp.BaseValue = GameConstants.DECKOUT_DAMAGE;
-                PlayerState pl2 = new PlayerState();
-                pl2.Hp.BaseValue = GameConstants.DECKOUT_DAMAGE;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.DRAW_PHASE,
-                    CurrentPlayer = id,
-                    PlayerStates = [pl1, pl2]
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentPlayer = id;
+                state.PlayerStates[0].Hp.BaseValue = GameConstants.DECKOUT_DAMAGE;
+                state.PlayerStates[1].Hp.BaseValue = GameConstants.DECKOUT_DAMAGE;
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
+                Player plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
                 int deckHash = plState.Deck.GetHashCode();
                 int playerHash = plState.GetHashCode();
@@ -377,19 +377,14 @@ namespace EngineTests
             CurrentPlayer[] ids = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2];
             foreach (CurrentPlayer id in ids)
             {
-                PlayerState pl1 = new PlayerState();
-                pl1.Hp.BaseValue = GameConstants.DECKOUT_DAMAGE - 1;
-                PlayerState pl2 = new PlayerState();
-                pl2.Hp.BaseValue = GameConstants.DECKOUT_DAMAGE - 1;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.DRAW_PHASE,
-                    CurrentPlayer = id,
-                    PlayerStates = [pl1, pl2]
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentPlayer = id;
+                state.PlayerStates[0].Hp.BaseValue = GameConstants.DECKOUT_DAMAGE - 1;
+                state.PlayerStates[1].Hp.BaseValue = GameConstants.DECKOUT_DAMAGE - 1;
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                PlayerState plState = sm.DetailedState.PlayerStates[(int)id];
+                Player plState = sm.DetailedState.PlayerStates[(int)id];
                 // Pre draw
                 int deckHash = plState.Deck.GetHashCode();
                 int playerHash = plState.GetHashCode();
@@ -421,16 +416,14 @@ namespace EngineTests
         public void BoardHashVerify() // Verify that an unchanged board has an unchanged hash
         {
             int playerIndex = 0;
-            GameStateStruct state = new GameStateStruct
-            {
-                CurrentState = States.ACTION_PHASE,
-                CurrentPlayer = CurrentPlayer.PLAYER_1
-            };
+            GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+            state.CurrentState = States.ACTION_PHASE;
+            state.CurrentPlayer = CurrentPlayer.PLAYER_1;
             CardFinder cardDb = new CardFinder();
             // Card 1: basic unit
             cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
             state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token card
-            state.PlayerStates[playerIndex].Gold = 4; // Set gold to 4
+            state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
             GameStateMachine sm = new GameStateMachine(cardDb);
             sm.LoadGame(state); // Start from here
             // HASH CHECK
@@ -470,24 +463,24 @@ namespace EngineTests
         /// <returns></returns>
         public static GameStateStruct GetInitialPlayerState(CurrentPlayer p, int seed) /// Returns a game state consisting of initialization of a desired player
         {
-            GameStateStruct ret = new GameStateStruct();
+            GameStateStruct state = TestHelperFunctions.GetBlankGameState();
             List<int> decc = new List<int>();
             for (int i = 1; i <= GameConstants.DECK_SIZE; i++)
             {
                 decc.Add(i);
             }
-            ret.Seed = seed;
-            ret.PlayerStates[0].Name = "p1";
-            ret.PlayerStates[0].Deck.InitializeDeck(decc);
-            ret.PlayerStates[0].Name = "p2";
-            ret.PlayerStates[1].Deck.InitializeDeck(decc);
-            ret.CurrentState = p switch
+            state.Seed = seed;
+            state.PlayerStates[0].Name = "p1";
+            state.PlayerStates[0].Deck.InitializeDeck(decc);
+            state.PlayerStates[0].Name = "p2";
+            state.PlayerStates[1].Deck.InitializeDeck(decc);
+            state.CurrentState = p switch
             {
                 CurrentPlayer.PLAYER_1 => States.P1_INIT,
                 CurrentPlayer.PLAYER_2 => States.P2_INIT,
                 _ => States.START,
             };
-            return ret;
+            return state;
         }
         /// <summary>
         /// Creates a brand new dummy player with a 30-card test deck

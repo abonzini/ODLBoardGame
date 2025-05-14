@@ -23,7 +23,7 @@ namespace ODLGameEngine
             Unit auxUnit;
             PlacedEntity auxPlacedEntity;
             LivingEntity auxBoardEntity;
-            PlayerState auxPlayerState;
+            Player auxPlayerState;
             Stat auxStat;
 
             _currentStep?.events.Add(e);
@@ -59,8 +59,8 @@ namespace ODLGameEngine
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    ((EntityTransitionEvent<int, int>)e).oldValue = DetailedState.PlayerStates[auxInt1].Gold;
-                    DetailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int,int>)e).newValue;
+                    ((EntityTransitionEvent<int, int>)e).oldValue = DetailedState.PlayerStates[auxInt1].CurrentGold;
+                    DetailedState.PlayerStates[auxInt1].CurrentGold = ((EntityTransitionEvent<int,int>)e).newValue;
                     break;
                 case EventType.MESSAGE:
                 case EventType.DEBUG_CHECK:
@@ -143,9 +143,9 @@ namespace ODLGameEngine
                     auxBoardEntity.DamageTokens = auxInt1;
                     break;
                 case EventType.PLAYER_POWER_AVAILABILITY:
-                    auxPlayerState = ((EntityTransitionEvent<PlayerState, bool>)e).entity;
-                    ((EntityTransitionEvent<PlayerState, bool>)e).oldValue = auxPlayerState.PowerAvailable;
-                    auxPlayerState.PowerAvailable = ((EntityTransitionEvent<PlayerState, bool>)e).newValue;
+                    auxPlayerState = ((EntityTransitionEvent<Player, bool>)e).entity;
+                    ((EntityTransitionEvent<Player, bool>)e).oldValue = auxPlayerState.PowerAvailable;
+                    auxPlayerState.PowerAvailable = ((EntityTransitionEvent<Player, bool>)e).newValue;
                     break;
                 case EventType.STAT_BASE_TRANSITION:
                     auxStat = ((EntityTransitionEvent<Stat, int>)e).entity;
@@ -171,7 +171,7 @@ namespace ODLGameEngine
             Unit auxUnit;
             PlacedEntity auxPlacedEntity;
             LivingEntity auxBoardEntity;
-            PlayerState auxPlayerState;
+            Player auxPlayerState;
             Stat auxStat;
 
             switch (e.eventType)
@@ -191,7 +191,7 @@ namespace ODLGameEngine
                     break;
                 case EventType.PLAYER_GOLD_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
-                    DetailedState.PlayerStates[auxInt1].Gold = ((EntityTransitionEvent<int, int>)e).oldValue;
+                    DetailedState.PlayerStates[auxInt1].CurrentGold = ((EntityTransitionEvent<int, int>)e).oldValue;
                     break;
                 case EventType.MESSAGE:
                 case EventType.DEBUG_CHECK:
@@ -272,8 +272,8 @@ namespace ODLGameEngine
                     auxBoardEntity.DamageTokens = auxInt1;
                     break;
                 case EventType.PLAYER_POWER_AVAILABILITY:
-                    auxPlayerState = ((EntityTransitionEvent<PlayerState, bool>)e).entity;
-                    auxPlayerState.PowerAvailable = ((EntityTransitionEvent<PlayerState, bool>)e).oldValue;
+                    auxPlayerState = ((EntityTransitionEvent<Player, bool>)e).entity;
+                    auxPlayerState.PowerAvailable = ((EntityTransitionEvent<Player, bool>)e).oldValue;
                     break;
                 case EventType.STAT_BASE_TRANSITION:
                     auxStat = ((EntityTransitionEvent<Stat, int>)e).entity;
@@ -569,10 +569,10 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="player">Which player</param>
         /// <param name="powerAvailability">New state</param>
-        void ENGINE_ChangePlayerPowerAvailability(PlayerState player, bool  powerAvailability)
+        void ENGINE_ChangePlayerPowerAvailability(Player player, bool  powerAvailability)
         {
             ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<PlayerState, bool>()
+                new EntityTransitionEvent<Player, bool>()
                 {
                     eventType = EventType.PLAYER_POWER_AVAILABILITY,
                     entity = player,
