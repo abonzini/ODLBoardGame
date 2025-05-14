@@ -29,12 +29,6 @@ namespace ODLGameEngine
             BOARDENTITY_InsertInLane(newSpawnedUnit, unitLane.Id);
             int tileCoord = unitLane.GetAbsoluteTileCoord(0,player); // Get tile coord
             BOARDENTITY_InsertInTile(newSpawnedUnit, tileCoord);
-            // Now, verify if unit has just entered a tile where there's a building
-            SortedSet<int> buildingsInUnitTile = unitLane.GetTileAbsolute(tileCoord).GetPlacedEntities(EntityType.BUILDING);
-            if (buildingsInUnitTile.Count > 0) // Found a building, means unit has stepped on it
-            {
-                UNIT_EnterBuilding(newSpawnedUnit, (Building)DetailedState.EntityData[buildingsInUnitTile.First()]);
-            }
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             BOARDENTITY_CheckIfUnitAlive(newSpawnedUnit);
             return newSpawnedUnit;
@@ -82,13 +76,6 @@ namespace ODLGameEngine
                         advanceCtx.CurrentMovement--;
                         // Request unit advancement a tile
                         BOARDENTITY_InsertInTile(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
-                        // Entering new tile
-                        Tile newTile = DetailedState.BoardState.GetLane(unit.LaneCoordinate).GetTileAbsolute(unit.TileCoordinate);
-                        if (newTile.GetPlacedEntities(EntityType.BUILDING).Count != 0) // If tile has a building, do potential building effects and/or combat
-                        {
-                            Building bldg = (Building)DetailedState.EntityData[newTile.GetPlacedEntities(EntityType.BUILDING).First()]; // Get building
-                            UNIT_EnterBuilding(unit, bldg);
-                        }
                     }
                 }
             }

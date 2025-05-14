@@ -38,7 +38,20 @@ namespace ODLGameEngine
         /// <param name="tileCoord">The tile coord</param>
         public void BOARDENTITY_InsertInTile(PlacedEntity entity, int tileCoord)
         {
+            // TODO: check if unit is leaving tile
             ENGINE_EntityTileTransition(entity, tileCoord);
+            if(entity.TileCoordinate > -1) // Checks if unit entered a nev (valid) tile
+            {
+                if (entity.PrePlayInfo.EntityType == EntityType.UNIT) // In case of units, there may be building interactions
+                {
+                    Unit unit = (Unit)entity;
+                    SortedSet<int> buildingsInUnitTile = DetailedState.BoardState.GetLane(unit.LaneCoordinate).GetTileAbsolute(tileCoord).GetPlacedEntities(EntityType.BUILDING); // Look for building
+                    if (buildingsInUnitTile.Count > 0) // Found a building, means unit has stepped on it
+                    {
+                        UNIT_EnterBuilding(unit, (Building)DetailedState.EntityData[buildingsInUnitTile.First()]);
+                    }
+                }
+            }
         }
         /// <summary>
         /// Will check unit HP, and will kill unit if HP <= 0! This kills and deinits unit, very important!
