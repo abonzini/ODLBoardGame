@@ -194,8 +194,8 @@ namespace ODLGameEngine
     /// </summary>
     public class CpuState
     {
-        public EffectContext DebugEffectReference = null;
-        public List<int> EffectTargets;
+        public EffectContext CurrentSpecificContext = null;
+        public List<int> ReferenceEntities;
         public int TempValue = 0;
         public int Acc = 0;
     }

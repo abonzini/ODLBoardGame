@@ -56,7 +56,7 @@ namespace ODLGameEngine
             IngameEntity FetchEntity(int id) // Helper fn that gets the desired entity from an id, can search for skills so I need to operate this properly
             {
                 // Returns skill data (located in the bottom of effect chains), or just get the entity from the entity database
-                return (id == -1) ? _chainContext[id].DebugEffectReference.ActivatedEntity : DetailedState.EntityData[id];
+                return (id == -1) ? _chainContext[id].CurrentSpecificContext.ActivatedEntity : DetailedState.EntityData[id];
             }
             // Get unique ID of activated entity. Skills don't have these as they're volatile, so I assign a temporary value of -1
             int activatedEntityId = specificContext.ActivatedEntity.UniqueId;
@@ -70,19 +70,19 @@ namespace ODLGameEngine
             {
                 cpu = new CpuState()
                 {
-                    EffectTargets = [activatedEntityId], // by default, entity starts targeting itself
+                    ReferenceEntities = [activatedEntityId], // by default, entity starts with itself as a reference
                 };
                 _chainContext.Add(activatedEntityId, cpu);
                 firstEntryInChain = true;
             }
-            cpu.DebugEffectReference = specificContext;
+            cpu.CurrentSpecificContext = specificContext;
             // Now that the CPU has been configured, can execute effect chain
             foreach (Effect effect in effects) // Execute series of events for the card in question
             {
                 // Define values of registers as may be needed
                 cpu.TempValue = effect.TempVariable;
-                ref int inputReg = ref TRIGINTER_GetRegisterReference(cpu, effect.InputRegister);
-                ref int outputReg = ref TRIGINTER_GetRegisterReference(cpu, effect.OutputRegister);
+                ref int inputReg = ref GetRegisterReference(cpu, effect.InputRegister);
+                ref int outputReg = ref GetRegisterReference(cpu, effect.OutputRegister);
                 // Now to process the effect
                 switch (effect.EffectType)
                 {
@@ -111,46 +111,26 @@ namespace ODLGameEngine
                                     res.Add(tgt.UniqueId); // This is now the target
                                 }
                             }
-                            cpu.EffectTargets = res;
+                            cpu.ReferenceEntities = res;
                         }
                         break;
                     case EffectType.FIND_ENTITIES:
-                        cpu.EffectTargets = TRIGINTER_GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, effect.TargetLocation, inputReg, specificContext);
+                        // Searches for entities, reference being the selected reference (since there can be multiple references, a single one (the first) is used
+                        cpu.ReferenceEntities = GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, GetTargetLocationsFromReference(effect.TargetLocation, cpu)[0], inputReg, FetchEntity(cpu.ReferenceEntities[0]).Owner);
                         break;
                     case EffectType.SUMMON_UNIT:
-                        // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
-                        for (int i = 0; i < 2; i++) // Check for which player is the summon
                         {
-                            EntityOwner nextPossibleOwner = (EntityOwner)(1 << i);
-                            int playerOwner;
-                            if(effect.TargetPlayer.HasFlag(nextPossibleOwner)) // Valid owner!
+                            TargetLocation[] targets = GetTargetLocationsFromReference(effect.TargetLocation, cpu); // Get the actual place where this is played, even if relative
+                            for (int i = 0; i < cpu.ReferenceEntities.Count; i++) // Summon sth for each entity found (!!)
                             {
-                                playerOwner = effect.TargetPlayer switch
+                                IngameEntity entity = FetchEntity(cpu.ReferenceEntities[i]); // Got the next reference entity
+                                if (effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Will its owner or its opponent get the unit?
                                 {
-                                    EntityOwner.OWNER => specificContext.ActivatedEntity.Owner,
-                                    EntityOwner.OPPONENT => 1 - specificContext.ActivatedEntity.Owner,
-                                    _ => throw new NotImplementedException("Invalid player target"),
-                                };
-                            }
-                            else // If this owner option invalid, then move to the next one
-                            {
-                                continue;
-                            }
-                            Unit auxCardData = (Unit)CardDb.GetCard(inputReg);
-                            // Find where to play unit
-                            if(effect.TargetLocation == TargetLocation.PLAY_TARGET) // If card has the "played" target
-                            {
-                                UNIT_PlayUnit(playerOwner, auxCardData, ((PlayContext)specificContext).LaneTargets); // Plays the unit same played as original card
-                            }
-                            else // Otherwise, could be hardcoded lanes
-                            {
-                                for (int j = 0; j < GameConstants.BOARD_LANES_NUMBER; j++)
+                                    SummonUnitToPlayer(entity.Owner, inputReg, targets[i]);
+                                }
+                                if (effect.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
                                 {
-                                    TargetLocation nextLane = (TargetLocation)(1 << j); // Get lanes in order, can be randomized if needed
-                                    if(effect.TargetLocation.HasFlag(nextLane)) // If this lane is a valid target for this unt
-                                    {
-                                        UNIT_PlayUnit(playerOwner, auxCardData, nextLane); // Plays the unit
-                                    }
+                                    SummonUnitToPlayer(1 - entity.Owner, inputReg, targets[i]);
                                 }
                             }
                         }
@@ -159,7 +139,7 @@ namespace ODLGameEngine
                         switch (effect.ModifierTarget) // Will check wxactly what I need to modify!
                         {
                             case ModifierTarget.REGISTER:
-                                outputReg = TRIGINTER_GetModifiedValue(outputReg, inputReg, effect.ModifierOperation);
+                                outputReg = GetModifiedValue(outputReg, inputReg, effect.ModifierOperation);
                                 break;
                             case ModifierTarget.TARGET_HP:
                             case ModifierTarget.TARGET_ATTACK:
@@ -174,7 +154,7 @@ namespace ODLGameEngine
                                         ModifierOperation.ABSOLUTE_SET => STATS_SetAbsoluteBaseStat,
                                         _ => throw new NotImplementedException("Modifier operation not implemented yet"),
                                     };
-                                    foreach (int entityTarget in cpu.EffectTargets)
+                                    foreach (int entityTarget in cpu.ReferenceEntities)
                                     {
                                         IngameEntity nextEntity = FetchEntity(entityTarget);
                                         Stat targetStat = effect.ModifierTarget switch
@@ -191,7 +171,7 @@ namespace ODLGameEngine
                                 }
                                 break;
                             case ModifierTarget.PLAYERS_GOLD:
-                                foreach (int entityTarget in cpu.EffectTargets) // Modify gold for each entity found (!!)
+                                foreach (int entityTarget in cpu.ReferenceEntities) // Modify gold for each entity found (!!)
                                 {
                                     IngameEntity entity = FetchEntity(entityTarget); // Got the entity
                                     if(effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Does owner of this entity get gold?
@@ -218,7 +198,14 @@ namespace ODLGameEngine
                 _chainContext.Remove(activatedEntityId);
             }
         }
-        static ref int TRIGINTER_GetRegisterReference(CpuState ctx, Register reg)
+        /// <summary>
+        /// Gets register reference from CPU
+        /// </summary>
+        /// <param name="ctx">CPU context</param>
+        /// <param name="reg">Which register</param>
+        /// <returns>"Pointer" to reference</returns>
+        /// <exception cref="NotImplementedException"></exception>
+        static ref int GetRegisterReference(CpuState ctx, Register reg)
         {
             switch(reg)
             {
@@ -229,6 +216,26 @@ namespace ODLGameEngine
                 default:
                     throw new NotImplementedException("Invalid register");
             };
+        }
+        /// <summary>
+        /// Creates an array of targets, as many as the amount of references we searched. This way we may chain repeated summon or cast effects that require location, one per each reference
+        /// </summary>
+        /// <param name="target">The sort of target we're looking for</param>
+        /// <param name="cpuContext">The cpu context, this'll have the references</param>
+        /// <returns></returns>
+        static TargetLocation[] GetTargetLocationsFromReference(TargetLocation target, CpuState cpuContext)
+        {
+            int numberOfReferences = cpuContext.ReferenceEntities.Count;
+            TargetLocation[] res = new TargetLocation[numberOfReferences];
+            for(int i = 0; i < numberOfReferences; i++) // One target per reference!
+            {
+                res[i] = target switch
+                {
+                    TargetLocation.PLAY_TARGET => ((PlayContext)cpuContext.CurrentSpecificContext).LaneTargets, // Where card is played (can only be used when card is played)...
+                    _ => target,
+                };
+            }
+            return res;
         }
         /// <summary>
         /// Just a bunch of enums for the target-finding state machine
@@ -250,9 +257,9 @@ namespace ODLGameEngine
         /// <param name="searchCriterion">Criterion of search</param>
         /// <param name="targetLocation">Where to search for targets</param>
         /// <param name="n">The value n whose meaning depends on search criterion</param>
-        /// <param name="specificContext">Extra context of an event useful in some searches</param>
+        /// <param name="ownerPlayerPov">POV of who the search is relative to</param>
         /// <returns></returns>
-        List<int> TRIGINTER_GetTargets(EntityOwner targetPlayer, EntityType targetType, SearchCriterion searchCriterion, TargetLocation targetLocation, int n, EffectContext specificContext)
+        List<int> GetTargets(EntityOwner targetPlayer, EntityType targetType, SearchCriterion searchCriterion, TargetLocation targetLocation, int n, int ownerPlayerPov)
         {
             // If nothing to search for, just return an empty list
             if(targetPlayer == EntityOwner.NONE || targetType == EntityType.NONE || (searchCriterion == SearchCriterion.QUANTITY && n == 0))
@@ -280,10 +287,6 @@ namespace ODLGameEngine
                     targetBoardArea = DetailedState.BoardState.GetLane(targetLocation);
                     laneIsTarget = true;
                     break;
-                case TargetLocation.PLAY_TARGET: // Need to check where the card had been played
-                    targetBoardArea = DetailedState.BoardState.GetLane(((PlayContext)specificContext).LaneTargets);
-                    laneIsTarget = true;
-                    break;
                 default:
                     throw new NotImplementedException("Search not yet implemented for other targets!"); // This may be a later TODO once new needs appear
             }
@@ -300,7 +303,7 @@ namespace ODLGameEngine
                 }
                 reverseSearch = true;
             }
-            referencePlayer = reverseSearch ? 1 - specificContext.ActivatedEntity.Owner : specificContext.ActivatedEntity.Owner;
+            referencePlayer = reverseSearch ? 1 - ownerPlayerPov : ownerPlayerPov;
             requiredTargets = searchCriterion switch
             {
                 SearchCriterion.ORDINAL => 1, // Only one target in position N
@@ -310,11 +313,11 @@ namespace ODLGameEngine
             };
             if(targetPlayer == EntityOwner.OWNER)
             {
-                playerFilter = specificContext.ActivatedEntity.Owner;
+                playerFilter = ownerPlayerPov;
             }
             else if (targetPlayer == EntityOwner.OPPONENT)
             {
-                playerFilter = 1 - specificContext.ActivatedEntity.Owner;
+                playerFilter = 1 - ownerPlayerPov;
             }
             // Search loop, continues until I get the number of targets I want or nothing else to look for
             TargetingStateMachine currentSearchState = TargetingStateMachine.BEGIN;
@@ -335,11 +338,11 @@ namespace ODLGameEngine
                             // Need to add if player (w.r.t to card ownership) are valid targets 
                             if (reverseSearch && targetPlayer.HasFlag(EntityOwner.OPPONENT)) // If searching backwards and opponent enabled, then add opp
                             {
-                                nextCandidateEntity = 1 - specificContext.ActivatedEntity.Owner;
+                                nextCandidateEntity = 1 - ownerPlayerPov;
                             }
                             else if (!reverseSearch && targetPlayer.HasFlag(EntityOwner.OWNER)) // If searching normally and owner enabled, then add it
                             {
-                                nextCandidateEntity = specificContext.ActivatedEntity.Owner;
+                                nextCandidateEntity = ownerPlayerPov;
                             }
                         }
                         currentSearchState = TargetingStateMachine.GET_ENTITIES_IN_REGION; // Once finished, go to next state (get elements to search for entities)
@@ -388,11 +391,11 @@ namespace ODLGameEngine
                         {
                             if (!reverseSearch && targetPlayer.HasFlag(EntityOwner.OPPONENT))
                             {
-                                nextCandidateEntity = 1 - specificContext.ActivatedEntity.Owner;
+                                nextCandidateEntity = 1 - ownerPlayerPov;
                             }
                             else if (reverseSearch && targetPlayer.HasFlag(EntityOwner.OWNER))
                             {
-                                nextCandidateEntity = specificContext.ActivatedEntity.Owner;
+                                nextCandidateEntity = ownerPlayerPov;
                             }
                         }
                         currentSearchState = TargetingStateMachine.END; // Finished the board.. nothign else to look for
@@ -427,7 +430,7 @@ namespace ODLGameEngine
         /// <param name="operation"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        static int TRIGINTER_GetModifiedValue(int value, int modifier, ModifierOperation operation)
+        static int GetModifiedValue(int value, int modifier, ModifierOperation operation)
         {
             return operation switch // Returns the number depending on the operation
             {
@@ -440,6 +443,25 @@ namespace ODLGameEngine
 
         }
         /// <summary>
+        /// Will summon a unit to a specific player, bypassing playables, can choose multiple lanes at once
+        /// </summary>
+        /// <param name="playerOwner">Would be owner</param>
+        /// <param name="cardNumber">Which card (hope its a unit!)</param>
+        /// <param name="lanesToSummon">Lane targets</param>
+        void SummonUnitToPlayer(int playerOwner, int cardNumber, TargetLocation lanesToSummon)
+        {
+            Unit auxCardData = (Unit)CardDb.GetCard(cardNumber);
+            // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
+            for (int j = 0; j < GameConstants.BOARD_LANES_NUMBER; j++)
+            {
+                TargetLocation nextLane = (TargetLocation)(1 << j); // Get lanes in order, can be randomized if needed
+                if (lanesToSummon.HasFlag(nextLane)) // If this lane is a valid target for this unt
+                {
+                    UNIT_PlayUnit(playerOwner, auxCardData, nextLane); // Plays the unit
+                }
+            }
+        }
+        /// <summary>
         /// Modifies a player's gold according to desired op+value
         /// </summary>
         /// <param name="playerId">Which player</param>
@@ -447,7 +469,7 @@ namespace ODLGameEngine
         /// <param name="operation">What to do with the number</param>
         void TRIGINTER_ModifyPlayersGold(int playerId, int value, ModifierOperation operation)
         {
-            ENGINE_SetPlayerGold(playerId, TRIGINTER_GetModifiedValue(DetailedState.PlayerStates[playerId].CurrentGold, value, operation));
+            ENGINE_SetPlayerGold(playerId, GetModifiedValue(DetailedState.PlayerStates[playerId].CurrentGold, value, operation));
         }
     }
 }

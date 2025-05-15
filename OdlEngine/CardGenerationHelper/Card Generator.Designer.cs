@@ -74,6 +74,12 @@
             MountainBpTextBox = new TextBox();
             ForestBpTextBox = new TextBox();
             PlainsBpTextBox = new TextBox();
+            PlayerPanel = new Panel();
+            label14 = new Label();
+            ActivePowerUpDown = new NumericUpDown();
+            StartingGoldUpdown = new NumericUpDown();
+            label13 = new Label();
+            panel1 = new Panel();
             ((System.ComponentModel.ISupportInitialize)ImageSelectorSplit).BeginInit();
             ImageSelectorSplit.Panel1.SuspendLayout();
             ImageSelectorSplit.Panel2.SuspendLayout();
@@ -92,6 +98,9 @@
             ((System.ComponentModel.ISupportInitialize)MovementUpdown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)AttackUpDown).BeginInit();
             BlueprintsPanel.SuspendLayout();
+            PlayerPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)ActivePowerUpDown).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)StartingGoldUpdown).BeginInit();
             SuspendLayout();
             // 
             // ImageSelectorSplit
@@ -116,7 +125,7 @@
             ImageSelectorSplit.Panel2.Controls.Add(SaveJsonButton);
             ImageSelectorSplit.Panel2.Controls.Add(LoadJsonButton);
             ImageSelectorSplit.Panel2.Controls.Add(flowLayoutPanel1);
-            ImageSelectorSplit.Size = new Size(1072, 653);
+            ImageSelectorSplit.Size = new Size(1092, 653);
             ImageSelectorSplit.SplitterDistance = 300;
             ImageSelectorSplit.TabIndex = 0;
             // 
@@ -204,17 +213,20 @@
             // flowLayoutPanel1
             // 
             flowLayoutPanel1.AutoScroll = true;
+            flowLayoutPanel1.AutoScrollMinSize = new Size(0, 603);
             flowLayoutPanel1.Controls.Add(groupBox1);
             flowLayoutPanel1.Controls.Add(groupBox2);
             flowLayoutPanel1.Controls.Add(LivingEntityPanel);
             flowLayoutPanel1.Controls.Add(UnitPanel);
             flowLayoutPanel1.Controls.Add(BlueprintsPanel);
+            flowLayoutPanel1.Controls.Add(PlayerPanel);
+            flowLayoutPanel1.Controls.Add(panel1);
             flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel1.Location = new Point(3, 47);
-            flowLayoutPanel1.MaximumSize = new Size(762, 2000);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(762, 603);
+            flowLayoutPanel1.Size = new Size(782, 603);
             flowLayoutPanel1.TabIndex = 2;
+            flowLayoutPanel1.WrapContents = false;
             // 
             // groupBox1
             // 
@@ -318,7 +330,7 @@
             // CardIdUpdown
             // 
             CardIdUpdown.Location = new Point(59, 26);
-            CardIdUpdown.Maximum = new decimal(new int[] { -1486618624, 232830643, 0, 0 });
+            CardIdUpdown.Maximum = new decimal(new int[] { 999, 0, 0, 0 });
             CardIdUpdown.Name = "CardIdUpdown";
             CardIdUpdown.Size = new Size(49, 27);
             CardIdUpdown.TabIndex = 1;
@@ -566,14 +578,70 @@
             PlainsBpTextBox.TabIndex = 0;
             PlainsBpTextBox.TextChanged += PlainsBpTextBox_TextChanged;
             // 
+            // PlayerPanel
+            // 
+            PlayerPanel.Controls.Add(label14);
+            PlayerPanel.Controls.Add(ActivePowerUpDown);
+            PlayerPanel.Controls.Add(StartingGoldUpdown);
+            PlayerPanel.Controls.Add(label13);
+            PlayerPanel.Location = new Point(3, 530);
+            PlayerPanel.Name = "PlayerPanel";
+            PlayerPanel.Size = new Size(753, 69);
+            PlayerPanel.TabIndex = 5;
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.Location = new Point(9, 38);
+            label14.Name = "label14";
+            label14.Size = new Size(49, 20);
+            label14.TabIndex = 3;
+            label14.Text = "Power";
+            // 
+            // ActivePowerUpDown
+            // 
+            ActivePowerUpDown.Location = new Point(59, 36);
+            ActivePowerUpDown.Maximum = new decimal(new int[] { 999, 0, 0, 0 });
+            ActivePowerUpDown.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            ActivePowerUpDown.Name = "ActivePowerUpDown";
+            ActivePowerUpDown.Size = new Size(49, 27);
+            ActivePowerUpDown.TabIndex = 2;
+            ActivePowerUpDown.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            ActivePowerUpDown.ValueChanged += ActivePowerUpDown_ValueChanged;
+            // 
+            // StartingGoldUpdown
+            // 
+            StartingGoldUpdown.Location = new Point(59, 3);
+            StartingGoldUpdown.Maximum = new decimal(new int[] { 99, 0, 0, 0 });
+            StartingGoldUpdown.Name = "StartingGoldUpdown";
+            StartingGoldUpdown.Size = new Size(49, 27);
+            StartingGoldUpdown.TabIndex = 1;
+            StartingGoldUpdown.ValueChanged += StartingGoldUpdown_ValueChanged;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Location = new Point(9, 5);
+            label13.Name = "label13";
+            label13.Size = new Size(48, 20);
+            label13.TabIndex = 0;
+            label13.Text = "I.Gold\r\n";
+            // 
+            // panel1
+            // 
+            panel1.Location = new Point(3, 605);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(753, 125);
+            panel1.TabIndex = 6;
+            // 
             // CardGenerator
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1072, 653);
+            ClientSize = new Size(1092, 653);
             Controls.Add(ImageSelectorSplit);
-            MaximumSize = new Size(1090, 10000000);
-            MinimumSize = new Size(1090, 700);
+            MaximumSize = new Size(1110, 10000000);
+            MinimumSize = new Size(1110, 700);
             Name = "CardGenerator";
             Text = "Card Generator";
             Load += CardGenerator_Load;
@@ -601,6 +669,10 @@
             ((System.ComponentModel.ISupportInitialize)AttackUpDown).EndInit();
             BlueprintsPanel.ResumeLayout(false);
             BlueprintsPanel.PerformLayout();
+            PlayerPanel.ResumeLayout(false);
+            PlayerPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)ActivePowerUpDown).EndInit();
+            ((System.ComponentModel.ISupportInitialize)StartingGoldUpdown).EndInit();
             ResumeLayout(false);
         }
 
@@ -652,5 +724,11 @@
         private TextBox ForestBpTextBox;
         private TextBox PlainsBpTextBox;
         private CheckBox BlueprintCheckBox;
+        private Panel PlayerPanel;
+        private NumericUpDown StartingGoldUpdown;
+        private Label label13;
+        private NumericUpDown ActivePowerUpDown;
+        private Label label14;
+        private Panel panel1;
     }
 }

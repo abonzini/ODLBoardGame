@@ -113,7 +113,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
-                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.PrePlayInfo.EntityType);
+                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.CurrentSpecificContext.ActivatedEntity.PrePlayInfo.EntityType);
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -192,7 +192,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
-                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.DebugEffectReference.ActivatedEntity.PrePlayInfo.EntityType);
+                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.CurrentSpecificContext.ActivatedEntity.PrePlayInfo.EntityType);
                     // Revert EVERYTHING and hash check
                     sm.UndoPreviousStep();
                     sm.UndoPreviousStep();
@@ -565,7 +565,7 @@ namespace EngineTests
                                 // Check returned targets
                                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                                 Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                                 Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                                 // Special cases
                                 if (searchEffect.TargetType.HasFlag(EntityType.PLAYER) && searchEffect.TargetPlayer.HasFlag(EntityOwner.OWNER))
@@ -683,7 +683,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                     Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                     // Special cases
                     List<int> expectedResult;
@@ -788,7 +788,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                     Assert.AreEqual(6, searchResultList.Count);
                     // Check correct results
                     List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0,4,2,3,5,1] : [0,5,3,2,4,1]; // The 2 options of how board looks in absolute
@@ -890,7 +890,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                     Assert.AreEqual(1, searchResultList.Count); // Ordinals return a single value regardless
                     // Check correct results
                     List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0, 4, 2, 3, 5, 1] : [0, 5, 3, 2, 4, 1]; // The 2 options of how board looks in absolute
@@ -992,7 +992,7 @@ namespace EngineTests
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                     Assert.AreEqual(Math.Abs(num), searchResultList.Count);
                     // Check correct results
                     if(num != 0) // Nothing to assert if searching for 0
@@ -1102,7 +1102,7 @@ namespace EngineTests
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                     foreach (int entityId in searchResultList)
                     { // Check if the buff did it's job
                         Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
@@ -1216,7 +1216,7 @@ namespace EngineTests
                     Assert.IsNotNull(debugEvent); // Found it!
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                     foreach (int entityId in searchResultList)
                     { // Check if the buff did it's job
                         Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
@@ -1282,7 +1282,7 @@ namespace EngineTests
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
                 // Revert and hash check
@@ -1346,7 +1346,7 @@ namespace EngineTests
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
                 // Revert and hash check
@@ -1405,7 +1405,7 @@ namespace EngineTests
                 Assert.IsNotNull(debugEvent); // Found it!
                 // Check returned targets
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
                 // Reversion
@@ -1480,7 +1480,7 @@ namespace EngineTests
                         Assert.IsNotNull(debugEvent); // Found it!
                         // Check returned targets
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                        List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                        List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                         if(filterEntityType.HasFlag(buildingEntityType)) // Then, if types match, id get sth as target, otherwise no
                         {
                             Assert.AreEqual(searchResultList.Count, 1);
@@ -1562,7 +1562,7 @@ namespace EngineTests
                         Assert.IsNotNull(debugEvent); // Found it!
                         // Check returned targets
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                        List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.EffectTargets;
+                        List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
                         if (filterEntityOwner.HasFlag(buildingEntityOwner)) // Then, if types match, id get sth as target, otherwise no
                         {
                             Assert.AreEqual(searchResultList.Count, 1);

@@ -148,7 +148,7 @@ In the example above, the card would contain 2 interactions, and then each would
 
 ## Interaction Types
 
-- ```WHEN_PLAYED``` Will be executed when the card is played for the first time. Examples: Every single **skill** card
+- ```WHEN_PLAYED``` Will be executed when the card is played (FROM HAND) for the first time. Examples: Every single **skill** card, equivalent to hearthstone battlecries
 - ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during advance). This interaction happens only once, and the Unit/Building will need to each process the effect from their own POV.
 
 # Effect Mechanism
@@ -158,7 +158,7 @@ In this scheme, each ```EffectType``` is like an instruction, some of them can h
 In order to implement complex effects that need to remember previous results (think effects such as *"Damage all enemy buildings, if any is killed, deal 2 damage to enemy player"* or *"Get 1 gold for each unit on the field"*), the effect chain contains a series of **Registers**:
 
 - ```TEMP_VARIABLE```, is volatile and only remembered during the current effect of the chain. However it contains the "value" of many card effects (e.g. if an effect was *"Gain 2 gold"*, the temp variable would contain the value 2 in this case). This value can be used as a parameter in effects and in arithmetic operations
-- ```ACC``` is the **"accumulator"** variable, and retains its value during the effect chain, making it popular as the target of more complex math operations.
+- ```ACC``` is the **"accumulator"** variable, and retains its value during the effect resolution chain, making it useful as the target of more complex math operations.
 It is initialised with a value of 0 at the beginning of the effect chain
 
 Many effects use a **InputRegister's** value as an input, and some also save a result in a **OutputRegister**.
@@ -180,16 +180,29 @@ If an effect chain triggers a different effect chain, the CPU context for a spec
 This is useful, as it allows complex behaviours to be shared between effect chains with a single CPU context.
 For example, it would be possible to do effects like *"Deal X damage to all units and get 1 gold for each killed"*, where the count of killed units would be resolved from a different part of the effect chain. 
 
-The CPU context also contains a list of target entities, which can be obtained by specific search/select operators.
-By default the card targets itself but this value can be replaced by more complex search operations as described below.
+The CPU context also contains a list of reference entities, which can be obtained by specific search/select operators.
+This reference is important to track ownership and stuff.
+By default the effect's reference is the card with the ongoing effect but this value can be replaced by more complex search operations as described below.
 
 ## Effect List
 These are the following supported effects.
 All effects are relative to the card executing the effect, so the meaning of ```TargetPlayer```, for example, depends on this.
 
-- ```FIND_ENTITIES``` Task that finds all valid entities to be targeted for an effect.
+- ```SELECT_ENTITY``` Selects the reference entity for the remainder of the effect (or until a new search is made).
+It will select a single target out of known entities that participate in a trigger or interaction.
+For example if a unit attacks another, ```SELECT_ENTITY``` can be used to target either the unit that attacked or the affected unit.
+Owner and target type filters can be used for slightly more complex effects, such as "When a **friendly unit** does X".
+    
+    Parameters:
+    - ```SearchCriterion``` determines which entity will be targeted by this
+    - ```TargetPlayer``` serves as a filter where you only target entities of the player owner in question
+    - ```TargetType``` the type of entities that can be targeted
+
+- ```FIND_ENTITIES``` Is a task that finds all valid entities to be targeted for an effect.
+All of these entities will become references for subsequent effects.
 For example, skills that deal damage to an unit, or to the enemy hero, or destroy all buildings, etc.
 These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of search criteria.
+If you want to change the reference of the search, you may need to do a ```SELECT_ENTITY``` call first, for example in an effect like *"When a card is played, all of that player's Units receive 1 damage"*, where the reference is not necesarily the same in every trigger.
     
     Parameters:
     - ```TargetLocation``` where to search for the entity in question
@@ -203,21 +216,13 @@ These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of sea
     When looking for entities on a lane, the system traverses the lane in order determined by ```Value``` sign.
     In case of multiple entities in the same position, the unit that was played first is targeted first.
 
-- ```SELECT_ENTITY``` Is very similar to ```FIND_ENTITIES``` but instead of looking for potential valid entities in a board, it selects a single target out of known entities that participate in a trigger or interaction.
-For example if a unit attacks another, ```SELECT_ENTITY``` can be used to target either the unit that attacked or the affected unit.
-Owner and target type filters can be used for slightly more complex effects, such as "When a **friendly unit** does X".
-    
-    Parameters:
-    - ```SearchCriterion``` determines which entity will be targeted by this
-    - ```TargetPlayer``` serves as a filter where you only target entities of the player owner in question
-    - ```TargetType``` the type of entities that can be targeted
-
-- ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes.
+- ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes. Multiple units may be summoned if multiple lanes are defined, and/or if there's multiple references.
+This allows crazy effects like *"When a unit dies, play a skeleton in the opponent's side"* or "Play a shadow demon for every unit the opponent has in the same lane".
 
     Parameters:
-    - ```TargetPlayer``` is the player who will own the unit
+    - ```TargetPlayer``` is the player who will own the unit (relative to reference entity)
     - ```TargetLocation``` is one or more lane targets where the card(s) will be summoned
-    - ```InputRegister``` contains the card number of the unit summoned
+    - ```InputRegister``` place to find the card number of the unit summoned
     
     Examples:
     - **RUSH** summons a unit in all lanes

@@ -221,7 +221,7 @@ namespace CardGenerationHelper
         private void DrawBlueprint()
         {
             string imagePath = Path.Combine(_cardIconsPath, "blueprint.png");
-            if(File.Exists(imagePath)) // Blueprint base found
+            if (File.Exists(imagePath)) // Blueprint base found
             {
                 Bitmap bitmap = new Bitmap(imagePath);
                 Graphics g = Graphics.FromImage(bitmap);
@@ -235,15 +235,15 @@ namespace CardGenerationHelper
                 int heightRotulo = (int)(height * (DrawConstants.RotuloHEnd - DrawConstants.RotuloHStart));
                 Rectangle rotuloBox = new Rectangle(xRotulo, yRotulo, widthRotulo, heightRotulo);
                 DrawHelper.DrawRectangleFixedBorder(g, rotuloBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
-                Rectangle rotuloTitle = new Rectangle(xRotulo, yRotulo, (int)(widthRotulo* (1 - DrawConstants.RotuloRightSize)), heightRotulo);
+                Rectangle rotuloTitle = new Rectangle(xRotulo, yRotulo, (int)(widthRotulo * (1 - DrawConstants.RotuloRightSize)), heightRotulo);
                 Font rotuloFont = new Font("Consolas", heightRotulo);
                 DrawHelper.DrawAutoFitText(g, _prePlayInfo.Title, rotuloTitle, rotuloFont, Color.White, Color.White, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
-                xRotulo += (int)(widthRotulo * (1-DrawConstants.RotuloRightSize));
+                xRotulo += (int)(widthRotulo * (1 - DrawConstants.RotuloRightSize));
                 widthRotulo = (int)(widthRotulo * DrawConstants.RotuloRightSize);
                 rotuloBox = new Rectangle(xRotulo, yRotulo, widthRotulo, heightRotulo);
                 DrawHelper.DrawRectangleFixedBorder(g, rotuloBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
                 rotuloFont = new Font("Consolas", (int)(heightRotulo * (1 - DrawConstants.RotuloRightSizeBottom)));
-                Rectangle rotuloRightTextBox = new Rectangle(xRotulo, yRotulo, widthRotulo, (int)(heightRotulo* (1 - DrawConstants.RotuloRightSizeBottom)));
+                Rectangle rotuloRightTextBox = new Rectangle(xRotulo, yRotulo, widthRotulo, (int)(heightRotulo * (1 - DrawConstants.RotuloRightSizeBottom)));
                 DrawHelper.DrawAutoFitText(g, "#" + _prePlayInfo.Id, rotuloRightTextBox, rotuloFont, Color.White, Color.White, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
                 yRotulo += (int)(heightRotulo * (1 - DrawConstants.RotuloRightSizeBottom));
                 heightRotulo = (int)(heightRotulo * DrawConstants.RotuloRightSizeBottom);
@@ -256,8 +256,8 @@ namespace CardGenerationHelper
                 int yMap = (int)(height * DrawConstants.mapHStart);
                 int heightMap = (int)(height * (DrawConstants.mapHEnd - DrawConstants.mapHStart));
                 int widthMap = (int)(width * DrawConstants.mapWidth);
-                int xMap = (width - widthMap)/2;
-                if(_debug)
+                int xMap = (width - widthMap) / 2;
+                if (_debug)
                 {
                     Rectangle mapDebugBox = new Rectangle(xMap, yMap, widthMap, heightMap);
                     DrawHelper.DrawRectangleFixedBorder(g, mapDebugBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
@@ -277,7 +277,7 @@ namespace CardGenerationHelper
                     Rectangle tile = new Rectangle(
                         (int)(xMap + hSep + column * (hSep + x)),
                         (int)(yMap + vSep + row * (vSep + y)),
-                        (int)x, (int)y );
+                        (int)x, (int)y);
                     return tile;
                 }
                 int getAdaptedColumn(int row, LaneID lane)
@@ -311,7 +311,7 @@ namespace CardGenerationHelper
                 }
                 // And now the actual BP
                 int[] bp = ((Building)_currentEntity).PlainsBp;
-                if(bp != null)
+                if (bp != null)
                 {
                     for (int i = 0; i < bp.Length; i++)
                     {
@@ -319,7 +319,7 @@ namespace CardGenerationHelper
                         DrawHelper.DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
                         float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
                         Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
-                        DrawHelper.DrawAutoFitText(g, (i+1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
+                        DrawHelper.DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, _debug);
                     }
                 }
                 bp = ((Building)_currentEntity).ForestBp;
@@ -349,7 +349,7 @@ namespace CardGenerationHelper
                 // Draw line now
                 Pen dashedPen = new Pen(Color.White, DrawConstants.dashedLineSize);
                 dashedPen.DashStyle = DashStyle.Dash;
-                g.DrawLine(dashedPen, new Point(xMap+(widthMap/2), yMap), new Point(xMap + (widthMap / 2), yMap + heightMap));
+                g.DrawLine(dashedPen, new Point(xMap + (widthMap / 2), yMap), new Point(xMap + (widthMap / 2), yMap + heightMap));
                 // Visualize
                 CardPicture.Image = bitmap;
                 if (_debug)
@@ -371,7 +371,7 @@ namespace CardGenerationHelper
 
             RedrawUi();
         }
-
+        
         private void EntityTypeDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
             _prePlayInfo.EntityType = (EntityType)EntityTypeDropdown.SelectedItem;
@@ -414,6 +414,14 @@ namespace CardGenerationHelper
             {
                 BlueprintCheckBox.Hide();
                 BlueprintsPanel.Hide();
+            }
+            if (typeof(Player).IsAssignableFrom(_currentEntity.GetType())) // Player info
+            {
+                PlayerPanel.Show();
+            }
+            else
+            {
+                PlayerPanel.Hide();
             }
         }
 
@@ -605,6 +613,16 @@ namespace CardGenerationHelper
         private void BlueprintCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             RefreshDrawTimer(); // Will need to redraw anyway
+        }
+
+        private void StartingGoldUpdown_ValueChanged(object sender, EventArgs e)
+        {
+            ((Player)_currentEntity).CurrentGold = Convert.ToInt32(StartingGoldUpdown.Value);
+        }
+
+        private void ActivePowerUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            ((Player)_currentEntity).ActivePowerId = Convert.ToInt32(ActivePowerUpDown.Value);
         }
     }
 }
