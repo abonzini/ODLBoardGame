@@ -35,7 +35,7 @@ namespace EngineTests
         {
             PrePlayInfo playerPrePlayInfo = new PrePlayInfo()
             {
-                Id = 0,
+                Id = -1,
                 Expansion = ExpansionId.VANILLA,
                 EntityType = EntityType.PLAYER,
                 ClassType = PlayerClassType.BASE,
@@ -48,7 +48,7 @@ namespace EngineTests
                 CurrentGold = GameConstants.STARTING_GOLD,
                 ActivePowerId = GameConstants.RUSH_CARD_ID
             };
-            cardFinder.InjectCard(0, player);
+            cardFinder.InjectCard(-1, player);
         }
         /// <summary>
         /// Checks if player state has is already present or not in a set

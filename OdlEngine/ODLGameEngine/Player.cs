@@ -12,7 +12,7 @@ namespace ODLGameEngine
     /// </summary>
     public enum PlayerClassType
     {
-        BASE = 0
+        BASE = -1
     }
 
     [JsonObject(MemberSerialization.OptIn)]

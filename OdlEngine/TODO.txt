@@ -1,6 +1,5 @@
 Ongoing tasks in order of priority:
 - Card maker UI:
-    - Save player features too (intiial gold, initial hp, initial active)
 	- events and triggers rest of stuff
 	- export json
 	- import json
