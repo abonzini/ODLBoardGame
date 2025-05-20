@@ -53,15 +53,13 @@ namespace ODLGameEngine
     /// <summary>
     /// Will define how a card looks and works before it creates an instance in the board
     /// </summary>
-    public class PrePlayInfo
+    public class CardIllustrationInfo
     {
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EntityType EntityType { get; set; } = EntityType.NONE;
-        [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public TargetLocation TargetOptions { get; set; } = TargetLocation.BOARD; // Which lane(s) if any the card could work on
         public int Id { get; set; } = 0;
         [DefaultValue("")]
-        public string Title { get; set; } = "";
+        public string Name { get; set; } = "";
         [DefaultValue("")]
         public string Text { get; set; } = "";
         // Playable info (will be in card)
@@ -83,8 +81,14 @@ namespace ODLGameEngine
     [JsonObject(MemberSerialization.OptIn)]
     public class EntityBase : ICloneable
     {
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public EntityType EntityType { get; set; } = EntityType.NONE;
+        [JsonConverter(typeof(FlagEnumJsonConverter))]
+        public TargetLocation TargetOptions { get; set; } = TargetLocation.BOARD; // Which lane(s) if any the card could work on
         [JsonProperty]
-        public PrePlayInfo PrePlayInfo { get; set; } = new PrePlayInfo(); // Non-hashed, non-cloned as I just want to reference once
+        public int Id { get; set; } = 0;
+        [JsonProperty]
+        public int Cost { get; set; } = 0;
         [JsonProperty]
         public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 

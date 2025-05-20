@@ -1,0 +1,7 @@
+{
+	"Id": -1,
+	"EntityType": "PLAYER",
+    "Hp": 20,
+    "CurrentGold": 5,
+    "ActivePowerId": 1
+}

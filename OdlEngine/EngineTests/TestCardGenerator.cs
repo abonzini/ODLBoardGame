@@ -24,17 +24,12 @@ namespace EngineTests
         /// <returns></returns>
         public static Skill CreateSkill(int id, string name, int cost, TargetLocation target)
         {
-            PrePlayInfo preInstanceInfo = new PrePlayInfo()
-            {
-                Id = id,
-                Title = name,
-                Cost = cost.ToString(),
-                EntityType = EntityType.SKILL,
-                TargetOptions = target,
-            };
             return new Skill() // Returns "brick" card
             {
-                PrePlayInfo = preInstanceInfo
+                Id = id,
+                Cost = cost,
+                EntityType = EntityType.SKILL,
+                TargetOptions = target,
             };
         }
         /// <summary>
@@ -51,23 +46,18 @@ namespace EngineTests
         /// <returns></returns>
         public static Unit CreateUnit(int id, string name, int cost, TargetLocation target, int hp, int attack, int movement, int denominator)
         {
-            PrePlayInfo preInstanceInfo = new PrePlayInfo()
-            {
-                Id = id,
-                Title = name,
-                Cost = cost.ToString(),
-                EntityType = EntityType.UNIT,
-                TargetOptions = target
-            };
             Unit unit = new Unit()
             {
-                PrePlayInfo = preInstanceInfo
+                Id = id,
+                Name = name,
+                EntityType = EntityType.UNIT,
+                TargetOptions = target,
+                Cost = cost,
             };
             unit.Hp.BaseValue = hp;
             unit.Attack.BaseValue = attack;
             unit.Movement.BaseValue = movement;
             unit.MovementDenominator.BaseValue = denominator;
-
             return unit;
         }
         /// <summary>
@@ -84,17 +74,13 @@ namespace EngineTests
         /// <returns></returns>
         public static Building CreateBuilding(int id, string name, int cost, TargetLocation target, int hp, int[] plainBp, int[] forestBp, int[] mountainBp)
         {
-            PrePlayInfo preInstanceInfo = new PrePlayInfo()
-            {
-                Id = id,
-                Title = name,
-                Cost = cost.ToString(),
-                EntityType = EntityType.BUILDING,
-                TargetOptions = target,
-            };
             Building building = new Building() // Returns "TOKEN_BUILDING" card
             {
-                PrePlayInfo = preInstanceInfo,
+                Id = id,
+                Name = name,
+                Cost = cost,
+                EntityType = EntityType.BUILDING,
+                TargetOptions = target,
                 PlainsBp = plainBp,
                 ForestBp = forestBp,
                 MountainBp = mountainBp,

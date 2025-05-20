@@ -21,7 +21,6 @@ namespace ODLGameEngine
             // Clone the unit, add to board
             // "Change" the coordinate of unit to right place
             Unit newSpawnedUnit = (Unit)unit.Clone(); // Clone in order to not break the same species
-            if(newSpawnedUnit.Name == "") { newSpawnedUnit.Name = newSpawnedUnit.PrePlayInfo.Title; }
             newSpawnedUnit.Owner = player;
             BOARDENTITY_InitializeEntity(newSpawnedUnit);
             // Locates unit to right place. Get the lane where unit is played, and place it in first tile

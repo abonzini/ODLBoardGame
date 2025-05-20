@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 
 namespace ODLGameEngine
 {
@@ -32,40 +33,38 @@ namespace ODLGameEngine
             {
                 return cardEntity;
             }
-
-            string[] allLines = File.ReadAllLines(Path.Combine(_baseDir, "index.csv")); // Open index file
-            foreach (string line in allLines)
+            // Otherwise fetch the card, assuming I'm in the correct folder
+            string cardJsonFile = Path.Combine(_baseDir, "CardData", $"{id}.json");
+            if(Path.Exists(cardJsonFile))
             {
-                string[] splitLines = line.Split(',');
-                if(id == int.Parse(splitLines[0])) // Found the desired ID
+                // Attempt to find what is this card
+                EntityType cardType;
+                using (StreamReader reader = new StreamReader(cardJsonFile))
                 {
-                    _ = Enum.TryParse(splitLines[1].ToUpper(), out EntityType cardtype);
-                    string expa = splitLines[2];
-                    string cardClass = splitLines[3];
-                    // Found all I need from card dir, now I import the card json
-                    string cardInfoFile = Path.Combine(_baseDir, "CardData", expa, cardClass, $"{id}.json");
-                    // Load the specific card data
-                    switch (cardtype)
-                    {
-                        case EntityType.UNIT:
-                            cardEntity = JsonConvert.DeserializeObject<Unit>(File.ReadAllText(cardInfoFile));
-                            break;
-                        case EntityType.SKILL:
-                            cardEntity = JsonConvert.DeserializeObject<Skill>(File.ReadAllText(cardInfoFile));
-                            break;
-                        case EntityType.BUILDING:
-                            cardEntity = JsonConvert.DeserializeObject<Building>(File.ReadAllText(cardInfoFile));
-                            break;
-                        case EntityType.PLAYER:
-                            cardEntity = JsonConvert.DeserializeObject<Player>(File.ReadAllText(cardInfoFile));
-                            break;
-                        case EntityType.NONE:
-                        default:
-                            throw new Exception("Unrecognised card type when deserializing");
-                    }
-                    cardData[id] = cardEntity;
-                    return cardEntity;
+                    JObject json = JObject.Parse(reader.ReadToEnd());
+                    cardType = json["EntityType"].ToObject<EntityType>();
                 }
+                // Load the specific card data
+                switch (cardType)
+                {
+                    case EntityType.UNIT:
+                        cardEntity = JsonConvert.DeserializeObject<Unit>(File.ReadAllText(cardJsonFile));
+                        break;
+                    case EntityType.SKILL:
+                        cardEntity = JsonConvert.DeserializeObject<Skill>(File.ReadAllText(cardJsonFile));
+                        break;
+                    case EntityType.BUILDING:
+                        cardEntity = JsonConvert.DeserializeObject<Building>(File.ReadAllText(cardJsonFile));
+                        break;
+                    case EntityType.PLAYER:
+                        cardEntity = JsonConvert.DeserializeObject<Player>(File.ReadAllText(cardJsonFile));
+                        break;
+                    case EntityType.NONE:
+                    default:
+                        throw new Exception("Unrecognised card type when deserializing");
+                }
+                cardData[id] = cardEntity;
+                return cardEntity;
             }
             throw new Exception("Card not found!");
         }

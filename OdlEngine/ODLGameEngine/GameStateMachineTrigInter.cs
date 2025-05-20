@@ -102,7 +102,7 @@ namespace ODLGameEngine
                                 SearchCriterion.AFFECTED_ENTITY => ((AffectingEffectContext)specificContext).Affected,
                                 _ => throw new NotImplementedException("Invalid target for entity selection")
                             };
-                            if(effect.TargetType.HasFlag(tgt.PrePlayInfo.EntityType)) // The unit is of the valid type
+                            if(effect.TargetType.HasFlag(tgt.EntityType)) // The unit is of the valid type
                             {
                                 // Determine who owns this unit then
                                 EntityOwner owner = (tgt.Owner == specificContext.ActivatedEntity.Owner) ? EntityOwner.OWNER : EntityOwner.OPPONENT;

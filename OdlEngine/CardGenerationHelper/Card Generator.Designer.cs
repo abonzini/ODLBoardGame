@@ -331,6 +331,7 @@
             // 
             CardIdUpdown.Location = new Point(59, 26);
             CardIdUpdown.Maximum = new decimal(new int[] { 999, 0, 0, 0 });
+            CardIdUpdown.Minimum = new decimal(new int[] { 999, 0, 0, int.MinValue });
             CardIdUpdown.Name = "CardIdUpdown";
             CardIdUpdown.Size = new Size(49, 27);
             CardIdUpdown.TabIndex = 1;

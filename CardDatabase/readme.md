@@ -10,3 +10,4 @@ There's also an *index.csv* file in base directory that correlates the card numb
 - **CardImagesFull** is the whole card graphics.
 - **CardBlueprintsFull** is the blueprint card for buildings.
 - **CardLayoutElements** is some .pngs of important card elements needed to fully draw the card (e.g. blueprint pattern, stat icons)
+- **CardIllustrationData** contains exported .json but used for illustration generation and not for game engine

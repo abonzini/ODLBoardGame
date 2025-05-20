@@ -1,46 +1,23 @@
 This is where card behaviour is added and modified easily.
-
-To find a specific card, the tree is the following:
-**\[expansion\]** -> **\[class\]** -> **\[number\].json**
-
-For example, first expansion base class would be Vanilla/Base, if there's X class, look for Vanilla/X.
-Then, you'd look for the specific card.
-The path is deduced by the index.txt previously mentioned.
+Cards are described via .json file.
+Name of the file is the card ID.
 
 The json file is somewhat complex, describes the card in its totality.
 Thhis means, it contains all the data needed to describe how a card is played, visualized, and the effects it has once it's actually placed on the board.
 Every card, no matter the type, has the following elements:
 
 ```
-"PrePlayInfo":
-{
-    "Id": 0,
-    "EntityType": "NONE",
-    "Title": "",
-    "Text": "",
-    "Cost": "",
-    "Hp": "",
-    "Movement": "",
-    "Attack": "",
-    "Rarity": 0,
-    "Expansion": "VANILLA",
-    "ClassType": "BASE"
-    "TargetOptions": "BOARD",
-}
+"Id": 0,
+"EntityType": "NONE",
+"Cost": 0,
+"TargetOptions": "BOARD",
 ```
-Besides card-specific fields (explained below), these mandatory fields serve the following purpose:
-- **PrePlayInfo** contains all the information that corresponds to the card before it is played. This includes visuals (e.g. Rarity, Text) but also info on where it can be played (TargetOptions) and the cost.
-Some fields are not needed for some cards (e.g. Buildings won't use the Attack stat).
-Data:
+
+These elements define the basics of the basics for any type of card:
     - ```Id:``` Card ID number
-    - ```Title:``` I.e. the card "name", or title of the card
-    - ```Text:``` Card text/effect if any
-    - ```Cost, Hp, Movement, Attack:``` The "stats" of a card if any, consider that these are strings as a placeholder for more complex effects
-    - ```Rarity:``` The rarity of the card, ranging from 0 (generated) or 1-3
-    - ```Expansion:``` Expansion name in card language
-    - ```ClassType:``` Card class (or BASE)
+    - ```Cost:``` How much it costs to play the card
     - ```EntityType:``` Type of card, such as ```UNIT```, ```SKILL```, ```BUILDING```, ```PLAYER```
-    - ```TargetOptions:``` Where the card can be targeted. Options:
+    - ```TargetOptions:``` Where the card can be targeted when playing. Valid options:
         - ```BOARD```
         - ```PLAINS```
         - ```FOREST```
@@ -49,7 +26,6 @@ Data:
         - ```ALL_BUT_FOREST```
         - ```ALL_BUT_PLAINS```
         - ```ALL_LANES```
-        - ```INVALID```
 
         These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
         For example, ```PLAINS|FOREST``` would work exactly like ```ALL_BUT_MOUNTAIN```.
@@ -60,7 +36,7 @@ Living entities, e.g. entities that are permanent in the board (anything but ski
 
 ## Units
 When card is a unit, the unit needs to contain the following data. This will create a unit with the correct values and effects:
-- ```Name:``` Name of unit as it shows once in the field, if left empty, will use the name of the printed card.
+- ```Name:``` Name of unit as it will show once in the field
 - ```Hp:``` Base Hp value of unit when summoned
 - ```DamageTokens:``` How many damage tokens the unit has. Default value is naturally 0 unless unit needs to start damaged for some weird reason
 - ```Attack:``` Attack value
@@ -69,7 +45,7 @@ When card is a unit, the unit needs to contain the following data. This will cre
 
 ## Buildings
 Building cards are similar to units, they contain the following:
-- ```Name:``` Name of building as it shows once in the field, if left empty, will use the name of the printed card.
+- ```Name:``` Name of building as it will show once in the field
 - ```Hp:``` Base Hp value of building when constructed
 - ```DamageTokens:``` How many damage tokens the building has. Default value is naturally 0 unless unit needs to start damaged for some weird reason
 - ```PlainsBp```/```ForestBp```/```MountainBp:``` Blueprint of the building for each lane. If left empty, building can't be built in that lane. It is an ordered collection. E.g. ```"PlainsBp": [2,1,3]``` means that, in plains, the building will attempt to be constructed first in tile 2, then 1, and then 3.
@@ -85,8 +61,8 @@ Moreover, player classes may also contain complex mechanics, including Triggers 
 After much deliberation, it was decided to incorporate classes as a *type of card*.
 Naturally, you won't be able to add them into the deck (unless its some sort of weird hearthstone hero-change effect???) but it is loaded and interpreted as such.
 The base class "description card" has an Id of 0, rest of classes will be other things I guess.
-Thay have the following properies:
-- ```Name:``` Name of player (nickname)
+Thay have the following properties:
+- ```Name:``` Name of player (nickname), this doesn't need to be set in .json as it is loaded by the game engine
 - ```Hp:``` Starting HP of player
 - ```CurrentGold``` Amount of gold they hold
 - ```ActivePowerId``` The card that takes part of the "active power". Has to be a skill with Board targeting

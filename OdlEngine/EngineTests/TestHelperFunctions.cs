@@ -33,16 +33,10 @@ namespace EngineTests
         /// <param name="cardFinder">Db to inject to</param>
         public static void InjectBasePlayerToDb(CardFinder cardFinder)
         {
-            PrePlayInfo playerPrePlayInfo = new PrePlayInfo()
-            {
-                Id = -1,
-                Expansion = ExpansionId.VANILLA,
-                EntityType = EntityType.PLAYER,
-                ClassType = PlayerClassType.BASE,
-            };
             Player player = new Player()
             {
-                PrePlayInfo = playerPrePlayInfo,
+                Id = -1,
+                EntityType = EntityType.PLAYER,
                 Name = "PlayerName",
                 Hp = new Min0Stat() { BaseValue = GameConstants.STARTING_HP },
                 CurrentGold = GameConstants.STARTING_GOLD,

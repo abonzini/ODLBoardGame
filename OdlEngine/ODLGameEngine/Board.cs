@@ -34,7 +34,7 @@ namespace ODLGameEngine
             // Also define the flags to allow into generalised lists
             int allOwners = -1;
             List<EntityType> allowedEntities = new List<EntityType>([EntityType.UNIT, EntityType.BUILDING]);
-            if(allowedEntities.Remove(entity.PrePlayInfo.EntityType)) // This one is always 1 so I don't need to iterate on it
+            if(allowedEntities.Remove(entity.EntityType)) // This one is always 1 so I don't need to iterate on it
             {
                 // Only continue if entity type was really present
                 int index = entity.UniqueId;
@@ -43,7 +43,7 @@ namespace ODLGameEngine
                 int numberOfCombinations = 1 << allowedEntities.Count; // 2^count
                 for (int i = 0; i < numberOfCombinations; i++)
                 {
-                    EntityType nextEntityCombination = entity.PrePlayInfo.EntityType; // This flag is always 1
+                    EntityType nextEntityCombination = entity.EntityType; // This flag is always 1
                     for (int bit = 1; bit <= allowedEntities.Count; bit++)
                     {
                         if ((i & bit) != 0) // Entity is present in this combination
