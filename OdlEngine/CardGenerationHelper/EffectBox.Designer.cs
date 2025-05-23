@@ -31,13 +31,13 @@
             EffectTypeComboBox = new ComboBox();
             TempValueUpDown = new Label();
             ValueUpDown = new NumericUpDown();
-            button1 = new Button();
             ParamsPanel = new TableLayoutPanel();
             TargetLocationLabel = new Label();
             TargetLocationBox = new ComboBox();
             TargetPlayerLabel = new Label();
             SearchCriterionLabel = new Label();
             TargetTypeLabel = new Label();
+            OutputRegisterBox = new ComboBox();
             ModifierOperationLabel = new Label();
             ModifierTargetLabel = new Label();
             InputRegisterLabel = new Label();
@@ -48,7 +48,7 @@
             ModifierOperationBox = new ComboBox();
             ModifierTargetBox = new ComboBox();
             InputRegisterBox = new ComboBox();
-            OutputRegisterBox = new ComboBox();
+            DeleteButton = new Button();
             ((System.ComponentModel.ISupportInitialize)ValueUpDown).BeginInit();
             ParamsPanel.SuspendLayout();
             SuspendLayout();
@@ -82,18 +82,6 @@
             ValueUpDown.Name = "ValueUpDown";
             ValueUpDown.Size = new Size(69, 27);
             ValueUpDown.TabIndex = 2;
-            // 
-            // button1
-            // 
-            button1.BackColor = Color.Red;
-            button1.Font = new Font("Segoe UI", 9F);
-            button1.ForeColor = SystemColors.ButtonHighlight;
-            button1.Location = new Point(275, 3);
-            button1.Name = "button1";
-            button1.Size = new Size(30, 30);
-            button1.TabIndex = 4;
-            button1.Text = "X";
-            button1.UseVisualStyleBackColor = false;
             // 
             // ParamsPanel
             // 
@@ -181,6 +169,15 @@
             TargetTypeLabel.Size = new Size(85, 20);
             TargetTypeLabel.TabIndex = 4;
             TargetTypeLabel.Text = "Target Type";
+            // 
+            // OutputRegisterBox
+            // 
+            OutputRegisterBox.Font = new Font("Segoe UI", 9F);
+            OutputRegisterBox.FormattingEnabled = true;
+            OutputRegisterBox.Location = new Point(146, 241);
+            OutputRegisterBox.Name = "OutputRegisterBox";
+            OutputRegisterBox.Size = new Size(151, 28);
+            OutputRegisterBox.TabIndex = 15;
             // 
             // ModifierOperationLabel
             // 
@@ -276,14 +273,18 @@
             InputRegisterBox.Size = new Size(151, 28);
             InputRegisterBox.TabIndex = 14;
             // 
-            // OutputRegisterBox
+            // DeleteButton
             // 
-            OutputRegisterBox.Font = new Font("Segoe UI", 9F);
-            OutputRegisterBox.FormattingEnabled = true;
-            OutputRegisterBox.Location = new Point(146, 241);
-            OutputRegisterBox.Name = "OutputRegisterBox";
-            OutputRegisterBox.Size = new Size(151, 28);
-            OutputRegisterBox.TabIndex = 15;
+            DeleteButton.BackColor = Color.Red;
+            DeleteButton.Font = new Font("Segoe UI", 9F);
+            DeleteButton.ForeColor = SystemColors.ButtonHighlight;
+            DeleteButton.Location = new Point(275, 3);
+            DeleteButton.Name = "DeleteButton";
+            DeleteButton.Size = new Size(30, 30);
+            DeleteButton.TabIndex = 4;
+            DeleteButton.Text = "X";
+            DeleteButton.UseVisualStyleBackColor = false;
+            DeleteButton.Click += DeleteButton_Click;
             // 
             // EffectBox
             // 
@@ -291,8 +292,9 @@
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            BorderStyle = BorderStyle.FixedSingle;
             Controls.Add(ParamsPanel);
-            Controls.Add(button1);
+            Controls.Add(DeleteButton);
             Controls.Add(ValueUpDown);
             Controls.Add(TempValueUpDown);
             Controls.Add(EffectTypeComboBox);
@@ -311,7 +313,6 @@
         private ComboBox EffectTypeComboBox;
         private Label TempValueUpDown;
         private NumericUpDown ValueUpDown;
-        private Button button1;
         private TableLayoutPanel ParamsPanel;
         private Label TargetLocationLabel;
         private ComboBox TargetLocationBox;
@@ -329,5 +330,6 @@
         private ComboBox ModifierTargetBox;
         private ComboBox InputRegisterBox;
         private ComboBox OutputRegisterBox;
+        private Button DeleteButton;
     }
 }

@@ -20,11 +20,16 @@ namespace CardGenerationHelper
      */
     public partial class EffectBox : UserControl
     {
+        TriginterEffects owner = null;
         public EffectBox()
         {
             InitializeComponent();
         }
-
+        public void SetOwner(TriginterEffects owner)
+        {
+            // Sets ownership
+            this.owner = owner;
+        }
         private void EffectBox_Load(object sender, EventArgs e)
         {
             // Now preload each box
@@ -48,7 +53,6 @@ namespace CardGenerationHelper
             EffectTypeComboBox.Items.AddRange(Enum.GetValues(typeof(EffectType)).Cast<object>().ToArray());
             EffectTypeComboBox.SelectedIndex = 0;
         }
-
         void ResetAll()
         {
             TargetLocationBox.SelectedIndex = 0;
@@ -101,7 +105,7 @@ namespace CardGenerationHelper
             ShowRelevant(type);
         }
 
-        private Effect GetEffect()
+        public Effect GetEffect()
         {
             return new Effect()
             {
@@ -116,6 +120,14 @@ namespace CardGenerationHelper
                 OutputRegister = (Register)OutputRegisterBox.SelectedItem,
                 TempVariable = Convert.ToInt32(ValueUpDown.Value)
             };
+        }
+        // When I request to be deleted
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            if(owner != null)
+            {
+                owner.RequestEffectDeletion(this);
+            }
         }
     }
 }

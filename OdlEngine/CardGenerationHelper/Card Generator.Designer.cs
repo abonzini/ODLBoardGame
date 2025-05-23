@@ -80,6 +80,7 @@
             StartingGoldUpdown = new NumericUpDown();
             label13 = new Label();
             panel1 = new Panel();
+            triginterEffects1 = new TriginterEffects();
             ((System.ComponentModel.ISupportInitialize)ImageSelectorSplit).BeginInit();
             ImageSelectorSplit.Panel1.SuspendLayout();
             ImageSelectorSplit.Panel2.SuspendLayout();
@@ -101,6 +102,7 @@
             PlayerPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ActivePowerUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StartingGoldUpdown).BeginInit();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // ImageSelectorSplit
@@ -125,7 +127,7 @@
             ImageSelectorSplit.Panel2.Controls.Add(SaveJsonButton);
             ImageSelectorSplit.Panel2.Controls.Add(LoadJsonButton);
             ImageSelectorSplit.Panel2.Controls.Add(flowLayoutPanel1);
-            ImageSelectorSplit.Size = new Size(1092, 653);
+            ImageSelectorSplit.Size = new Size(1700, 960);
             ImageSelectorSplit.SplitterDistance = 300;
             ImageSelectorSplit.TabIndex = 0;
             // 
@@ -176,7 +178,7 @@
             CardPicture.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CardPicture.Location = new Point(12, 77);
             CardPicture.Name = "CardPicture";
-            CardPicture.Size = new Size(285, 529);
+            CardPicture.Size = new Size(285, 836);
             CardPicture.SizeMode = PictureBoxSizeMode.Zoom;
             CardPicture.TabIndex = 1;
             CardPicture.TabStop = false;
@@ -184,7 +186,7 @@
             // SavePictureButton
             // 
             SavePictureButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            SavePictureButton.Location = new Point(12, 612);
+            SavePictureButton.Location = new Point(12, 919);
             SavePictureButton.Name = "SavePictureButton";
             SavePictureButton.Size = new Size(285, 29);
             SavePictureButton.TabIndex = 0;
@@ -212,6 +214,7 @@
             // 
             // flowLayoutPanel1
             // 
+            flowLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             flowLayoutPanel1.AutoScroll = true;
             flowLayoutPanel1.AutoScrollMinSize = new Size(0, 603);
             flowLayoutPanel1.Controls.Add(groupBox1);
@@ -224,7 +227,7 @@
             flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel1.Location = new Point(3, 47);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(782, 603);
+            flowLayoutPanel1.Size = new Size(1390, 910);
             flowLayoutPanel1.TabIndex = 2;
             flowLayoutPanel1.WrapContents = false;
             // 
@@ -236,7 +239,7 @@
             groupBox1.Controls.Add(TargetOptionsLabel);
             groupBox1.Location = new Point(3, 3);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(750, 91);
+            groupBox1.Size = new Size(1364, 91);
             groupBox1.TabIndex = 0;
             groupBox1.TabStop = false;
             groupBox1.Text = "PlayInfo";
@@ -295,7 +298,7 @@
             groupBox2.Controls.Add(label4);
             groupBox2.Location = new Point(3, 100);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(753, 171);
+            groupBox2.Size = new Size(1364, 171);
             groupBox2.TabIndex = 1;
             groupBox2.TabStop = false;
             groupBox2.Text = "PrintInfo";
@@ -396,7 +399,7 @@
             EffectDescriptionBox.Location = new Point(114, 84);
             EffectDescriptionBox.Multiline = true;
             EffectDescriptionBox.Name = "EffectDescriptionBox";
-            EffectDescriptionBox.Size = new Size(630, 81);
+            EffectDescriptionBox.Size = new Size(1244, 81);
             EffectDescriptionBox.TabIndex = 8;
             EffectDescriptionBox.TextChanged += EffectDescriptionBox_TextChanged;
             // 
@@ -433,7 +436,7 @@
             LivingEntityPanel.Controls.Add(label7);
             LivingEntityPanel.Location = new Point(3, 277);
             LivingEntityPanel.Name = "LivingEntityPanel";
-            LivingEntityPanel.Size = new Size(753, 36);
+            LivingEntityPanel.Size = new Size(1364, 36);
             LivingEntityPanel.TabIndex = 2;
             // 
             // HpUpDown
@@ -463,7 +466,7 @@
             UnitPanel.Controls.Add(label8);
             UnitPanel.Location = new Point(3, 319);
             UnitPanel.Name = "UnitPanel";
-            UnitPanel.Size = new Size(753, 68);
+            UnitPanel.Size = new Size(1364, 68);
             UnitPanel.TabIndex = 3;
             // 
             // DenominatorUpDown
@@ -523,7 +526,7 @@
             BlueprintsPanel.Controls.Add(PlainsBpTextBox);
             BlueprintsPanel.Location = new Point(3, 393);
             BlueprintsPanel.Name = "BlueprintsPanel";
-            BlueprintsPanel.Size = new Size(753, 131);
+            BlueprintsPanel.Size = new Size(1364, 131);
             BlueprintsPanel.TabIndex = 4;
             BlueprintsPanel.TabStop = false;
             BlueprintsPanel.Text = "Building Blueprints";
@@ -587,7 +590,7 @@
             PlayerPanel.Controls.Add(label13);
             PlayerPanel.Location = new Point(3, 530);
             PlayerPanel.Name = "PlayerPanel";
-            PlayerPanel.Size = new Size(753, 69);
+            PlayerPanel.Size = new Size(1364, 69);
             PlayerPanel.TabIndex = 5;
             // 
             // label14
@@ -630,18 +633,29 @@
             // 
             // panel1
             // 
+            panel1.AutoScroll = true;
+            panel1.Controls.Add(triginterEffects1);
             panel1.Location = new Point(3, 605);
             panel1.Name = "panel1";
-            panel1.Size = new Size(753, 125);
+            panel1.Size = new Size(1364, 214);
             panel1.TabIndex = 6;
+            // 
+            // triginterEffects1
+            // 
+            triginterEffects1.AutoSize = true;
+            triginterEffects1.BorderStyle = BorderStyle.FixedSingle;
+            triginterEffects1.Location = new Point(21, 13);
+            triginterEffects1.MinimumSize = new Size(190, 80);
+            triginterEffects1.Name = "triginterEffects1";
+            triginterEffects1.Size = new Size(190, 82);
+            triginterEffects1.TabIndex = 0;
             // 
             // CardGenerator
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1092, 653);
+            ClientSize = new Size(1700, 960);
             Controls.Add(ImageSelectorSplit);
-            MaximumSize = new Size(1110, 10000000);
             MinimumSize = new Size(1110, 700);
             Name = "CardGenerator";
             Text = "Card Generator";
@@ -674,6 +688,8 @@
             PlayerPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ActivePowerUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)StartingGoldUpdown).EndInit();
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -731,5 +747,6 @@
         private NumericUpDown ActivePowerUpDown;
         private Label label14;
         private Panel panel1;
+        private TriginterEffects triginterEffects1;
     }
 }
