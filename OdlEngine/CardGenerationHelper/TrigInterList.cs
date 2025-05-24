@@ -73,17 +73,25 @@ namespace CardGenerationHelper
                 KeyValuePair<InteractionType, List<Effect>> kvp = effs.GetInteractionEffects();
                 res[kvp.Key] = kvp.Value;
             }
+            if(res.Count == 0)
+            {
+                res = null;
+            }
             return res;
         }
         public Dictionary<TriggerType, List<Effect>> GetTriggersDict()
         {
-            if (trigInter != TrigOrInter.INTERACTION) throw new Exception("This is not an interaction control!");
+            if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not a trigger control!");
             Dictionary<TriggerType, List<Effect>> res = new Dictionary<TriggerType, List<Effect>>();
             for (int i = 0; i < TriginterEffectsPanel.Controls.Count - 1; i++) // -1 because last one is the add button
             {
                 TriginterEffects effs = (TriginterEffects)TriginterEffectsPanel.Controls[i];
                 KeyValuePair<TriggerType, List<Effect>> kvp = effs.GetTriggerEffects();
                 res[kvp.Key] = kvp.Value;
+            }
+            if (res.Count == 0)
+            {
+                res = null;
             }
             return res;
         }

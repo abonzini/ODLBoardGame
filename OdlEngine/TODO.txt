@@ -1,6 +1,5 @@
 Ongoing tasks in order of priority:
 - Card maker UI:
-	- export jsons
 	- import jsons
 - Implement rest of rulebook (start from scratch, use app)
 	- Procedure:

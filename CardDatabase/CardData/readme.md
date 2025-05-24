@@ -1,5 +1,6 @@
 This is where card behaviour is added and modified easily.
-Cards are described via .json file.
+Cards are described via ```.json``` file.
+The ```-illustration.json``` file contains extra illustration data for redrawing the card, which is not of use here.
 Name of the file is the card ID.
 
 The json file is somewhat complex, describes the card in its totality.

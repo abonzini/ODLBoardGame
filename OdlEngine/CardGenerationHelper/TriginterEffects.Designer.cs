@@ -97,6 +97,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
+            BackColor = SystemColors.ControlDark;
             BorderStyle = BorderStyle.Fixed3D;
             Controls.Add(panel1);
             Controls.Add(EffectsPanel);

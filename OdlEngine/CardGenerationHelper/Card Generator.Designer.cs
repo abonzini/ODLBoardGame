@@ -82,6 +82,8 @@
             PictureButtonsArea = new Panel();
             PictureAreaPanel = new Panel();
             MainPanel = new Panel();
+            LoadSaveButtonPanel = new Panel();
+            SaveJsonButton = new Button();
             ((System.ComponentModel.ISupportInitialize)CardPicture).BeginInit();
             CardElementsPanel.SuspendLayout();
             PlayInfoBox.SuspendLayout();
@@ -103,6 +105,7 @@
             PictureButtonsArea.SuspendLayout();
             PictureAreaPanel.SuspendLayout();
             MainPanel.SuspendLayout();
+            LoadSaveButtonPanel.SuspendLayout();
             SuspendLayout();
             // 
             // BlueprintCheckBox
@@ -185,7 +188,7 @@
             CardElementsPanel.Controls.Add(TriggerList);
             CardElementsPanel.Controls.Add(InteractionList);
             CardElementsPanel.FlowDirection = FlowDirection.TopDown;
-            CardElementsPanel.Location = new Point(0, 0);
+            CardElementsPanel.Location = new Point(6, 52);
             CardElementsPanel.Name = "CardElementsPanel";
             CardElementsPanel.Size = new Size(756, 787);
             CardElementsPanel.TabIndex = 2;
@@ -660,11 +663,32 @@
             // 
             MainPanel.AutoScroll = true;
             MainPanel.Controls.Add(CardElementsPanel);
+            MainPanel.Controls.Add(LoadSaveButtonPanel);
             MainPanel.Dock = DockStyle.Fill;
             MainPanel.Location = new Point(283, 0);
             MainPanel.Name = "MainPanel";
             MainPanel.Size = new Size(779, 508);
             MainPanel.TabIndex = 6;
+            // 
+            // LoadSaveButtonPanel
+            // 
+            LoadSaveButtonPanel.Controls.Add(SaveJsonButton);
+            LoadSaveButtonPanel.Dock = DockStyle.Top;
+            LoadSaveButtonPanel.Location = new Point(0, 0);
+            LoadSaveButtonPanel.Name = "LoadSaveButtonPanel";
+            LoadSaveButtonPanel.Size = new Size(762, 46);
+            LoadSaveButtonPanel.TabIndex = 8;
+            // 
+            // SaveJsonButton
+            // 
+            SaveJsonButton.Dock = DockStyle.Left;
+            SaveJsonButton.Location = new Point(0, 0);
+            SaveJsonButton.Name = "SaveJsonButton";
+            SaveJsonButton.Size = new Size(94, 46);
+            SaveJsonButton.TabIndex = 0;
+            SaveJsonButton.Text = "Save Card";
+            SaveJsonButton.UseVisualStyleBackColor = true;
+            SaveJsonButton.Click += SaveJsonButton_Click;
             // 
             // CardGenerator
             // 
@@ -707,6 +731,7 @@
             PictureAreaPanel.ResumeLayout(false);
             MainPanel.ResumeLayout(false);
             MainPanel.PerformLayout();
+            LoadSaveButtonPanel.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -765,5 +790,7 @@
         private Panel MainPanel;
         private TrigInterList InteractionList;
         private TrigInterList TriggerList;
+        private Panel LoadSaveButtonPanel;
+        private Button SaveJsonButton;
     }
 }

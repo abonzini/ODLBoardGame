@@ -42,6 +42,7 @@ namespace CardGenerationHelper
         }
         void RefreshUi()
         {
+            EventTypeComboBox.Items.Clear();
             switch (trigInter)
             {
                 case TrigOrInter.TRIGGER:

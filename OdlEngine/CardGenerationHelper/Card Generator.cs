@@ -1,4 +1,5 @@
-﻿using ODLGameEngine;
+﻿using Newtonsoft.Json;
+using ODLGameEngine;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -363,7 +364,7 @@ namespace CardGenerationHelper
 
             RedrawUi();
         }
-        
+
         private void EntityTypeDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
             _currentIllustrationInfo.EntityType = (EntityType)EntityTypeDropdown.SelectedItem;
@@ -625,6 +626,37 @@ namespace CardGenerationHelper
         private void ActivePowerUpDown_ValueChanged(object sender, EventArgs e)
         {
             ((Player)_currentEntity).ActivePowerId = Convert.ToInt32(ActivePowerUpDown.Value);
+        }
+
+        private void SaveJsonButton_Click(object sender, EventArgs e)
+        {
+            // Current entity has everything already except triginers
+            _currentEntity.Interactions = InteractionList.GetInteractionsDict();
+            // Living entities also have Triggers
+            if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType()))
+            {
+                ((LivingEntity)_currentEntity).Triggers = TriggerList.GetTriggersDict();
+            }
+            // Card complete, now time to deserialize
+            var settings = new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented, // Add indentation for better readability
+                DefaultValueHandling = DefaultValueHandling.Ignore // Exclude default values
+            };
+            // Serialize result
+            string cardJson = JsonConvert.SerializeObject(_currentEntity, settings);
+            string cardPrintJson = JsonConvert.SerializeObject(_currentIllustrationInfo, settings);
+            // Get folder where I save this
+            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            {
+                DialogResult result = folderDialog.ShowDialog();
+                string folderPath = folderDialog.SelectedPath;
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
+                {
+                    File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id+".json"), cardJson);
+                    File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id+"-illustration.json"), cardPrintJson);
+                }
+            }
         }
     }
 }
