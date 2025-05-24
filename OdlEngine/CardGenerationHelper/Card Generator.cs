@@ -34,8 +34,13 @@ namespace CardGenerationHelper
         public CardGenerator()
         {
             InitializeComponent();
-            
-            DebugCheckBox.Checked = _debug; // Load last setting
+
+            // Set trigger/inter properly!
+            TriggerList.SetTrigInterType(TrigOrInter.TRIGGER);
+            InteractionList.SetTrigInterType(TrigOrInter.INTERACTION);
+
+            // Load last setting
+            DebugCheckBox.Checked = _debug;
 
             // Timer
             _drawUpdateTimer.Tick += DrawTimeout;
@@ -381,10 +386,12 @@ namespace CardGenerationHelper
             if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType()))
             {
                 LivingEntityPanel.Show();
+                TriggerList.Show();
             }
             else
             {
                 LivingEntityPanel.Hide();
+                TriggerList.Hide();
             }
             if (typeof(Unit).IsAssignableFrom(_currentEntity.GetType()))
             {

@@ -292,7 +292,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            BorderStyle = BorderStyle.FixedSingle;
+            BorderStyle = BorderStyle.Fixed3D;
             Controls.Add(ParamsPanel);
             Controls.Add(DeleteButton);
             Controls.Add(ValueUpDown);

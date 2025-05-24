@@ -51,22 +51,22 @@
             DeleteButton.Dock = DockStyle.Right;
             DeleteButton.Font = new Font("Segoe UI", 9F);
             DeleteButton.ForeColor = SystemColors.ButtonHighlight;
-            DeleteButton.Location = new Point(160, 0);
+            DeleteButton.Location = new Point(156, 0);
             DeleteButton.Name = "DeleteButton";
             DeleteButton.Size = new Size(30, 34);
             DeleteButton.TabIndex = 5;
             DeleteButton.Text = "X";
             DeleteButton.UseVisualStyleBackColor = false;
+            DeleteButton.Click += DeleteButton_Click;
             // 
             // EffectsPanel
             // 
             EffectsPanel.AutoSize = true;
             EffectsPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            EffectsPanel.BorderStyle = BorderStyle.FixedSingle;
             EffectsPanel.Controls.Add(AddButton);
             EffectsPanel.Location = new Point(3, 40);
             EffectsPanel.Name = "EffectsPanel";
-            EffectsPanel.Size = new Size(39, 37);
+            EffectsPanel.Size = new Size(37, 35);
             EffectsPanel.TabIndex = 6;
             EffectsPanel.WrapContents = false;
             // 
@@ -89,7 +89,7 @@
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(190, 34);
+            panel1.Size = new Size(186, 34);
             panel1.TabIndex = 7;
             // 
             // TriginterEffects
@@ -97,11 +97,12 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
+            BorderStyle = BorderStyle.Fixed3D;
             Controls.Add(panel1);
             Controls.Add(EffectsPanel);
             MinimumSize = new Size(190, 80);
             Name = "TriginterEffects";
-            Size = new Size(190, 80);
+            Size = new Size(186, 78);
             EffectsPanel.ResumeLayout(false);
             panel1.ResumeLayout(false);
             ResumeLayout(false);

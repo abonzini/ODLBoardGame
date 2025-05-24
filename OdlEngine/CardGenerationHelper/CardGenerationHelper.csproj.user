@@ -10,5 +10,8 @@
     <Compile Update="TriginterEffects.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="TrigInterList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

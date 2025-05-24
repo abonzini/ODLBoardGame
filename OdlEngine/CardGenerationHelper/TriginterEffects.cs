@@ -19,12 +19,18 @@ namespace CardGenerationHelper
     }
     public partial class TriginterEffects : UserControl
     {
+        TrigInterList owner = null;
         TrigOrInter trigInter = TrigOrInter.TRIGGER;
         public TriginterEffects()
         {
             InitializeComponent();
             RefreshUi();
             EffectsPanel.Controls.SetChildIndex(AddButton, 0);
+        }
+        public void SetOwner(TrigInterList owner)
+        {
+            // Sets ownership
+            this.owner = owner;
         }
         public void SetTrigInterType(TrigOrInter trigInter)
         {
@@ -79,17 +85,24 @@ namespace CardGenerationHelper
             }
             return ret;
         }
-        private KeyValuePair<InteractionType, List<Effect>> GetInteractionEffects()
+        public KeyValuePair<InteractionType, List<Effect>> GetInteractionEffects()
         {
             if (trigInter != TrigOrInter.INTERACTION) throw new Exception("This is not an interaction control!");
             List<Effect> effects = GetEffects();
             return new KeyValuePair<InteractionType, List<Effect>>((InteractionType)EventTypeComboBox.SelectedItem, effects);
         }
-        private KeyValuePair<TriggerType, List<Effect>> GetTriggerEffects()
+        public KeyValuePair<TriggerType, List<Effect>> GetTriggerEffects()
         {
             if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not an interaction control!");
             List<Effect> effects = GetEffects();
             return new KeyValuePair<TriggerType, List<Effect>>((TriggerType)EventTypeComboBox.SelectedItem, effects);
+        }
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            if(owner != null)
+            {
+                owner.RequestEffectDeletion(this);
+            }
         }
     }
 }
