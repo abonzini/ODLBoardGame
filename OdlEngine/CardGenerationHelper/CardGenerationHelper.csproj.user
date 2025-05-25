@@ -7,6 +7,9 @@
     <Compile Update="EffectBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="FlagEnumCheckbox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="TriginterEffects.cs">
       <SubType>UserControl</SubType>
     </Compile>

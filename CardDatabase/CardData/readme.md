@@ -267,6 +267,3 @@ For example, if stats need to be buffed/debuffed, or a specific player gets gold
     - ```REGISTER``` the target will be whichever register is the ```OutputRegister```
     - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, this corresponding stat is modified for each entity
     - ```PLAYERS_GOLD``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, modifies the players gold relative to those units and the desired ```TargetPlayer```
-
-    These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
-    For example, ```UNIT|BUILDING``` means both units and buildings will be accepted.

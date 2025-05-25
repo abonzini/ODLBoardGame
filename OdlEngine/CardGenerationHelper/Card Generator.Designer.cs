@@ -83,7 +83,9 @@
             PictureAreaPanel = new Panel();
             MainPanel = new Panel();
             LoadSaveButtonPanel = new Panel();
+            LoadJsonButton = new Button();
             SaveJsonButton = new Button();
+            flagEnumCheckbox1 = new FlagEnumCheckbox();
             ((System.ComponentModel.ISupportInitialize)CardPicture).BeginInit();
             CardElementsPanel.SuspendLayout();
             PlayInfoBox.SuspendLayout();
@@ -181,6 +183,7 @@
             CardElementsPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             CardElementsPanel.Controls.Add(PlayInfoBox);
             CardElementsPanel.Controls.Add(PrintInfoBox);
+            CardElementsPanel.Controls.Add(flagEnumCheckbox1);
             CardElementsPanel.Controls.Add(LivingEntityPanel);
             CardElementsPanel.Controls.Add(UnitPanel);
             CardElementsPanel.Controls.Add(BlueprintsPanel);
@@ -190,7 +193,7 @@
             CardElementsPanel.FlowDirection = FlowDirection.TopDown;
             CardElementsPanel.Location = new Point(6, 52);
             CardElementsPanel.Name = "CardElementsPanel";
-            CardElementsPanel.Size = new Size(756, 787);
+            CardElementsPanel.Size = new Size(756, 799);
             CardElementsPanel.TabIndex = 2;
             CardElementsPanel.WrapContents = false;
             // 
@@ -403,7 +406,7 @@
             LivingEntityPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             LivingEntityPanel.Controls.Add(HpUpDown);
             LivingEntityPanel.Controls.Add(label7);
-            LivingEntityPanel.Location = new Point(3, 314);
+            LivingEntityPanel.Location = new Point(3, 326);
             LivingEntityPanel.Name = "LivingEntityPanel";
             LivingEntityPanel.Size = new Size(111, 33);
             LivingEntityPanel.TabIndex = 2;
@@ -435,7 +438,7 @@
             UnitPanel.Controls.Add(AttackUpDown);
             UnitPanel.Controls.Add(label9);
             UnitPanel.Controls.Add(label8);
-            UnitPanel.Location = new Point(3, 353);
+            UnitPanel.Location = new Point(3, 365);
             UnitPanel.Name = "UnitPanel";
             UnitPanel.Size = new Size(166, 66);
             UnitPanel.TabIndex = 3;
@@ -497,7 +500,7 @@
             BlueprintsPanel.Controls.Add(MountainBpTextBox);
             BlueprintsPanel.Controls.Add(ForestBpTextBox);
             BlueprintsPanel.Controls.Add(PlainsBpTextBox);
-            BlueprintsPanel.Location = new Point(3, 425);
+            BlueprintsPanel.Location = new Point(3, 437);
             BlueprintsPanel.Name = "BlueprintsPanel";
             BlueprintsPanel.Size = new Size(545, 145);
             BlueprintsPanel.TabIndex = 4;
@@ -563,7 +566,7 @@
             PlayerPanel.Controls.Add(ActivePowerUpDown);
             PlayerPanel.Controls.Add(StartingGoldUpdown);
             PlayerPanel.Controls.Add(label13);
-            PlayerPanel.Location = new Point(3, 576);
+            PlayerPanel.Location = new Point(3, 588);
             PlayerPanel.Name = "PlayerPanel";
             PlayerPanel.Size = new Size(111, 66);
             PlayerPanel.TabIndex = 5;
@@ -611,7 +614,7 @@
             TriggerList.AutoSize = true;
             TriggerList.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             TriggerList.BorderStyle = BorderStyle.FixedSingle;
-            TriggerList.Location = new Point(3, 648);
+            TriggerList.Location = new Point(3, 660);
             TriggerList.Name = "TriggerList";
             TriggerList.Size = new Size(67, 65);
             TriggerList.TabIndex = 7;
@@ -621,7 +624,7 @@
             InteractionList.AutoSize = true;
             InteractionList.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             InteractionList.BorderStyle = BorderStyle.FixedSingle;
-            InteractionList.Location = new Point(3, 719);
+            InteractionList.Location = new Point(3, 731);
             InteractionList.Name = "InteractionList";
             InteractionList.Size = new Size(67, 65);
             InteractionList.TabIndex = 6;
@@ -672,12 +675,24 @@
             // 
             // LoadSaveButtonPanel
             // 
+            LoadSaveButtonPanel.Controls.Add(LoadJsonButton);
             LoadSaveButtonPanel.Controls.Add(SaveJsonButton);
             LoadSaveButtonPanel.Dock = DockStyle.Top;
             LoadSaveButtonPanel.Location = new Point(0, 0);
             LoadSaveButtonPanel.Name = "LoadSaveButtonPanel";
             LoadSaveButtonPanel.Size = new Size(762, 46);
             LoadSaveButtonPanel.TabIndex = 8;
+            // 
+            // LoadJsonButton
+            // 
+            LoadJsonButton.Dock = DockStyle.Left;
+            LoadJsonButton.Location = new Point(94, 0);
+            LoadJsonButton.Name = "LoadJsonButton";
+            LoadJsonButton.Size = new Size(94, 46);
+            LoadJsonButton.TabIndex = 1;
+            LoadJsonButton.Text = "Load Card";
+            LoadJsonButton.UseVisualStyleBackColor = true;
+            LoadJsonButton.Click += LoadJsonButton_Click;
             // 
             // SaveJsonButton
             // 
@@ -689,6 +704,15 @@
             SaveJsonButton.Text = "Save Card";
             SaveJsonButton.UseVisualStyleBackColor = true;
             SaveJsonButton.Click += SaveJsonButton_Click;
+            // 
+            // flagEnumCheckbox1
+            // 
+            flagEnumCheckbox1.AutoSize = true;
+            flagEnumCheckbox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            flagEnumCheckbox1.Location = new Point(3, 314);
+            flagEnumCheckbox1.Name = "flagEnumCheckbox1";
+            flagEnumCheckbox1.Size = new Size(6, 6);
+            flagEnumCheckbox1.TabIndex = 8;
             // 
             // CardGenerator
             // 
@@ -792,5 +816,7 @@
         private TrigInterList TriggerList;
         private Panel LoadSaveButtonPanel;
         private Button SaveJsonButton;
+        private Button LoadJsonButton;
+        private FlagEnumCheckbox flagEnumCheckbox1;
     }
 }

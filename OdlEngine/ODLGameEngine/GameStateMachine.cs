@@ -28,7 +28,7 @@ namespace ODLGameEngine
         {
             get
             {
-                _cardDb ??= new CardFinder(".\\..\\..\\..\\..\\..\\CardDatabase"); // Shouldn't happen unless testing!! Wonder if this path is always ok
+                _cardDb ??= new CardFinder(".\\..\\..\\..\\..\\..\\CardDatabase\\CardData"); // Shouldn't happen unless testing!! Wonder if this path is always ok
                 return _cardDb;
             }
             set

@@ -34,7 +34,7 @@ namespace ODLGameEngine
                 return cardEntity;
             }
             // Otherwise fetch the card, assuming I'm in the correct folder
-            string cardJsonFile = Path.Combine(_baseDir, "CardData", $"{id}.json");
+            string cardJsonFile = Path.Combine(_baseDir, $"{id}.json");
             if(Path.Exists(cardJsonFile))
             {
                 // Attempt to find what is this card

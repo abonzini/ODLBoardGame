@@ -1,6 +1,6 @@
 Ongoing tasks in order of priority:
 - Card maker UI:
-	- import jsons
+	- import jsons. Missing only triginter and we good
 - Implement rest of rulebook (start from scratch, use app)
 	- Procedure:
 		- Propose card, way to code it

@@ -46,7 +46,7 @@ namespace ODLGameEngine
         ALL_BUT_PLAINS = 6,
         ALL_LANES = 7,
         INVALID = 8,
-        // Only for TrinInter...
+        // Only for TrigInter...
         // Relative targets
         PLAY_TARGET
     }
@@ -81,8 +81,10 @@ namespace ODLGameEngine
     [JsonObject(MemberSerialization.OptIn)]
     public class EntityBase : ICloneable
     {
+        [JsonProperty]
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EntityType EntityType { get; set; } = EntityType.NONE;
+        [JsonProperty]
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public TargetLocation TargetOptions { get; set; } = TargetLocation.BOARD; // Which lane(s) if any the card could work on
         [JsonProperty]

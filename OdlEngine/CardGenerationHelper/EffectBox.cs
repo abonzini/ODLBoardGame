@@ -35,12 +35,10 @@ namespace CardGenerationHelper
             // Now preload each box
             TargetLocationBox.Items.AddRange(Enum.GetValues(typeof(TargetLocation)).Cast<object>().ToArray());
             TargetLocationBox.SelectedIndex = 0;
-            TargetPlayerBox.Items.AddRange(Enum.GetValues(typeof(EntityOwner)).Cast<object>().ToArray());
-            TargetPlayerBox.SelectedIndex = 0;
+            TargetPlayerEnumBox.SetEnum(typeof(EntityOwner));
             SearchCriterionBox.Items.AddRange(Enum.GetValues(typeof(SearchCriterion)).Cast<object>().ToArray());
             SearchCriterionBox.SelectedIndex = 0;
-            TargetTypeBox.Items.AddRange(Enum.GetValues(typeof(EntityType)).Cast<object>().ToArray());
-            TargetTypeBox.SelectedIndex = 0;
+            TargetTypeEnumBox.SetEnum(typeof(EntityType));
             ModifierOperationBox.Items.AddRange(Enum.GetValues(typeof(ModifierOperation)).Cast<object>().ToArray());
             ModifierOperationBox.SelectedIndex = 0;
             ModifierTargetBox.Items.AddRange(Enum.GetValues(typeof(ModifierTarget)).Cast<object>().ToArray());
@@ -58,14 +56,14 @@ namespace CardGenerationHelper
             TargetLocationBox.SelectedIndex = 0;
             TargetLocationBox.Hide();
             TargetLocationLabel.Hide();
-            TargetPlayerBox.SelectedIndex = 0;
-            TargetPlayerBox.Hide();
+            TargetPlayerEnumBox.Clear();
+            TargetPlayerEnumBox.Hide();
             TargetPlayerLabel.Hide();
             SearchCriterionBox.SelectedIndex = 0;
             SearchCriterionBox.Hide();
             SearchCriterionLabel.Hide();
-            TargetTypeBox.SelectedIndex = 0;
-            TargetTypeBox.Hide();
+            TargetTypeEnumBox.Clear();
+            TargetTypeEnumBox.Hide();
             TargetTypeLabel.Hide();
             ModifierOperationBox.SelectedIndex = 0;
             ModifierOperationBox.Hide();
@@ -86,10 +84,10 @@ namespace CardGenerationHelper
             {
                 EffectType.TRIGGER_DEBUG => [],
                 EffectType.DEBUG_STORE => [],
-                EffectType.SELECT_ENTITY => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerBox, TargetPlayerLabel, TargetTypeBox, TargetTypeLabel],
-                EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerBox, TargetPlayerLabel, TargetTypeBox, TargetTypeLabel, TargetLocationBox, TargetLocationLabel, InputRegisterBox, InputRegisterLabel],
-                EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerBox, TargetLocationBox, TargetLocationLabel, InputRegisterBox, InputRegisterLabel],
-                EffectType.MODIFIER => [ModifierOperationBox, ModifierOperationLabel, ModifierTargetBox, ModifierTargetLabel, InputRegisterBox, InputRegisterLabel, TargetPlayerBox, TargetPlayerLabel, OutputRegisterBox, OutputRegisterLabel],
+                EffectType.SELECT_ENTITY => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel],
+                EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel, TargetLocationBox, TargetLocationLabel, InputRegisterBox, InputRegisterLabel],
+                EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerEnumBox, TargetLocationBox, TargetLocationLabel, InputRegisterBox, InputRegisterLabel],
+                EffectType.MODIFIER => [ModifierOperationBox, ModifierOperationLabel, ModifierTargetBox, ModifierTargetLabel, InputRegisterBox, InputRegisterLabel, TargetPlayerEnumBox, TargetPlayerLabel, OutputRegisterBox, OutputRegisterLabel],
                 _ => throw new NotImplementedException("Unhandled effect type"),
             };
             foreach (Control control in relevant)
@@ -111,9 +109,9 @@ namespace CardGenerationHelper
             {
                 EffectType = (EffectType)EffectTypeComboBox.SelectedItem,
                 TargetLocation = (TargetLocation)TargetLocationBox.SelectedItem,
-                TargetPlayer = (EntityOwner)TargetPlayerBox.SelectedItem,
+                TargetPlayer = (EntityOwner)TargetPlayerEnumBox.GetEnumValue(),
                 SearchCriterion = (SearchCriterion)SearchCriterionBox.SelectedItem,
-                TargetType = (EntityType)TargetTypeBox.SelectedItem,
+                TargetType = (EntityType)TargetTypeEnumBox.GetEnumValue(),
                 ModifierOperation = (ModifierOperation)ModifierOperationBox.SelectedItem,
                 ModifierTarget = (ModifierTarget)ModifierTargetBox.SelectedItem,
                 InputRegister = (Register)InputRegisterBox.SelectedItem,

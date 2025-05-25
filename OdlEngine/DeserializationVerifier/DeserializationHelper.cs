@@ -5,7 +5,7 @@ namespace DeserializationVerifier
 {
     public class DeserializationHelper
     {
-        CardFinder cardFinderToTest = new CardFinder(".\\..\\..\\..\\..\\..\\CardDatabase");
+        CardFinder cardFinderToTest = new CardFinder(".\\..\\..\\..\\..\\..\\CardDatabase\\CardData");
         public bool IsJsonValid(int cardId)
         {
             bool valid = false;

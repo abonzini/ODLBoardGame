@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public int CurrentGold { get; set; } = 0;
         [JsonProperty]
+        [DefaultValue(true)]
         public bool PowerAvailable { get; set; } = true;
         [JsonProperty]
         public AssortedCardCollection Hand { get; set; } = new AssortedCardCollection();

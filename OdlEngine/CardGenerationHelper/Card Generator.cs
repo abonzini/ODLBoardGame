@@ -361,12 +361,17 @@ namespace CardGenerationHelper
             ExpansionDropdown.SelectedIndex = 0;
             ClassDropdown.Items.AddRange(Enum.GetValues(typeof(PlayerClassType)).Cast<object>().ToArray());
             ClassDropdown.SelectedIndex = 0;
-
             RedrawUi();
         }
-
+        bool entityTypeAlreadyLoaded = false;
         private void EntityTypeDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if(entityTypeAlreadyLoaded)
+            {
+                entityTypeAlreadyLoaded = false;
+                return;
+            }
+            _currentIllustrationInfo = new CardIllustrationInfo();
             _currentIllustrationInfo.EntityType = (EntityType)EntityTypeDropdown.SelectedItem;
             _currentEntity = _currentIllustrationInfo.EntityType switch
             {
@@ -378,7 +383,7 @@ namespace CardGenerationHelper
                 _ => throw new NotImplementedException("Incorrect entity type selected")
             };
             _currentEntity.EntityType = _currentIllustrationInfo.EntityType;
-
+            UpdateFields(false);
             RedrawUi();
             RefreshDrawTimer();
         }
@@ -409,6 +414,7 @@ namespace CardGenerationHelper
             }
             else
             {
+                BlueprintCheckBox.Checked = false;
                 BlueprintCheckBox.Hide();
                 BlueprintsPanel.Hide();
             }
@@ -653,9 +659,86 @@ namespace CardGenerationHelper
                 string folderPath = folderDialog.SelectedPath;
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
                 {
-                    File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id+".json"), cardJson);
-                    File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id+"-illustration.json"), cardPrintJson);
+                    File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id + ".json"), cardJson);
+                    File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id + "-illustration.json"), cardPrintJson);
                 }
+            }
+        }
+
+        private void LoadJsonButton_Click(object sender, EventArgs e)
+        {
+            string illustrationFile = "";
+            int cardId = 0;
+            using (OpenFileDialog fileDialog = new OpenFileDialog())
+            {
+                DialogResult result = fileDialog.ShowDialog();
+                string file = fileDialog.FileName;
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(file))
+                {
+                    // Json file found. Now, will try to deserialize
+                    if(file.Contains("-illustration.json")) // Illustration file
+                    {
+                        illustrationFile = file;
+                    }
+                    else // Then I assume its the card backend json 
+                    {
+                        illustrationFile = file.Replace(".json", "-illustration.json"); // Get the other one
+                    }
+                }
+            }
+            // Got illust file now, need to check if exists
+            if(!File.Exists(illustrationFile)) { return; } // Finish here if non existing
+            // Otherwise I can load illustration data!
+            _currentIllustrationInfo = JsonConvert.DeserializeObject<CardIllustrationInfo>(File.ReadAllText(illustrationFile));
+            // Obtain card ID and folder
+            cardId = _currentIllustrationInfo.Id;
+            // Use card finder technology to fetch the card data from the directory
+            CardFinder cardFinder = new CardFinder(Path.GetDirectoryName(illustrationFile));
+            _currentEntity = cardFinder.GetCard(cardId);
+            // Got all I needed
+            RedrawUi(); // Redraws all fields that are needed
+            UpdateFields(true); // Update all the field values
+            DrawCard(); // Finally show the card
+        }
+        void UpdateFields(bool cardLoaded)
+        {
+            entityTypeAlreadyLoaded = true; // Notify the system not to reset the info
+            
+            EntityTypeDropdown.SelectedItem = _currentEntity.EntityType; // Todo -1 player doesnt have correct entity type
+            TargetOptionsDropdown.SelectedItem = _currentEntity.TargetOptions;
+            CardIdUpdown.Value = _currentEntity.Id;
+            RarityUpDown.Value = _currentIllustrationInfo.Rarity;
+            CostUpDown.Value = _currentEntity.Cost;
+            CardNameBox.Text = _currentIllustrationInfo.Name;
+            EffectDescriptionBox.Text = _currentIllustrationInfo.Text;
+            ExpansionDropdown.SelectedItem = _currentIllustrationInfo.Expansion;
+            ClassDropdown.SelectedItem = _currentIllustrationInfo.ClassType;
+            if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
+            {
+                HpUpDown.Value = ((LivingEntity)_currentEntity).Hp.BaseValue;
+            }
+            if (typeof(Unit).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
+            {
+                AttackUpDown.Value = ((Unit)_currentEntity).Attack.BaseValue;
+                MovementUpdown.Value = ((Unit)_currentEntity).Movement.BaseValue;
+                DenominatorUpDown.Value = ((Unit)_currentEntity).MovementDenominator.BaseValue;
+            }
+            if (typeof(Building).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
+            {
+                PlainsBpTextBox.Text = string.Join(",", ((Building)_currentEntity).PlainsBp);
+                ForestBpTextBox.Text = string.Join(",", ((Building)_currentEntity).ForestBp);
+                MountainBpTextBox.Text = string.Join(",", ((Building)_currentEntity).MountainBp);
+            }
+            if (typeof(Player).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
+            {
+                StartingGoldUpdown.Value = ((Player)_currentEntity).CurrentGold;
+                ActivePowerUpDown.Value = ((Player)_currentEntity).ActivePowerId;
+            }
+            // TODO, load all the other things...
+
+            if (!cardLoaded)
+            {
+                entityTypeAlreadyLoaded = false;
             }
         }
     }
