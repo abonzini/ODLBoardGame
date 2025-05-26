@@ -40,7 +40,7 @@ namespace EngineTests
                 Name = "PlayerName",
                 Hp = new Min0Stat() { BaseValue = GameConstants.STARTING_HP },
                 CurrentGold = GameConstants.STARTING_GOLD,
-                ActivePowerId = GameConstants.RUSH_CARD_ID
+                ActivePowerId = GameConstants.DEFAULT_ACTIVE_POWER_ID
             };
             cardFinder.InjectCard(-1, player);
         }

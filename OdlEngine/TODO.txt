@@ -1,5 +1,9 @@
 Ongoing tasks in order of priority:
-- Implement rest of rulebook (start from scratch, use app)
+- 3:
+	Modify UI to allow symbols in text
+- 4,5:
+	Triginter related to march, maybe assertions
+- Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it
 		- Add triginters if not there already

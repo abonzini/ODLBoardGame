@@ -1,0 +1,15 @@
+{
+  "EntityType": "SKILL",
+  "Id": 1,
+  "Cost": 5,
+  "Interactions": {
+    "WHEN_PLAYED": [
+      {
+        "EffectType": "SUMMON_UNIT",
+        "TargetLocation": "ALL_LANES",
+        "TargetPlayer": "OWNER",
+        "TempVariable": 1
+      }
+    ]
+  }
+}

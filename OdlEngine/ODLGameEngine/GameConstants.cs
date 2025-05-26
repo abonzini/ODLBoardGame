@@ -20,7 +20,7 @@ namespace ODLGameEngine
         public const int DECK_SIZE = 30;
         public const int DRAW_PHASE_CARDS_DRAWN = 1;
         public const int DRAW_PHASE_GOLD_OBTAINED = 2;
-        public const int RUSH_CARD_ID = 1;
+        public const int DEFAULT_ACTIVE_POWER_ID = 1;
         public const int DECKOUT_DAMAGE = 5;
     }
 

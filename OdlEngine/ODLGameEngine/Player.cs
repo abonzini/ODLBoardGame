@@ -31,7 +31,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public AssortedCardCollection DiscardPile { get; set; } = new AssortedCardCollection();
         [JsonProperty]
-        public int ActivePowerId { get; set; } = GameConstants.RUSH_CARD_ID;
+        public int ActivePowerId { get; set; } = GameConstants.DEFAULT_ACTIVE_POWER_ID;
 
         public override int GetHashCode()
         {

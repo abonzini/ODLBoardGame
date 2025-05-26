@@ -725,9 +725,9 @@ namespace CardGenerationHelper
             }
             if (typeof(Building).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
             {
-                PlainsBpTextBox.Text = string.Join(",", ((Building)_currentEntity).PlainsBp);
-                ForestBpTextBox.Text = string.Join(",", ((Building)_currentEntity).ForestBp);
-                MountainBpTextBox.Text = string.Join(",", ((Building)_currentEntity).MountainBp);
+                if(((Building)_currentEntity).PlainsBp != null) PlainsBpTextBox.Text = string.Join(",", ((Building)_currentEntity).PlainsBp);
+                if (((Building)_currentEntity).ForestBp != null) ForestBpTextBox.Text = string.Join(",", ((Building)_currentEntity).ForestBp);
+                if (((Building)_currentEntity).MountainBp != null) MountainBpTextBox.Text = string.Join(",", ((Building)_currentEntity).MountainBp);
             }
             if (typeof(Player).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
             {

@@ -15,7 +15,7 @@ Players have **gold** as a resource, which they use to play stuff. Players start
 
 In their turn, players can choose to:
 - Play a card, which will summon a **Unit**, **Building** or **Skill**. The card is discarded and goes to the discard pile after playing
-- Use the **RUSH** ability (explained below)
+- Use an active ability ( **CONSCRIPTION** by default, explained below)
 - Pass their turn
 
 # Units
@@ -55,12 +55,12 @@ Both units will receive HP damage "simultaneously" depending on the enemies atta
 
 A type of card that casts a spell or skill that affects the board in some way.
 Similar to units, it has a gold cost.
-For example, the **RUSH** skill summons **peasants** in every lane and is available every turn for every player (only once per turn).
-It is the most basic skill of the game.
+For example, the **CONSCRIPTION** skill summons a **MILITIA** unit in every lane and is available every turn for every player (only once per turn).
+Most classess have the **CONSCRIPTION** skill as an active skill. which they can use every turn, once per turn.
 Other skill cards can be added to a player's deck and used.
 
-![](./../Pictures/BaseSet/1.png)
-![](./../Pictures/BaseSet/2.png)
+<img src="./../CardDatabase/CardImagesFull/1.png" width="150">
+<img src="./../CardDatabase/CardImagesFull/2.png" width="110">
 
 # Buildings
 
@@ -95,7 +95,7 @@ Each turn there's the following phases:
     - First, all of the units from that player **advance**, in order they were played
     - Player then **draws a card**
     - Also, player **gets 2 gold**
-- Play phase: Player can use their gold to play units, skills, buildings or the **RUSH** skill (**RUSH** only once per turn)
+- Play phase: Player can use their gold to play units, skills, buildings or the active skill (only once per turn)
 - End of turn: Player ends their turn
 - Beginnint of turn for the next player
 

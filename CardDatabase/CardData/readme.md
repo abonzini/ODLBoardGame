@@ -202,7 +202,7 @@ This allows crazy effects like *"When a unit dies, play a skeleton in the oppone
     - ```InputRegister``` place to find the card number of the unit summoned
     
     Examples:
-    - **RUSH** summons a unit in all lanes
+    - **CONSCRIPTION** summons a unit in all lanes
 
 - ```MODIFIER``` Applies a modifier (i.e. algebraic operation) to something.
 Usually stats but can be other things.
