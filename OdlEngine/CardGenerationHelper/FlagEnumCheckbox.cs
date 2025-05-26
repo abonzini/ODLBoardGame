@@ -51,12 +51,19 @@ namespace CardGenerationHelper
             }
             return result;
         }
-
         public void Clear()
         {
             for (int i = 0; i < CheckboxesPanel.Controls.Count; i++)
             {
                 ((CheckBox)CheckboxesPanel.Controls[i]).Checked = false;
+            }
+        }
+        public void SetFlags(int flags)
+        {
+            for (int i = 0; i < CheckboxesPanel.Controls.Count; i++)
+            {
+                int flag = 1 << i;
+                ((CheckBox)CheckboxesPanel.Controls[i]).Checked = (flag & flags) != 0;
             }
         }
     }

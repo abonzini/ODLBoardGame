@@ -18,6 +18,15 @@ namespace CardGenerationHelper
         {
             InitializeComponent();
             RefreshUi();
+            ClearPanel();
+        }
+        void ClearPanel()
+        {
+            int panelsToRemove = TriginterEffectsPanel.Controls.Count - 1;
+            for (int i = 0; i < panelsToRemove; i++) // -1 because last one is the add button
+            {
+                TriginterEffectsPanel.Controls.RemoveAt(0); // Remove until the button
+            }
             TriginterEffectsPanel.Controls.SetChildIndex(AddButton, 0);
         }
         public void SetTrigInterType(TrigOrInter trigInter)
@@ -50,16 +59,18 @@ namespace CardGenerationHelper
             // Dispose of the control to free memory
             trigInterEffects.Dispose();
         }
-
         private void AddButton_Click(object sender, EventArgs e)
         {
+            AddTriginterEffects(new TriginterEffects());
+        }
+        void AddTriginterEffects(TriginterEffects box)
+        {
             int newIndex = TriginterEffectsPanel.Controls.Count - 1; // Put the control prev to last
-            TriginterEffects newTrigInterEffects = new TriginterEffects();
-            newTrigInterEffects.SetOwner(this);
-            newTrigInterEffects.SetTrigInterType(trigInter);
+            box.SetOwner(this);
+            box.SetTrigInterType(trigInter);
             // Add
-            TriginterEffectsPanel.Controls.Add(newTrigInterEffects);
-            TriginterEffectsPanel.Controls.SetChildIndex(newTrigInterEffects, newIndex);
+            TriginterEffectsPanel.Controls.Add(box);
+            TriginterEffectsPanel.Controls.SetChildIndex(box, newIndex);
             // Move button
             TriginterEffectsPanel.Controls.SetChildIndex(AddButton, newIndex + 1);
         }
@@ -94,6 +105,38 @@ namespace CardGenerationHelper
                 res = null;
             }
             return res;
+        }
+        public void SetInteractionDict(Dictionary<InteractionType, List<Effect>> dict)
+        {
+            if (trigInter != TrigOrInter.INTERACTION) throw new Exception("This is not an interaction control!");
+            // Cleans current effects
+            RefreshUi();
+            ClearPanel();
+            // Now, set stuff
+            if (dict == null) return;
+            foreach(KeyValuePair<InteractionType, List<Effect>> kvp in dict)
+            {
+                TriginterEffects newBox = new TriginterEffects();
+                newBox.SetTrigInterType(trigInter);
+                newBox.SetInteractionEffects(kvp);
+                AddTriginterEffects(newBox);
+            }
+        }
+        public void SetTriggerDict(Dictionary<TriggerType, List<Effect>> dict)
+        {
+            if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not an trigger control!");
+            // Cleans current effects
+            RefreshUi();
+            ClearPanel();
+            // Now, set stuff
+            if (dict == null) return;
+            foreach (KeyValuePair<TriggerType, List<Effect>> kvp in dict)
+            {
+                TriginterEffects newBox = new TriginterEffects();
+                newBox.SetTrigInterType(trigInter);
+                newBox.SetTriggerEffects(kvp);
+                AddTriginterEffects(newBox);
+            }
         }
     }
 }

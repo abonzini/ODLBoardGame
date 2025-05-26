@@ -664,7 +664,6 @@ namespace CardGenerationHelper
                 }
             }
         }
-
         private void LoadJsonButton_Click(object sender, EventArgs e)
         {
             string illustrationFile = "";
@@ -713,9 +712,10 @@ namespace CardGenerationHelper
             EffectDescriptionBox.Text = _currentIllustrationInfo.Text;
             ExpansionDropdown.SelectedItem = _currentIllustrationInfo.Expansion;
             ClassDropdown.SelectedItem = _currentIllustrationInfo.ClassType;
-            if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
+            if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP and triggers
             {
                 HpUpDown.Value = ((LivingEntity)_currentEntity).Hp.BaseValue;
+                TriggerList.SetTriggerDict(((LivingEntity)_currentEntity).Triggers);
             }
             if (typeof(Unit).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
             {
@@ -734,7 +734,7 @@ namespace CardGenerationHelper
                 StartingGoldUpdown.Value = ((Player)_currentEntity).CurrentGold;
                 ActivePowerUpDown.Value = ((Player)_currentEntity).ActivePowerId;
             }
-            // TODO, load all the other things...
+            InteractionList.SetInteractionDict(_currentEntity.Interactions);
 
             if (!cardLoaded)
             {

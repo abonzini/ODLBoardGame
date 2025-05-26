@@ -25,6 +25,15 @@ namespace CardGenerationHelper
         {
             InitializeComponent();
             RefreshUi();
+            ClearPanel();
+        }
+        void ClearPanel()
+        {
+            int panelsToRemove = EffectsPanel.Controls.Count - 1;
+            for (int i = 0; i < panelsToRemove; i++) // -1 because last one is the add button
+            {
+                EffectsPanel.Controls.RemoveAt(0); // Remove until the button
+            }
             EffectsPanel.Controls.SetChildIndex(AddButton, 0);
         }
         public void SetOwner(TrigInterList owner)
@@ -67,12 +76,15 @@ namespace CardGenerationHelper
         // Need to create new effect!
         private void AddButton_Click(object sender, EventArgs e)
         {
+            AddNewEffectBox(new EffectBox());
+        }
+        void AddNewEffectBox(EffectBox box)
+        {
             int newIndex = EffectsPanel.Controls.Count - 1; // Put the control prev to last
-            EffectBox newBox = new EffectBox();
-            newBox.SetOwner(this);
+            box.SetOwner(this);
             // Add
-            EffectsPanel.Controls.Add(newBox);
-            EffectsPanel.Controls.SetChildIndex(newBox, newIndex);
+            EffectsPanel.Controls.Add(box);
+            EffectsPanel.Controls.SetChildIndex(box, newIndex);
             // Move button
             EffectsPanel.Controls.SetChildIndex(AddButton, newIndex + 1);
         }
@@ -94,7 +106,7 @@ namespace CardGenerationHelper
         }
         public KeyValuePair<TriggerType, List<Effect>> GetTriggerEffects()
         {
-            if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not an interaction control!");
+            if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not a trigger control!");
             List<Effect> effects = GetEffects();
             return new KeyValuePair<TriggerType, List<Effect>>((TriggerType)EventTypeComboBox.SelectedItem, effects);
         }
@@ -103,6 +115,36 @@ namespace CardGenerationHelper
             if(owner != null)
             {
                 owner.RequestEffectDeletion(this);
+            }
+        }
+        public void SetInteractionEffects(KeyValuePair<InteractionType, List<Effect>> kvp)
+        {
+            if (trigInter != TrigOrInter.INTERACTION) throw new Exception("This is not an interaction control!");
+            // Cleans current effects
+            RefreshUi();
+            ClearPanel();
+            // Now, set stuff
+            EventTypeComboBox.SelectedItem = kvp.Key;
+            foreach(Effect effect in kvp.Value)
+            {
+                EffectBox newBox = new EffectBox();
+                newBox.SetEffect(effect);
+                AddNewEffectBox(newBox);
+            }
+        }
+        public void SetTriggerEffects(KeyValuePair<TriggerType, List<Effect>> kvp)
+        {
+            if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not a trigger control!");
+            // Cleans current effects
+            RefreshUi();
+            ClearPanel();
+            // Now, set stuff
+            EventTypeComboBox.SelectedItem = kvp.Key;
+            foreach (Effect effect in kvp.Value)
+            {
+                EffectBox newBox = new EffectBox();
+                newBox.SetEffect(effect);
+                AddNewEffectBox(newBox);
             }
         }
     }

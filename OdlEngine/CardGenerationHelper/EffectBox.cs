@@ -24,13 +24,14 @@ namespace CardGenerationHelper
         public EffectBox()
         {
             InitializeComponent();
+            InitializeEffectBox();
         }
         public void SetOwner(TriginterEffects owner)
         {
             // Sets ownership
             this.owner = owner;
         }
-        private void EffectBox_Load(object sender, EventArgs e)
+        void InitializeEffectBox()
         {
             // Now preload each box
             TargetLocationBox.Items.AddRange(Enum.GetValues(typeof(TargetLocation)).Cast<object>().ToArray());
@@ -50,6 +51,9 @@ namespace CardGenerationHelper
             // Finally, add the base one that will modify the rest
             EffectTypeComboBox.Items.AddRange(Enum.GetValues(typeof(EffectType)).Cast<object>().ToArray());
             EffectTypeComboBox.SelectedIndex = 0;
+        }
+        private void EffectBox_Load(object sender, EventArgs e)
+        {
         }
         void ResetAll()
         {
@@ -126,6 +130,20 @@ namespace CardGenerationHelper
             {
                 owner.RequestEffectDeletion(this);
             }
+        }
+        public void SetEffect(Effect effect)
+        {
+            EffectTypeComboBox.SelectedItem = effect.EffectType;
+            // Should be an auto update here
+            TargetLocationBox.SelectedItem = effect.TargetLocation;
+            TargetPlayerEnumBox.SetFlags((int)effect.TargetPlayer);
+            SearchCriterionBox.SelectedItem = effect.SearchCriterion;
+            TargetTypeEnumBox.SetFlags((int)effect.TargetType);
+            ModifierOperationBox.SelectedItem = effect.ModifierOperation;
+            ModifierTargetBox.SelectedItem = effect.ModifierTarget;
+            InputRegisterBox.SelectedItem = effect.InputRegister;
+            OutputRegisterBox.SelectedItem = effect.OutputRegister;
+            ValueUpDown.Value = effect.TempVariable;
         }
     }
 }
