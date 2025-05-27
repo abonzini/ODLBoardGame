@@ -1,4 +1,6 @@
 Ongoing tasks in order of priority:
+- All
+	Add multi input processing test case for a modify operation
 - 3:
 	Modify UI to allow symbols in text
 - 4,5:

@@ -42,12 +42,12 @@ namespace CardGenerationHelper
             TargetTypeEnumBox.SetEnum(typeof(EntityType));
             ModifierOperationBox.Items.AddRange(Enum.GetValues(typeof(ModifierOperation)).Cast<object>().ToArray());
             ModifierOperationBox.SelectedIndex = 0;
-            ModifierTargetBox.Items.AddRange(Enum.GetValues(typeof(ModifierTarget)).Cast<object>().ToArray());
-            ModifierTargetBox.SelectedIndex = 0;
-            InputRegisterBox.Items.AddRange(Enum.GetValues(typeof(Register)).Cast<object>().ToArray());
-            InputRegisterBox.SelectedIndex = 0;
-            OutputRegisterBox.Items.AddRange(Enum.GetValues(typeof(Register)).Cast<object>().ToArray());
-            OutputRegisterBox.SelectedIndex = 0;
+            InputBox.Items.AddRange(Enum.GetValues(typeof(Variable)).Cast<object>().ToArray());
+            InputBox.SelectedIndex = 0;
+            OutputBox.Items.AddRange(Enum.GetValues(typeof(Variable)).Cast<object>().ToArray());
+            OutputBox.SelectedIndex = 0;
+            MultiVariableBox.Items.AddRange(Enum.GetValues(typeof(MultiInputProcessing)).Cast<object>().ToArray());
+            MultiVariableBox.SelectedIndex = 0;
             // Finally, add the base one that will modify the rest
             EffectTypeComboBox.Items.AddRange(Enum.GetValues(typeof(EffectType)).Cast<object>().ToArray());
             EffectTypeComboBox.SelectedIndex = 0;
@@ -72,15 +72,15 @@ namespace CardGenerationHelper
             ModifierOperationBox.SelectedIndex = 0;
             ModifierOperationBox.Hide();
             ModifierOperationLabel.Hide();
-            ModifierTargetBox.SelectedIndex = 0;
-            ModifierTargetBox.Hide();
-            ModifierTargetLabel.Hide();
-            InputRegisterBox.SelectedIndex = 0;
-            InputRegisterBox.Hide();
-            InputRegisterLabel.Hide();
-            OutputRegisterBox.SelectedIndex = 0;
-            OutputRegisterBox.Hide();
-            OutputRegisterLabel.Hide();
+            InputBox.SelectedIndex = 0;
+            InputBox.Hide();
+            InputLabel.Hide();
+            OutputBox.SelectedIndex = 0;
+            OutputBox.Hide();
+            OutputLabel.Hide();
+            MultiVariableBox.SelectedIndex = 0;
+            MultiVariableBox.Hide();
+            MultiVariableLabel.Hide();
         }
         void ShowRelevant(EffectType effect)
         {
@@ -89,9 +89,9 @@ namespace CardGenerationHelper
                 EffectType.TRIGGER_DEBUG => [],
                 EffectType.DEBUG_STORE => [],
                 EffectType.SELECT_ENTITY => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel],
-                EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel, TargetLocationBox, TargetLocationLabel, InputRegisterBox, InputRegisterLabel],
-                EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerEnumBox, TargetLocationBox, TargetLocationLabel, InputRegisterBox, InputRegisterLabel],
-                EffectType.MODIFIER => [ModifierOperationBox, ModifierOperationLabel, ModifierTargetBox, ModifierTargetLabel, InputRegisterBox, InputRegisterLabel, TargetPlayerEnumBox, TargetPlayerLabel, OutputRegisterBox, OutputRegisterLabel],
+                EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel, TargetLocationBox, TargetLocationLabel, InputBox, InputLabel, MultiVariableBox, MultiVariableLabel],
+                EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerEnumBox, TargetLocationBox, TargetLocationLabel, InputBox, InputBox, MultiVariableBox, MultiVariableLabel],
+                EffectType.MODIFIER => [ModifierOperationBox, ModifierOperationLabel, InputBox, InputLabel, OutputBox, OutputLabel, TargetPlayerEnumBox, TargetPlayerLabel, MultiVariableBox, MultiVariableLabel],
                 _ => throw new NotImplementedException("Unhandled effect type"),
             };
             foreach (Control control in relevant)
@@ -117,9 +117,9 @@ namespace CardGenerationHelper
                 SearchCriterion = (SearchCriterion)SearchCriterionBox.SelectedItem,
                 TargetType = (EntityType)TargetTypeEnumBox.GetEnumValue(),
                 ModifierOperation = (ModifierOperation)ModifierOperationBox.SelectedItem,
-                ModifierTarget = (ModifierTarget)ModifierTargetBox.SelectedItem,
-                InputRegister = (Register)InputRegisterBox.SelectedItem,
-                OutputRegister = (Register)OutputRegisterBox.SelectedItem,
+                Input = (Variable)InputBox.SelectedItem,
+                Output = (Variable)OutputBox.SelectedItem,
+                MultiInputProcessing = (MultiInputProcessing)MultiVariableBox.SelectedItem,
                 TempVariable = Convert.ToInt32(ValueUpDown.Value)
             };
         }
@@ -140,9 +140,9 @@ namespace CardGenerationHelper
             SearchCriterionBox.SelectedItem = effect.SearchCriterion;
             TargetTypeEnumBox.SetFlags((int)effect.TargetType);
             ModifierOperationBox.SelectedItem = effect.ModifierOperation;
-            ModifierTargetBox.SelectedItem = effect.ModifierTarget;
-            InputRegisterBox.SelectedItem = effect.InputRegister;
-            OutputRegisterBox.SelectedItem = effect.OutputRegister;
+            InputBox.SelectedItem = effect.Input;
+            OutputBox.SelectedItem = effect.Output;
+            MultiVariableBox.SelectedItem = effect.MultiInputProcessing;
             ValueUpDown.Value = effect.TempVariable;
         }
     }

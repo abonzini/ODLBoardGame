@@ -125,45 +125,33 @@ In the example above, the card would contain 2 interactions, and then each would
 
 ## Interaction Types
 
-- ```WHEN_PLAYED``` Will be executed when the card is played (FROM HAND) for the first time. Examples: Every single **skill** card, equivalent to hearthstone battlecries
+- ```WHEN_PLAYED``` Will be executed when the card is played (FROM HAND) for the first time.
 - ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during advance). This interaction happens only once, and the Unit/Building will need to each process the effect from their own POV.
 
 # Effect Mechanism
 
 In order to be able to create complex card behaviour, an effect chain behaves similarly to a low-level CPU.
 In this scheme, each ```EffectType``` is like an instruction, some of them can have parameters.
-In order to implement complex effects that need to remember previous results (think effects such as *"Damage all enemy buildings, if any is killed, deal 2 damage to enemy player"* or *"Get 1 gold for each unit on the field"*), the effect chain contains a series of **Registers**:
+In order to implement complex effects that need to remember previous results (think effects such as *"Damage all enemy buildings, if any is killed, deal 2 damage to enemy player"* or *"Get 1 gold for each unit on the field"*), the effect chain contains a series of **Register Variables** that can be used as input and/or outputs:
 
 - ```TEMP_VARIABLE```, is volatile and only remembered during the current effect of the chain. However it contains the "value" of many card effects (e.g. if an effect was *"Gain 2 gold"*, the temp variable would contain the value 2 in this case). This value can be used as a parameter in effects and in arithmetic operations
 - ```ACC``` is the **"accumulator"** variable, and retains its value during the effect resolution chain, making it useful as the target of more complex math operations.
 It is initialised with a value of 0 at the beginning of the effect chain
+- ***Multiple other variables*** are also usable as both input and outputs, both to "check" ingame values (e.g. if you want to check if a target has X health or whatever), and some can also be the Output target of operations (e.g. if you want an effect that *sets* a target health)
 
-Many effects use a **InputRegister's** value as an input, and some also save a result in a **OutputRegister**.
-Due to this, any effect can be configured to choose which register is each.
-For when the ```TEMP_VARIABLE``` is used, it's value should be defined in ```"TempVariable"``` (remember this value is volatile and will be lost when the next effect of the chain begins, so make sure to save it in ACC if needed).
-For example, when defining an effect:
+For a list of posible ```Input```/```Output``` options, check below. 
 
-```
-{
-    "EffectType": <...>
-    "InputRegister": "TEMP_VARIABLE"
-    "OutputRegister": "ACC"
-    "TempVariable": 5
-}
-```
-This effect would use the **"TEMP_VARIABLE"** as an input (and it's value is 5 in this case).
-Result/output of the effect (if any) would be saved in **ACC**.
-If an effect chain triggers a different effect chain, the CPU context for a specific card's effect will be unique until the whole thing resolves.
-This is useful, as it allows complex behaviours to be shared between effect chains with a single CPU context.
-For example, it would be possible to do effects like *"Deal X damage to all units and get 1 gold for each killed"*, where the count of killed units would be resolved from a different part of the effect chain. 
+Finally, the CPU context is also able to hold a list of reference entities, obtained by specific search/select operations.
+This reference is important to track ownership, select targets, and other cool stuff.
+By default the effect's reference is the card with the ongoing effect, but the references can be changed by using search/select operations (as described below).
 
-The CPU context also contains a list of reference entities, which can be obtained by specific search/select operators.
-This reference is important to track ownership and stuff.
-By default the effect's reference is the card with the ongoing effect but this value can be replaced by more complex search operations as described below.
+When an operation's ```Input``` depends on values in the Reference's List (e.g. ```"Input": "TARGET_ATTACK"``` of a series of units found after a search), then there may be multiple inputs, and extra Input processing is needed to provide a single Input value.
+For these options, check the possible values of ```MultiInputProcessing```.
 
 ## Effect List
-These are the following supported effects.
-All effects are relative to the card executing the effect, so the meaning of ```TargetPlayer```, for example, depends on this.
+These are the following supported operations (called effects).
+All effects are relative to the list of references on the ongoing effect.
+For example, the meaning of ```TargetPlayer``` as ```OWNER```/```OPPONENT``` is exclusively relative to the current reference(s).
 
 - ```SELECT_ENTITY``` Selects the reference entity for the remainder of the effect (or until a new search is made).
 It will select a single target out of known entities that participate in a trigger or interaction.
@@ -186,11 +174,11 @@ If you want to change the reference of the search, you may need to do a ```SELEC
     - ```TargetPlayer``` serves as a filter where you only get the entities of the player owner in question
     - ```TargetType``` the type of entities that can be targeted 
     - ```SearchCriterion``` determines which target(s) can be found as valid targets. Some search criterions use a value $n$ as an input
-    - The ```InputRegister``` is used alongside ```SearchCriterion``` as the value $n$. Negative values imply the search is done in reverse order
+    - The ```Input``` is used alongside some ```SearchCriterion``` cases as the value $n$. Negative values imply the search is done in reverse order
 
     This may seem convoluted but it's a robust way to target arbitrary combination of target conditions.
-    Keep in mind that, no matter the ```TargetLocation```, the order of valid targets will be: ***[PLAYER]->[LOCATION]->[PLAYER]*** where which player is first is determined by the sign of ```Value```.
-    When looking for entities on a lane, the system traverses the lane in order determined by ```Value``` sign.
+    Keep in mind that, no matter the ```TargetLocation```, the order of valid targets will be: ***[PLAYER]->[LOCATION]->[PLAYER]*** where which player is first is determined by the sign of $n$.
+    When looking for entities on a lane, the system traverses the lane in order determined by $n$ sign.
     In case of multiple entities in the same position, the unit that was played first is targeted first.
 
 - ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes. Multiple units may be summoned if multiple lanes are defined, and/or if there's multiple references.
@@ -199,20 +187,16 @@ This allows crazy effects like *"When a unit dies, play a skeleton in the oppone
     Parameters:
     - ```TargetPlayer``` is the player who will own the unit (relative to reference entity)
     - ```TargetLocation``` is one or more lane targets where the card(s) will be summoned
-    - ```InputRegister``` place to find the card number of the unit summoned
-    
-    Examples:
-    - **CONSCRIPTION** summons a unit in all lanes
+    - ```Input``` will contain the card number of the unit summoned
 
-- ```MODIFIER``` Applies a modifier (i.e. algebraic operation) to something.
-Usually stats but can be other things.
+- ```MODIFIER``` A mathematical operation, where an Output is changed, using the Input and an operation.
 In some modifiers, the modification target is dependent on units found via a ```FIND_ENTITIES``` or ```SELECT_ENTITY``` operation.
 For example, if stats need to be buffed/debuffed, or a specific player gets gold.
 
     Parameters:
     - ```ModifierOperation``` how the modifier's value is applied (i.e. whether it's a multiplaction, addition, etc)
-    - ```ModifierTarget``` defines *what* is modified, if a stat, a damage value, etc
-    - ```InputRegister``` contains the value $n$ of the modifier, needed for some (most?) operations
+    - ```Input``` contains the value $n$ of the modifier, needed for some (most?) operations
+    - ```Output``` defines *what* is modified, if a stat, a damage value, etc
     - ```TargetPlayer``` in some cases where you want to modify a player's value (e.g. gold), this field is used to choose whether it's a card's owner or the opponents, whose value can be modified. This allows effects such as *"Destroy a card and refund the owner"*. 
 
 ## Possible Parameter Values
@@ -263,7 +247,14 @@ For example, if stats need to be buffed/debuffed, or a specific player gets gold
     - ```ADD``` adds $n$ to the target
     - ```MULTIPLY``` multiplies target by $n$
     - ```ABSOLUTE_SET``` very similar to ```SET``` but it is a harsher operation: it overwrites the base value to $n$ and this becomes the new value. Only makes sense in specific buffs and should really not be used except in some very specific situations
-- ```ModifierTarget```
-    - ```REGISTER``` the target will be whichever register is the ```OutputRegister```
-    - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, this corresponding stat is modified for each entity
-    - ```PLAYERS_GOLD``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, modifies the players gold relative to those units and the desired ```TargetPlayer```
+- ```Input```/```Output```
+    - ```TEMP_VARIABLE``` the value of the temp variable of the current effect. *Read only*
+    - ```ACC``` the **Accumulator**'s value in the effect processing CPU
+    - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, the total value of the stat
+    - ```PLAYERS_GOLD``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, the owner's gold of those targets
+- ```MultiInputProcessing``` for when an Input is an element present in a reference list with many items (e.g. after search)
+    - ```FIRST``` checks only the first element
+    - ```COUNT``` doesn't check any element, just gives the number of elements on the list of references
+    - ```SUM``` the total sum of all inputs
+    - ```AVERAGE``` the average value of all inputs
+    - ```MAX```/```MIN``` the maximum/minimum value of all inputs

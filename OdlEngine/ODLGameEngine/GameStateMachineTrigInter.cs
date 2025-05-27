@@ -81,8 +81,7 @@ namespace ODLGameEngine
             {
                 // Define values of registers as may be needed
                 cpu.TempValue = effect.TempVariable;
-                ref int inputReg = ref GetRegisterReference(cpu, effect.InputRegister);
-                ref int outputReg = ref GetRegisterReference(cpu, effect.OutputRegister);
+                int inputValue = GetInput(cpu, effect.Input, effect.MultiInputProcessing);
                 // Now to process the effect
                 switch (effect.EffectType)
                 {
@@ -116,7 +115,7 @@ namespace ODLGameEngine
                         break;
                     case EffectType.FIND_ENTITIES:
                         // Searches for entities, reference being the selected reference (since there can be multiple references, a single one (the first) is used
-                        cpu.ReferenceEntities = GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, GetTargetLocationsFromReference(effect.TargetLocation, cpu)[0], inputReg, FetchEntity(cpu.ReferenceEntities[0]).Owner);
+                        cpu.ReferenceEntities = GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, GetTargetLocationsFromReference(effect.TargetLocation, cpu)[0], inputValue, FetchEntity(cpu.ReferenceEntities[0]).Owner);
                         break;
                     case EffectType.SUMMON_UNIT:
                         {
@@ -126,25 +125,25 @@ namespace ODLGameEngine
                                 IngameEntity entity = FetchEntity(cpu.ReferenceEntities[i]); // Got the next reference entity
                                 if (effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Will its owner or its opponent get the unit?
                                 {
-                                    SummonUnitToPlayer(entity.Owner, inputReg, targets[i]);
+                                    SummonUnitToPlayer(entity.Owner, inputValue, targets[i]);
                                 }
                                 if (effect.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
                                 {
-                                    SummonUnitToPlayer(1 - entity.Owner, inputReg, targets[i]);
+                                    SummonUnitToPlayer(1 - entity.Owner, inputValue, targets[i]);
                                 }
                             }
                         }
                         break;
                     case EffectType.MODIFIER:
-                        switch (effect.ModifierTarget) // Will check wxactly what I need to modify!
+                        switch (effect.Output) // Will check exactly what I need to modify!
                         {
-                            case ModifierTarget.REGISTER:
-                                outputReg = GetModifiedValue(outputReg, inputReg, effect.ModifierOperation);
+                            case Variable.ACC:
+                                cpu.Acc = GetModifiedValue(cpu.Acc, inputValue, effect.ModifierOperation);
                                 break;
-                            case ModifierTarget.TARGET_HP:
-                            case ModifierTarget.TARGET_ATTACK:
-                            case ModifierTarget.TARGET_MOVEMENT:
-                            case ModifierTarget.TARGET_MOVEMENT_DENOMINATOR:
+                            case Variable.TARGET_HP:
+                            case Variable.TARGET_ATTACK:
+                            case Variable.TARGET_MOVEMENT:
+                            case Variable.TARGET_MOVEMENT_DENOMINATOR:
                                 { // Ok this means I need to change a stat of a series of targets obtained by FIND_ENTITIES
                                     Action<Stat, int> functionToApply = effect.ModifierOperation switch // Get correct operation
                                     {
@@ -157,35 +156,35 @@ namespace ODLGameEngine
                                     foreach (int entityTarget in cpu.ReferenceEntities)
                                     {
                                         IngameEntity nextEntity = FetchEntity(entityTarget);
-                                        Stat targetStat = effect.ModifierTarget switch
+                                        Stat targetStat = effect.Output switch
                                         {
-                                            ModifierTarget.TARGET_HP => ((LivingEntity)nextEntity).Hp,
-                                            ModifierTarget.TARGET_ATTACK => ((Unit)nextEntity).Attack,
-                                            ModifierTarget.TARGET_MOVEMENT => ((Unit)nextEntity).Movement,
-                                            ModifierTarget.TARGET_MOVEMENT_DENOMINATOR => ((Unit)nextEntity).MovementDenominator,
+                                            Variable.TARGET_HP => ((LivingEntity)nextEntity).Hp,
+                                            Variable.TARGET_ATTACK => ((Unit)nextEntity).Attack,
+                                            Variable.TARGET_MOVEMENT => ((Unit)nextEntity).Movement,
+                                            Variable.TARGET_MOVEMENT_DENOMINATOR => ((Unit)nextEntity).MovementDenominator,
                                             _ => throw new NotImplementedException("Modifier type not implemented yet")
                                         };
                                         // Got the stat, now modify it
-                                        functionToApply(targetStat, inputReg);
+                                        functionToApply(targetStat, inputValue);
                                     }
                                 }
                                 break;
-                            case ModifierTarget.PLAYERS_GOLD:
+                            case Variable.PLAYERS_GOLD:
                                 foreach (int entityTarget in cpu.ReferenceEntities) // Modify gold for each entity found (!!)
                                 {
                                     IngameEntity entity = FetchEntity(entityTarget); // Got the entity
                                     if(effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Does owner of this entity get gold?
                                     {
-                                        TRIGINTER_ModifyPlayersGold(entity.Owner, inputReg, effect.ModifierOperation);
+                                        TRIGINTER_ModifyPlayersGold(entity.Owner, inputValue, effect.ModifierOperation);
                                     }
                                     if (effect.TargetPlayer.HasFlag(EntityOwner.OPPONENT)) // Does opp owner of this entity get gold?
                                     {
-                                        TRIGINTER_ModifyPlayersGold(1 - entity.Owner, inputReg, effect.ModifierOperation);
+                                        TRIGINTER_ModifyPlayersGold(1 - entity.Owner, inputValue, effect.ModifierOperation);
                                     }
                                 }
                                 break;
                             default:
-                                throw new NotImplementedException("Modifier type not implemented yet");
+                                throw new NotImplementedException("Variable is read only!");
                         }
                         break;
                     default:
@@ -199,23 +198,61 @@ namespace ODLGameEngine
             }
         }
         /// <summary>
-        /// Gets register reference from CPU
+        /// Gets the input value for the operations that need it
         /// </summary>
-        /// <param name="ctx">CPU context</param>
-        /// <param name="reg">Which register</param>
-        /// <returns>"Pointer" to reference</returns>
-        /// <exception cref="NotImplementedException"></exception>
-        static ref int GetRegisterReference(CpuState ctx, Register reg)
+        /// <param name="cpu">Cpu context</param>
+        /// <param name="input">Where to get the input from</param>
+        /// <param name="multiInputOperation">If multiple inputs, how are they processed into a number</param>
+        /// <returns>Value</returns>
+        private int GetInput(CpuState cpu, Variable input, MultiInputProcessing multiInputOperation)
         {
-            switch(reg)
+            switch(input)
             {
-                case Register.TEMP_VARIABLE:
-                    return ref ctx.TempValue;
-                case Register.ACC:
-                    return ref ctx.Acc;
-                default:
-                    throw new NotImplementedException("Invalid register");
-            };
+                case Variable.TEMP_VARIABLE:
+                    return cpu.TempValue;
+                case Variable.ACC:
+                    return cpu.Acc;
+                default: 
+                    break;
+            }
+            int result = 0; // This will require iteration...
+            if (multiInputOperation == MultiInputProcessing.COUNT) // ...unless its a count operation
+            {
+                return cpu.ReferenceEntities.Count;
+            }
+            else
+            {
+                foreach (int entityTarget in cpu.ReferenceEntities)
+                {
+                    int auxInt = input switch
+                    {
+                        Variable.TARGET_HP => DetailedState.EntityData[entityTarget].Hp.Total,
+                        Variable.TARGET_ATTACK => ((Unit)DetailedState.EntityData[entityTarget]).Attack.Total,
+                        Variable.TARGET_MOVEMENT => ((Unit)DetailedState.EntityData[entityTarget]).Movement.Total,
+                        Variable.TARGET_MOVEMENT_DENOMINATOR => ((Unit)DetailedState.EntityData[entityTarget]).MovementDenominator.Total,
+                        Variable.PLAYERS_GOLD => ((Player)DetailedState.EntityData[DetailedState.EntityData[entityTarget].Owner]).CurrentGold,
+                        _ => throw new Exception("This shouldn't have gotten here! Invalid input source!")
+                    };
+                    if(multiInputOperation == MultiInputProcessing.FIRST) // If I only needed the first value...
+                    {
+                        return auxInt;
+                    }
+                    // Otherwise I need to process data
+                    result = multiInputOperation switch
+                    {
+                        MultiInputProcessing.SUM => result + auxInt,
+                        MultiInputProcessing.AVERAGE => result + auxInt, // Average will be later
+                        MultiInputProcessing.MAX => Math.Max(result, auxInt),
+                        MultiInputProcessing.MIN => Math.Min(result, auxInt),
+                        _ => throw new Exception("Invalid MultiInputOperation")
+                    };
+                }
+                if(multiInputOperation == MultiInputProcessing.AVERAGE) // Check if I need to apply average
+                {
+                    result /= cpu.ReferenceEntities.Count;
+                }
+                return result;
+            }
         }
         /// <summary>
         /// Creates an array of targets, as many as the amount of references we searched. This way we may chain repeated summon or cast effects that require location, one per each reference

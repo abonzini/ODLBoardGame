@@ -37,18 +37,18 @@
             TargetPlayerLabel = new Label();
             SearchCriterionLabel = new Label();
             TargetTypeLabel = new Label();
-            OutputRegisterBox = new ComboBox();
+            MultiVariableBox = new ComboBox();
             ModifierOperationLabel = new Label();
-            ModifierTargetLabel = new Label();
-            InputRegisterLabel = new Label();
-            OutputRegisterLabel = new Label();
+            InputLabel = new Label();
+            OutputLabel = new Label();
+            MultiVariableLabel = new Label();
             SearchCriterionBox = new ComboBox();
             ModifierOperationBox = new ComboBox();
-            ModifierTargetBox = new ComboBox();
-            InputRegisterBox = new ComboBox();
-            DeleteButton = new Button();
+            InputBox = new ComboBox();
+            OutputBox = new ComboBox();
             TargetPlayerEnumBox = new FlagEnumCheckbox();
             TargetTypeEnumBox = new FlagEnumCheckbox();
+            DeleteButton = new Button();
             ((System.ComponentModel.ISupportInitialize)ValueUpDown).BeginInit();
             ParamsPanel.SuspendLayout();
             SuspendLayout();
@@ -96,15 +96,15 @@
             ParamsPanel.Controls.Add(TargetPlayerLabel, 0, 1);
             ParamsPanel.Controls.Add(SearchCriterionLabel, 0, 2);
             ParamsPanel.Controls.Add(TargetTypeLabel, 0, 3);
-            ParamsPanel.Controls.Add(OutputRegisterBox, 1, 7);
+            ParamsPanel.Controls.Add(MultiVariableBox, 1, 7);
             ParamsPanel.Controls.Add(ModifierOperationLabel, 0, 4);
-            ParamsPanel.Controls.Add(ModifierTargetLabel, 0, 5);
-            ParamsPanel.Controls.Add(InputRegisterLabel, 0, 6);
-            ParamsPanel.Controls.Add(OutputRegisterLabel, 0, 7);
+            ParamsPanel.Controls.Add(InputLabel, 0, 5);
+            ParamsPanel.Controls.Add(OutputLabel, 0, 6);
+            ParamsPanel.Controls.Add(MultiVariableLabel, 0, 7);
             ParamsPanel.Controls.Add(SearchCriterionBox, 1, 2);
             ParamsPanel.Controls.Add(ModifierOperationBox, 1, 4);
-            ParamsPanel.Controls.Add(ModifierTargetBox, 1, 5);
-            ParamsPanel.Controls.Add(InputRegisterBox, 1, 6);
+            ParamsPanel.Controls.Add(InputBox, 1, 5);
+            ParamsPanel.Controls.Add(OutputBox, 1, 6);
             ParamsPanel.Controls.Add(TargetPlayerEnumBox, 1, 1);
             ParamsPanel.Controls.Add(TargetTypeEnumBox, 1, 3);
             ParamsPanel.Location = new Point(3, 37);
@@ -170,14 +170,14 @@
             TargetTypeLabel.TabIndex = 4;
             TargetTypeLabel.Text = "Target Type";
             // 
-            // OutputRegisterBox
+            // MultiVariableBox
             // 
-            OutputRegisterBox.Font = new Font("Segoe UI", 9F);
-            OutputRegisterBox.FormattingEnabled = true;
-            OutputRegisterBox.Location = new Point(146, 213);
-            OutputRegisterBox.Name = "OutputRegisterBox";
-            OutputRegisterBox.Size = new Size(151, 28);
-            OutputRegisterBox.TabIndex = 15;
+            MultiVariableBox.Font = new Font("Segoe UI", 9F);
+            MultiVariableBox.FormattingEnabled = true;
+            MultiVariableBox.Location = new Point(146, 213);
+            MultiVariableBox.Name = "MultiVariableBox";
+            MultiVariableBox.Size = new Size(151, 28);
+            MultiVariableBox.TabIndex = 15;
             // 
             // ModifierOperationLabel
             // 
@@ -189,35 +189,35 @@
             ModifierOperationLabel.TabIndex = 5;
             ModifierOperationLabel.Text = "Modifier Operation";
             // 
-            // ModifierTargetLabel
+            // InputLabel
             // 
-            ModifierTargetLabel.AutoSize = true;
-            ModifierTargetLabel.Font = new Font("Segoe UI", 9F);
-            ModifierTargetLabel.Location = new Point(3, 142);
-            ModifierTargetLabel.Name = "ModifierTargetLabel";
-            ModifierTargetLabel.Size = new Size(111, 20);
-            ModifierTargetLabel.TabIndex = 6;
-            ModifierTargetLabel.Text = "Modifier Target";
+            InputLabel.AutoSize = true;
+            InputLabel.Font = new Font("Segoe UI", 9F);
+            InputLabel.Location = new Point(3, 142);
+            InputLabel.Name = "InputLabel";
+            InputLabel.Size = new Size(43, 20);
+            InputLabel.TabIndex = 6;
+            InputLabel.Text = "Input";
             // 
-            // InputRegisterLabel
+            // OutputLabel
             // 
-            InputRegisterLabel.AutoSize = true;
-            InputRegisterLabel.Font = new Font("Segoe UI", 9F);
-            InputRegisterLabel.Location = new Point(3, 176);
-            InputRegisterLabel.Name = "InputRegisterLabel";
-            InputRegisterLabel.Size = new Size(101, 20);
-            InputRegisterLabel.TabIndex = 7;
-            InputRegisterLabel.Text = "Input Register";
+            OutputLabel.AutoSize = true;
+            OutputLabel.Font = new Font("Segoe UI", 9F);
+            OutputLabel.Location = new Point(3, 176);
+            OutputLabel.Name = "OutputLabel";
+            OutputLabel.Size = new Size(55, 20);
+            OutputLabel.TabIndex = 7;
+            OutputLabel.Text = "Output";
             // 
-            // OutputRegisterLabel
+            // MultiVariableLabel
             // 
-            OutputRegisterLabel.AutoSize = true;
-            OutputRegisterLabel.Font = new Font("Segoe UI", 9F);
-            OutputRegisterLabel.Location = new Point(3, 210);
-            OutputRegisterLabel.Name = "OutputRegisterLabel";
-            OutputRegisterLabel.Size = new Size(113, 20);
-            OutputRegisterLabel.TabIndex = 8;
-            OutputRegisterLabel.Text = "Output Register";
+            MultiVariableLabel.AutoSize = true;
+            MultiVariableLabel.Font = new Font("Segoe UI", 9F);
+            MultiVariableLabel.Location = new Point(3, 210);
+            MultiVariableLabel.Name = "MultiVariableLabel";
+            MultiVariableLabel.Size = new Size(128, 20);
+            MultiVariableLabel.TabIndex = 8;
+            MultiVariableLabel.Text = "If Multiple Inputs?";
             // 
             // SearchCriterionBox
             // 
@@ -237,36 +237,23 @@
             ModifierOperationBox.Size = new Size(151, 28);
             ModifierOperationBox.TabIndex = 12;
             // 
-            // ModifierTargetBox
+            // InputBox
             // 
-            ModifierTargetBox.Font = new Font("Segoe UI", 9F);
-            ModifierTargetBox.FormattingEnabled = true;
-            ModifierTargetBox.Location = new Point(146, 145);
-            ModifierTargetBox.Name = "ModifierTargetBox";
-            ModifierTargetBox.Size = new Size(151, 28);
-            ModifierTargetBox.TabIndex = 13;
+            InputBox.Font = new Font("Segoe UI", 9F);
+            InputBox.FormattingEnabled = true;
+            InputBox.Location = new Point(146, 145);
+            InputBox.Name = "InputBox";
+            InputBox.Size = new Size(151, 28);
+            InputBox.TabIndex = 13;
             // 
-            // InputRegisterBox
+            // OutputBox
             // 
-            InputRegisterBox.Font = new Font("Segoe UI", 9F);
-            InputRegisterBox.FormattingEnabled = true;
-            InputRegisterBox.Location = new Point(146, 179);
-            InputRegisterBox.Name = "InputRegisterBox";
-            InputRegisterBox.Size = new Size(151, 28);
-            InputRegisterBox.TabIndex = 14;
-            // 
-            // DeleteButton
-            // 
-            DeleteButton.BackColor = Color.Red;
-            DeleteButton.Font = new Font("Segoe UI", 9F);
-            DeleteButton.ForeColor = SystemColors.ButtonHighlight;
-            DeleteButton.Location = new Point(275, 3);
-            DeleteButton.Name = "DeleteButton";
-            DeleteButton.Size = new Size(30, 30);
-            DeleteButton.TabIndex = 4;
-            DeleteButton.Text = "X";
-            DeleteButton.UseVisualStyleBackColor = false;
-            DeleteButton.Click += DeleteButton_Click;
+            OutputBox.Font = new Font("Segoe UI", 9F);
+            OutputBox.FormattingEnabled = true;
+            OutputBox.Location = new Point(146, 179);
+            OutputBox.Name = "OutputBox";
+            OutputBox.Size = new Size(151, 28);
+            OutputBox.TabIndex = 14;
             // 
             // TargetPlayerEnumBox
             // 
@@ -285,6 +272,19 @@
             TargetTypeEnumBox.Name = "TargetTypeEnumBox";
             TargetTypeEnumBox.Size = new Size(6, 6);
             TargetTypeEnumBox.TabIndex = 17;
+            // 
+            // DeleteButton
+            // 
+            DeleteButton.BackColor = Color.Red;
+            DeleteButton.Font = new Font("Segoe UI", 9F);
+            DeleteButton.ForeColor = SystemColors.ButtonHighlight;
+            DeleteButton.Location = new Point(275, 3);
+            DeleteButton.Name = "DeleteButton";
+            DeleteButton.Size = new Size(30, 30);
+            DeleteButton.TabIndex = 4;
+            DeleteButton.Text = "X";
+            DeleteButton.UseVisualStyleBackColor = false;
+            DeleteButton.Click += DeleteButton_Click;
             // 
             // EffectBox
             // 
@@ -321,14 +321,14 @@
         private Label SearchCriterionLabel;
         private Label TargetTypeLabel;
         private Label ModifierOperationLabel;
-        private Label ModifierTargetLabel;
-        private Label InputRegisterLabel;
-        private Label OutputRegisterLabel;
+        private Label InputLabel;
+        private Label OutputLabel;
+        private Label MultiVariableLabel;
         private ComboBox SearchCriterionBox;
         private ComboBox ModifierOperationBox;
-        private ComboBox ModifierTargetBox;
-        private ComboBox InputRegisterBox;
-        private ComboBox OutputRegisterBox;
+        private ComboBox InputBox;
+        private ComboBox OutputBox;
+        private ComboBox MultiVariableBox;
         private Button DeleteButton;
         private FlagEnumCheckbox TargetPlayerEnumBox;
         private FlagEnumCheckbox TargetTypeEnumBox;

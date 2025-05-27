@@ -1081,10 +1081,10 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Set of stat targeting
-                List<ModifierTarget> modifierTargets = [ModifierTarget.TARGET_HP, ModifierTarget.TARGET_ATTACK, ModifierTarget.TARGET_MOVEMENT, ModifierTarget.TARGET_MOVEMENT_DENOMINATOR];
-                foreach (ModifierTarget modifierTarget in modifierTargets) // Will buff all things, one by one
+                List<Variable> modifierTargets = [Variable.TARGET_HP, Variable.TARGET_ATTACK, Variable.TARGET_MOVEMENT, Variable.TARGET_MOVEMENT_DENOMINATOR];
+                foreach (Variable modifierTarget in modifierTargets) // Will buff all things, one by one
                 {
-                    buffEffect.ModifierTarget = modifierTarget; // Buff will now target this stat
+                    buffEffect.Output = modifierTarget; // Buff will now target this stat
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
@@ -1108,10 +1108,10 @@ namespace EngineTests
                         Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
                         Stat statToChech = modifierTarget switch
                         {
-                            ModifierTarget.TARGET_HP => unitToCheck.Hp,
-                            ModifierTarget.TARGET_ATTACK => unitToCheck.Attack,
-                            ModifierTarget.TARGET_MOVEMENT => unitToCheck.Movement,
-                            ModifierTarget.TARGET_MOVEMENT_DENOMINATOR => unitToCheck.MovementDenominator,
+                            Variable.TARGET_HP => unitToCheck.Hp,
+                            Variable.TARGET_ATTACK => unitToCheck.Attack,
+                            Variable.TARGET_MOVEMENT => unitToCheck.Movement,
+                            Variable.TARGET_MOVEMENT_DENOMINATOR => unitToCheck.MovementDenominator,
                             _ => throw new NotImplementedException("Modifier type not implemented yet")
                         };
                         Assert.AreEqual(statToChech.Total, newValue);
@@ -1164,7 +1164,7 @@ namespace EngineTests
                 {
                     EffectType = EffectType.MODIFIER,
                     TempVariable = buffValue,
-                    ModifierTarget = ModifierTarget.TARGET_HP
+                    Output = Variable.TARGET_HP
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect, buffEffect]); // Add interaction to card
@@ -1604,16 +1604,16 @@ namespace EngineTests
                 {
                     EffectType = EffectType.MODIFIER,
                     ModifierOperation = ModifierOperation.SET,
-                    InputRegister = Register.TEMP_VARIABLE,
+                    Input = Variable.TEMP_VARIABLE,
                     TempVariable = firstValue,
-                    OutputRegister = Register.ACC, // Stores into ACC
+                    Output = Variable.ACC, // Stores into ACC
                 };
                 Effect operationEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
-                    InputRegister = Register.TEMP_VARIABLE,
+                    Input = Variable.TEMP_VARIABLE,
                     TempVariable = secondValue,
-                    OutputRegister = Register.ACC, // Stores into ACC
+                    Output = Variable.ACC, // Stores into ACC
                 };
                 Effect debugEffect = new Effect()
                 {
@@ -1687,17 +1687,17 @@ namespace EngineTests
                 {
                     EffectType = EffectType.MODIFIER,
                     ModifierOperation = ModifierOperation.SET,
-                    InputRegister = Register.TEMP_VARIABLE,
+                    Input = Variable.TEMP_VARIABLE,
                     TempVariable = firstValue,
-                    OutputRegister = Register.ACC, // Stores into ACC
+                    Output = Variable.ACC, // Stores into ACC
                 };
                 Effect secondOperationEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
                     ModifierOperation = ModifierOperation.MULTIPLY,
-                    InputRegister = Register.TEMP_VARIABLE,
+                    Input = Variable.TEMP_VARIABLE,
                     TempVariable = secondValue,
-                    OutputRegister = Register.ACC, // Stores into ACC
+                    Output = Variable.ACC, // Stores into ACC
                 };
                 Effect debugPushEffect = new Effect()
                 {
@@ -1769,17 +1769,17 @@ namespace EngineTests
                 {
                     EffectType = EffectType.MODIFIER,
                     ModifierOperation = ModifierOperation.SET,
-                    InputRegister = Register.TEMP_VARIABLE,
+                    Input = Variable.TEMP_VARIABLE,
                     TempVariable = firstValue,
-                    OutputRegister = Register.ACC, // Stores into ACC
+                    Output = Variable.ACC, // Stores into ACC
                 };
                 Effect secondOperationEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
                     ModifierOperation = ModifierOperation.MULTIPLY,
-                    InputRegister = Register.TEMP_VARIABLE,
+                    Input = Variable.TEMP_VARIABLE,
                     TempVariable = secondValue,
-                    OutputRegister = Register.ACC, // Stores into ACC
+                    Output = Variable.ACC, // Stores into ACC
                 };
                 Effect debugPushEffect = new Effect()
                 {
@@ -1857,9 +1857,9 @@ namespace EngineTests
                 Effect goldModifyEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
-                    InputRegister = Register.TEMP_VARIABLE,
+                    Input = Variable.TEMP_VARIABLE,
                     TempVariable = goldModifier,
-                    ModifierTarget = ModifierTarget.PLAYERS_GOLD,
+                    Output = Variable.PLAYERS_GOLD,
                 };
                 // Add when played inter
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();

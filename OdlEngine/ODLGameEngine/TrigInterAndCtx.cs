@@ -78,12 +78,13 @@ namespace ODLGameEngine
         ABSOLUTE_SET
     }
     /// <summary>
-    /// What will be modified
+    /// Source/target of data for input/output
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum ModifierTarget
+    public enum Variable
     {
-        REGISTER,
+        TEMP_VARIABLE,
+        ACC,
         TARGET_HP,
         TARGET_ATTACK,
         TARGET_MOVEMENT,
@@ -95,10 +96,14 @@ namespace ODLGameEngine
     /// Register to use in an effect
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum Register
+    public enum MultiInputProcessing
     {
-        TEMP_VARIABLE,
-        ACC
+        FIRST,
+        COUNT,
+        SUM,
+        AVERAGE,
+        MAX,
+        MIN
     }
     /// <summary>
     /// Effect is described by a type and a series of modifiers that define the effect
@@ -118,11 +123,11 @@ namespace ODLGameEngine
         [JsonConverter(typeof(StringEnumConverter))]
         public ModifierOperation ModifierOperation;
         [JsonConverter(typeof(StringEnumConverter))]
-        public ModifierTarget ModifierTarget;
+        public Variable Input;
         [JsonConverter(typeof(StringEnumConverter))]
-        public Register InputRegister;
+        public Variable Output;
         [JsonConverter(typeof(StringEnumConverter))]
-        public Register OutputRegister;
+        public MultiInputProcessing MultiInputProcessing;
         public int TempVariable;
 
         public override string ToString()
