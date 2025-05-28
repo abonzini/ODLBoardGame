@@ -45,6 +45,11 @@ namespace ODLGameEngine
         }
         
         readonly Dictionary<int, CpuState> _chainContext = new Dictionary<int, CpuState>(); // To be used only in effect resolution chain
+        IngameEntity FetchEntity(int id) // Helper fn that gets the desired entity from an id, can search for skills so I need to operate this properly
+        {
+            // Returns skill data (located in the bottom of effect chains), or just get the entity from the entity database
+            return (id == -1) ? _chainContext[id].CurrentSpecificContext.ActivatedEntity : DetailedState.EntityData[id];
+        }
         /// <summary>
         /// Executes a list of effects for triggers or interactions
         /// </summary>
@@ -53,11 +58,6 @@ namespace ODLGameEngine
         /// <param name="specificContext">Additional context that accompanies the desired effect (e.g. when killed, implies killed by someone, etc)</param>
         void TRIGINTER_ProcessEffects(List<Effect> effects, EffectContext specificContext)
         {
-            IngameEntity FetchEntity(int id) // Helper fn that gets the desired entity from an id, can search for skills so I need to operate this properly
-            {
-                // Returns skill data (located in the bottom of effect chains), or just get the entity from the entity database
-                return (id == -1) ? _chainContext[id].CurrentSpecificContext.ActivatedEntity : DetailedState.EntityData[id];
-            }
             // Get unique ID of activated entity. Skills don't have these as they're volatile, so I assign a temporary value of -1
             int activatedEntityId = specificContext.ActivatedEntity.UniqueId;
             bool firstEntryInChain = false;
@@ -226,11 +226,11 @@ namespace ODLGameEngine
                 {
                     int auxInt = input switch
                     {
-                        Variable.TARGET_HP => DetailedState.EntityData[entityTarget].Hp.Total,
-                        Variable.TARGET_ATTACK => ((Unit)DetailedState.EntityData[entityTarget]).Attack.Total,
-                        Variable.TARGET_MOVEMENT => ((Unit)DetailedState.EntityData[entityTarget]).Movement.Total,
-                        Variable.TARGET_MOVEMENT_DENOMINATOR => ((Unit)DetailedState.EntityData[entityTarget]).MovementDenominator.Total,
-                        Variable.PLAYERS_GOLD => ((Player)DetailedState.EntityData[DetailedState.EntityData[entityTarget].Owner]).CurrentGold,
+                        Variable.TARGET_HP => ((LivingEntity)FetchEntity(entityTarget)).Hp.Total,
+                        Variable.TARGET_ATTACK => ((Unit)FetchEntity(entityTarget)).Attack.Total,
+                        Variable.TARGET_MOVEMENT => ((Unit)FetchEntity(entityTarget)).Movement.Total,
+                        Variable.TARGET_MOVEMENT_DENOMINATOR => ((Unit)FetchEntity(entityTarget)).MovementDenominator.Total,
+                        Variable.PLAYERS_GOLD => DetailedState.PlayerStates[FetchEntity(entityTarget).Owner].CurrentGold,
                         _ => throw new Exception("This shouldn't have gotten here! Invalid input source!")
                     };
                     if(multiInputOperation == MultiInputProcessing.FIRST) // If I only needed the first value...
