@@ -1664,6 +1664,97 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void MultiInputArithmetic()
+        {
+            // Uses multiple units with different Attack to act as multi-input
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // I create many units in the board, 4 units Attack 0,1,2,3
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "TEST", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1);
+                for(int i = 0; i < 4; i++)
+                {
+                    testUnit.Attack.BaseValue = i;
+                    // Clone unit and put in the right place. Indices 0,1, are already reserved
+                    TestHelperFunctions.ManualInitEntity(state, TargetLocation.PLAINS, 0, i + 2, playerIndex, (Unit)testUnit.Clone());
+                }
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Values
+                // Card 1: Calculator skill, first looks for all units, then will set the value of ACC depending on multi input, return as debug trigger
+                Skill skill = TestCardGenerator.CreateSkill(2, "WHENPLAYED", 0, TargetLocation.BOARD);
+                Effect searchEffect = new Effect()// Finds all units
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    TargetLocation = TargetLocation.BOARD,
+                    TargetPlayer = EntityOwner.BOTH,
+                    TargetType = EntityType.UNIT,
+                    SearchCriterion = SearchCriterion.ALL,
+                };
+                Effect multiInputCalcEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    ModifierOperation = ModifierOperation.SET,
+                    Input = Variable.TARGET_ATTACK,
+                    Output = Variable.ACC, // Stores into ACC
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, multiInputCalcEffect, debugEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Things I'll test
+                List<MultiInputProcessing> multiInputOperations = [MultiInputProcessing.FIRST, MultiInputProcessing.COUNT, MultiInputProcessing.SUM, MultiInputProcessing.AVERAGE, MultiInputProcessing.MAX, MultiInputProcessing.MIN];
+                foreach (MultiInputProcessing multiInputOperation in multiInputOperations)
+                {
+                    multiInputCalcEffect.MultiInputProcessing = multiInputOperation; // Select calculator multiInputOp
+                    int desiredValue = multiInputOperation switch
+                    {
+                        MultiInputProcessing.FIRST => 0,
+                        MultiInputProcessing.COUNT => 4,
+                        MultiInputProcessing.SUM => 6,
+                        MultiInputProcessing.AVERAGE => 1,
+                        MultiInputProcessing.MAX => 3,
+                        MultiInputProcessing.MIN => 0,
+                        _ => throw new NotImplementedException("Multi Input op not implemented yet")
+                    };
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                    // Play
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                    GameEngineEvent debugEvent = null;
+                    foreach (GameEngineEvent ev in res.Item2.events)
+                    {
+                        if (ev.eventType == EventType.DEBUG_CHECK)
+                        {
+                            debugEvent = ev;
+                            break;
+                        }
+                    }
+                    Assert.IsNotNull(debugEvent); // Found it!
+                    // Check returned targets
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                    Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly
+                    // Revert and hash check
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                }
+            }
+        }
+        [TestMethod]
         public void EffectChainContextSharing()
         {
             // Triggers mid-interaction to ensure CPU context of a secific entity persists
