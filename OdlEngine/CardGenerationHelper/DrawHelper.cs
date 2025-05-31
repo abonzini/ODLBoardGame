@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using ODLGameEngine;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
@@ -310,15 +311,44 @@ namespace CardGenerationHelper
             string[] words = text.Split(' '); // Split text into all words
             int currentLine = 0;
             float currentLineWidth = 0;
+            bool nextWordToggleBold = false;
+            char? currentBoldChar = null;
             foreach (string word in words)
             {
                 string[] auxWords = word.Split("\r\n"); // May be multiple new lines here
                 for(int i = 0; i< auxWords.Length; i++)
                 {
                     WordToDraw theWord = new WordToDraw();
-                    if (auxWords[i].StartsWith('*'))
+                    if(currentBoldChar == null)
+                    {   
+                        if (auxWords[i].StartsWith('*'))
+                        {
+                            currentBoldChar = '*';
+                        }
+                        else if (auxWords[i].StartsWith('#'))
+                        {
+                            currentBoldChar = '#';
+                        }
+                        if(currentBoldChar != null) // Theres a bold char, remove it
+                        {
+                            auxWords[i] = auxWords[i].Remove(0,1);
+                        }
+                    }
+                    if (currentBoldChar != null)
                     {
-                        auxWords[i] = auxWords[i].Replace("*","");
+                        if(nextWordToggleBold) // Ok its stopped
+                        {
+                            nextWordToggleBold = false;
+                            currentBoldChar = null;
+                        }
+                        else if (auxWords[i].EndsWith(currentBoldChar.Value))
+                        {
+                            auxWords[i] = auxWords[i].Replace(currentBoldChar.Value.ToString(), "");
+                            nextWordToggleBold = true;
+                        }
+                    }
+                    if (currentBoldChar != null) // Currently bolding...
+                    {
                         theWord.Font = boldFont;
                     }
                     else
@@ -364,6 +394,318 @@ namespace CardGenerationHelper
                     g.DrawRectangle(pen, bounds);
                 }
             }
+        }
+        /// <summary>
+        /// Contains all constants for how a card looks
+        /// </summary>
+        public static class DrawConstants
+        {
+            public const int CardWidth = 2500; // 2.5x3.5 is resolution of a typical TCG card
+            public const int CardHeight = 3500;
+            public const float CardRoundedPercentage = 0.1f;
+            public const float CardBorder = 0.03f;
+            // Then the locations for the rest of things, proportions
+            public const float HorizontalMarginProportion = 0.03f;
+            public const float VerticalMarginProportion = 0.015f;
+            public const float BoxRoundedPercentage = 0.1f; // For square boxes, how much is it rounded
+            // For the rest (non data box)
+            public const float TextBoxProportion = 0.2f; // Card name
+            public const float ExtraBoxProportion = 0.125f; // ID, rarity, expansion
+            public const float EffectBoxProportion = 1 - TextBoxProportion - ExtraBoxProportion; // Rest is for description box
+            public const float TextBoxOpacity = 0.5f;
+            public const float TextBoxBorder = 0.006f;
+            public const float TextSizeDivider = 6; // How many lines approx fit
+            public const float TextBoxMargin = 0.05f;
+            public const float ExtraBoxMargins = 0.00f;
+            // Data Box
+            public const int NumberOfStats = 4; // How many stats in data box
+            public const float ImageBorder = 0.006f;
+            // Stats Box
+            public const float StatFontBorderPercentage = 0.1f;
+            public const float GoldStatSize = 0.2f;
+            public static readonly Color GoldColorTint = Color.Gold;
+            public const float StatRoundedPercentage = 0.20f; // For square boxes, how much is it rounded
+            // Blueprint Rotulo
+            public const float RotuloWStart = 0.55f;
+            public const float RotuloWEnd = 0.92f;
+            public const float RotuloHStart = 0.75f;
+            public const float RotuloHEnd = 0.9f;
+            public const float RotuloRightSize = 0.25f;
+            public const float RotuloRightSizeBottom = 0.33f;
+            public const int RotuloBorderSize = 10;
+            public const int RotuloTextAlignmentSpace = 150;
+            // Blueprint
+            public const float mapHStart = 0.15f; // Non-centered
+            public const float mapHEnd = 0.72f;
+            public const float mapWidth = 0.9f; // Centered
+            public const float mapHSpaces = 0.15f; // How much % is horizontal spacing
+            public const float mapVSpaces = 0.4f; // How much % is vertical spacing
+            public const float tileRounded = 0.25f;
+            public const float tileBorder = 0.03f;
+            public const float dashedLineSize = 10;
+        }
+        /// <summary>
+        /// Draws a complete card and returns a bitmap
+        /// </summary>
+        /// <param name="cardInfo">The info containing all print info needed for the card</param>
+        /// <param name="resourcesPath">Folder where to find icons and shit</param>
+        /// <param name="debug">Whether to draw debug borders n stuff</param>
+        /// <returns>The new bitmap</returns>
+        public static Bitmap DrawCard(CardIllustrationInfo cardInfo, string resourcesPath, bool debug = false)
+        {
+            int width = DrawConstants.CardWidth;
+            int height = DrawConstants.CardHeight;
+            int proportionalCardReference = Math.Min(width, height);
+            float cardBorder = proportionalCardReference * DrawConstants.CardBorder;
+
+            Bitmap bitmap = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(bitmap);
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            g.PageUnit = GraphicsUnit.Pixel;
+            Rectangle bounds = new Rectangle(0, 0, width, height);
+            DrawRoundedRectangle(g, bounds, DrawConstants.CardRoundedPercentage, Color.Black, DrawConstants.CardBorder, new SolidFillHelper() { FillColor = Color.LightGray });
+
+            // Then, all non-invalid cards have picture, cost, name, textbox, rarity, etc
+            if (cardInfo.EntityType != EntityType.NONE)
+            {
+                // Ok it's a real card so let's draw the basics!
+                float horizontalMargin = width * DrawConstants.HorizontalMarginProportion; // For reference
+                float verticalMargin = height * DrawConstants.VerticalMarginProportion;
+                float drawableWidth = width - 2 * cardBorder - 2 * horizontalMargin; // This is the actual horizontal space for drawing stuff
+                float drawableHeight = height - 2 * cardBorder - verticalMargin; // Same, for vertical
+                float currentDrawPointerX = cardBorder + horizontalMargin; // Where drawing pointer is
+                float currentDrawPointerY = cardBorder + verticalMargin; // Data box need vertical margin
+                // First the data box
+                float dataBoxWidth = drawableWidth - horizontalMargin; // This is the area where image + stats fit (everyhting is a square)
+                // This is solved by linear eq, every box a square
+                // H = imgW
+                // H = N * statW + (N-1) vSpace
+                // statW + imgW = W
+                // => with imgW = X, statW = Y
+                // X-nY = (n-1) vSp
+                // X+Y  = W
+                // Substitution: (n+1)Y = W - (n-1)vsp
+                int n = DrawConstants.NumberOfStats;
+                float statWidth = (dataBoxWidth - ((n - 1) * verticalMargin)) / (n + 1);
+                float imageBoxSize = dataBoxWidth - statWidth;
+                FillHelper brush;
+                string imagePath = Path.Combine(resourcesPath, "CardImagesRaw", cardInfo.Id.ToString() + ".png");
+                Rectangle imageBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)imageBoxSize, (int)imageBoxSize);
+                brush = GetImageBrushOrColor(imageBox, imagePath, Color.White, Color.White);
+                DrawRoundedRectangle(g, imageBox, DrawConstants.BoxRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                // Now Draw all Stats
+                // Gold
+                float statXpointer = currentDrawPointerX + imageBoxSize + horizontalMargin;
+                float statYpointer = currentDrawPointerY;
+                Rectangle statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
+                imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "gold.png");
+                brush = GetImageBrushOrColor(statBox, imagePath, Color.Gold, Color.Gold, 85);
+                DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                float statFontSize = statWidth / 1.333f; // Fixed size to fit stat box in consistent way. 1.333 is empirical
+                Font statFont = new Font("Coolvetica Heavy Comp", statFontSize, FontStyle.Bold);
+                DrawFixedText(g, cardInfo.Cost, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                statYpointer += statWidth + verticalMargin;
+                // Rest of stats require a specific card
+                if (cardInfo.EntityType == EntityType.UNIT || cardInfo.EntityType == EntityType.BUILDING || cardInfo.EntityType == EntityType.PLAYER) // Entities with HP
+                {
+                    // Then, HP
+                    statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
+                    imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "hp.png");
+                    brush = GetImageBrushOrColor(statBox, imagePath, Color.Red, Color.Red, 85);
+                    DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                    DrawFixedText(g, cardInfo.Hp, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                    statYpointer += statWidth + verticalMargin;
+                    if (cardInfo.EntityType == EntityType.UNIT) // Units will also have attack and mvt
+                    {
+                        statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
+                        imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "attack.png");
+                        brush = GetImageBrushOrColor(statBox, imagePath, Color.Silver, Color.Silver, 85);
+                        DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                        DrawFixedText(g, cardInfo.Attack, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                        statYpointer += statWidth + verticalMargin;
+                        statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
+                        imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "movement.png");
+                        brush = GetImageBrushOrColor(statBox, imagePath, Color.BurlyWood, Color.BurlyWood, 85);
+                        DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
+                        DrawFixedText(g, cardInfo.Movement, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                    }
+                }
+                currentDrawPointerY += imageBoxSize; // Move down to the next part
+                drawableHeight -= imageBoxSize; // Remaining is the space excluding image box and the remaining separators
+                // Ok now the rest:
+                // Name:
+                float titleAreaHeight = drawableHeight * DrawConstants.TextBoxProportion;
+                float textAreaHeight = drawableHeight * DrawConstants.EffectBoxProportion;
+                float extraAreaHeight = drawableHeight * DrawConstants.ExtraBoxProportion;
+                float titleFontSize = titleAreaHeight;
+                Font titleFont = new Font("Georgia", titleFontSize, FontStyle.Bold, GraphicsUnit.Pixel);
+                Rectangle nameBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)titleAreaHeight);
+                DrawAutoFitText(g, cardInfo.Name, nameBox, titleFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                currentDrawPointerY += titleAreaHeight; // Move down to the next part
+                // Effect:
+                Rectangle textBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)textAreaHeight);
+                brush = new SolidFillHelper() { FillColor = Color.FromArgb((int)(255 * DrawConstants.TextBoxOpacity), Color.White) }; // Semi transparent white box
+                DrawRoundedRectangle(g, textBox, DrawConstants.BoxRoundedPercentage, Color.Black, DrawConstants.TextBoxBorder, brush);
+                float textFontSize = textAreaHeight / (DrawConstants.TextSizeDivider * 1.33333f); // 1.333 because text is in pixels and I need pt
+                Font textFont = new Font("Georgia", textFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+                int minTextBoxSize = Math.Min((int)drawableWidth, (int)textAreaHeight);
+                DrawRichTextBox(g, cardInfo.Text, textBox, textFont, Color.Black, (int)(minTextBoxSize * DrawConstants.TextBoxMargin), (int)(minTextBoxSize * DrawConstants.TextBoxMargin), debug);
+                currentDrawPointerY += textAreaHeight; // Move down to the next part
+                // Extras:
+                Rectangle extrasBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)extraAreaHeight);
+                float extraFontSize = extraAreaHeight;
+                Font extraFont = new Font("Georgia", extraFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+                DrawAutoFitText(g, $"#{cardInfo.Id}", extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Far, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), debug);
+                string rarityString = new string('\u2605', cardInfo.Rarity);
+                DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Near, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), debug);
+            }
+            return bitmap;
+        }
+        /// <summary>
+        /// Draws building's blueprint. Unfortunately it needs extra draw info from the actual building itself
+        /// </summary>
+        /// <param name="printInfo">Print info of building</param>
+        /// <param name="buildingInfo">Building data for the BPs</param>
+        /// <param name="resourcesPath">Where the graphic resources are</param>
+        /// <param name="debug">Debug flag</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static Bitmap DrawBlueprint(CardIllustrationInfo printInfo, Building buildingInfo, string resourcesPath, bool debug = false)
+        {
+            Bitmap bitmap = null;
+            string imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "blueprint.png");
+            if (File.Exists(imagePath)) // Blueprint base found
+            {
+                bitmap = new Bitmap(imagePath);
+                Graphics g = Graphics.FromImage(bitmap);
+                int width = bitmap.Width; // Get dims
+                int height = bitmap.Height;
+                // Draw rotulo
+                SolidFillHelper transparentBrush = new SolidFillHelper() { FillColor = Color.Transparent }; // No fill
+                int xRotulo = (int)(width * DrawConstants.RotuloWStart);
+                int yRotulo = (int)(height * DrawConstants.RotuloHStart);
+                int widthRotulo = (int)(width * (DrawConstants.RotuloWEnd - DrawConstants.RotuloWStart));
+                int heightRotulo = (int)(height * (DrawConstants.RotuloHEnd - DrawConstants.RotuloHStart));
+                Rectangle rotuloBox = new Rectangle(xRotulo, yRotulo, widthRotulo, heightRotulo);
+                DrawRectangleFixedBorder(g, rotuloBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
+                Rectangle rotuloTitle = new Rectangle(xRotulo, yRotulo, (int)(widthRotulo * (1 - DrawConstants.RotuloRightSize)), heightRotulo);
+                Font rotuloFont = new Font("Consolas", heightRotulo);
+                DrawAutoFitText(g, printInfo.Name, rotuloTitle, rotuloFont, Color.White, Color.White, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                xRotulo += (int)(widthRotulo * (1 - DrawConstants.RotuloRightSize));
+                widthRotulo = (int)(widthRotulo * DrawConstants.RotuloRightSize);
+                rotuloBox = new Rectangle(xRotulo, yRotulo, widthRotulo, heightRotulo);
+                DrawRectangleFixedBorder(g, rotuloBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
+                rotuloFont = new Font("Consolas", (int)(heightRotulo * (1 - DrawConstants.RotuloRightSizeBottom)));
+                Rectangle rotuloRightTextBox = new Rectangle(xRotulo, yRotulo, widthRotulo, (int)(heightRotulo * (1 - DrawConstants.RotuloRightSizeBottom)));
+                DrawAutoFitText(g, "#" + printInfo.Id, rotuloRightTextBox, rotuloFont, Color.White, Color.White, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                yRotulo += (int)(heightRotulo * (1 - DrawConstants.RotuloRightSizeBottom));
+                heightRotulo = (int)(heightRotulo * DrawConstants.RotuloRightSizeBottom);
+                rotuloBox = new Rectangle(xRotulo, yRotulo, widthRotulo, heightRotulo);
+                DrawRectangleFixedBorder(g, rotuloBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
+                rotuloFont = new Font("Georgia", heightRotulo, FontStyle.Regular, GraphicsUnit.Pixel);
+                string rarityString = new string('\u2605', printInfo.Rarity);
+                DrawAutoFitText(g, rarityString, rotuloBox, rotuloFont, Color.White, Color.White, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                // End of rotulo now the actual matrix
+                int yMap = (int)(height * DrawConstants.mapHStart);
+                int heightMap = (int)(height * (DrawConstants.mapHEnd - DrawConstants.mapHStart));
+                int widthMap = (int)(width * DrawConstants.mapWidth);
+                int xMap = (width - widthMap) / 2;
+                if (debug)
+                {
+                    Rectangle mapDebugBox = new Rectangle(xMap, yMap, widthMap, heightMap);
+                    DrawRectangleFixedBorder(g, mapDebugBox, Color.White, DrawConstants.RotuloBorderSize, transparentBrush);
+                }
+                Rectangle getCoordinateRectangle(int row, int column) // Gives me the desired tile
+                {
+                    // First, calculate coord
+                    int nrows = GameConstants.BOARD_LANES_NUMBER;
+                    int nCols = new[] { GameConstants.PLAINS_TILES_NUMBER, GameConstants.FOREST_TILES_NUMBER, GameConstants.MOUNTAIN_TILES_NUMBER }.Max();
+                    float hSpace = widthMap * DrawConstants.mapHSpaces;
+                    float hSep = hSpace / (nCols + 1);
+                    float x = (widthMap - hSpace) / nCols;
+                    float vSpace = heightMap * DrawConstants.mapVSpaces;
+                    float vSep = vSpace / (nrows + 1);
+                    float y = (heightMap - vSpace) / nrows;
+                    // Now rectangle
+                    Rectangle tile = new Rectangle(
+                        (int)(xMap + hSep + column * (hSep + x)),
+                        (int)(yMap + vSep + row * (vSep + y)),
+                        (int)x, (int)y);
+                    return tile;
+                }
+                int getAdaptedColumn(int row, LaneID lane)
+                {
+                    int maxCol = new[] { GameConstants.PLAINS_TILES_NUMBER, GameConstants.FOREST_TILES_NUMBER, GameConstants.MOUNTAIN_TILES_NUMBER }.Max();
+                    int laneSize = lane switch
+                    {
+                        LaneID.PLAINS => GameConstants.PLAINS_TILES_NUMBER,
+                        LaneID.FOREST => GameConstants.FOREST_TILES_NUMBER,
+                        LaneID.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER,
+                        _ => throw new Exception("Not a lane")
+                    };
+                    int offset = (maxCol - laneSize) / 2;
+                    return row + offset;
+                }
+                // Ok now I need to plot stuff, plot lane by lane
+                for (int i = 0; i < GameConstants.PLAINS_TILES_NUMBER; i++)
+                {
+                    Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(i, LaneID.PLAINS));
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                }
+                for (int i = 0; i < GameConstants.FOREST_TILES_NUMBER; i++)
+                {
+                    Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(i, LaneID.FOREST));
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                }
+                for (int i = 0; i < GameConstants.MOUNTAIN_TILES_NUMBER; i++)
+                {
+                    Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(i, LaneID.MOUNTAIN));
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                }
+                // And now the actual BP
+                int[] bp = buildingInfo.PlainsBp;
+                if (bp != null)
+                {
+                    for (int i = 0; i < bp.Length; i++)
+                    {
+                        Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(bp[i], LaneID.PLAINS));
+                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
+                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
+                        DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                    }
+                }
+                bp = buildingInfo.ForestBp;
+                if (bp != null)
+                {
+                    for (int i = 0; i < bp.Length; i++)
+                    {
+                        Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(bp[i], LaneID.FOREST));
+                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
+                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
+                        DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                    }
+                }
+                bp = buildingInfo.MountainBp;
+                if (bp != null)
+                {
+                    for (int i = 0; i < bp.Length; i++)
+                    {
+                        Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(bp[i], LaneID.MOUNTAIN));
+                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
+                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
+                        DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
+                    }
+                }
+                // Draw line now
+                Pen dashedPen = new Pen(Color.White, DrawConstants.dashedLineSize);
+                dashedPen.DashStyle = DashStyle.Dash;
+                g.DrawLine(dashedPen, new Point(xMap + (widthMap / 2), yMap), new Point(xMap + (widthMap / 2), yMap + heightMap));    
+            }
+            return bitmap;
         }
     }
 }

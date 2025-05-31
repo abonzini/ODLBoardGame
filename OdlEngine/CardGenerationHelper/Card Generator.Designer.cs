@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             BlueprintCheckBox = new CheckBox();
-            CardIconFolders = new Button();
             DebugCheckBox = new CheckBox();
             CardPicturePathLoadButton = new Button();
             CardPicture = new PictureBox();
@@ -55,6 +54,7 @@
             ExpansionDropdown = new ComboBox();
             ClassDropdown = new ComboBox();
             label4 = new Label();
+            flagEnumCheckbox1 = new FlagEnumCheckbox();
             LivingEntityPanel = new Panel();
             HpUpDown = new NumericUpDown();
             label7 = new Label();
@@ -85,7 +85,6 @@
             LoadSaveButtonPanel = new Panel();
             LoadJsonButton = new Button();
             SaveJsonButton = new Button();
-            flagEnumCheckbox1 = new FlagEnumCheckbox();
             ((System.ComponentModel.ISupportInitialize)CardPicture).BeginInit();
             CardElementsPanel.SuspendLayout();
             PlayInfoBox.SuspendLayout();
@@ -122,17 +121,6 @@
             BlueprintCheckBox.UseVisualStyleBackColor = true;
             BlueprintCheckBox.CheckedChanged += BlueprintCheckBox_CheckedChanged;
             // 
-            // CardIconFolders
-            // 
-            CardIconFolders.Dock = DockStyle.Left;
-            CardIconFolders.Location = new Point(140, 0);
-            CardIconFolders.Name = "CardIconFolders";
-            CardIconFolders.Size = new Size(139, 35);
-            CardIconFolders.TabIndex = 5;
-            CardIconFolders.Text = "Layout Folder";
-            CardIconFolders.UseVisualStyleBackColor = true;
-            CardIconFolders.Click += CardIconFolders_Click;
-            // 
             // DebugCheckBox
             // 
             DebugCheckBox.AutoSize = true;
@@ -152,7 +140,7 @@
             CardPicturePathLoadButton.Name = "CardPicturePathLoadButton";
             CardPicturePathLoadButton.Size = new Size(140, 35);
             CardPicturePathLoadButton.TabIndex = 2;
-            CardPicturePathLoadButton.Text = "Picture Folder";
+            CardPicturePathLoadButton.Text = "Resources Folder";
             CardPicturePathLoadButton.UseVisualStyleBackColor = true;
             CardPicturePathLoadButton.Click += CardPicturePathLoadButton_Click;
             // 
@@ -400,6 +388,15 @@
             label4.TabIndex = 6;
             label4.Text = "Class";
             // 
+            // flagEnumCheckbox1
+            // 
+            flagEnumCheckbox1.AutoSize = true;
+            flagEnumCheckbox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            flagEnumCheckbox1.Location = new Point(3, 314);
+            flagEnumCheckbox1.Name = "flagEnumCheckbox1";
+            flagEnumCheckbox1.Size = new Size(6, 6);
+            flagEnumCheckbox1.TabIndex = 8;
+            // 
             // LivingEntityPanel
             // 
             LivingEntityPanel.AutoSize = true;
@@ -641,7 +638,6 @@
             // 
             // PictureButtonsArea
             // 
-            PictureButtonsArea.Controls.Add(CardIconFolders);
             PictureButtonsArea.Controls.Add(CardPicturePathLoadButton);
             PictureButtonsArea.Dock = DockStyle.Top;
             PictureButtonsArea.Location = new Point(0, 0);
@@ -704,15 +700,6 @@
             SaveJsonButton.Text = "Save Card";
             SaveJsonButton.UseVisualStyleBackColor = true;
             SaveJsonButton.Click += SaveJsonButton_Click;
-            // 
-            // flagEnumCheckbox1
-            // 
-            flagEnumCheckbox1.AutoSize = true;
-            flagEnumCheckbox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            flagEnumCheckbox1.Location = new Point(3, 314);
-            flagEnumCheckbox1.Name = "flagEnumCheckbox1";
-            flagEnumCheckbox1.Size = new Size(6, 6);
-            flagEnumCheckbox1.TabIndex = 8;
             // 
             // CardGenerator
             // 
@@ -780,7 +767,6 @@
         private Label label6;
         private NumericUpDown RarityUpDown;
         private CheckBox DebugCheckBox;
-        private Button CardIconFolders;
         private NumericUpDown CostUpDown;
         private Label Cost;
         private FlowLayoutPanel CardElementsPanel;

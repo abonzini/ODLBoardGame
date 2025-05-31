@@ -5,7 +5,7 @@ namespace EngineTests
     [TestClass]
     public class DeserializeAllCards
     {
-        CardFinder cardFinderToTest = new CardFinder(".\\..\\..\\..\\..\\..\\CardDatabase\\CardData");
+        CardFinder cardFinderToTest = new CardFinder(".\\..\\..\\..\\..\\..\\CardResources\\CardData");
         public bool IsJsonValid(int cardId)
         {
             bool valid = false;

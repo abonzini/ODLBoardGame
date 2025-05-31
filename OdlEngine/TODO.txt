@@ -1,6 +1,4 @@
 Ongoing tasks in order of priority:
-- 3:
-	Modify UI to allow symbols in text
 - 4,5:
 	Triginter related to march, maybe assertions
 - Implement rest of rulebook

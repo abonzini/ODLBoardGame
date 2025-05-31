@@ -1,4 +1,4 @@
-<img src="./../../../CardDatabase/CardImagesFull/1.png" width="150">
+<img src="./../../../CardResources/CardImagesFull/1.png" width="150">
 
 ![](./../../BaseSet/15.png)
 ![](./../../BaseSet/16.png)

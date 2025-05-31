@@ -26,12 +26,12 @@ namespace CardGenerationHelper.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ImagePath {
+        public string ResourcesPath {
             get {
-                return ((string)(this["ImagePath"]));
+                return ((string)(this["ResourcesPath"]));
             }
             set {
-                this["ImagePath"] = value;
+                this["ResourcesPath"] = value;
             }
         }
         
@@ -44,18 +44,6 @@ namespace CardGenerationHelper.Properties {
             }
             set {
                 this["Debug"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LayoutPath {
-            get {
-                return ((string)(this["LayoutPath"]));
-            }
-            set {
-                this["LayoutPath"] = value;
             }
         }
     }

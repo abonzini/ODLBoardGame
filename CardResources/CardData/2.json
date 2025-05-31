@@ -1,0 +1,9 @@
+{
+  "Movement": 1,
+  "MovementDenominator": 1,
+  "Attack": 2,
+  "Name": "MILITIA",
+  "Hp": 2,
+  "EntityType": "UNIT",
+  "Id": 2
+}

@@ -1,0 +1,10 @@
+{
+  "EntityType": "BUILDING",
+  "Id": 3,
+  "Name": "WORKSHOP",
+  "Text": "When a friendly unit *enters* this building, gain 1 *gold.*",
+  "Cost": "3",
+  "Hp": "3",
+  "Rarity": 1,
+  "ClassType": "BASE"
+}

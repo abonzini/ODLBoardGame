@@ -1,0 +1,10 @@
+{
+  "EntityType": "UNIT",
+  "Id": 2,
+  "Name": "MILITIA",
+  "Cost": "0",
+  "Hp": "2",
+  "Movement": "1",
+  "Attack": "2",
+  "ClassType": "BASE"
+}

@@ -1,0 +1,36 @@
+{
+  "PlainsBp": [
+    0
+  ],
+  "ForestBp": [
+    0,
+    1
+  ],
+  "MountainBp": [
+    0,
+    1
+  ],
+  "Name": "WORKSHOP",
+  "Hp": 3,
+  "EntityType": "BUILDING",
+  "TargetOptions": "ALL_LANES",
+  "Id": 3,
+  "Cost": 3,
+  "Interactions": {
+    "UNIT_ENTERS_BUILDING": [
+      {
+        "EffectType": "SELECT_ENTITY",
+        "TargetPlayer": "OWNER",
+        "SearchCriterion": "ACTOR_ENTITY",
+        "TargetType": "UNIT"
+      },
+      {
+        "EffectType": "MODIFIER",
+        "TargetPlayer": "OWNER",
+        "ModifierOperation": "ADD",
+        "Output": "PLAYERS_GOLD",
+        "TempVariable": 1
+      }
+    ]
+  }
+}
