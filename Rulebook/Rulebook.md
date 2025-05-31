@@ -38,7 +38,7 @@ Unit is then placed on the first square of that **lane**.
 
 # March
 
-Units can march **march**.
+Units can **march**.
 When **marching**, a unit will advance forward to the next **tile**, as many times as their their respective **movement** stat.
 
 <img src="./../Pictures/Board/March1.png" width="500">
@@ -67,8 +67,7 @@ Most classess can use the **CONSCRIPTION** skill, as as an active skill, which s
 **Active Skills** can be used every turn (if the player can afford it), once per turn.
 Other skill cards can be added to a player's deck and used.
 
-<img src="./../CardResources/CardImagesFull/1.png" width="150">
-<img src="./../CardResources/CardImagesFull/2.png" width="110">
+<img src="./../CardResources/CardImagesFull/1.png" width="150"><img src="./../CardResources/CardImagesFull/2.png" width="110">
 
 # Buildings
 
@@ -79,8 +78,7 @@ Buildings need to be **constructed** by a unit.
 For this purpose they contain a blueprint, which specifies in where it can be built.
 When a building's lane is chosen, it is built in the first available tile.
 
-<img src="./../CardResources/CardBlueprintsFull/3.png" width="200">
-<img src="./../CardResources/CardImagesFull/3.png" width="150">
+<img src="./../CardResources/CardBlueprintsFull/3.png" width="200"><img src="./../CardResources/CardImagesFull/3.png" width="150">
 
 - Once built, the building remains in that **tile** until destroyed
 - Units will **enter** the building when they arrive to the tile where the building is located
