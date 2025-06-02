@@ -197,7 +197,13 @@ For example, if stats need to be buffed/debuffed, or a specific player gets gold
     - ```ModifierOperation``` how the modifier's value is applied (i.e. whether it's a multiplaction, addition, etc)
     - ```Input``` contains the value $n$ of the modifier, needed for some (most?) operations
     - ```Output``` defines *what* is modified, if a stat, a damage value, etc
-    - ```TargetPlayer``` in some cases where you want to modify a player's value (e.g. gold), this field is used to choose whether it's a card's owner or the opponents, whose value can be modified. This allows effects such as *"Destroy a card and refund the owner"*. 
+    - ```TargetPlayer``` in some cases where you want to modify a player's value (e.g. gold), this field is used to choose whether it's a card's owner or the opponents, whose value can be modified. This allows effects such as *"Destroy a card and refund the owner"*.
+
+- ```ASSERT``` is a mathematical operation that checks if the desired input value $\neq 0$. If the assert succeeds, nothing happens, but if it fails, the effect loop ends right there, and the following effects won't be executed.
+Useful for effect with complex conditions where a part of the effect is conditional on something happening.
+
+    Parameters:
+    - ```Input``` contains the value $n$ to assert
 
 ## Possible Parameter Values
 
@@ -247,6 +253,7 @@ For example, if stats need to be buffed/debuffed, or a specific player gets gold
     - ```ADD``` adds $n$ to the target
     - ```MULTIPLY``` multiplies target by $n$
     - ```ABSOLUTE_SET``` very similar to ```SET``` but it is a harsher operation: it overwrites the base value to $n$ and this becomes the new value. Only makes sense in specific buffs and should really not be used except in some very specific situations
+    - ```NOT``` negates the input. So that if $n \neq 0$ it becomes 0, and if $n = 0$, becomes 1
 - ```Input```/```Output```
     - ```TEMP_VARIABLE``` the value of the temp variable of the current effect. *Read only*
     - ```ACC``` the **Accumulator**'s value in the effect processing CPU

@@ -77,8 +77,10 @@ namespace ODLGameEngine
             }
             cpu.CurrentSpecificContext = specificContext;
             // Now that the CPU has been configured, can execute effect chain
-            foreach (Effect effect in effects) // Execute series of events for the card in question
+            for (int effectIndex = 0; effectIndex < effects.Count; effectIndex++) // Execute series of events for the card in question
             {
+                Effect effect = effects[effectIndex]; // Next effect
+                bool breakLoop = false; // Wether loop goes on or is broken by an assert operation
                 // Define values of registers as may be needed
                 cpu.TempValue = effect.TempVariable;
                 int inputValue = GetInput(cpu, effect.Input, effect.MultiInputProcessing);
@@ -151,7 +153,7 @@ namespace ODLGameEngine
                                         ModifierOperation.ADD => STATS_AddToStat,
                                         ModifierOperation.MULTIPLY => STATS_MultiplyStat,
                                         ModifierOperation.ABSOLUTE_SET => STATS_SetAbsoluteBaseStat,
-                                        _ => throw new NotImplementedException("Modifier operation not implemented yet"),
+                                        _ => throw new NotImplementedException("Modifier operation not supported for stats"),
                                     };
                                     foreach (int entityTarget in cpu.ReferenceEntities)
                                     {
@@ -187,8 +189,18 @@ namespace ODLGameEngine
                                 throw new NotImplementedException("Variable is read only!");
                         }
                         break;
+                    case EffectType.ASSERT:
+                        if(inputValue == 0) // Asserts input, if false, then the loop breaks
+                        {
+                            breakLoop = true;
+                        }
+                        break;
                     default:
                         throw new NotImplementedException("Effect type not implemented yet");
+                }
+                if(breakLoop)
+                {
+                    break;
                 }
             }
             // End of effect chain
@@ -475,9 +487,9 @@ namespace ODLGameEngine
                 ModifierOperation.ABSOLUTE_SET => modifier,
                 ModifierOperation.ADD => value + modifier,
                 ModifierOperation.MULTIPLY => value * modifier,
+                ModifierOperation.NOT => (modifier == 0) ? 1 : 0,
                 _ => throw new NotImplementedException("Modifier operation not supported")
             };
-
         }
         /// <summary>
         /// Will summon a unit to a specific player, bypassing playables, can choose multiple lanes at once

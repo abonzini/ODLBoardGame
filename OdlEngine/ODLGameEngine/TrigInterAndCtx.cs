@@ -37,7 +37,8 @@ namespace ODLGameEngine
         SELECT_ENTITY,
         FIND_ENTITIES,
         SUMMON_UNIT,
-        MODIFIER
+        MODIFIER,
+        ASSERT
     }
     /// <summary>
     /// When searching for a target, which entity is found
@@ -75,7 +76,8 @@ namespace ODLGameEngine
         SET,
         ADD,
         MULTIPLY,
-        ABSOLUTE_SET
+        ABSOLUTE_SET,
+        NOT
     }
     /// <summary>
     /// Source/target of data for input/output

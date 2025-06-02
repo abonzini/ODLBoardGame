@@ -1627,7 +1627,7 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Set of stat targeting
-                List<ModifierOperation> modifierOperations = [ModifierOperation.ADD, ModifierOperation.ABSOLUTE_SET, ModifierOperation.SET, ModifierOperation.MULTIPLY];
+                List<ModifierOperation> modifierOperations = [ModifierOperation.ADD, ModifierOperation.ABSOLUTE_SET, ModifierOperation.SET, ModifierOperation.MULTIPLY, ModifierOperation.NOT];
                 foreach (ModifierOperation modifierOperation in modifierOperations) // Will buff in all ways, one by one
                 {
                     operationEffect.ModifierOperation = modifierOperation; // Select calculator op
@@ -1637,6 +1637,7 @@ namespace EngineTests
                         ModifierOperation.MULTIPLY => firstValue * secondValue,
                         ModifierOperation.SET => secondValue,
                         ModifierOperation.ABSOLUTE_SET => secondValue,
+                        ModifierOperation.NOT => 0, // 0 because second value is always != 0
                         _ => throw new NotImplementedException("Modifier op not implemented yet")
                     };
                     // Pre-play prep
@@ -1838,7 +1839,7 @@ namespace EngineTests
         [TestMethod]
         public void EffectChainContextIndependence()
         {
-            // Triggers mid-interaction to ensure CPU contexts of different entities are independend
+            // Triggers mid-interaction to ensure CPU contexts of different entities are independent
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -1995,6 +1996,74 @@ namespace EngineTests
                         sm.UndoPreviousStep();
                         Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                     }
+                }
+            }
+        }
+        [TestMethod]
+        public void AssertEffect()
+        {
+            // Testing of assertion effect
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Assert skill, kill the effect prematurely or not, depending on assert type
+                Skill skill = TestCardGenerator.CreateSkill(1, "ASSERT", 0, TargetLocation.BOARD);
+                Effect assertEffect = new Effect()
+                {
+                    EffectType = EffectType.ASSERT,
+                    Input = Variable.TEMP_VARIABLE,
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [assertEffect, debugEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Set of stat targeting
+                List<bool> stopExpectedCases = [false, true];
+                foreach (bool stopExpected in stopExpectedCases)
+                {
+                    assertEffect.TempVariable = stopExpected ? 0 : 1; // Sets the temp value depending whether I want it to trigger the assert
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                    // Play
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                    GameEngineEvent debugEvent = null;
+                    foreach (GameEngineEvent ev in res.Item2.events)
+                    {
+                        if (ev.eventType == EventType.DEBUG_CHECK)
+                        {
+                            debugEvent = ev;
+                            break;
+                        }
+                    }
+                    if(stopExpected) // Check whether I should be finding the debug event depending on assertion type
+                    {
+                        Assert.IsNull(debugEvent);
+                    }
+                    else
+                    {
+                        Assert.IsNotNull(debugEvent); // Found it!
+                    }
+                    // Check returned targets
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                    // Revert and hash check
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
             }
         }
