@@ -173,7 +173,7 @@ namespace ODLGameEngine
     /// <summary>
     /// When unit is advancing
     /// </summary>
-    public class AdvancingContext : EffectContext
+    public class MarchingContext : EffectContext
     {
         public int InitialMovement = 0;
         public int CurrentMovement = 0;

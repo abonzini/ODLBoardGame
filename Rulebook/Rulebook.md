@@ -139,7 +139,7 @@ This creates slow units.
 - **Gold**, the main resource of the game, used to pay for cards costs <img src="./../CardResources/CardLayoutElements/gold.png" width="20">
 - **HP**, Health Points of a Unit, Building, or Player <img src="./../CardResources/CardLayoutElements/HP.png" width="20">
 - **Lane**, Locations on the board. There's three lanes, the **Forest**, **Mountains** and **Plains**
-- **March**, the action units do, they advance a specific number of **tiles**, **combat** may be initiated, and the unit may **enter** buildings in a lane
+- **March**, action that units do, where they advance a specific number of **tiles**, **combat** may be initiated, and the unit may **enter** buildings in a lane
 - **Mountains**, a **lane** 8 **tiles** long
 - **Movement**, a stat. Determines how many tiles will a unit addvance when **marching** <img src="./../CardResources/CardLayoutElements/movement.png" width="20">
 - **Passive Skill**, an ongoing effect that may change/add game mechanics. Classes *may* have **passive skills**

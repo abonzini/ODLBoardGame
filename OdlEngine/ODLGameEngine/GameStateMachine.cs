@@ -199,12 +199,12 @@ namespace ODLGameEngine
             List<int> playerUnitsIds = DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerId).ToList(); // (Clone)
             if (playerUnitsIds.Count > 0) // Only advance if player has units
             {
-                // Obtain all elements in list to iterate on, do it like this to allow iteration even if a unit dies during the advance (iteration integrity)
+                // Obtain all elements in list to iterate on, do it like this to allow iteration even if a unit dies during the march (iteration integrity)
                 foreach (int unitId in playerUnitsIds)
                 {
                     if(DetailedState.EntityData.TryGetValue(unitId, out LivingEntity unit)) // Check if unit is still alive, if not, no need to march
                     {
-                        UNIT_AdvanceUnit((Unit)unit); // Then the unit advances!
+                        UNIT_UnitMarch((Unit)unit); // Then the unit marches on!
                     }
                 }
             }

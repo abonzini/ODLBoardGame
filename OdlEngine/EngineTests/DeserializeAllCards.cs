@@ -24,7 +24,7 @@ namespace EngineTests
         public void DeserializeAllCreatedCards()
         {
             const int MIN_INDEX = -1; // Need to edit as I load cards
-            const int MAX_INDEX = 2;
+            const int MAX_INDEX = 3;
             for(int i = MIN_INDEX; i <= MAX_INDEX; i++)
             {
                 if (i == 0) continue; // No 0 card

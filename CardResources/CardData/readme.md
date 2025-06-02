@@ -126,7 +126,7 @@ In the example above, the card would contain 2 interactions, and then each would
 ## Interaction Types
 
 - ```WHEN_PLAYED``` Will be executed when the card is played (FROM HAND) for the first time.
-- ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during advance). This interaction happens only once, and the Unit/Building will need to each process the effect from their own POV.
+- ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during march). This interaction happens only once, and the Unit/Building will need to each process the effect from their own POV.
 
 # Effect Mechanism
 

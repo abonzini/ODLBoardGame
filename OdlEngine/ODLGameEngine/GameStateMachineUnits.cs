@@ -33,10 +33,10 @@ namespace ODLGameEngine
             return newSpawnedUnit;
         }
         /// <summary>
-        /// Found unit starts advance
+        /// Found unit starts march
         /// </summary>
-        /// <param name="unit">Unit object that will advance</param>
-        void UNIT_AdvanceUnit(Unit unit)
+        /// <param name="unit">Unit object that will march</param>
+        void UNIT_UnitMarch(Unit unit)
         {
             int unitOwnerId = unit.Owner;
             int opponentId = 1 - unitOwnerId;
@@ -45,34 +45,34 @@ namespace ODLGameEngine
             {
                 cooldown = 0;
             }
-            AdvancingContext advanceCtx = new AdvancingContext() // Set context for advance-related interactions/triggers
+            MarchingContext marchCtx = new MarchingContext() // Set context for march-related interactions/triggers
             {
                 Actor = unit,
             };
             if (cooldown == 0)
             {
                 ENGINE_AddMessageEvent($"P{unitOwnerId + 1}'s {unit.Name} advances");
-                advanceCtx.InitialMovement = unit.Movement.Total; // How much to advance
+                marchCtx.InitialMovement = unit.Movement.Total; // How much to advance
                 Lane lane = DetailedState.BoardState.GetLane(unit.LaneCoordinate); // Which lane
-                // Ready to advance!
-                advanceCtx.CurrentMovement = advanceCtx.InitialMovement;
-                while (advanceCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
+                // Ready to march
+                marchCtx.CurrentMovement = marchCtx.InitialMovement;
+                while (marchCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
                     // Exiting current tile
-                    if (lane.GetTileAbsolute(unit.TileCoordinate).GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop advance here (and also attack)
+                    if (lane.GetTileAbsolute(unit.TileCoordinate).GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop march here (and also attack)
                     {
-                        advanceCtx.CurrentMovement = 0;
+                        marchCtx.CurrentMovement = 0;
                         Unit enemyUnit = (Unit)DetailedState.EntityData[lane.GetPlacedEntities(EntityType.UNIT,opponentId).First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
                         UNIT_Combat(unit, enemyUnit); // Let them fight.
                     }
                     else if (lane.GetAbsoluteTileCoord(-1, unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
                     {
-                        advanceCtx.CurrentMovement = 0;
+                        marchCtx.CurrentMovement = 0;
                         UNIT_Combat(unit, DetailedState.PlayerStates[opponentId]); // Deal direct damage to enemy!
                     }
                     else // Unit then can advance normally here, perform it
                     {
-                        advanceCtx.CurrentMovement--;
+                        marchCtx.CurrentMovement--;
                         // Request unit advancement a tile
                         BOARDENTITY_InsertInTile(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
                     }
