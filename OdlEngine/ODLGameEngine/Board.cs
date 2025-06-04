@@ -1,13 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace ODLGameEngine
 {
@@ -16,9 +7,20 @@ namespace ODLGameEngine
         ADD,
         REMOVE
     }
+    public enum BoardElementType
+    {
+        NONE,
+        BOARD,
+        LANE,
+        TILE
+    }
+    [JsonObject(MemberSerialization.OptIn)]
     public abstract class BoardElement
     {
-        readonly Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities = new Dictionary<(EntityType, int), SortedSet<int>>();
+        [JsonProperty]
+        public BoardElementType ElementType { get; set; } = BoardElementType.NONE;
+        [JsonProperty]
+        public Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities { get; set; } = new Dictionary<(EntityType, int), SortedSet<int>>();
         public SortedSet<int> GetPlacedEntities(EntityType entityTypes, int owner = -1)
         {
             EntityType entityMask = EntityType.UNIT | EntityType.BUILDING; // Ignore noise as it can't be in board anyway
@@ -86,11 +88,19 @@ namespace ODLGameEngine
             return $"P1: {GetPlacedEntities(EntityType.UNIT, 0).Count} P2: {GetPlacedEntities(EntityType.UNIT, 1).Count} B: {GetPlacedEntities(EntityType.BUILDING).Count})";
         }
     }
+    [JsonObject(MemberSerialization.OptIn)]
     public class Tile : BoardElement
     {
+        [JsonProperty]
+        public int coord { get; set; } = -1;
+        public Tile()
+        {
+            ElementType = BoardElementType.TILE;
+        }
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
+            hash.Add(coord);
             foreach(int entity in GetPlacedEntities(EntityType.UNIT|EntityType.BUILDING))
             {
                 hash.Add(entity);
@@ -108,63 +118,125 @@ namespace ODLGameEngine
         FOREST,
         MOUNTAIN
     }
+    public enum LaneRelativeIndexType
+    {
+        RELATIVE_TO_PLAYER,
+        RELATIVE_TO_LANE,
+        ABSOLUTE
+    }
+    [JsonObject(MemberSerialization.OptIn)]
     public class Lane : BoardElement /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
     {
+        [JsonProperty]
         public LaneID Id {get; set;} = LaneID.NO_LANE;
+        [JsonProperty]
         public int Len { get; set; } = 0;
-        public List<Tile> Tiles { get; set; }
-        public Lane(LaneID id, int n)
+        [JsonProperty]
+        public int FirstTileIndexOffset { get; set; } = 0;
+        [JsonProperty]
+        public List<Tile> Tiles { get; set; } = null;
+        public Lane(LaneID id, int n, Tile[] tiles, int firstTileIndex)
         {
+            ElementType = BoardElementType.LANE;
             Id = id;
             Len = n;
+            FirstTileIndexOffset = firstTileIndex;
             Tiles = new List<Tile>(n);
             for(int i = 0; i < Len; i++)
             {
-                Tiles.Add(new Tile());
+                Tiles.Add(tiles[firstTileIndex + i]);
             }
         }
         /// <summary>
-        /// Gets the tile instance given the index
+        /// Complex lane operation that returns a tile coordinate in the output format required, given a reference input format and index
         /// </summary>
-        /// <param name="index">The index</param>
-        /// <returns>The actual instance of a tile to place units</returns>
-        public Tile GetTileAbsolute(int index)
-        {
-            return Tiles[index];
-        }
-        /// <summary>
-        /// Gets tile relative to player, so 1,2,3,4 etc from player's POV. Negative indices work like in python, starting from beginning
-        /// </summary>
-        /// <param name="index">Tile index</param>
-        /// <param name="player">Relative to what?</param>
+        /// <param name="outIndexType">Format of output index</param>
+        /// <param name="inIndexType">Format of input index</param>
+        /// <param name="inIndex">Index</param>
+        /// <param name="referencePlayer">If input/output is relative to player, then i need the player reference</param>
         /// <returns></returns>
-        public Tile GetTileRelative(int index, int player)
+        public int GetCoordinateConversion(LaneRelativeIndexType outIndexType, LaneRelativeIndexType inIndexType, int inIndex, int referencePlayer = -1)
         {
-            index = GetAbsoluteTileCoord(index, player);
-            // Now that I got the right index, return correct value...
-            return GetTileAbsolute(index);
+            if(outIndexType == inIndexType)
+            {
+                return inIndex; // This means there was no conversion to do
+            }
+            int laneCoordinate; // Coordinate relative to this lane
+            switch(inIndexType)
+            {
+                case LaneRelativeIndexType.RELATIVE_TO_PLAYER:
+                    laneCoordinate = inIndex;
+                    if (inIndex < 0) // Pyhton notation, need to add n, so that -1 -> n-1 and -n becomes 0
+                    {
+                        laneCoordinate = inIndex + Len;
+                    }
+                    if (referencePlayer == 1) // Next, for player, I need to flip, so that first is last and vice versa. This involves n-1 complement
+                    {
+                        laneCoordinate = Len - 1 - laneCoordinate;
+                    }
+                    else if (referencePlayer != 0)
+                    {
+                        throw new ArgumentException("Reference player is incorrect");
+                    }
+                    break;
+                case LaneRelativeIndexType.RELATIVE_TO_LANE:
+                    laneCoordinate = inIndex;
+                    break;
+                case LaneRelativeIndexType.ABSOLUTE:
+                    laneCoordinate = inIndex - FirstTileIndexOffset;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid input coordinate type");
+            }
+            // Finally, convert to desired reference and return
+            switch (outIndexType)
+            {
+                case LaneRelativeIndexType.RELATIVE_TO_PLAYER:
+                    if (referencePlayer == 1) // Next, for player, I need to flip, so that first is last and vice versa. This involves n-1 complement
+                    {
+                        laneCoordinate = Len - 1 - laneCoordinate;
+                    }
+                    else if (referencePlayer != 0)
+                    {
+                        throw new ArgumentException("Reference player is incorrect");
+                    }
+                    break;
+                case LaneRelativeIndexType.RELATIVE_TO_LANE: // Already got this...
+                    break;
+                case LaneRelativeIndexType.ABSOLUTE:
+                    laneCoordinate += FirstTileIndexOffset;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid input coordinate type");
+            }
+            return laneCoordinate;
         }
         /// <summary>
-        /// Returns the absolute tile coord given a tile # relative to a player
+        /// Operation that returns a Tile given a coordinate and input format
+        /// Naturally, can't operate with most of the absolute tiles!
         /// </summary>
-        /// <param name="relativeCoord">The coord in question</param>
-        /// <param name="player">Player relative to</param>
-        /// <returns></returns>
-        public int GetAbsoluteTileCoord(int relativeCoord, int player)
+        /// <param name="inIndexType">Type of input index coord (relative?)</param>
+        /// <param name="inIndex">Index of desired coord</param>
+        /// <param name="referencePlayer">Player for reference in the relative to player tile mode</param>
+        /// <returns>The tile</returns>
+        public Tile GetTileFromCoordinate(LaneRelativeIndexType inIndexType, int inIndex, int referencePlayer = -1)
         {
-            if (relativeCoord < 0) // Pyhton notation, need to add n, so that -1 -> n-1 and -n becomes 0
-            {
-                relativeCoord += Len;
-            }
-            if (player == 1) // Next, for player, I need to flip, so that first is last and vice versa. This involves n-1 complement
-            {
-                relativeCoord = Len - 1 - relativeCoord;
-            }
-            return relativeCoord;
+            int laneCoordinate = GetCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, inIndexType, inIndex, referencePlayer);
+            // At this point the coordinate is exactly relative to this current lane, assert to be within bounds
+            if (laneCoordinate < 0 || laneCoordinate >= Len) throw new Exception("Invalid reference tile for this lane!");
+            return Tiles[laneCoordinate];
         }
-        public static int GetAdvanceDirection(int player)
+        /// <summary>
+        /// Given a tile coord and a reference player, tells us whether this is the last tile of this lane
+        /// </summary>
+        /// <param name="inIndexType">Indicates the relative position of input index</param>
+        /// <param name="inIndex">Coord of tile (relative or absolute)</param>
+        /// <param name="referencePlayer">Reference player</param>
+        /// <returns>Whether this tile coord is the end of a lane</returns>
+        public bool IsRelativeEndOfLane(LaneRelativeIndexType inIndexType, int inIndex, int referencePlayer)
         {
-            return (player == 0) ? 1 : -1;
+            int laneCoordinate = GetCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_PLAYER, inIndexType, inIndex, referencePlayer);
+            return laneCoordinate == (Len - 1);
         }
         public override int GetHashCode()
         {
@@ -178,33 +250,38 @@ namespace ODLGameEngine
     }
 
     /// <summary>
-    /// Contains board content (state) as well as a method to serialize exactly whats going on.
-    /// Lanes for now do not contain and shoudl not contain info that isn't found elsewhere.
-    /// E.g. lanes/tiles know their units, but units also know their coords, so the hash can only be dependent on the unit to change the game state.
-    /// Board however needs to be hashable as it's the root entity that stores and controls unit info.
-    /// Lanes and tiles however need to be serialized as json to be quickly rendered into a game UI. They're the only ones that are serialized but not hashed!
-    /// This may change in the future if there's extra tile modifiers that are stored in a tile but not on Board directly, in which change we may change the whole hashing scheme
+    /// Contains everything board related, including all tiles and all lanes.
+    /// Data is referenced in multiple insances to allow orderings such as lanes containing tiles and so on
+    /// The newest scheme is that tiles are now global and have a single mono-coordinate to facilitate movement, therefore board also allows simpler ops
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class Board : BoardElement
     {
         [JsonProperty]
-        public Lane PlainsLane { get; set; } = new Lane(LaneID.PLAINS, GameConstants.PLAINS_TILES_NUMBER);
+        public Tile[] Tiles { get; set; } = null;
         [JsonProperty]
-        public Lane ForestLane { get; set; } = new Lane(LaneID.FOREST, GameConstants.FOREST_TILES_NUMBER);
+        public Lane[] Lanes { get; set; } = null; // These will be the lanes (when I fill them)
         [JsonProperty]
-        public Lane MountainLane { get; set; } = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_TILES_NUMBER);
-        // Methods
-        public Lane GetLane(int i)
+        public Lane PlainsLane { get; set; } = null;
+        [JsonProperty]
+        public Lane ForestLane { get; set; } = null;
+        [JsonProperty]
+        public Lane MountainLane { get; set; } = null;
+        public Board()
         {
-            return i switch
+            ElementType = BoardElementType.BOARD;
+            int numberOfTiles = GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_IF_TILES;
+            Tiles = new Tile[numberOfTiles]; // Inits all the tiles
+            for (int i = 0; i < numberOfTiles; i++)
             {
-                0 => PlainsLane,
-                1 => ForestLane,
-                2 => MountainLane,
-                _ => throw new IndexOutOfRangeException("Chosen lane higher than lane count"),
-            };
+                Tiles[i].coord = i;
+            }
+            PlainsLane = new Lane(LaneID.PLAINS, GameConstants.PLAINS_NUMBER_OF_TILES, Tiles, 0);
+            ForestLane = new Lane(LaneID.FOREST, GameConstants.FOREST_NUMBER_OF_TILES, Tiles, GameConstants.PLAINS_NUMBER_OF_TILES);
+            MountainLane = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_NUMBER_IF_TILES, Tiles, GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES);
+            Lanes = [PlainsLane, ForestLane, MountainLane]; // Reference lane properly
         }
+        // Methods, obtain and do stuff
         public Lane GetLane(LaneID laneID)
         {
             return laneID switch
@@ -216,16 +293,39 @@ namespace ODLGameEngine
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
-        public Lane GetLane(TargetLocation laneTarget)
+        public Lane GetLane(PlayTargetLocation laneTarget)
         {
             return laneTarget switch
             {
-                TargetLocation.PLAINS => PlainsLane,
-                TargetLocation.FOREST => ForestLane,
-                TargetLocation.MOUNTAIN => MountainLane,
+                PlayTargetLocation.PLAINS => PlainsLane,
+                PlayTargetLocation.FOREST => ForestLane,
+                PlayTargetLocation.MOUNTAIN => MountainLane,
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
+        public Lane GetLaneContainingTile(int tileCoord)
+        {
+            if (tileCoord < 0) { }
+            else if (tileCoord < GameConstants.PLAINS_NUMBER_OF_TILES)
+            {
+                return PlainsLane;
+            }
+            else if (tileCoord < (GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES))
+            {
+                return ForestLane;
+            }
+            else if (tileCoord < (GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_IF_TILES))
+            {
+                return MountainLane;
+            }
+            return null;
+        }
+        public Lane GetLaneContainingTile(Tile tile)
+        {
+            return GetLaneContainingTile(tile.coord);
+        }
+
+        //EntityListOperation(PlacedEntity entity, EntityListOperation op)
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();

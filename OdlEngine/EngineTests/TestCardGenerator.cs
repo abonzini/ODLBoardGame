@@ -22,7 +22,7 @@ namespace EngineTests
         /// <param name="cost">Cost</param>
         /// <param name="target">Targets</param>
         /// <returns></returns>
-        public static Skill CreateSkill(int id, string name, int cost, TargetLocation target)
+        public static Skill CreateSkill(int id, string name, int cost, PlayTargetLocation target)
         {
             return new Skill() // Returns "brick" card
             {
@@ -44,7 +44,7 @@ namespace EngineTests
         /// <param name="movement">Movement</param>
         /// <param name="denominator">Movement Denominator</param>
         /// <returns></returns>
-        public static Unit CreateUnit(int id, string name, int cost, TargetLocation target, int hp, int attack, int movement, int denominator)
+        public static Unit CreateUnit(int id, string name, int cost, PlayTargetLocation target, int hp, int attack, int movement, int denominator)
         {
             Unit unit = new Unit()
             {
@@ -72,7 +72,7 @@ namespace EngineTests
         /// <param name="forestBp">Array with forest Bp options</param>
         /// <param name="mountainBp">Array with mountain Bp options</param>
         /// <returns></returns>
-        public static Building CreateBuilding(int id, string name, int cost, TargetLocation target, int hp, int[] plainBp, int[] forestBp, int[] mountainBp)
+        public static Building CreateBuilding(int id, string name, int cost, PlayTargetLocation target, int hp, int[] plainBp, int[] forestBp, int[] mountainBp)
         {
             Building building = new Building() // Returns "TOKEN_BUILDING" card
             {

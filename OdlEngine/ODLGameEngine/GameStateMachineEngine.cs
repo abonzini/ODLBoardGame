@@ -7,10 +7,6 @@ using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
-    public class StateMismatchException : Exception
-    {
-        public StateMismatchException(string msg) : base(msg) { }
-    }
     public partial class GameStateMachine
     {
         /// <summary>
@@ -96,33 +92,11 @@ namespace ODLGameEngine
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     DetailedState.NextUniqueIndex++;
                     break;
-                case EventType.ENTITY_LANE_TRANSITION:
-                    auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).entity;
-                    ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue = auxPlacedEntity.LaneCoordinate; // Store old value first
-                    if(auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
-                    {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
-                    }
-                    auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).newValue; // unit now has new value
-                    // Finally, update count in lane(s)
-                    if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
-                    {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
-                    }
-                    break;
-                case EventType.ENTITY_TILE_TRANSITION:
+                case EventType.ENTITY_COORD_TRANSITION:
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, int>)e).entity;
                     ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue = auxPlacedEntity.TileCoordinate; // Store old value first
-                    if (auxPlacedEntity.TileCoordinate >= 0) // Remove count from old tile if applicable
-                    {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
-                    }
-                    auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).newValue; // unit now has new value
-                    // Finally, update count in tile
-                    if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
-                    {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
-                    }
+                    auxInt1 = ((EntityTransitionEvent<PlacedEntity, int>)e).newValue; // The new coord!
+                    ENGINE_ChangeEntityCoord(auxPlacedEntity, auxInt1);
                     break;
                 case EventType.DEINIT_ENTITY: // Unit simply leaves field and user loses the unit
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
@@ -229,31 +203,10 @@ namespace ODLGameEngine
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     DetailedState.NextUniqueIndex--;
                     break;
-                case EventType.ENTITY_LANE_TRANSITION:
-                    auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).entity;
-                    if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Remove count from old lane if applicable
-                    {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
-                    }
-                    auxPlacedEntity.LaneCoordinate = ((EntityTransitionEvent<PlacedEntity, LaneID>)e).oldValue; // unit now has prev value
-                    // Finally, update count in lane(s)
-                    if (auxPlacedEntity.LaneCoordinate != LaneID.NO_LANE) // Adds count to new lane if applicable
-                    {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
-                    }
-                    break;
-                case EventType.ENTITY_TILE_TRANSITION:
+                case EventType.ENTITY_COORD_TRANSITION:
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, int>)e).entity;
-                    // Update count of tile
-                    if (auxPlacedEntity.TileCoordinate >= 0) // Adds count to new tile if applicable
-                    {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
-                    }
-                    auxPlacedEntity.TileCoordinate = ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue; // unit now has prev value
-                    if (auxPlacedEntity.TileCoordinate >= 0) // Update its count if applicable
-                    {
-                        DetailedState.BoardState.GetLane(auxPlacedEntity.LaneCoordinate).GetTileAbsolute(auxPlacedEntity.TileCoordinate).EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
-                    }
+                    auxInt1 = ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue; // The old coord!
+                    ENGINE_ChangeEntityCoord(auxPlacedEntity, auxInt1);
                     break;
                 case EventType.DEINIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
@@ -324,6 +277,42 @@ namespace ODLGameEngine
                     if (DetailedState.Triggers[trigger].Count == 0) // Removes trigger so that disctionary can be reverted identically if needed
                     {
                         DetailedState.Triggers.Remove(trigger);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// Deals with anything regarding a unit moving to a new coord. Deals with registration too execpt to board ofc
+        /// </summary>
+        /// <param name="entity">Entity to change coord</param>
+        /// <param name="tileCoord">Which coord to put into</param>
+        public void ENGINE_ChangeEntityCoord(PlacedEntity entity, int tileCoord)
+        {
+            if (entity.TileCoordinate != tileCoord) // Otherwise nothing changes
+            {
+                // Get the corresponding lanes to see if there was a change
+                Lane oldLane = DetailedState.BoardState.GetLaneContainingTile(entity.TileCoordinate);
+                Lane newLane = DetailedState.BoardState.GetLaneContainingTile(tileCoord);
+                // Change tiles
+                if (entity.TileCoordinate > 0) // If the old tile coordinate was valid
+                {
+                    DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, EntityListOperation.REMOVE); // Remove entity from this tile
+                }
+                entity.TileCoordinate = tileCoord;
+                if (entity.TileCoordinate > 0) // If the new tile coordinate is valid
+                {
+                    DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, EntityListOperation.ADD); // Add entity to tile
+                }
+                // Change lane (if applies)
+                if(oldLane != newLane) // There's a change in lane so i need to deal with it
+                {
+                    if(oldLane != null)
+                    {
+                        oldLane.EntityListOperation(entity, EntityListOperation.REMOVE); // Remove unit from old lane
+                    }
+                    if(newLane != null)
+                    {
+                        newLane.EntityListOperation(entity, EntityListOperation.ADD); // Add entity to the new lane
                     }
                 }
             }
@@ -490,21 +479,6 @@ namespace ODLGameEngine
                 });
         }
         /// <summary>
-        /// Moves unit to new lane
-        /// </summary>
-        /// <param name="unit">Which unit (needs to be initialized)</param>
-        /// <param name="lane">Which lane</param>
-        void ENGINE_EntityLaneTransition(PlacedEntity entity, LaneID laneId)
-        {
-            ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<PlacedEntity, LaneID>()
-                {
-                    eventType = EventType.ENTITY_LANE_TRANSITION,
-                    entity = entity,
-                    newValue = laneId,
-                });
-        }
-        /// <summary>
         /// Moves unit to new tile in lane
         /// </summary>
         /// <param name="unit">Which unit (needs to be initialized in a lane)</param>
@@ -514,7 +488,7 @@ namespace ODLGameEngine
             ENGINE_ExecuteEvent(
                 new EntityTransitionEvent<PlacedEntity, int>()
                 {
-                    eventType = EventType.ENTITY_TILE_TRANSITION,
+                    eventType = EventType.ENTITY_COORD_TRANSITION,
                     entity = entity,
                     newValue = tile,
                 });

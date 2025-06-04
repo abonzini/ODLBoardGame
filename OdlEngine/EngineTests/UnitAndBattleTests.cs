@@ -26,7 +26,7 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test unit with 1 in all stats, summonable anywhere
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
@@ -36,7 +36,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 boardHash = sm.DetailedState.BoardState.GetHashCode(); // Store hash
                 // Will play one of them
-                TargetLocation chosenTarget = (TargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
+                PlayTargetLocation chosenTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, chosenTarget); // Play it
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -69,7 +69,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
@@ -78,7 +78,7 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Will play one of them
-                TargetLocation chosenTarget = (TargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
+                PlayTargetLocation chosenTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
                 int unitCounter1 = sm.DetailedState.NextUniqueIndex;
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, chosenTarget); // Play it
                 int unitCounter2 = sm.DetailedState.NextUniqueIndex;
@@ -87,8 +87,8 @@ namespace EngineTests
                 Assert.IsNotNull(res.Item2);
                 // Modify unit (shady)
                 ((Unit)sm.DetailedState.EntityData[unitCounter1]).Attack.BaseValue += 5; // Add 5 to attack, whatever
-                chosenTarget = (TargetLocation)((int)chosenTarget >> 1); // Change target to a different (valid) lane
-                chosenTarget = (chosenTarget != TargetLocation.BOARD) ? chosenTarget : TargetLocation.MOUNTAIN;
+                chosenTarget = (PlayTargetLocation)((int)chosenTarget >> 1); // Change target to a different (valid) lane
+                chosenTarget = (chosenTarget != PlayTargetLocation.BOARD) ? chosenTarget : PlayTargetLocation.MOUNTAIN;
                 // Play new one
                 res = sm.PlayFromHand(1, chosenTarget); // Play it
                 int futureUnitCounter = sm.DetailedState.NextUniqueIndex;
@@ -125,7 +125,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats, summonable in any lane 
@@ -133,47 +133,47 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                TargetLocation chosenTarget = (TargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
+                PlayTargetLocation chosenTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
                 bool plainsInit = false, forestInit = false, mountainInit = false;
-                plainsInit |= chosenTarget == TargetLocation.PLAINS;
-                forestInit |= chosenTarget == TargetLocation.FOREST;
-                mountainInit |= chosenTarget == TargetLocation.MOUNTAIN;
+                plainsInit |= chosenTarget == PlayTargetLocation.PLAINS;
+                forestInit |= chosenTarget == PlayTargetLocation.FOREST;
+                mountainInit |= chosenTarget == PlayTargetLocation.MOUNTAIN;
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, chosenTarget); // Play card in some lane
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 void verifyLaneStates(int playerIndex, bool plainsInit, bool forestInit, bool mountainInit)
                 {
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.PLAINS).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, plainsInit?1:0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.FOREST).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, forestInit?1:0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, mountainInit?1:0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.PLAINS).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, plainsInit?1:0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.FOREST).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, forestInit?1:0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, mountainInit?1:0);
                     // Check tiles
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.PLAINS).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, plainsInit ? 1 : 0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.FOREST).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, forestInit ? 1 : 0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, mountainInit ? 1 : 0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.PLAINS).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT).Count, plainsInit ? 1 : 0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.FOREST).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT).Count, forestInit ? 1 : 0);
-                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT).Count, mountainInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.PLAINS).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, plainsInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.FOREST).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, forestInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, mountainInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.PLAINS).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT).Count, plainsInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.FOREST).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT).Count, forestInit ? 1 : 0);
+                    Assert.AreEqual(sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN).GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT).Count, mountainInit ? 1 : 0);
                 }
                 // And check all lanes and tiles for both players
                 verifyLaneStates(playerIndex, plainsInit, forestInit, mountainInit);
                 // Change lane and play and verify
-                chosenTarget = (TargetLocation)((int)chosenTarget >> 1); // Change target to a different (valid) lane
-                chosenTarget = (chosenTarget != TargetLocation.BOARD) ? chosenTarget : TargetLocation.MOUNTAIN;
-                plainsInit |= chosenTarget == TargetLocation.PLAINS;
-                forestInit |= chosenTarget == TargetLocation.FOREST;
-                mountainInit |= chosenTarget == TargetLocation.MOUNTAIN;
+                chosenTarget = (PlayTargetLocation)((int)chosenTarget >> 1); // Change target to a different (valid) lane
+                chosenTarget = (chosenTarget != PlayTargetLocation.BOARD) ? chosenTarget : PlayTargetLocation.MOUNTAIN;
+                plainsInit |= chosenTarget == PlayTargetLocation.PLAINS;
+                forestInit |= chosenTarget == PlayTargetLocation.FOREST;
+                mountainInit |= chosenTarget == PlayTargetLocation.MOUNTAIN;
                 res = sm.PlayFromHand(1, chosenTarget);
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
                 verifyLaneStates(playerIndex, plainsInit, forestInit, mountainInit);
                 // Change lane and play and verify again!
-                chosenTarget = (TargetLocation)((int)chosenTarget >> 1); // Change target to a different (valid) lane
-                chosenTarget = (chosenTarget != TargetLocation.BOARD) ? chosenTarget : TargetLocation.MOUNTAIN;
-                plainsInit |= chosenTarget == TargetLocation.PLAINS;
-                forestInit |= chosenTarget == TargetLocation.FOREST;
-                mountainInit |= chosenTarget == TargetLocation.MOUNTAIN;
+                chosenTarget = (PlayTargetLocation)((int)chosenTarget >> 1); // Change target to a different (valid) lane
+                chosenTarget = (chosenTarget != PlayTargetLocation.BOARD) ? chosenTarget : PlayTargetLocation.MOUNTAIN;
+                plainsInit |= chosenTarget == PlayTargetLocation.PLAINS;
+                forestInit |= chosenTarget == PlayTargetLocation.FOREST;
+                mountainInit |= chosenTarget == PlayTargetLocation.MOUNTAIN;
                 res = sm.PlayFromHand(1, chosenTarget);
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -200,7 +200,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert token cards, 1 in all stats, summonable in any lane 
@@ -213,7 +213,7 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 TestHelperFunctions.HashSetVerification(sm.DetailedState.BoardState, boardHashes, false); // Also ensure hashes are unique for board here
-                TargetLocation chosenTarget = (TargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
+                PlayTargetLocation chosenTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, chosenTarget); // Play card in some lane
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -295,7 +295,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 0, 1, 1, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 0, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token cards, 1 in all stats but 0 HP, summonable in any lane 
@@ -305,7 +305,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 boardHash = sm.DetailedState.BoardState.GetHashCode(); // Store hash
                 // Will play one of them
-                TargetLocation chosenTarget = (TargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
+                PlayTargetLocation chosenTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Choose a random lane as target
                 Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, chosenTarget); // Play it
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
@@ -398,9 +398,9 @@ namespace EngineTests
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
-                int movement = _rng.Next(1, GameConstants.MOUNTAIN_TILES_NUMBER); // Random movement unit, but want to make it so it never reaches castle
+                int movement = _rng.Next(1, GameConstants.MOUNTAIN_NUMBER_IF_TILES); // Random movement unit, but want to make it so it never reaches castle
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, movement, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, movement, 1));
                 // Will try this in mountain!
                 for (int i = 0; i < 5; i++)
                 {
@@ -412,7 +412,7 @@ namespace EngineTests
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.MOUNTAIN); // Play card in mountain (longest lane)!
+                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.MOUNTAIN); // Play card in mountain (longest lane)!
                 // Make sure card was played ok
                 Assert.AreEqual(res.Item1, PlayOutcome.OK);
                 Assert.IsNotNull(res.Item2);
@@ -421,7 +421,7 @@ namespace EngineTests
                 sm.Step(); // Finish draw phase of other player
                 sm.EndTurn(); // End players turn
                 // Now I'm about to do the advance. Before the advance:
-                Lane lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                Lane lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(lane.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(lane.GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
@@ -429,7 +429,7 @@ namespace EngineTests
                 int preAdvanceHash = sm.DetailedState.GetHashCode(); // Hash of game overall
                 // Now advance! Ensure result of basic advance
                 sm.Step();
-                lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(lane.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(lane.GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0);
@@ -439,7 +439,7 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.EntityData[2].GetHashCode(), UnitHash); // However, the unit should be the same!
                 // Finally revert the advance
                 sm.UndoPreviousStep();
-                lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(lane.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(lane.GetTileRelative(0, playerIndex).GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
@@ -461,8 +461,8 @@ namespace EngineTests
                 state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                 // Will try this in mountain!
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 0, 9, 1)); // Max movement bc it's stopped by enemy anyway
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, TargetLocation.ALL_LANES, 1, 0, 3, 1)); // 3 movement so it's in the mid-ish of lane
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 9, 1)); // Max movement bc it's stopped by enemy anyway
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 3, 1)); // 3 movement so it's in the mid-ish of lane
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both 0 attack so they can't kill themselves
@@ -473,19 +473,19 @@ namespace EngineTests
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                sm.PlayFromHand(2, TargetLocation.MOUNTAIN); // Opp plays in mountain and skips turn
+                sm.PlayFromHand(2, PlayTargetLocation.MOUNTAIN); // Opp plays in mountain and skips turn
                 // Ok! Now i need to do the sequence to advance...
                 sm.EndTurn(); // End opponent's
                 sm.Step(); // Finish draw phase of main player
                 // Now I summon unit:
-                sm.PlayFromHand(1, TargetLocation.MOUNTAIN);
+                sm.PlayFromHand(1, PlayTargetLocation.MOUNTAIN);
                 // Now I end turn and opponent will advance!
                 sm.EndTurn();
                 sm.Step();
                 sm.EndTurn();
                 // Finally, player's unit will advance! Pre advance:
                 int preAdvanceHash = sm.DetailedState.GetHashCode();
-                Lane lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                Lane lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 // Both players have a unit
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
@@ -498,7 +498,7 @@ namespace EngineTests
                 // Advance...
                 sm.Step();
                 // Verify
-                lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
                 Assert.AreEqual(lane.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
@@ -510,7 +510,7 @@ namespace EngineTests
                 Assert.AreNotEqual(preAdvanceHash, sm.DetailedState.GetHashCode()); // Hash verif
                 // Undo advance and verify again
                 sm.UndoPreviousStep();
-                lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
                 Assert.AreEqual(lane.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
@@ -534,7 +534,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 0, 9, 1));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 9, 1));
                 // Will try this in all lanes!
                 state.PlayerStates[playerIndex].Hp.BaseValue = 30;
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = 30;
@@ -548,9 +548,9 @@ namespace EngineTests
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                sm.PlayFromHand(1, TargetLocation.PLAINS);
-                sm.PlayFromHand(1, TargetLocation.FOREST);
-                sm.PlayFromHand(1, TargetLocation.MOUNTAIN);
+                sm.PlayFromHand(1, PlayTargetLocation.PLAINS);
+                sm.PlayFromHand(1, PlayTargetLocation.FOREST);
+                sm.PlayFromHand(1, PlayTargetLocation.MOUNTAIN);
                 // Verify...
                 Lane plains = sm.DetailedState.BoardState.GetLane(LaneID.PLAINS);
                 Lane forest = sm.DetailedState.BoardState.GetLane(LaneID.FOREST);
@@ -602,7 +602,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 0, 1, 9));
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 9));
                 // Will try this in all lanes!
                 for (int i = 0; i < 5; i++)
                 {
@@ -615,11 +615,11 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Play units and also store them for evil illegal modifications
-                sm.PlayFromHand(1, TargetLocation.PLAINS);
+                sm.PlayFromHand(1, PlayTargetLocation.PLAINS);
                 Unit plainsUnit = (Unit)sm.DetailedState.EntityData.Last().Value;
-                sm.PlayFromHand(1, TargetLocation.FOREST);
+                sm.PlayFromHand(1, PlayTargetLocation.FOREST);
                 Unit forestUnit = (Unit)sm.DetailedState.EntityData.Last().Value;
-                sm.PlayFromHand(1, TargetLocation.MOUNTAIN);
+                sm.PlayFromHand(1, PlayTargetLocation.MOUNTAIN);
                 Unit mountainsUnit = (Unit)sm.DetailedState.EntityData.Last().Value;
                 // Verify...
                 Lane plains = sm.DetailedState.BoardState.GetLane(LaneID.PLAINS);
@@ -763,8 +763,8 @@ namespace EngineTests
                 state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                 // Will try this in mountain as there's space!
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, hp, attack, 9, 1)); // Gets to the end so it clashes
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, TargetLocation.ALL_LANES, hp, attack+1, 3, 1)); // Gets to the middle and waits there
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, hp, attack, 9, 1)); // Gets to the end so it clashes
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, hp, attack+1, 3, 1)); // Gets to the middle and waits there
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -775,18 +775,18 @@ namespace EngineTests
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                sm.PlayFromHand(2, TargetLocation.MOUNTAIN); // Opp plays in mountain and skips turn
+                sm.PlayFromHand(2, PlayTargetLocation.MOUNTAIN); // Opp plays in mountain and skips turn
                 // Ok! Now i need to do the sequence to advance...
                 sm.EndTurn(); // End opponent's
                 sm.Step(); // Finish draw phase of main player
                 // Now I summon unit:
-                sm.PlayFromHand(1, TargetLocation.MOUNTAIN);
+                sm.PlayFromHand(1, PlayTargetLocation.MOUNTAIN);
                 // Now I end turn and opponent will advance!
                 sm.EndTurn();
                 sm.Step();
                 sm.EndTurn();
                 // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
-                Lane lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                Lane lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 // Both players have a unit
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
@@ -804,7 +804,7 @@ namespace EngineTests
                 // Advance...
                 sm.Step();
                 // Verify
-                lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1); // Players still have their dudes
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
                 Assert.AreEqual(lane.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
@@ -819,7 +819,7 @@ namespace EngineTests
                 Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).GetPlacedEntities(EntityType.UNIT).Count, 2); // 2 Now
                 // Undo advance and verify again
                 sm.UndoPreviousStep();
-                lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                 // Both players have a unit
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
@@ -856,8 +856,8 @@ namespace EngineTests
                     state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
-                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, hp, attackerStat, 9, 1)); // Gets to the end so it clashes
-                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, TargetLocation.ALL_LANES, hp, defenderStat, 3, 1)); // Gets to the middle and waits there
+                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, hp, attackerStat, 9, 1)); // Gets to the end so it clashes
+                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, hp, defenderStat, 3, 1)); // Gets to the middle and waits there
                     for (int j = 0; j < 5; j++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -868,18 +868,18 @@ namespace EngineTests
                     }
                     GameStateMachine sm = new GameStateMachine(cardDb);
                     sm.LoadGame(state); // Start from here
-                    sm.PlayFromHand(2, TargetLocation.MOUNTAIN); // Opp plays in mountain and skips turn
+                    sm.PlayFromHand(2, PlayTargetLocation.MOUNTAIN); // Opp plays in mountain and skips turn
                     // Ok! Now i need to do the sequence to advance...
                     sm.EndTurn(); // End opponent's
                     sm.Step(); // Finish draw phase of main player
                     // Now I summon unit:
-                    sm.PlayFromHand(1, TargetLocation.MOUNTAIN);
+                    sm.PlayFromHand(1, PlayTargetLocation.MOUNTAIN);
                     // Now I end turn and opponent will advance!
                     sm.EndTurn();
                     sm.Step();
                     sm.EndTurn();
                     // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
-                    Lane lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                    Lane lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                     // Both players have a unit
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
@@ -899,7 +899,7 @@ namespace EngineTests
                     // Verify
                     int attackerCount = (defenderExtraDmg[i] < 0) ? 1 : 0; // Attacker is there only if defender's weak
                     int defenderCount = (attackerExtraDmg[i] < 0) ? 1 : 0; // Defender is there only if attacker's weak
-                    lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                    lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, attackerCount); // Players still have their dudes
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, defenderCount);
                     Assert.AreEqual(lane.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, attackerCount);
@@ -928,7 +928,7 @@ namespace EngineTests
                     Assert.AreEqual(lane.GetTileAbsolute(intersectionCoordinate).GetPlacedEntities(EntityType.UNIT).Count, attackerCount + defenderCount); // 2 Now
                     // Undo advance and verify again
                     sm.UndoPreviousStep();
-                    lane = sm.DetailedState.BoardState.GetLane(TargetLocation.MOUNTAIN);
+                    lane = sm.DetailedState.BoardState.GetLane(PlayTargetLocation.MOUNTAIN);
                     // Both players have a unit
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
@@ -949,16 +949,16 @@ namespace EngineTests
         public void TestMultipleWithoutBreakingAdvance()
         {
             Random _rng = new Random();
-            List<TargetLocation> lanes = [TargetLocation.PLAINS, TargetLocation.FOREST, TargetLocation.MOUNTAIN]; // Test interaction in all orders
+            List<PlayTargetLocation> lanes = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN]; // Test interaction in all orders
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
-            foreach (TargetLocation lane in lanes)
+            foreach (PlayTargetLocation lane in lanes)
             {
                 int stat = _rng.Next(1, 10); // any Hp between 1-9
                 var movt = lane switch
                 {
-                    TargetLocation.PLAINS => GameConstants.PLAINS_TILES_NUMBER - 1,
-                    TargetLocation.FOREST => GameConstants.FOREST_TILES_NUMBER - 1,
-                    TargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER - 1,
+                    PlayTargetLocation.PLAINS => GameConstants.PLAINS_NUMBER_OF_TILES - 1,
+                    PlayTargetLocation.FOREST => GameConstants.FOREST_NUMBER_OF_TILES - 1,
+                    PlayTargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_NUMBER_IF_TILES - 1,
                     _ => throw new Exception("Wrong lane!"),
                 };
                 foreach (CurrentPlayer player in players)
@@ -970,8 +970,8 @@ namespace EngineTests
                     state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
-                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, stat, stat, 1, 1)); // Gets to the end so it clashes
-                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, TargetLocation.ALL_LANES, stat, stat, movt, 1)); // Gets to the middle and waits there
+                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, stat, stat, 1, 1)); // Gets to the end so it clashes
+                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, stat, stat, movt, 1)); // Gets to the middle and waits there
                     for (int j = 0; j < 5; j++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -987,18 +987,18 @@ namespace EngineTests
                     sm.EndTurn(); // End opponent's
                     sm.Step(); // Finish draw phase of main player
                     // Now I summon all units in all lanes:
-                    sm.PlayFromHand(1, TargetLocation.PLAINS);
-                    sm.PlayFromHand(1, TargetLocation.FOREST);
-                    sm.PlayFromHand(1, TargetLocation.MOUNTAIN);
+                    sm.PlayFromHand(1, PlayTargetLocation.PLAINS);
+                    sm.PlayFromHand(1, PlayTargetLocation.FOREST);
+                    sm.PlayFromHand(1, PlayTargetLocation.MOUNTAIN);
                     // Now I end turn and opponent will advance!
                     sm.EndTurn();
                     sm.Step();
                     sm.EndTurn();
                     // Finally, player's unit will advance! Pre advance, I check both units HP and count (2)
                     Lane theLane = sm.DetailedState.BoardState.GetLane(lane);
-                    TargetLocation nextTgt = (TargetLocation)((((int)lane << 1) > 4) ? 1: ((int)lane << 1));
+                    PlayTargetLocation nextTgt = (PlayTargetLocation)((((int)lane << 1) > 4) ? 1: ((int)lane << 1));
                     Lane other1 = sm.DetailedState.BoardState.GetLane(nextTgt);
-                    nextTgt = (TargetLocation)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
+                    nextTgt = (PlayTargetLocation)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
                     Lane other2 = sm.DetailedState.BoardState.GetLane(nextTgt);
                     // Check unit counts
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 3);
@@ -1023,9 +1023,9 @@ namespace EngineTests
                     sm.Step();
                     // Verify
                     theLane = sm.DetailedState.BoardState.GetLane(lane);
-                    nextTgt = (TargetLocation)((((int)lane << 1) > 4) ? 1 : ((int)lane << 1));
+                    nextTgt = (PlayTargetLocation)((((int)lane << 1) > 4) ? 1 : ((int)lane << 1));
                     other1 = sm.DetailedState.BoardState.GetLane(nextTgt);
-                    nextTgt = (TargetLocation)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
+                    nextTgt = (PlayTargetLocation)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
                     other2 = sm.DetailedState.BoardState.GetLane(nextTgt);
                     // Check unit counts, similar but both players lost the unit in "the lane", the others advanced
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 2);
@@ -1047,9 +1047,9 @@ namespace EngineTests
                     // Undo advance and verify again
                     sm.UndoPreviousStep();
                     theLane = sm.DetailedState.BoardState.GetLane(lane);
-                    nextTgt = (TargetLocation)((((int)lane << 1) > 4) ? 1 : ((int)lane << 1));
+                    nextTgt = (PlayTargetLocation)((((int)lane << 1) > 4) ? 1 : ((int)lane << 1));
                     other1 = sm.DetailedState.BoardState.GetLane(nextTgt);
-                    nextTgt = (TargetLocation)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
+                    nextTgt = (PlayTargetLocation)((((int)nextTgt << 1) > 4) ? 1 : ((int)nextTgt << 1));
                     other2 = sm.DetailedState.BoardState.GetLane(nextTgt);
                     // Check unit counts
                     Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 3);
@@ -1077,16 +1077,16 @@ namespace EngineTests
         public void TestMultipleTradesInTile()
         {
             Random _rng = new Random();
-            List<TargetLocation> lanes = [TargetLocation.PLAINS, TargetLocation.FOREST, TargetLocation.MOUNTAIN]; // Test interaction in all orders
+            List<PlayTargetLocation> lanes = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN]; // Test interaction in all orders
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
-            foreach (TargetLocation lane in lanes)
+            foreach (PlayTargetLocation lane in lanes)
             {
                 int stat = _rng.Next(1, 10); // any Hp between 1-9
                 var movt = lane switch
                 {
-                    TargetLocation.PLAINS => GameConstants.PLAINS_TILES_NUMBER - 1,
-                    TargetLocation.FOREST => GameConstants.FOREST_TILES_NUMBER - 1,
-                    TargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER - 1,
+                    PlayTargetLocation.PLAINS => GameConstants.PLAINS_NUMBER_OF_TILES - 1,
+                    PlayTargetLocation.FOREST => GameConstants.FOREST_NUMBER_OF_TILES - 1,
+                    PlayTargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_NUMBER_IF_TILES - 1,
                     _ => throw new Exception("Wrong lane!"),
                 };
                 foreach (CurrentPlayer player in players)
@@ -1098,8 +1098,8 @@ namespace EngineTests
                     state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex;
                     // Will try this in mountain as there's space!
                     CardFinder cardDb = new CardFinder();
-                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, stat, stat, 1, 1)); // Gets to the end so it clashes
-                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, TargetLocation.ALL_LANES, stat, stat, movt, 1)); // Gets to the middle and waits there
+                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, stat, stat, 1, 1)); // Gets to the end so it clashes
+                    cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, stat, stat, movt, 1)); // Gets to the middle and waits there
                     for (int j = 0; j < 5; j++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1204,8 +1204,8 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = GameConstants.STARTING_HP;
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, attack, 9, 1));
-                TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 9, 1));
+                PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1276,8 +1276,8 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = GameConstants.STARTING_HP;
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 2, 1, 9, 1));
-                TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 2, 1, 9, 1));
+                PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1353,8 +1353,8 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = attack; // Opp has less HP this time
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, attack, 9, 1));
-                TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 9, 1));
+                PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1427,8 +1427,8 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = attack - 1; // Opp has less HP this time
                                                                       // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, attack, 9, 1));
-                TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 9, 1));
+                PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1501,7 +1501,7 @@ namespace EngineTests
                     state.PlayerStates[playerIndex].Hp.BaseValue = GameConstants.STARTING_HP; // It's important to set this
                     state.PlayerStates[otherPlayerIndex].Hp.BaseValue = 6; // Opp has 6HP which is pretty handy for this test
                     CardFinder cardDb = new CardFinder();
-                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, attack, 9, 1));
+                    cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 9, 1));
                     for (int i = 0; i < 5; i++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1512,9 +1512,9 @@ namespace EngineTests
                     }
                     GameStateMachine sm = new GameStateMachine(cardDb);
                     sm.LoadGame(state); // Start from here
-                    sm.PlayFromHand(1, TargetLocation.PLAINS); // Play all units, one per lane
-                    sm.PlayFromHand(1, TargetLocation.FOREST);
-                    sm.PlayFromHand(1, TargetLocation.MOUNTAIN);
+                    sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play all units, one per lane
+                    sm.PlayFromHand(1, PlayTargetLocation.FOREST);
+                    sm.PlayFromHand(1, PlayTargetLocation.MOUNTAIN);
                     // Ok! Now i need to do the sequence to advance...
                     sm.EndTurn(); // End turn
                     sm.Step(); // Finish draw phase of opp
@@ -1592,7 +1592,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 // Will try this in any lane
-                TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1603,10 +1603,10 @@ namespace EngineTests
                     state.PlayerStates[otherPlayerIndex].Hand.InsertCard(1); // Add unit too
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, attack, 2, 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 2, 1);
                 CardFinder cardDb = new CardFinder(); // Card holder
                 cardDb.InjectCard(1, testUnit); // Add to cardDb
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, TargetLocation.ALL_LANES, attack + 1, [], [], []);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, PlayTargetLocation.ALL_LANES, attack + 1, [], [], []);
                 testBldg.Owner = otherPlayerIndex;
                 // Initialize building in first tile
                 TestHelperFunctions.ManualInitEntity(state, target, -1, 2, otherPlayerIndex, testBldg); // Insert building in field, in beginning of player
@@ -1648,7 +1648,7 @@ namespace EngineTests
                 state.CurrentState = States.DRAW_PHASE;
                 state.CurrentPlayer = player;
                 // Will try this in any lane
-                TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1659,9 +1659,9 @@ namespace EngineTests
                 }
                 GameStateMachine stageSm = new GameStateMachine();
                 stageSm.LoadGame(state); // Start from here
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, attack, 2, 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 2, 1);
                 testUnit.Owner = playerIndex;
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, TargetLocation.ALL_LANES, attack + 1, [], [], []);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, PlayTargetLocation.ALL_LANES, attack + 1, [], [], []);
                 testBldg.Owner = otherPlayerIndex;
                 Lane lane = stageSm.DetailedState.BoardState.GetLane(target);
                 // Initialize unit into board in correct place, skip all playability stuff which is done elsewhere
@@ -1717,7 +1717,7 @@ namespace EngineTests
                 state.CurrentState = States.DRAW_PHASE;
                 state.CurrentPlayer = player;
                 // Will try this in any lane
-                TargetLocation target = (TargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
+                PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
@@ -1728,9 +1728,9 @@ namespace EngineTests
                 }
                 GameStateMachine stageSm = new GameStateMachine();
                 stageSm.LoadGame(state); // Start from here
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, attack, 2, 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 2, 1);
                 testUnit.Owner = playerIndex;
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, TargetLocation.ALL_LANES, attack, [], [], []);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, PlayTargetLocation.ALL_LANES, attack, [], [], []);
                 testBldg.Owner = otherPlayerIndex;
                 Lane lane = stageSm.DetailedState.BoardState.GetLane(target);
                 // Initialize unit into board in correct place, skip all playability stuff which is done elsewhere

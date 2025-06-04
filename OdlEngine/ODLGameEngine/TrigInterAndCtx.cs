@@ -41,6 +41,18 @@ namespace ODLGameEngine
         ASSERT
     }
     /// <summary>
+    /// When searchign for a target, which location is searched
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum SearchLocation
+    {
+        BOARD,
+        PLAINS,
+        FOREST,
+        MOUNTAIN,
+        PLAY_TARGET
+    }
+    /// <summary>
     /// When searching for a target, which entity is found
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
@@ -114,8 +126,8 @@ namespace ODLGameEngine
     {
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EffectType EffectType;
-        [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public TargetLocation TargetLocation;
+        [JsonConverter(typeof(StringEnumConverter))]
+        public SearchLocation TargetLocation;
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EntityOwner TargetPlayer;
         [JsonConverter(typeof(StringEnumConverter))]
@@ -149,12 +161,16 @@ namespace ODLGameEngine
         public IngameEntity Actor = null;
     }
     /// <summary>
-    /// When card is played, contains extra info about playability of card.
-    /// TODO: In future may contain extra info or even modifiers depending what happens
+    /// Context regarding playing a card! This is helpful to determine both how a card could be played
+    /// But also is raised as a context when a card has just been played, and will be port of entry when such an interaction occurs
     /// </summary>
     public class PlayContext : EffectContext
     {
-        public TargetLocation LaneTargets;
+        public PlayTargetLocation PlayTarget = PlayTargetLocation.INVALID;
+        public int PlayCost = 0;
+        public EffectContext LastAuxContext = null; // Some things like checking construction or unit will generate this. For playing in a line, this will put the context here for later use
+        public PlayType PlayType = PlayType.PLAY_FROM_HAND;
+        public PlayOutcome PlayOutcome = PlayOutcome.NO_TARGET_AVAILABLE;
     }
     /// <summary>
     /// An action that occurs upon an affected entity (like when an entity is being built, attacked, etc). Logically these can only be BoardEntities
@@ -180,14 +196,16 @@ namespace ODLGameEngine
         public int InitialMovement = 0;
         public int CurrentMovement = 0;
     }
+    public class UnitPlayContext : EffectContext
+    {
+        public int AbsoluteInitialTile = -1;
+    }
     /// <summary>
     /// When a construction takes place
     /// </summary>
     public class ConstructionContext : AffectingEffectContext
     {
-        public int AbsoluteTile = -1;
-        public int RelativeTile = -1;
-        public int FirstAvailableOption = -1;
+        public int AbsoluteConstructionTile = -1;
     }
     /// <summary>
     /// When something (I guess unit) steps on a building

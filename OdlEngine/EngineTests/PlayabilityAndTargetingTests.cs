@@ -25,7 +25,7 @@ namespace EngineTests
                 for (int i = 0; i < 10; i++)
                 {
                     // Cards 0-9: test spells with various costs
-                    cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i,"BRICK", i, TargetLocation.BOARD));
+                    cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i,"BRICK", i, PlayTargetLocation.BOARD));
                     state.PlayerStates[playerIndex].Hand.InsertCard(i); // Insert test cards (brick) in hand costs 0-9
                 }
                 state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
@@ -33,7 +33,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for(int i = 0; i < sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, TargetLocation> res = sm.GetPlayableOptions(i, PlayType.PLAY_FROM_HAND);
+                    Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(i, PlayType.PLAY_FROM_HAND);
                     if(i <= 4)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
@@ -59,23 +59,23 @@ namespace EngineTests
                 for (int i = 0; i < 10; i++)
                 {
                     // generate various bricks with different targetability
-                    cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i, "BRICK", 0, (TargetLocation)i));
+                    cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i, "BRICK", 0, (PlayTargetLocation)i));
                     state.PlayerStates[playerIndex].Hand.InsertCard(i);
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, TargetLocation> res = sm.GetPlayableOptions(i, PlayType.PLAY_FROM_HAND); // Ok in all cases with valid target
+                    Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(i, PlayType.PLAY_FROM_HAND); // Ok in all cases with valid target
                     if (i <= 7)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // OK
-                        Assert.AreEqual(res.Item2, (TargetLocation)i); // All them valid targets
+                        Assert.AreEqual(res.Item2, (PlayTargetLocation)i); // All them valid targets
                     }
                     else
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                        Assert.AreEqual(res.Item2, TargetLocation.INVALID); // Bc invalid...
+                        Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID); // Bc invalid...
                     }
                 }
             }
@@ -98,9 +98,9 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     if(st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests. Card itself shouldnt be checked
                     {
-                        Tuple<PlayOutcome, TargetLocation> res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
+                        Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_GAME_STATE);
-                        Assert.AreEqual(res.Item2, TargetLocation.INVALID);
+                        Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID);
                     }
                 }
             }
@@ -116,7 +116,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 0, TargetLocation.BOARD));
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 0, PlayTargetLocation.BOARD));
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -129,9 +129,9 @@ namespace EngineTests
                 {
                     if (card == 2) // Only test incorrect ones as correct ones are in another test
                     {
-                        Tuple<PlayOutcome, TargetLocation> res = sm.GetPlayableOptions(card, PlayType.PLAY_FROM_HAND);
+                        Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(card, PlayType.PLAY_FROM_HAND);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_CARD); // Would be an error!
-                        Assert.AreEqual(res.Item2, TargetLocation.INVALID); // Also this invalid...
+                        Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID); // Also this invalid...
                     }
                 }
             }
@@ -158,7 +158,7 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     if (st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.BOARD); // Should break every single time and nothing should happen (TODO hash verify?)
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Should break every single time and nothing should happen (TODO hash verify?)
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_GAME_STATE);
                         Assert.IsNull(res.Item2);
                     }
@@ -176,7 +176,7 @@ namespace EngineTests
                 state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
-                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 0, TargetLocation.BOARD));
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 0, PlayTargetLocation.BOARD));
                 for (int i = 0; i < 5; i++)
                 {
                     state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert test card (brick) in hand all targets 5 times
@@ -188,7 +188,7 @@ namespace EngineTests
                 {
                     if (card == 2) // Just test wrong case as other cases are tested elsewhere in detail
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(card, TargetLocation.BOARD);
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(card, PlayTargetLocation.BOARD);
                         Assert.AreEqual(res.Item1, PlayOutcome.INVALID_CARD); // Would be an error!
                         Assert.IsNull(res.Item2); // Also this invalid...
                     }
@@ -209,7 +209,7 @@ namespace EngineTests
                 for (int i = 0; i <= 7; i++)
                 {
                     // Insert test cards (brick) in hand all targets, but only valid ones because invalids test already performed
-                    cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i, "BRICK", 0, (TargetLocation)i));
+                    cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i, "BRICK", 0, (PlayTargetLocation)i));
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -217,7 +217,7 @@ namespace EngineTests
                 {
                     for(int j = 0; j < 10; j++) // Try and target absolutely all ways (many should break!)
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(i, (TargetLocation)j); // Try to target card
+                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(i, (PlayTargetLocation)j); // Try to target card
                         if((j > 7) || (j&(j-1)) != 0) // Implying invalid targets no matter what! (Either non power of 2 or high target enum)
                         {
                             Assert.AreEqual(res.Item1, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
@@ -269,14 +269,14 @@ namespace EngineTests
                 for (int i = 0; i < 10; i++)
                 {
                     // Insert test cards (brick) in hand costs 0-9
-                    cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i, "BRICK", i, TargetLocation.BOARD));
+                    cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i, "BRICK", i, PlayTargetLocation.BOARD));
                 }
                 state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(i, TargetLocation.BOARD);
+                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(i, PlayTargetLocation.BOARD);
                     if (i <= 4)
                     {
                         Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
@@ -307,7 +307,7 @@ namespace EngineTests
                 for (int i = 0; i < 10; i++)
                 {
                     int randomCard = rng.Next(10);
-                    cardDb.InjectCard(randomCard, TestCardGenerator.CreateSkill(randomCard, "BRICK", randomCard, TargetLocation.BOARD));
+                    cardDb.InjectCard(randomCard, TestCardGenerator.CreateSkill(randomCard, "BRICK", randomCard, PlayTargetLocation.BOARD));
                     state.PlayerStates[playerIndex].Hand.InsertCard(randomCard); // Insert test cards (brick) in hand with random cost 0-9
                     possibleCards.Add(randomCard); // Add it also to one of my choices
                 }
@@ -322,7 +322,7 @@ namespace EngineTests
                     int cardIdToPlay = possibleCards[cardIndexToPlay]; // Get random card of the ones I generated
                     EntityBase cardToPlay = sm.CardDb.GetCard(cardIdToPlay);
                     int currentGold = sm.DetailedState.PlayerStates[playerIndex].CurrentGold;
-                    Tuple <PlayOutcome, StepResult> res = sm.PlayFromHand(cardIdToPlay, TargetLocation.BOARD);
+                    Tuple <PlayOutcome, StepResult> res = sm.PlayFromHand(cardIdToPlay, PlayTargetLocation.BOARD);
                     possibleCards.RemoveAt(cardIndexToPlay); // Remove this one
                     Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
                     Assert.IsNotNull(res.Item2); // Sth happened

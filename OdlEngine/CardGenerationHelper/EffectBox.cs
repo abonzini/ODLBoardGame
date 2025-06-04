@@ -34,7 +34,7 @@ namespace CardGenerationHelper
         void InitializeEffectBox()
         {
             // Now preload each box
-            TargetLocationBox.Items.AddRange(Enum.GetValues(typeof(TargetLocation)).Cast<object>().ToArray());
+            TargetLocationBox.Items.AddRange(Enum.GetValues(typeof(PlayTargetLocation)).Cast<object>().ToArray());
             TargetLocationBox.SelectedIndex = 0;
             TargetPlayerEnumBox.SetEnum(typeof(EntityOwner));
             SearchCriterionBox.Items.AddRange(Enum.GetValues(typeof(SearchCriterion)).Cast<object>().ToArray());
@@ -113,7 +113,7 @@ namespace CardGenerationHelper
             return new Effect()
             {
                 EffectType = (EffectType)EffectTypeComboBox.SelectedItem,
-                TargetLocation = (TargetLocation)TargetLocationBox.SelectedItem,
+                TargetLocation = (PlayTargetLocation)TargetLocationBox.SelectedItem,
                 TargetPlayer = (EntityOwner)TargetPlayerEnumBox.GetEnumValue(),
                 SearchCriterion = (SearchCriterion)SearchCriterionBox.SelectedItem,
                 TargetType = (EntityType)TargetTypeEnumBox.GetEnumValue(),

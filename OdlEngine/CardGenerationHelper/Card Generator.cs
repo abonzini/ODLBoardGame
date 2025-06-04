@@ -61,7 +61,7 @@ namespace CardGenerationHelper
         {
             EntityTypeDropdown.Items.AddRange(Enum.GetValues(typeof(EntityType)).Cast<object>().ToArray());
             EntityTypeDropdown.SelectedIndex = 0;
-            TargetOptionsDropdown.Items.AddRange(Enum.GetValues(typeof(TargetLocation)).Cast<object>().ToArray());
+            TargetOptionsDropdown.Items.AddRange(Enum.GetValues(typeof(PlayTargetLocation)).Cast<object>().ToArray());
             TargetOptionsDropdown.SelectedIndex = 0;
             ExpansionDropdown.Items.AddRange(Enum.GetValues(typeof(ExpansionId)).Cast<object>().ToArray());
             ExpansionDropdown.SelectedIndex = 0;
@@ -136,7 +136,7 @@ namespace CardGenerationHelper
 
         private void TargetOptionsDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _currentEntity.TargetOptions = (TargetLocation)TargetOptionsDropdown.SelectedItem;
+            _currentEntity.TargetOptions = (PlayTargetLocation)TargetOptionsDropdown.SelectedItem;
         }
 
         private void CardIdUpdown_ValueChanged(object sender, EventArgs e)
@@ -253,7 +253,7 @@ namespace CardGenerationHelper
             _currentIllustrationInfo.Movement = MovString;
             RefreshDrawTimer();
         }
-        private void ChangeBlueprint(TargetLocation lane, string bpText)
+        private void ChangeBlueprint(PlayTargetLocation lane, string bpText)
         {
             int[] bpElements;
             if (bpText == "")
@@ -265,9 +265,9 @@ namespace CardGenerationHelper
                 string[] choices = bpText.Split(','); // Get all inputs
                 int maxTiles = lane switch
                 {
-                    TargetLocation.PLAINS => GameConstants.PLAINS_TILES_NUMBER,
-                    TargetLocation.FOREST => GameConstants.FOREST_TILES_NUMBER,
-                    TargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER,
+                    PlayTargetLocation.PLAINS => GameConstants.PLAINS_NUMBER_OF_TILES,
+                    PlayTargetLocation.FOREST => GameConstants.FOREST_NUMBER_OF_TILES,
+                    PlayTargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_NUMBER_IF_TILES,
                     _ => throw new Exception("Invalid lane BP")
                 };
                 bpElements = new int[Math.Min(choices.Length, maxTiles)]; // Bp limited by tile amount and also by how many fields
@@ -284,11 +284,11 @@ namespace CardGenerationHelper
             Building bldg = (Building)_currentEntity;
             switch (lane) // Load in the correct BP
             {
-                case TargetLocation.PLAINS:
+                case PlayTargetLocation.PLAINS:
                     bldg.PlainsBp = bpElements; break;
-                case TargetLocation.FOREST:
+                case PlayTargetLocation.FOREST:
                     bldg.ForestBp = bpElements; break;
-                case TargetLocation.MOUNTAIN:
+                case PlayTargetLocation.MOUNTAIN:
                     bldg.MountainBp = bpElements; break;
                 default:
                     throw new Exception("Invalid lane BP");
@@ -297,17 +297,17 @@ namespace CardGenerationHelper
         }
         private void PlainsBpTextBox_TextChanged(object sender, EventArgs e)
         {
-            ChangeBlueprint(TargetLocation.PLAINS, PlainsBpTextBox.Text);
+            ChangeBlueprint(PlayTargetLocation.PLAINS, PlainsBpTextBox.Text);
         }
 
         private void ForestBpTextBox_TextChanged(object sender, EventArgs e)
         {
-            ChangeBlueprint(TargetLocation.FOREST, ForestBpTextBox.Text);
+            ChangeBlueprint(PlayTargetLocation.FOREST, ForestBpTextBox.Text);
         }
 
         private void MountainBpTextBox_TextChanged(object sender, EventArgs e)
         {
-            ChangeBlueprint(TargetLocation.MOUNTAIN, MountainBpTextBox.Text);
+            ChangeBlueprint(PlayTargetLocation.MOUNTAIN, MountainBpTextBox.Text);
         }
 
         private void BlueprintCheckBox_CheckedChanged(object sender, EventArgs e)

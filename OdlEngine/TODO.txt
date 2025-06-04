@@ -1,4 +1,9 @@
 Ongoing tasks in order of priority:
+- Refactor:
+	- Fix tests
+	- Fix readme
+	- Fix UI
+	- Fix Card #1
 - 4,5:
 	Triginter related to march, maybe assertions
 - Implement rest of rulebook

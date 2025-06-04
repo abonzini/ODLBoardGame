@@ -151,7 +151,7 @@ namespace EngineTests
         /// <param name="uniqueId">Desired ID</param>
         /// <param name="owner">Entity owner index</param>
         /// <param name="entity">Entity to add</param>
-        static public void ManualInitEntity(GameStateStruct state, TargetLocation lane, int tileCoord, int uniqueId, int owner, PlacedEntity entity)
+        static public void ManualInitEntity(GameStateStruct state, PlayTargetLocation lane, int tileCoord, int uniqueId, int owner, PlacedEntity entity)
         {
             entity.Owner = owner;
             entity.UniqueId = uniqueId;

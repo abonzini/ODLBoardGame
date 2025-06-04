@@ -121,7 +121,7 @@ namespace ODLGameEngine
                         break;
                     case EffectType.SUMMON_UNIT:
                         {
-                            TargetLocation[] targets = GetTargetLocationsFromReference(effect.TargetLocation, cpu); // Get the actual place where this is played, even if relative
+                            BoardElement[] targets = GetTargetLocationsFromReference(effect.TargetLocation, cpu); // Get the actual place where this is played, even if relative
                             for (int i = 0; i < cpu.ReferenceEntities.Count; i++) // Summon sth for each entity found (!!)
                             {
                                 IngameEntity entity = FetchEntity(cpu.ReferenceEntities[i]); // Got the next reference entity
@@ -267,21 +267,26 @@ namespace ODLGameEngine
             }
         }
         /// <summary>
-        /// Creates an array of targets, as many as the amount of references we searched. This way we may chain repeated summon or cast effects that require location, one per each reference
+        /// Will fetch, for each entity in the CPU entity list, the BoardElement location specified form a search location
+        /// Useful for targeted effects and similar
         /// </summary>
-        /// <param name="target">The sort of target we're looking for</param>
-        /// <param name="cpuContext">The cpu context, this'll have the references</param>
-        /// <returns></returns>
-        static TargetLocation[] GetTargetLocationsFromReference(TargetLocation target, CpuState cpuContext)
+        /// <param name="searchLocation">Place to search, can be absolute lanes, board, or even relative things</param>
+        /// <param name="cpuContext">Context where I find the relevant info</param>
+        /// <returns>One board element per entity</returns>
+        BoardElement[] GetTargetLocationsFromReference(SearchLocation searchLocation, CpuState cpuContext)
         {
             int numberOfReferences = cpuContext.ReferenceEntities.Count;
-            TargetLocation[] res = new TargetLocation[numberOfReferences];
+            BoardElement[] res = new BoardElement[numberOfReferences];
             for(int i = 0; i < numberOfReferences; i++) // One target per reference!
             {
-                res[i] = target switch
+                res[i] = searchLocation switch
                 {
-                    TargetLocation.PLAY_TARGET => ((PlayContext)cpuContext.CurrentSpecificContext).LaneTargets, // Where card is played (can only be used when card is played)...
-                    _ => target,
+                    SearchLocation.BOARD => DetailedState.BoardState,
+                    SearchLocation.PLAINS => DetailedState.BoardState.PlainsLane,
+                    SearchLocation.FOREST => DetailedState.BoardState.ForestLane,
+                    SearchLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
+                    SearchLocation.PLAY_TARGET => DetailedState.BoardState.GetLane(((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget),
+                    _ => throw new Exception("Reference search location not implemented")
                 };
             }
             return res;
@@ -304,11 +309,11 @@ namespace ODLGameEngine
         /// <param name="targetPlayer">Target owner relative to card </param>
         /// <param name="targetType">Entity types to search</param>
         /// <param name="searchCriterion">Criterion of search</param>
-        /// <param name="targetLocation">Where to search for targets</param>
+        /// <param name="searchLocation">Where to search for targets</param>
         /// <param name="n">The value n whose meaning depends on search criterion</param>
         /// <param name="ownerPlayerPov">POV of who the search is relative to</param>
         /// <returns></returns>
-        List<int> GetTargets(EntityOwner targetPlayer, EntityType targetType, SearchCriterion searchCriterion, TargetLocation targetLocation, int n, int ownerPlayerPov)
+        static List<int> GetTargets(EntityOwner targetPlayer, EntityType targetType, SearchCriterion searchCriterion, BoardElement searchLocation, int n, int ownerPlayerPov)
         {
             // If nothing to search for, just return an empty list
             if(targetPlayer == EntityOwner.NONE || targetType == EntityType.NONE || (searchCriterion == SearchCriterion.QUANTITY && n == 0))
@@ -319,29 +324,16 @@ namespace ODLGameEngine
             // Search variables
             bool reverseSearch = false; // Order of search
             int requiredTargets; // How many targets I'll extract maximum
-            bool laneIsTarget = false; // Target is a lane
             bool tileSectioning = false; // When searching along a lane, check tile-by-tile or the whole body as is
-            BoardElement targetBoardArea; // The board area that will be searched
             int referencePlayer; // Order reference depends on indexing
             int playerFilter = -1; // Filter of which player to search for (defautl is -1 both players)
             // Prepare settings/masks for this target search
-            switch (targetLocation)
+            if(searchLocation.ElementType == BoardElementType.LANE) // Since its a lane, it'll be lane search
             {
-                case TargetLocation.BOARD: // Return board
-                    targetBoardArea = DetailedState.BoardState;
-                    break;
-                case TargetLocation.PLAINS: // For lane-based, get the lane
-                case TargetLocation.FOREST:
-                case TargetLocation.MOUNTAIN:
-                    targetBoardArea = DetailedState.BoardState.GetLane(targetLocation);
-                    laneIsTarget = true;
-                    break;
-                default:
-                    throw new NotImplementedException("Search not yet implemented for other targets!"); // This may be a later TODO once new needs appear
-            }
-            if (laneIsTarget && (searchCriterion != SearchCriterion.ALL)) // If target is everything, no need to check tile by tile
-            {
-                tileSectioning = true;
+                if (searchCriterion != SearchCriterion.ALL) // If target is everything, no need to check tile by tile
+                {
+                    tileSectioning = true;
+                }
             }
             if (n < 0) // Negative indexing implies reverse indexing
             {
@@ -399,9 +391,9 @@ namespace ODLGameEngine
                     case TargetingStateMachine.GET_ENTITIES_IN_REGION: // Gets the list of entities in the desired board element, also checks if need to subdivide lane
                         if(tileSectioning) // Lane needs to be divided in tiles
                         {
-                            if(tileCounter < ((Lane)targetBoardArea).Len) // Check if I still have ongoing lane available
+                            if(tileCounter < ((Lane)searchLocation).Len) // Check if I still have ongoing lane available
                             {
-                                entities = ((Lane)targetBoardArea).GetTileRelative(tileCounter, referencePlayer).GetPlacedEntities(targetType, playerFilter); // Search for requested target for requested players
+                                entities = ((Lane)searchLocation).GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, tileCounter, referencePlayer).GetPlacedEntities(targetType, playerFilter); // Search for requested target for requested players
                                 tileCounter++;
                                 currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
                             }
@@ -412,7 +404,7 @@ namespace ODLGameEngine
                         }
                         else // Otherwise just get units in the region
                         {
-                            entities = targetBoardArea.GetPlacedEntities(targetType, playerFilter);
+                            entities = searchLocation.GetPlacedEntities(targetType, playerFilter);
                             currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
                         }
                         localOrdinal = 0;
@@ -496,19 +488,29 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="playerOwner">Would be owner</param>
         /// <param name="cardNumber">Which card (hope its a unit!)</param>
-        /// <param name="lanesToSummon">Lane targets</param>
-        void SummonUnitToPlayer(int playerOwner, int cardNumber, TargetLocation lanesToSummon)
+        /// <param name="placeToSummon">BoardElement where to attempt the summon</param>
+        void SummonUnitToPlayer(int playerOwner, int cardNumber, BoardElement placeToSummon)
         {
             Unit auxCardData = (Unit)CardDb.GetCard(cardNumber);
-            // Unit summoning is made without considering cost and the sort, so just go to Playables, play card (for now, may need more complex checking later)
-            for (int j = 0; j < GameConstants.BOARD_LANES_NUMBER; j++)
+            // Ctx I'll fill to place the unit exactly where I want
+            UnitPlayContext unitPlayCtx = new UnitPlayContext
             {
-                TargetLocation nextLane = (TargetLocation)(1 << j); // Get lanes in order, can be randomized if needed
-                if (lanesToSummon.HasFlag(nextLane)) // If this lane is a valid target for this unt
-                {
-                    UNIT_PlayUnit(playerOwner, auxCardData, nextLane); // Plays the unit
-                }
+                Actor = auxCardData
+            };
+            if (placeToSummon.ElementType == BoardElementType.TILE) // In this case, I know exactly where the unit will be placed
+            {
+                unitPlayCtx.AbsoluteInitialTile = ((Tile)placeToSummon).coord;
             }
+            else if(placeToSummon.ElementType == BoardElementType.LANE) // In this case I assume its just beginning of tile (for now?!)
+            {
+                unitPlayCtx.AbsoluteInitialTile = ((Lane)placeToSummon).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerOwner);
+            }
+            else
+            {
+                throw new Exception("Invalid location where a unit can be placed");
+            }
+            // Got the summoning location, onwards to play it
+            UNIT_PlayUnit(playerOwner, unitPlayCtx);
         }
         /// <summary>
         /// Modifies a player's gold according to desired op+value

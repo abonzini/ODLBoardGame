@@ -9,25 +9,38 @@ namespace ODLGameEngine
     public partial class GameStateMachine // Deals with unit and unit related stuff, maybe advancing
     {
         /// <summary>
-        /// Initializes the new unit for the specified player
+        /// Obtains a Unit play context which describes where a unit can be placed
         /// </summary>
-        /// <param name="player">Player</param>
-        /// <param name="unit">Unit</param>
-        /// <param name="chosenTarget">Lane that was chosen</param>
-        /// <returns>The generated unit</returns>
-        Unit UNIT_PlayUnit(int player, Unit unit, TargetLocation chosenTarget)
+        /// <param name="player">Reference player owner</param>
+        /// <param name="unit">Unit to summon</param>
+        /// <param name="laneTarget">Lane to place it</param>
+        /// <returns>Context with info of where it's allowed to play unit</returns>
+        public UnitPlayContext UNIT_GetUnitPlayData(int player, Unit unit, PlayTargetLocation laneTarget)
         {
-            // To spawn a unit, first you get the playable ID
-            // Clone the unit, add to board
-            // "Change" the coordinate of unit to right place
-            Unit newSpawnedUnit = (Unit)unit.Clone(); // Clone in order to not break the same species
+            // TODO: This can be extremely complex depending on future effects, for now, unit is literally placed on the first tile of lane
+            UnitPlayContext res = new UnitPlayContext
+            {
+                Actor = unit,
+                AbsoluteInitialTile = DetailedState.BoardState.GetLane(laneTarget).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, player)
+            };
+            return res;
+        }
+        /// <summary>
+        /// Plays the unit as described by the context
+        /// </summary>
+        /// <param name="player">Player owner</param>
+        /// <param name="playContext">Context of playability</param>
+        /// <returns></returns>
+        Unit UNIT_PlayUnit(int player, UnitPlayContext playContext)
+        {
+            // Clone unit, set player
+            Unit newSpawnedUnit = (Unit)playContext.Actor.Clone();
             newSpawnedUnit.Owner = player;
+            playContext.Actor = newSpawnedUnit;
+            // Add to board
             BOARDENTITY_InitializeEntity(newSpawnedUnit);
-            // Locates unit to right place. Get the lane where unit is played, and place it in first tile
-            Lane unitLane = DetailedState.BoardState.GetLane(chosenTarget);
-            BOARDENTITY_InsertInLane(newSpawnedUnit, unitLane.Id);
-            int tileCoord = unitLane.GetAbsoluteTileCoord(0,player); // Get tile coord
-            BOARDENTITY_InsertInTile(newSpawnedUnit, tileCoord);
+            // Places unit in correct coord
+            BOARDENTITY_InsertInTile(newSpawnedUnit, playContext.AbsoluteInitialTile);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             BOARDENTITY_CheckIfUnitAlive(newSpawnedUnit);
             return newSpawnedUnit;
@@ -53,19 +66,19 @@ namespace ODLGameEngine
             {
                 ENGINE_AddMessageEvent($"P{unitOwnerId + 1}'s {unit.Name} advances");
                 marchCtx.InitialMovement = unit.Movement.Total; // How much to advance
-                Lane lane = DetailedState.BoardState.GetLane(unit.LaneCoordinate); // Which lane
+                Lane lane = DetailedState.BoardState.GetLaneContainingTile(unit.TileCoordinate); // Lane of march
                 // Ready to march
                 marchCtx.CurrentMovement = marchCtx.InitialMovement;
                 while (marchCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
-                    // Exiting current tile
-                    if (lane.GetTileAbsolute(unit.TileCoordinate).GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop march here (and also attack)
+                    // Exiting current tile first
+                    if (DetailedState.BoardState.Tiles[unit.TileCoordinate].GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop march here (and also attack)
                     {
                         marchCtx.CurrentMovement = 0;
                         Unit enemyUnit = (Unit)DetailedState.EntityData[lane.GetPlacedEntities(EntityType.UNIT,opponentId).First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
                         UNIT_Combat(unit, enemyUnit); // Let them fight.
                     }
-                    else if (lane.GetAbsoluteTileCoord(-1, unitOwnerId) == unit.TileCoordinate) // Otherwise, if unit in last tile won't advance (and attack enemy player)
+                    else if (lane.IsRelativeEndOfLane(LaneRelativeIndexType.ABSOLUTE, unit.TileCoordinate, unit.Owner)) // Otherwise, if unit in last tile won't advance (and attack enemy player)
                     {
                         marchCtx.CurrentMovement = 0;
                         UNIT_Combat(unit, DetailedState.PlayerStates[opponentId]); // Deal direct damage to enemy!
@@ -73,8 +86,12 @@ namespace ODLGameEngine
                     else // Unit then can advance normally here, perform it
                     {
                         marchCtx.CurrentMovement--;
-                        // Request unit advancement a tile
-                        BOARDENTITY_InsertInTile(unit, unit.TileCoordinate + Lane.GetAdvanceDirection(unitOwnerId));
+                        // Current tile
+                        int nextTileCoord = lane.GetCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_PLAYER, LaneRelativeIndexType.ABSOLUTE, unit.TileCoordinate, unit.Owner);
+                        nextTileCoord++; // Advancement, now its 1 more
+                        // Finally get the following lane
+                        nextTileCoord = lane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextTileCoord, unit.Owner);
+                        BOARDENTITY_InsertInTile(unit, nextTileCoord);
                     }
                 }
             }

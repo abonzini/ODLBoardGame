@@ -25,58 +25,124 @@ namespace ODLGameEngine
     public partial class GameStateMachine
     {
         // --------------------------------------------------------------------------------------
-        // ------------------------------  PLAY REQUESTS ----------------------------------------
+        // ------------------------------  PLAY INFO REQUESTS -----------------------------------
         // --------------------------------------------------------------------------------------
 
         // Public (access points)
-
         /// <summary>
-        /// User selects this function to check if a specific card in their hand can be played, and when/where
+        /// Checker that verifies whether a card is playable, and if is, returns the whole data of how it could be played
         /// </summary>
-        /// <param name="card">Card to play</param>
-        /// <returns>If playable, and where (if playable)</returns>
-        public Tuple<PlayOutcome, TargetLocation> GetPlayableOptions(int card, PlayType playType)
+        /// <param name="card">The card number, of the that would be played</param>
+        /// <param name="playType">Type of play (i.e. where the card is played from)</param>
+        /// <param name="playLocationFilter">If added, will only check in those specific locations, important for actually playing the card, to not overcheck</param>
+        /// <returns>The context that tells us whether the card is playable</returns>
+        public PlayContext GetPlayabilityOptions(int card, PlayType playType, PlayTargetLocation playLocationFilter = PlayTargetLocation.ALL_LANES)
         {
+            PlayContext resultingPlayContext = new PlayContext();
+            resultingPlayContext.PlayType = playType;
+            // First stage, non card-related
             // Check whether we're in the right place first (can only do this on play state)
-            if(DetailedState.CurrentState != States.ACTION_PHASE)
+            if (DetailedState.CurrentState != States.ACTION_PHASE)
             {
-                return new Tuple<PlayOutcome, TargetLocation>(PlayOutcome.INVALID_GAME_STATE, TargetLocation.INVALID); // Return
+                resultingPlayContext.PlayOutcome = PlayOutcome.INVALID_GAME_STATE;
+                return resultingPlayContext;
             }
             // An extra check first, whether card actually exists in hand (if applicable)
-            if(playType == PlayType.PLAY_FROM_HAND)
+            if (playType == PlayType.PLAY_FROM_HAND)
             {
                 AssortedCardCollection hand = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Hand;
                 if (!hand.HasCard(card)) // Card not in hand!
                 {
-                    return new Tuple<PlayOutcome, TargetLocation>(PlayOutcome.INVALID_CARD, TargetLocation.INVALID); // Return this (invalid card in hand!)
+                    resultingPlayContext.PlayOutcome = PlayOutcome.INVALID_CARD;
+                    return resultingPlayContext;
                 }
             }
+            // In this case we check instead if the active power is allowed
             else if (playType == PlayType.ACTIVE_POWER)
             {
                 if (!DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].PowerAvailable) // Power not available!
                 {
-                    return new Tuple<PlayOutcome, TargetLocation>(PlayOutcome.POWER_ALREADY_USED, TargetLocation.INVALID); // Return this (invalid card in hand!)
+                    resultingPlayContext.PlayOutcome = PlayOutcome.POWER_ALREADY_USED;
+                    return resultingPlayContext;
                 }
             }
             else
             {
-                //??
+                throw new Exception("Invalid play type");
             }
-            // Now, no other option but to retrieve the actual card I'm attempting to play
+            // Second stage, got the actual card
             EntityBase cardData = CardDb.GetCard(card);
-            return PLAYABLE_GetOptions(cardData);
+            // First check if player can afford
+            if (!PLAYABLE_PlayerCanAfford(cardData))
+            {
+                // Can't afford!
+                resultingPlayContext.PlayOutcome = PlayOutcome.CANT_AFFORD;
+                return resultingPlayContext;
+            }
+            // Otherwise I can def afford, check if playable in the desired place
+            resultingPlayContext.PlayOutcome = PlayOutcome.NO_TARGET_AVAILABLE;
+            if (cardData.TargetOptions == PlayTargetLocation.BOARD) // Card is board-targetable
+            {
+                // TODO: Here we'd raise a playability context request to ask the card if special conditions
+                resultingPlayContext.PlayOutcome = PlayOutcome.OK;
+                resultingPlayContext.PlayTarget = PlayTargetLocation.BOARD;
+            }
+            else if (cardData.TargetOptions <= PlayTargetLocation.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
+            {
+                PlayTargetLocation validTargetsIfPossible = PlayTargetLocation.BOARD;
+                for (int i = 0; i < GameConstants.BOARD_NUMBER_OF_LANES; i++)
+                {
+                    PlayTargetLocation nextLaneCandidate = (PlayTargetLocation)(1 << i);
+                    if (!playLocationFilter.HasFlag(nextLaneCandidate)) // Check only the ones I'm interested in
+                    {
+                        continue;
+                    }
+                    if (cardData.TargetOptions.HasFlag(nextLaneCandidate)) // If this lane is one of the valid ones for this card
+                    {
+                        bool canPlay = true; // By default, can play
+                        if (cardData.EntityType == EntityType.BUILDING) // Buildings have an extra check, where they need to see if/how they can be built
+                        {
+                            // Get construction context
+                            ConstructionContext constructionContext = BUILDING_GetBuildingOptions((int)DetailedState.CurrentPlayer, (Building)cardData, nextLaneCandidate);
+                            resultingPlayContext.LastAuxContext = constructionContext;
+                            canPlay = (constructionContext.AbsoluteConstructionTile >= 0); // Playable if this found a valid coordinate
+                        }
+                        else if (cardData.EntityType == EntityType.UNIT)
+                        {
+                            // Get unit play context, canPlay may depend on other extra things
+                            UnitPlayContext unitPlayContext = UNIT_GetUnitPlayData((int)DetailedState.CurrentPlayer, (Unit)cardData, nextLaneCandidate);
+                            resultingPlayContext.LastAuxContext = unitPlayContext;
+                        }
+                        if (canPlay) // If building (or card in general) can play normally, then check
+                        {
+                            // TODO: Here we raise an extra playability context and ask the card if has any extra conditions
+                            resultingPlayContext.PlayOutcome = PlayOutcome.OK;
+                            validTargetsIfPossible |= nextLaneCandidate; // Add this lane option to list
+                        }
+                    }
+                }
+                resultingPlayContext.PlayTarget = (validTargetsIfPossible != PlayTargetLocation.BOARD) ? validTargetsIfPossible : PlayTargetLocation.INVALID;
+            }
+            // Returns our findings
+            return resultingPlayContext;
         }
-        public Tuple<PlayOutcome, StepResult> PlayFromHand(int card, TargetLocation chosenTarget)
+        /// <summary>
+        /// Begins attempt to play a card from hand
+        /// </summary>
+        /// <param name="card">Which card</param>
+        /// <param name="chosenTarget">Target location</param>
+        /// <returns>Tuple of play context and the steps themselves</returns>
+        public Tuple<PlayContext, StepResult> PlayFromHand(int card, PlayTargetLocation chosenTarget)
         {
-            return PlayCard(card, chosenTarget, PlayType.PLAY_FROM_HAND);
+            return PLAYABLE_PlayCard(card, chosenTarget, PlayType.PLAY_FROM_HAND);
         }
         /// <summary>
         /// Plays the active power for a character
         /// </summary>
-        /// <returns>Like PlayCard, chain of effects after power was played</returns>
-        public Tuple<PlayOutcome, StepResult> PlayActivePower()
+        /// <returns>Tuple of play context and the steps themselves</returns>
+        public Tuple<PlayContext, StepResult> PlayActivePower()
         {
-            return PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerId, TargetLocation.BOARD, PlayType.ACTIVE_POWER);
+            return PLAYABLE_PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerId, PlayTargetLocation.BOARD, PlayType.ACTIVE_POWER);
         }
         // Back-end (private)
         /// <summary>
@@ -86,29 +152,31 @@ namespace ODLGameEngine
         /// <param name="card">Which card to play</param>
         /// <param name="chosenTarget">Where to play card</param>
         /// <param name="playType">The type of play, default is standard "play from hand"</param>
-        /// <returns>Outcome, and Step result (as in step() if successful</returns>
-        Tuple<PlayOutcome, StepResult> PlayCard(int card, TargetLocation chosenTarget, PlayType playType)
+        /// <returns>Outcome, and Step result (as in step() if successful)</returns>
+        Tuple<PlayContext, StepResult> PLAYABLE_PlayCard(int card, PlayTargetLocation chosenTarget, PlayType playType)
         {
-            // I need to verify whether chosen card is playable
-            Tuple<PlayOutcome, TargetLocation> cardOptions = GetPlayableOptions(card, playType); // Does same checks as before, whether a card can be played, and where
-            if (cardOptions.Item1 != PlayOutcome.OK)
-            {
-                return new Tuple<PlayOutcome, StepResult>(cardOptions.Item1, null); // If failure, return type of failure, can't be played!
-            }
-            // Then, make sure chosen target makes sense
-            if (((chosenTarget & chosenTarget - 1) != 0) || (chosenTarget > TargetLocation.ALL_LANES))
+            PlayContext playCtx = new PlayContext();
+            // First, make sure chosen target makes sense, card should be only playable exactly where I asked
+            if (((chosenTarget & chosenTarget - 1) != 0) || (chosenTarget >= PlayTargetLocation.INVALID)) // Check only power of 2 or 0, and less than invalid
             {
                 // Invalid target, either 0 or a specific single lane, not multiple or values higher than the allowed lanes!
-                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
+                playCtx.PlayOutcome = PlayOutcome.INVALID_TARGET;
+                playCtx.PlayType = playType;
+                return new Tuple<PlayContext, StepResult>(playCtx, null);
             }
-            // Otherwise, card can be played somewhere, need to see if user option is valid!            
-            if ((cardOptions.Item2 & chosenTarget) != 0 || (cardOptions.Item2 == chosenTarget)) // Then just need to verify tagets match with playable options
+            // Then, all other checks
+            playCtx = GetPlayabilityOptions(card, playType, chosenTarget); // Checks where a card can be played and how
+            if (playCtx.PlayOutcome != PlayOutcome.OK)
+            {
+                return new Tuple<PlayContext, StepResult>(playCtx, null); // If failure, return type of failure, can't be played!
+            }
+            // Otherwise, card can be played somewhere. Should be only playable where I targeted         
+            if (playCtx.PlayTarget == chosenTarget) // Then just need to verify tagets match with playable options
             {
                 // Ok shit is going down, card needs to be paid and played now, this will result in a step and change of game state
                 try // Also, a player may die!
                 {
-                    EntityBase cardData = CardDb.GetCard(card);
-                    PLAYABLE_PayCost(cardData);
+                    PLAYABLE_PayCost(playCtx.PlayCost);
                     if (playType == PlayType.PLAY_FROM_HAND)
                     {
                         ENGINE_DiscardCardFromHand((int)DetailedState.CurrentPlayer, card);
@@ -117,10 +185,12 @@ namespace ODLGameEngine
                     {
                         ENGINE_ChangePlayerPowerAvailability(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer], false);
                     }
-                    // Then the play effects
-                    IngameEntity createdEntity = PLAYABLE_PlayCard(cardData, chosenTarget); // Once played, an entity exists now
-                    // INTERACTION: CARD IS PLAYED
-                    PlayContext playCtx = new PlayContext() { ActivatedEntity = createdEntity, Actor = createdEntity, LaneTargets = chosenTarget };
+                    IngameEntity createdEntity = (IngameEntity)CardDb.GetCard(card); // The card has to be a game entity...
+                    playCtx.ActivatedEntity = createdEntity; // Set this reference entity which will be played
+                    createdEntity = PLAYABLE_PlayEntity(playCtx); // Once played, an new entity is instantiated
+                    // INTERACTION: CARD IS PLAYED (effect on created entity)
+                    playCtx.ActivatedEntity = createdEntity;
+                    playCtx.Actor = createdEntity;
                     TRIGINTER_ProcessInteraction(InteractionType.WHEN_PLAYED, playCtx);
                     // Ends by transitioning to next action phase
                     ENGINE_ChangeState(States.ACTION_PHASE);
@@ -129,86 +199,37 @@ namespace ODLGameEngine
                 {
                     STATE_TriggerEndOfGame(e.PlayerWhoWon);
                 }
-                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.OK, _stepHistory.Last()); // Returns the thing
+                playCtx.PlayOutcome = PlayOutcome.OK;
+                return new Tuple<PlayContext, StepResult>(playCtx, _stepHistory.Last()); // Returns the thing
             }
             else
             {
-                return new Tuple<PlayOutcome, StepResult>(PlayOutcome.INVALID_TARGET, null);
+                playCtx.PlayOutcome = PlayOutcome.INVALID_TARGET;
+                return new Tuple<PlayContext, StepResult>(playCtx, null);
             }
         }
         /// <summary>
-        /// Plays a card effect on current player, play is verified and card not anymore in hand, but all effects need to be made
+        /// Resolves the playable state where an entity is instantiated and played
         /// </summary>
-        /// <param name="card"></param>
-        /// <param name="chosenTarget"></param>
-        /// <returns>The entity that was generated for this play</returns>
-        IngameEntity PLAYABLE_PlayCard(EntityBase card, TargetLocation chosenTarget)
+        /// <param name="playCtx">Context, contains all the relevant info for an entity to be created</param>
+        /// <returns>The instantiated entity</returns>
+        IngameEntity PLAYABLE_PlayEntity(PlayContext playCtx)
         {
-            switch (card.EntityType)
+            IngameEntity entity = playCtx.ActivatedEntity;
+            switch (entity.EntityType)
             {
                 case EntityType.UNIT:
-                    return UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (Unit) card, chosenTarget); // Plays the unit in corresponding place
+                    return UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (UnitPlayContext)playCtx.LastAuxContext);
                 case EntityType.SKILL: // Nothing needed as skills don't introduce new entities
-                    Skill skillData = (Skill)card.Clone(); // Instances a local version of skill
+                    Skill skillData = (Skill)entity.Clone(); // Instances a local version of skill
                     skillData.Owner = (int)DetailedState.CurrentPlayer;
                     skillData.UniqueId = -1; // Default id for a skill (they don't persist after played)
                     return skillData;
                 case EntityType.BUILDING:
-                    return BUILDING_PlayBuilding((int)DetailedState.CurrentPlayer, (Building)card, chosenTarget); // Plays building in tile
+                    return BUILDING_ConstructBuilding((int)DetailedState.CurrentPlayer, (ConstructionContext)playCtx.LastAuxContext);
                 default:
                     throw new NotImplementedException("Trying to play a non-supported type!");
             }
-        }
-
-        /// <summary>
-        /// Checks where the player can play a card
-        /// </summary>
-        /// <param name="card">Card they want to play</param>
-        /// <returns>Whether the play outcome would be ok, and which targets could be picked</returns>
-        Tuple<PlayOutcome, TargetLocation> PLAYABLE_GetOptions(EntityBase card)
-        {
-            PlayOutcome outcome = PlayOutcome.CANT_AFFORD;
-            TargetLocation possibleTargets = TargetLocation.INVALID;
-            // First check if player can afford
-            if (!PLAYABLE_PlayerCanAfford(card))
-            {
-                // Can't afford!
-                return new Tuple<PlayOutcome, TargetLocation>(outcome, possibleTargets);
-            }
-            // Otherwise I can def afford, check if playable in the desired place
-            outcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (card.TargetOptions == TargetLocation.BOARD)
-            {
-                // TODO: Here we raise a playability context and ask the card
-                outcome = PlayOutcome.OK;
-                possibleTargets = TargetLocation.BOARD;
-                // If filled requirements, card playable
-            }
-            else if (card.TargetOptions <= TargetLocation.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
-            {
-                int laneCandidate;
-                TargetLocation validTargetsIfPossible = TargetLocation.BOARD;
-                for (int i = 0; i < GameConstants.BOARD_LANES_NUMBER; i++)
-                {
-                    laneCandidate = 1 << i;
-                    if (card.TargetOptions.HasFlag((TargetLocation)laneCandidate)) // If this lane is one of the possible ones
-                    {
-                        bool canPlay = true; // By default, can play
-                        if(card.EntityType == EntityType.BUILDING) // Buildings have an extra check, where they need to see if they can be built
-                        {
-                            canPlay = (BUILDING_GetBuildingOptions((int)DetailedState.CurrentPlayer, (Building)card, (TargetLocation)laneCandidate).FirstAvailableOption >= 0);
-                        }
-                        if (canPlay) // If building (or card in general) can play normally, then check
-                        {
-                            // TODO: Here we raise a playability context and ask the card
-                            outcome = PlayOutcome.OK;
-                            validTargetsIfPossible |= (TargetLocation)laneCandidate; // Add this lane option to list
-                        }
-                    }
-                }
-                possibleTargets = (validTargetsIfPossible != TargetLocation.BOARD) ? validTargetsIfPossible : TargetLocation.INVALID;
-            }
-            return new Tuple<PlayOutcome, TargetLocation>(outcome, possibleTargets); // Return my findings
         }
         /// <summary>
         /// Checks if the player can afford to play a card
@@ -223,12 +244,11 @@ namespace ODLGameEngine
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)
         /// </summary>
-        /// <param name="card">Card to check</param>
-        /// <returns>Cost in gold of card</returns>
-        void PLAYABLE_PayCost(EntityBase card)
+        /// <param name="cost">Cost to pay</param>
+        void PLAYABLE_PayCost(int cost)
         {
             Player player = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer];
-            TRIGINTER_ModifyPlayersGold(player.Owner, -card.Cost, ModifierOperation.ADD);
+            TRIGINTER_ModifyPlayersGold(player.Owner, -cost, ModifierOperation.ADD);
         }
     }
 }

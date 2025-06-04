@@ -34,7 +34,7 @@ namespace ODLGameEngine
     /// </summary>
     [Flags]
     [JsonConverter(typeof(FlagEnumJsonConverter))]
-    public enum TargetLocation
+    public enum PlayTargetLocation
     {
         // Absolute targets (For playing and TrigInter)
         BOARD = 0,
@@ -45,10 +45,7 @@ namespace ODLGameEngine
         ALL_BUT_FOREST = 5,
         ALL_BUT_PLAINS = 6,
         ALL_LANES = 7,
-        INVALID = 8,
-        // Only for TrigInter...
-        // Relative targets
-        PLAY_TARGET
+        INVALID = 8
     }
     /// <summary>
     /// Will define how a card looks and works before it creates an instance in the board
@@ -86,7 +83,7 @@ namespace ODLGameEngine
         public EntityType EntityType { get; set; } = EntityType.NONE;
         [JsonProperty]
         [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public TargetLocation TargetOptions { get; set; } = TargetLocation.BOARD; // Which lane(s) if any the card could work on
+        public PlayTargetLocation TargetOptions { get; set; } = PlayTargetLocation.BOARD; // Which lane(s) if any the card could work on
         [JsonProperty]
         public int Id { get; set; } = 0;
         [JsonProperty]
@@ -175,15 +172,12 @@ namespace ODLGameEngine
     public class PlacedEntity : LivingEntity
     {
         [JsonProperty]
-        public LaneID LaneCoordinate { get; set; } = LaneID.NO_LANE;
-        [JsonProperty]
         [DefaultValue(-1)]
         public int TileCoordinate { get; set; } = -1;
         
         public override object Clone()
         {
             PlacedEntity newEntity = (PlacedEntity) base.Clone();
-            newEntity.LaneCoordinate = LaneCoordinate;
             newEntity.TileCoordinate = TileCoordinate;
             return newEntity;
         }

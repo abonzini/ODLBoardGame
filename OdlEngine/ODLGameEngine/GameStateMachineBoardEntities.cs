@@ -23,29 +23,19 @@ namespace ODLGameEngine
             ENGINE_IncrementPlaceableCounter();
         }
         /// <summary>
-        /// Inserts entity in new lane
-        /// </summary>
-        /// <param name="entity">Which entity</param>
-        /// <param name="laneId">Which lane</param>
-        public void BOARDENTITY_InsertInLane(PlacedEntity entity, LaneID laneId)
-        {
-            ENGINE_EntityLaneTransition(entity, laneId);
-        }
-        /// <summary>
         /// Inserts entity in tile RELATIVE TO LANE so Lane always needs to be correct when this is called
         /// </summary>
         /// <param name="entity">The entity</param>
         /// <param name="tileCoord">The tile coord</param>
         public void BOARDENTITY_InsertInTile(PlacedEntity entity, int tileCoord)
         {
-            // TODO: check if unit is leaving tile
             ENGINE_EntityTileTransition(entity, tileCoord);
             if(entity.TileCoordinate > -1) // Checks if unit entered a nev (valid) tile
             {
                 if (entity.EntityType == EntityType.UNIT) // In case of units, there may be building interactions
                 {
                     Unit unit = (Unit)entity;
-                    SortedSet<int> buildingsInUnitTile = DetailedState.BoardState.GetLane(unit.LaneCoordinate).GetTileAbsolute(tileCoord).GetPlacedEntities(EntityType.BUILDING); // Look for building
+                    SortedSet<int> buildingsInUnitTile = DetailedState.BoardState.Tiles[unit.TileCoordinate].GetPlacedEntities(EntityType.BUILDING); // Look for building in my tile
                     if (buildingsInUnitTile.Count > 0) // Found a building, means unit has stepped on it
                     {
                         UNIT_EnterBuilding(unit, (Building)DetailedState.EntityData[buildingsInUnitTile.First()]);
@@ -79,11 +69,8 @@ namespace ODLGameEngine
             ENGINE_AddMessageEvent($"{entity.Name} was destroyed");
             if(entity.EntityType == EntityType.UNIT || entity.EntityType == EntityType.BUILDING)
             {
-                // Removes unit from its space, first from tile and then from lane!
-                BOARDENTITY_InsertInTile((PlacedEntity)entity, -1);
-                BOARDENTITY_InsertInLane((PlacedEntity)entity, LaneID.NO_LANE);
-                // Moves unit from living space to dead space
-                ENGINE_DeinitializeEntity((PlacedEntity)entity);
+                BOARDENTITY_InsertInTile((PlacedEntity)entity, -1); // Removes unit from its tile
+                ENGINE_DeinitializeEntity((PlacedEntity)entity); // Deinits entity
             }
             else if(entity.EntityType == EntityType.PLAYER) // Somethign more sinister, this is a game-ending situation, a player just died
             {

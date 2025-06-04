@@ -619,8 +619,8 @@ namespace CardGenerationHelper
                 Rectangle getCoordinateRectangle(int row, int column) // Gives me the desired tile
                 {
                     // First, calculate coord
-                    int nrows = GameConstants.BOARD_LANES_NUMBER;
-                    int nCols = new[] { GameConstants.PLAINS_TILES_NUMBER, GameConstants.FOREST_TILES_NUMBER, GameConstants.MOUNTAIN_TILES_NUMBER }.Max();
+                    int nrows = GameConstants.BOARD_NUMBER_OF_LANES;
+                    int nCols = new[] { GameConstants.PLAINS_NUMBER_OF_TILES, GameConstants.FOREST_NUMBER_OF_TILES, GameConstants.MOUNTAIN_NUMBER_IF_TILES }.Max();
                     float hSpace = widthMap * DrawConstants.mapHSpaces;
                     float hSep = hSpace / (nCols + 1);
                     float x = (widthMap - hSpace) / nCols;
@@ -636,29 +636,29 @@ namespace CardGenerationHelper
                 }
                 int getAdaptedColumn(int row, LaneID lane)
                 {
-                    int maxCol = new[] { GameConstants.PLAINS_TILES_NUMBER, GameConstants.FOREST_TILES_NUMBER, GameConstants.MOUNTAIN_TILES_NUMBER }.Max();
+                    int maxCol = new[] { GameConstants.PLAINS_NUMBER_OF_TILES, GameConstants.FOREST_NUMBER_OF_TILES, GameConstants.MOUNTAIN_NUMBER_IF_TILES }.Max();
                     int laneSize = lane switch
                     {
-                        LaneID.PLAINS => GameConstants.PLAINS_TILES_NUMBER,
-                        LaneID.FOREST => GameConstants.FOREST_TILES_NUMBER,
-                        LaneID.MOUNTAIN => GameConstants.MOUNTAIN_TILES_NUMBER,
+                        LaneID.PLAINS => GameConstants.PLAINS_NUMBER_OF_TILES,
+                        LaneID.FOREST => GameConstants.FOREST_NUMBER_OF_TILES,
+                        LaneID.MOUNTAIN => GameConstants.MOUNTAIN_NUMBER_IF_TILES,
                         _ => throw new Exception("Not a lane")
                     };
                     int offset = (maxCol - laneSize) / 2;
                     return row + offset;
                 }
                 // Ok now I need to plot stuff, plot lane by lane
-                for (int i = 0; i < GameConstants.PLAINS_TILES_NUMBER; i++)
+                for (int i = 0; i < GameConstants.PLAINS_NUMBER_OF_TILES; i++)
                 {
                     Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(i, LaneID.PLAINS));
                     DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
                 }
-                for (int i = 0; i < GameConstants.FOREST_TILES_NUMBER; i++)
+                for (int i = 0; i < GameConstants.FOREST_NUMBER_OF_TILES; i++)
                 {
                     Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(i, LaneID.FOREST));
                     DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
                 }
-                for (int i = 0; i < GameConstants.MOUNTAIN_TILES_NUMBER; i++)
+                for (int i = 0; i < GameConstants.MOUNTAIN_NUMBER_IF_TILES; i++)
                 {
                     Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(i, LaneID.MOUNTAIN));
                     DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);

@@ -421,7 +421,7 @@ namespace EngineTests
             state.CurrentPlayer = CurrentPlayer.PLAYER_1;
             CardFinder cardDb = new CardFinder();
             // Card 1: basic unit
-            cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, TargetLocation.ALL_LANES, 1, 1, 1, 1));
+            cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
             state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert token card
             state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
             GameStateMachine sm = new GameStateMachine(cardDb);
@@ -432,7 +432,7 @@ namespace EngineTests
             Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash would be recalculated but still the same
             Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetHashCode()); // Hash would be recalculated but still the same
             // Will play card now
-            Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, TargetLocation.PLAINS); // Play it
+            Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play it
             // Make sure card was played ok
             Assert.AreEqual(res.Item1, PlayOutcome.OK);
             Assert.IsNotNull(res.Item2);
