@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="PlayabilityAndTargetingTests.cs" />
     <Compile Remove="UnitAndBattleTests.cs" />
   </ItemGroup>
 

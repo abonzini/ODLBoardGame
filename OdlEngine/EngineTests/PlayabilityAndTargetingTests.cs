@@ -1,10 +1,4 @@
 ﻿using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EngineTests
 {
@@ -33,14 +27,14 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for(int i = 0; i < sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(i, PlayType.PLAY_FROM_HAND);
+                    PlayContext res = sm.GetPlayabilityOptions(i, PlayType.PLAY_FROM_HAND);
                     if(i <= 4)
                     {
-                        Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
+                        Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK); // Could be played
                     }
                     else
                     {
-                        Assert.AreEqual(res.Item1, PlayOutcome.CANT_AFFORD); // Could not
+                        Assert.AreEqual(res.PlayOutcome, PlayOutcome.CANT_AFFORD); // Could not
                     }
                 }
             }
@@ -66,16 +60,16 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(i, PlayType.PLAY_FROM_HAND); // Ok in all cases with valid target
+                    PlayContext res = sm.GetPlayabilityOptions(i, PlayType.PLAY_FROM_HAND); // Ok in all cases with valid target
                     if (i <= 7)
                     {
-                        Assert.AreEqual(res.Item1, PlayOutcome.OK); // OK
-                        Assert.AreEqual(res.Item2, (PlayTargetLocation)i); // All them valid targets
+                        Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK); // OK
+                        Assert.AreEqual(res.PlayTarget, (PlayTargetLocation)i); // All them valid targets
                     }
                     else
                     {
-                        Assert.AreEqual(res.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                        Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID); // Bc invalid...
+                        Assert.AreEqual(res.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
+                        Assert.AreEqual(res.PlayTarget, PlayTargetLocation.INVALID); // Bc invalid...
                     }
                 }
             }
@@ -98,9 +92,9 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     if(st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests. Card itself shouldnt be checked
                     {
-                        Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                        Assert.AreEqual(res.Item1, PlayOutcome.INVALID_GAME_STATE);
-                        Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID);
+                        PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                        Assert.AreEqual(res.PlayOutcome, PlayOutcome.INVALID_GAME_STATE);
+                        Assert.AreEqual(res.PlayTarget, PlayTargetLocation.INVALID);
                     }
                 }
             }
@@ -129,9 +123,9 @@ namespace EngineTests
                 {
                     if (card == 2) // Only test incorrect ones as correct ones are in another test
                     {
-                        Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(card, PlayType.PLAY_FROM_HAND);
-                        Assert.AreEqual(res.Item1, PlayOutcome.INVALID_CARD); // Would be an error!
-                        Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID); // Also this invalid...
+                        PlayContext res = sm.GetPlayabilityOptions(card, PlayType.PLAY_FROM_HAND);
+                        Assert.AreEqual(res.PlayOutcome, PlayOutcome.INVALID_CARD); // Would be an error!
+                        Assert.AreEqual(res.PlayTarget, PlayTargetLocation.INVALID); // Also this invalid...
                     }
                 }
             }
@@ -158,8 +152,8 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     if (st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Should break every single time and nothing should happen (TODO hash verify?)
-                        Assert.AreEqual(res.Item1, PlayOutcome.INVALID_GAME_STATE);
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Should break every single time and nothing should happen (TODO hash verify?)
+                        Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.INVALID_GAME_STATE);
                         Assert.IsNull(res.Item2);
                     }
                 }
@@ -188,8 +182,8 @@ namespace EngineTests
                 {
                     if (card == 2) // Just test wrong case as other cases are tested elsewhere in detail
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(card, PlayTargetLocation.BOARD);
-                        Assert.AreEqual(res.Item1, PlayOutcome.INVALID_CARD); // Would be an error!
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(card, PlayTargetLocation.BOARD);
+                        Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.INVALID_CARD); // Would be an error!
                         Assert.IsNull(res.Item2); // Also this invalid...
                     }
                 }
@@ -217,23 +211,23 @@ namespace EngineTests
                 {
                     for(int j = 0; j < 10; j++) // Try and target absolutely all ways (many should break!)
                     {
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(i, (PlayTargetLocation)j); // Try to target card
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(i, (PlayTargetLocation)j); // Try to target card
                         if((j > 7) || (j&(j-1)) != 0) // Implying invalid targets no matter what! (Either non power of 2 or high target enum)
                         {
-                            Assert.AreEqual(res.Item1, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
+                            Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
                             Assert.AreEqual(res.Item2, null);
                         }
                         else if (i == 0) // If global targeting...
                         {
                             if(j == 0) // Global is only valid option, then should succeed
                             {
-                                Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                                 Assert.IsNotNull(res.Item2);
                                 sm.UndoPreviousStep(); // Undo to try next one
                             }
                             else
                             {
-                                Assert.AreEqual(res.Item1, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
+                                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
                                 Assert.IsNull(res.Item2);
                             }
                         }
@@ -241,13 +235,13 @@ namespace EngineTests
                         {
                             if ((i & j) != 0) // Targets match!
                             {
-                                Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                                 Assert.IsNotNull(res.Item2);
                                 sm.UndoPreviousStep(); // Undo to try next one
                             }
                             else
                             {
-                                Assert.AreEqual(res.Item1, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
+                                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.INVALID_TARGET); // Invalid target and no state change
                                 Assert.IsNull(res.Item2);
                             }
                         }
@@ -276,16 +270,16 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < sm.DetailedState.PlayerStates[playerIndex].Hand.CardCount; i++) // Check for each card
                 {
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(i, PlayTargetLocation.BOARD);
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(i, PlayTargetLocation.BOARD);
                     if (i <= 4)
                     {
-                        Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
+                        Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK); // Could be played
                         Assert.IsNotNull(res.Item2);
                         sm.UndoPreviousStep();
                     }
                     else
                     {
-                        Assert.AreEqual(res.Item1, PlayOutcome.CANT_AFFORD); // Could not
+                        Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.CANT_AFFORD); // Could not
                         Assert.IsNull(res.Item2);
                     }
                 }
@@ -322,9 +316,9 @@ namespace EngineTests
                     int cardIdToPlay = possibleCards[cardIndexToPlay]; // Get random card of the ones I generated
                     EntityBase cardToPlay = sm.CardDb.GetCard(cardIdToPlay);
                     int currentGold = sm.DetailedState.PlayerStates[playerIndex].CurrentGold;
-                    Tuple <PlayOutcome, StepResult> res = sm.PlayFromHand(cardIdToPlay, PlayTargetLocation.BOARD);
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(cardIdToPlay, PlayTargetLocation.BOARD);
                     possibleCards.RemoveAt(cardIndexToPlay); // Remove this one
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK); // Could be played
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK); // Could be played
                     Assert.IsNotNull(res.Item2); // Sth happened
                     Assert.IsTrue(sm.DetailedState.PlayerStates[playerIndex].DiscardPile.HasCard(cardIdToPlay)); // Card was discarded
                     Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].DiscardPile.CardCount, i+1); // Discard pile has correct number of cards
