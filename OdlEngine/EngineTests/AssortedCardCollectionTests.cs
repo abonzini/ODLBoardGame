@@ -89,32 +89,5 @@ namespace EngineTests
             }
             Assert.AreEqual(col1.GetHashCode(), col2.GetHashCode()); // Still should have same hash
         }
-        //[TestMethod]
-        //public void HashStressTest()
-        //{
-        //    HashSet<int> hashes = new HashSet<int>();
-        //    float total = 0;
-        //    float collisions = 0;
-        //    Random _rng = new Random();
-        //    for (int i=0; i<1000000; i++) // Test 1000000 times, create unique cols and verify few collisions
-        //    {
-        //        AssortedCardCollection hand = new AssortedCardCollection();
-        //        int repeat = _rng.Next(5,11);
-        //        for (int j = 0; j < repeat; j++) // Add cards 0-99 between 5-10 times (test that unique cols are unique, not ones with few cards)
-        //        {
-        //            hand.InsertCard(_rng.Next(100));
-        //        }
-        //        total++;
-        //        if(hashes.Contains(hand.GetHash()))
-        //        {
-        //            collisions++;
-        //        }
-        //        else
-        //        {
-        //            hashes.Add(hand.GetHash());
-        //        }
-        //    }
-        //    Assert.IsTrue(collisions / total < 0.01); // Try for 1% or less of collisions
-        //}
     }
 }
