@@ -18,13 +18,19 @@ namespace EngineTests
             CardFinder cardFinder = new CardFinder();
             InjectBasePlayerToDb(cardFinder);
             GameStateMachine sm = new GameStateMachine(cardFinder);
-            PlayerInitialData playerInit = new PlayerInitialData()
+            PlayerInitialData playerInit1 = new PlayerInitialData()
             {
-                Name = "TestPlayer",
+                Name = "TestPlayer1",
                 PlayerClass = PlayerClassType.BASE,
                 InitialDecklist = [],
             };
-            sm.StartNewGame(playerInit, playerInit);
+            PlayerInitialData playerInit2 = new PlayerInitialData()
+            {
+                Name = "TestPlayer2",
+                PlayerClass = PlayerClassType.BASE,
+                InitialDecklist = [],
+            };
+            sm.StartNewGame(playerInit1, playerInit2);
             return sm.DetailedState;
         }
         /// <summary>
@@ -143,15 +149,14 @@ namespace EngineTests
             HashSetVerification(testState, hashes, true);
         }
         /// <summary>
-        /// Adds entity to board, no checks
+        /// Inits and adds an entity into a game state, no checking or summoning, just init, regoster and adding into BLT
         /// </summary>
-        /// <param name="state">GameState</param>
-        /// <param name="lane">Which lane</param>
-        /// <param name="tileCoord">Which tile</param>
-        /// <param name="uniqueId">Desired ID</param>
-        /// <param name="owner">Entity owner index</param>
-        /// <param name="entity">Entity to add</param>
-        static public void ManualInitEntity(GameStateStruct state, PlayTargetLocation lane, int tileCoord, int uniqueId, int owner, PlacedEntity entity)
+        /// <param name="state"></param>
+        /// <param name="tileCoord"></param>
+        /// <param name="uniqueId"></param>
+        /// <param name="owner"></param>
+        /// <param name="entity"></param>
+        static public void ManualInitEntity(GameStateStruct state, int tileCoord, int uniqueId, int owner, PlacedEntity entity)
         {
             entity.Owner = owner;
             entity.UniqueId = uniqueId;
@@ -159,11 +164,30 @@ namespace EngineTests
             state.EntityData.Add(uniqueId, entity);
             state.BoardState.EntityListOperation(entity, EntityListOperation.ADD);
             // Add to lane
-            entity.LaneCoordinate = (LaneID)lane;
-            state.BoardState.GetLane(lane).EntityListOperation(entity, EntityListOperation.ADD);
+            Lane laneToAddTo = state.BoardState.GetLaneContainingTile(tileCoord);
+            laneToAddTo.EntityListOperation(entity, EntityListOperation.ADD);
             // Add to tile
-            entity.TileCoordinate = state.BoardState.GetLane(lane).GetAbsoluteTileCoord(tileCoord, entity.Owner);
-            state.BoardState.GetLane(lane).GetTileAbsolute(entity.TileCoordinate).EntityListOperation(entity, EntityListOperation.ADD);
+            entity.TileCoordinate = tileCoord;
+            Tile tile = state.BoardState.Tiles[tileCoord];
+            tile.EntityListOperation(entity, EntityListOperation.ADD);
+        }
+        /// <summary>
+        /// Given a SM list of events, fetches the first DebugEvent found and returns the Event CPU state for that
+        /// </summary>
+        /// <param name="stepResult">Step result</param>
+        /// <returns>Cpu state if debug found, or null if no debug event present</returns>
+        static public CpuState FetchDebugEvent(StepResult stepResult)
+        {
+            CpuState cpuState = null;
+            foreach (GameEngineEvent ev in stepResult.events)
+            {
+                if (ev.eventType == EventType.DEBUG_CHECK)
+                {
+                    cpuState = ((EntityEvent<CpuState>)ev).entity;
+                    break;
+                }
+            }
+            return cpuState;
         }
     }
 }

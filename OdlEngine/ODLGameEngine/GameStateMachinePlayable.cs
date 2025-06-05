@@ -72,8 +72,9 @@ namespace ODLGameEngine
             }
             // Second stage, got the actual card
             EntityBase cardData = CardDb.GetCard(card);
+            resultingPlayContext.PlayCost = cardData.Cost;
             // First check if player can afford
-            if (!PLAYABLE_PlayerCanAfford(cardData))
+            if (!PLAYABLE_PlayerCanAfford(resultingPlayContext.PlayCost))
             {
                 // Can't afford!
                 resultingPlayContext.PlayOutcome = PlayOutcome.CANT_AFFORD;
@@ -236,10 +237,10 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Which card</param>
         /// <returns>True if can afford</returns>
-        bool PLAYABLE_PlayerCanAfford(EntityBase card)
+        bool PLAYABLE_PlayerCanAfford(int cost)
         {
             // May need to be made smarter if someone does variable cost cards
-            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].CurrentGold >= card.Cost);
+            return (DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].CurrentGold >= cost);
         }
         /// <summary>
         /// Pays the cost of a card (e.g. if has variable cost of some weird stuff going on)

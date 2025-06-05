@@ -274,6 +274,7 @@ namespace ODLGameEngine
             Tiles = new Tile[numberOfTiles]; // Inits all the tiles
             for (int i = 0; i < numberOfTiles; i++)
             {
+                Tiles[i] = new Tile();
                 Tiles[i].coord = i;
             }
             PlainsLane = new Lane(LaneID.PLAINS, GameConstants.PLAINS_NUMBER_OF_TILES, Tiles, 0);
