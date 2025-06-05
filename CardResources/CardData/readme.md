@@ -208,18 +208,9 @@ Useful for effect with complex conditions where a part of the effect is conditio
 ## Possible Parameter Values
 
 - ```TargetLocation```
-    - ```BOARD```. For cards where the target is the "whole board" 
-    - ```PLAINS```
-    - ```FOREST```
-    - ```MOUNTAIN```
-    - ```ALL_BUT_MOUNTAIN```
-    - ```ALL_BUT_FOREST```
-    - ```ALL_BUT_PLAINS```
-    - ```ALL_LANES```
-    - ```PLAY_TARGET```. Effect target is the same as the played card. Only makes sense in cards with effects ```WHEN_PLAYED```.
-
-    These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
-    For example, ```PLAINS|FOREST``` would work exactly like ```ALL_BUT_MOUNTAIN```.
+    - ```BOARD``` will target the board
+    - ```PLAINS```/```FOREST```/```MOUNTAIN``` wil target these lanes specifically
+    - ```PLAY_TARGET``` the play target of the card just played is used, whatever that was. Only makes sense in cards with effects ```WHEN_PLAYED```.
 - ```TargetPlayer```
     - ```OWNER```: Owner of the card receives the effect
     - ```OPPONENT```: Player opposing the card owner will receive the effect

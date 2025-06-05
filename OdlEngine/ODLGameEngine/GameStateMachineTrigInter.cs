@@ -285,7 +285,7 @@ namespace ODLGameEngine
                     SearchLocation.PLAINS => DetailedState.BoardState.PlainsLane,
                     SearchLocation.FOREST => DetailedState.BoardState.ForestLane,
                     SearchLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
-                    SearchLocation.PLAY_TARGET => DetailedState.BoardState.GetLane(((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget),
+                    SearchLocation.PLAY_TARGET => (((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget == PlayTargetLocation.BOARD) ? DetailedState.BoardState : DetailedState.BoardState.GetLane(((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget),
                     _ => throw new Exception("Reference search location not implemented")
                 };
             }
