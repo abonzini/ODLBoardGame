@@ -1,5 +1,4 @@
 ﻿using ODLGameEngine;
-using System.Linq.Expressions;
 
 namespace EngineTests
 {
@@ -9,7 +8,7 @@ namespace EngineTests
         [TestMethod]
         public void SummonUnitEffect()
         {
-            // Testing effect where unit(s) is(are) summoned
+            // Testing effect where unit is summoned
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -46,17 +45,18 @@ namespace EngineTests
                 foreach (EntityOwner playerTarget in playerTargets)
                 {
                     int ownerPlayer = (playerTarget == EntityOwner.OWNER) ? playerIndex : 1 - playerIndex;
-                    for (int i = 1; i <= 7;  i++)
+                    PlayTargetLocation[] laneOptions = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
+                    foreach(PlayTargetLocation location in laneOptions)
                     {
-                        var numberOfSummons = i switch
+                        // Summon effect in one of each lane
+                        EffectLocation laneTarget = location switch
                         {
-                            1 or 2 or 4 => 1,
-                            3 or 5 or 6 => 2,
-                            7 => 3,
-                            _ => throw new Exception("Invalid lane what happened here?"),
+                            PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
+                            PlayTargetLocation.FOREST => EffectLocation.FOREST,
+                            PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                            _ => throw new Exception("Invalid location for test")
                         };
-                        PlayTargetLocation laneTarget = (PlayTargetLocation)i;
-                        summonEffect.TargetLocation = laneTarget;
+                        summonEffect.EffectLocation = laneTarget;
                         summonEffect.TargetPlayer = playerTarget;
                         // Pre play tests
                         Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, 0);
@@ -64,26 +64,26 @@ namespace EngineTests
                         Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         // Play
-                        Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the card
-                        Assert.AreEqual(PlayOutcome.OK, playRes.Item1);
+                        Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the card
+                        Assert.AreEqual(PlayOutcome.OK, playRes.Item1.PlayOutcome);
                         Assert.IsNotNull(playRes.Item2);
                         // Hash assert
                         int newHash = state.GetHashCode();
                         Assert.IsFalse(hashes.Contains(newHash));
                         hashes.Add(newHash);
                         // Location assert
-                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, numberOfSummons);
-                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, numberOfSummons);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(PlayTargetLocation.PLAINS)?1:0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(PlayTargetLocation.FOREST) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(PlayTargetLocation.MOUNTAIN) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(PlayTargetLocation.PLAINS) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(PlayTargetLocation.FOREST) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, laneTarget.HasFlag(PlayTargetLocation.MOUNTAIN) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, 1);
+                        Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 1);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.PLAINS) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.FOREST) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.MOUNTAIN) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.PLAINS) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.FOREST) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.MOUNTAIN) ? 1 : 0);
                         // Revert
                         sm.UndoPreviousStep();
                         Assert.AreEqual(prePlayHash, state.GetHashCode());
@@ -92,9 +92,9 @@ namespace EngineTests
                         Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileRelative(0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                     }
                 }
             }
@@ -103,7 +103,7 @@ namespace EngineTests
         public void TestTargetingFilters()
         {
             Random _rng = new Random();
-            // Testing effect where unit(s) is(are) summoned
+            // Checks the targeting
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -132,24 +132,28 @@ namespace EngineTests
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
-                PlayTargetLocation targetLocation = (PlayTargetLocation) (1 << lane); // Random lane
+                PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
                 lane++; lane %= 3;
                 PlayTargetLocation otherLane1 = (PlayTargetLocation)(1 << lane); // Get the other lanes for extra testing
                 lane++; lane %= 3;
                 PlayTargetLocation otherLane2 = (PlayTargetLocation)(1 << lane);
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, secondOppTile, 3, opponentIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 4, playerIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstOppTile, 5, opponentIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
@@ -163,10 +167,17 @@ namespace EngineTests
                 List<int> directionOptions = [0, -1];
                 List<EntityOwner> ownerOptions = [EntityOwner.OWNER, EntityOwner.OPPONENT];
                 List<EntityType> entityOptions = [EntityType.UNIT, EntityType.BUILDING, EntityType.PLAYER];
-                foreach(PlayTargetLocation loc in targetLocations)
+                foreach (PlayTargetLocation loc in targetLocations)
                 {
-                    searchEffect.TargetLocation = loc;
-                    foreach(int dir in directionOptions)
+                    searchEffect.EffectLocation = loc switch
+                    {
+                        PlayTargetLocation.BOARD => EffectLocation.BOARD,
+                        PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
+                        PlayTargetLocation.FOREST => EffectLocation.FOREST,
+                        PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                        _ => throw new Exception("An invalid location for this test")
+                    };
+                    foreach (int dir in directionOptions)
                     {
                         searchEffect.TempVariable = dir;
                         for (int i = 0; i < 1 << ownerOptions.Count; i++) // Loop for all owners
@@ -175,7 +186,7 @@ namespace EngineTests
                             searchEffect.TargetPlayer = EntityOwner.NONE;
                             for (int bit = 0; bit < ownerOptions.Count; bit++)
                             {
-                                if (((1<<bit) & i) != 0)
+                                if (((1 << bit) & i) != 0)
                                 {
                                     searchEffect.TargetPlayer |= ownerOptions[bit];
                                 }
@@ -186,7 +197,7 @@ namespace EngineTests
                                 searchEffect.TargetType = EntityType.NONE;
                                 for (int bit = 0; bit < entityOptions.Count; bit++)
                                 {
-                                    if (((1<<bit) & j) != 0)
+                                    if (((1 << bit) & j) != 0)
                                     {
                                         searchEffect.TargetType |= entityOptions[bit];
                                     }
@@ -206,22 +217,14 @@ namespace EngineTests
                                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                                 int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                                 // Play
-                                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                                GameEngineEvent debugEvent = null;
-                                foreach (GameEngineEvent ev in res.Item2.events)
-                                {
-                                    if (ev.eventType == EventType.DEBUG_CHECK)
-                                    {
-                                        debugEvent = ev;
-                                        break;
-                                    }
-                                }
-                                Assert.IsNotNull(debugEvent); // Found it!
+                                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                                Assert.IsNotNull(cpu);
                                 // Check returned targets
                                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                                 Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                                List<int> searchResultList = cpu.ReferenceEntities;
                                 Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                                 // Special cases
                                 if (searchEffect.TargetType.HasFlag(EntityType.PLAYER) && searchEffect.TargetPlayer.HasFlag(EntityOwner.OWNER))
@@ -234,10 +237,10 @@ namespace EngineTests
                                     if (searchEffect.TempVariable >= 0) Assert.AreEqual(opponentIndex, searchResultList.Last());
                                     else Assert.AreEqual(opponentIndex, searchResultList.First());
                                 }
-                                if(searchResultList.Count == 6) // In the case everything was found, there's two options
+                                if (searchResultList.Count == 6) // In the case everything was found, there's two options
                                 {
-                                    List<int> expectedResult = (searchEffect.TempVariable >= 0) ? [playerIndex,2,3,4,5,opponentIndex] : [opponentIndex,2,3,4,5,playerIndex];
-                                    for(int k =0; k<6; k++)
+                                    List<int> expectedResult = (searchEffect.TempVariable >= 0) ? [playerIndex, 2, 3, 4, 5, opponentIndex] : [opponentIndex, 2, 3, 4, 5, playerIndex];
+                                    for (int k = 0; k < 6; k++)
                                     {
                                         Assert.AreEqual(searchResultList[k], expectedResult[k]);
                                     }
@@ -256,7 +259,7 @@ namespace EngineTests
         public void TargetInPlayedLane()
         {
             Random _rng = new Random();
-            // Testing effect where unit(s) is(are) summoned
+            // Target is now in the played lane of a card (i.e. targetting effect)
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -290,19 +293,23 @@ namespace EngineTests
                 PlayTargetLocation otherLane1 = (PlayTargetLocation)(1 << lane); // Get the other lanes for extra testing
                 lane++; lane %= 3;
                 PlayTargetLocation otherLane2 = (PlayTargetLocation)(1 << lane);
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, secondOppTile, 3, opponentIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 4, playerIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstOppTile, 5, opponentIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
@@ -312,10 +319,10 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set targeting effects to see if the played lane is checked properly
                 searchEffect.SearchCriterion = SearchCriterion.ALL; // Search for all units in board, no weird lane situations yet
-                searchEffect.TargetLocation = PlayTargetLocation.PLAY_TARGET; // Skill will search where played
+                searchEffect.EffectLocation = EffectLocation.PLAY_TARGET; // Skill will search where played
                 searchEffect.TempVariable = 0; // Forward
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
-                searchEffect.TargetType = EntityType.UNIT|EntityType.PLAYER|EntityType.BUILDING; // Search for all
+                searchEffect.TargetType = EntityType.UNIT | EntityType.PLAYER | EntityType.BUILDING; // Search for all
                 List<PlayTargetLocation> playLocations = [targetLocation, otherLane1, otherLane2];
                 foreach (PlayTargetLocation loc in playLocations)
                 {
@@ -324,26 +331,18 @@ namespace EngineTests
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, loc); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, loc); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                    List<int> searchResultList = cpu.ReferenceEntities;
                     Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                     // Special cases
                     List<int> expectedResult;
-                    if(targetLocation == loc)
+                    if (targetLocation == loc)
                     {
                         expectedResult = [playerIndex, 2, 3, 4, 5, opponentIndex];
                     }
@@ -366,7 +365,6 @@ namespace EngineTests
         public void TileByTileExploration()
         {
             Random _rng = new Random();
-            // Testing effect where unit(s) is(are) summoned
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -396,19 +394,23 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, secondOppTile, 3, opponentIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 4, playerIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstOppTile, 5, opponentIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
@@ -418,7 +420,13 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set of targeting tests
                 searchEffect.SearchCriterion = SearchCriterion.QUANTITY; // Search for first n elements (all ordered!)
-                searchEffect.TargetLocation = targetLocation;
+                searchEffect.EffectLocation = targetLocation switch
+                {
+                    PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
+                    PlayTargetLocation.FOREST => EffectLocation.FOREST,
+                    PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                    _ => throw new Exception("Invalid for this test")
+                };
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
                 searchEffect.TargetType = EntityType.UNIT | EntityType.BUILDING | EntityType.PLAYER;
                 List<int> directionOptions = [6, -6]; // Will try forward and in the reverse, get 6 max (all elems)
@@ -429,25 +437,17 @@ namespace EngineTests
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                    List<int> searchResultList = cpu.ReferenceEntities;
                     Assert.AreEqual(6, searchResultList.Count);
                     // Check correct results
-                    List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0,4,2,3,5,1] : [0,5,3,2,4,1]; // The 2 options of how board looks in absolute
+                    List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0, 4, 2, 3, 5, 1] : [0, 5, 3, 2, 4, 1]; // The 2 options of how board looks in absolute
                     bool forwardOrder = true; // Is it a fw style response?
                     if (player != CurrentPlayer.PLAYER_1) // Being p2 flips
                         forwardOrder = !forwardOrder;
@@ -499,19 +499,23 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, secondOppTile, 3, opponentIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 4, playerIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstOppTile, 5, opponentIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
@@ -521,32 +525,30 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set of targeting tests
                 searchEffect.SearchCriterion = SearchCriterion.ORDINAL; // Search for first n elements (all ordered!)
-                searchEffect.TargetLocation = targetLocation;
+                searchEffect.EffectLocation = targetLocation switch
+                {
+                    PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
+                    PlayTargetLocation.FOREST => EffectLocation.FOREST,
+                    PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                    _ => throw new Exception("Invalid for this test")
+                };
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
                 searchEffect.TargetType = EntityType.UNIT | EntityType.BUILDING | EntityType.PLAYER;
-                for(int ord = -6; ord < 6; ord++) // Will look for all units, one by one
+                for (int ord = -6; ord < 6; ord++) // Will look for all units, one by one
                 {
                     searchEffect.TempVariable = ord;
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                    List<int> searchResultList = cpu.ReferenceEntities;
                     Assert.AreEqual(1, searchResultList.Count); // Ordinals return a single value regardless
                     // Check correct results
                     List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0, 4, 2, 3, 5, 1] : [0, 5, 3, 2, 4, 1]; // The 2 options of how board looks in absolute
@@ -571,7 +573,6 @@ namespace EngineTests
         public void NumericalTargeting()
         {
             Random _rng = new Random();
-            // Testing effect where unit(s) is(are) summoned
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -601,19 +602,23 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 2, playerIndex, new Unit()
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, opponentIndex, new Unit()
+                TestHelperFunctions.ManualInitEntity(state, secondOppTile, 3, opponentIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 4, playerIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 4, playerIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 5, opponentIndex, new Building()
+                TestHelperFunctions.ManualInitEntity(state, firstOppTile, 5, opponentIndex, new Building()
                 {
                     EntityType = EntityType.BUILDING,
                 });
@@ -623,7 +628,13 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set of targeting tests
                 searchEffect.SearchCriterion = SearchCriterion.QUANTITY; // Search for first n elements (all ordered!)
-                searchEffect.TargetLocation = targetLocation;
+                searchEffect.EffectLocation = targetLocation switch
+                {
+                    PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
+                    PlayTargetLocation.FOREST => EffectLocation.FOREST,
+                    PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                    _ => throw new Exception("Invalid for this test")
+                };
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
                 searchEffect.TargetType = EntityType.UNIT | EntityType.BUILDING | EntityType.PLAYER;
                 for (int num = -6; num <= 6; num++) // Will look for all units, one by one
@@ -633,25 +644,17 @@ namespace EngineTests
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
                     Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                    List<int> searchResultList = cpu.ReferenceEntities;
                     Assert.AreEqual(Math.Abs(num), searchResultList.Count);
                     // Check correct results
-                    if(num != 0) // Nothing to assert if searching for 0
+                    if (num != 0) // Nothing to assert if searching for 0
                     {
                         List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0, 4, 2, 3, 5, 1] : [0, 5, 3, 2, 4, 1]; // The 2 options of how board looks in absolute
                         bool forwardOrder = true; // Is it a fw style response?
@@ -660,7 +663,7 @@ namespace EngineTests
                         if (num < 0) // ...but being in reverse direction will revert again
                             forwardOrder = !forwardOrder;
                         if (!forwardOrder) expectedResult.Reverse(); // If reversed order, just flip the list
-                        for(int idx = 0; idx < Math.Abs(num); idx++) // Iterate
+                        for (int idx = 0; idx < Math.Abs(num); idx++) // Iterate
                         {
                             Assert.AreEqual(searchResultList[idx], expectedResult[idx]);
                         }
@@ -702,7 +705,7 @@ namespace EngineTests
                 {
                     EffectType = EffectType.FIND_ENTITIES,
                     SearchCriterion = SearchCriterion.ALL, // All of them,
-                    TargetLocation = PlayTargetLocation.BOARD, // Everywhere
+                    EffectLocation = EffectLocation.BOARD, // Everywhere
                     TargetPlayer = EntityOwner.OWNER, // Whoever played the card
                     TargetType = EntityType.UNIT // Get unit (as this has all stats)
                 };
@@ -725,14 +728,16 @@ namespace EngineTests
                 PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
                 Unit theUnit = new Unit() // This is the unit that'll be created
                 {
-                    EntityType = EntityType.UNIT, 
+                    EntityType = EntityType.UNIT,
                 };
                 theUnit.Attack.BaseValue = statValue;
                 theUnit.Hp.BaseValue = statValue;
                 theUnit.Movement.BaseValue = statValue;
                 theUnit.MovementDenominator.BaseValue = statValue;
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 2, playerIndex, (PlacedEntity)theUnit.Clone());
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, playerIndex, (PlacedEntity)theUnit.Clone());
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 2, playerIndex, (PlacedEntity)theUnit.Clone());
+                TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 3, playerIndex, (PlacedEntity)theUnit.Clone());
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -744,21 +749,13 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                    List<int> searchResultList = cpu.ReferenceEntities;
                     foreach (int entityId in searchResultList)
                     { // Check if the buff did it's job
                         Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
@@ -808,7 +805,7 @@ namespace EngineTests
                 {
                     EffectType = EffectType.FIND_ENTITIES,
                     SearchCriterion = SearchCriterion.ALL, // All of them,
-                    TargetLocation = PlayTargetLocation.BOARD, // Everywhere
+                    EffectLocation = EffectLocation.BOARD, // Everywhere
                     TargetPlayer = EntityOwner.OWNER, // Whoever played the card
                     TargetType = EntityType.UNIT // Get unit (as this has all stats)
                 };
@@ -837,8 +834,10 @@ namespace EngineTests
                 theUnit.Hp.BaseValue = statValue;
                 theUnit.Movement.BaseValue = statValue;
                 theUnit.MovementDenominator.BaseValue = statValue;
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 0, 2, playerIndex, (PlacedEntity)theUnit.Clone());
-                TestHelperFunctions.ManualInitEntity(state, targetLocation, 1, 3, playerIndex, (PlacedEntity)theUnit.Clone());
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 2, playerIndex, (PlacedEntity)theUnit.Clone());
+                TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 3, playerIndex, (PlacedEntity)theUnit.Clone());
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -858,21 +857,13 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                    List<int> searchResultList = cpu.ReferenceEntities;
                     foreach (int entityId in searchResultList)
                     { // Check if the buff did it's job
                         Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
@@ -924,21 +915,13 @@ namespace EngineTests
                 // Pre-play prep
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
-                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card anywhere (PLAINS)
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                GameEngineEvent debugEvent = null;
-                foreach (GameEngineEvent ev in res.Item2.events)
-                {
-                    if (ev.eventType == EventType.DEBUG_CHECK)
-                    {
-                        debugEvent = ev;
-                        break;
-                    }
-                }
-                Assert.IsNotNull(debugEvent); // Found it!
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.IsNotNull(cpu);
                 // Check returned targets
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                List<int> searchResultList = cpu.ReferenceEntities;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
                 // Revert and hash check
@@ -980,7 +963,7 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Now I init a building in first tile
                 Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
-                TestHelperFunctions.ManualInitEntity(state, PlayTargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
+                TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
                 state.NextUniqueIndex = 3;
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -989,20 +972,13 @@ namespace EngineTests
                 // Pre-play prep
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
-                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play unit anywhere (PLAINS)
-                GameEngineEvent debugEvent = null;
-                foreach (GameEngineEvent ev in res.Item2.events)
-                {
-                    if (ev.eventType == EventType.DEBUG_CHECK)
-                    {
-                        debugEvent = ev;
-                        break;
-                    }
-                }
-                Assert.IsNotNull(debugEvent); // Found it!
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.IsNotNull(cpu);
                 // Check returned targets
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                List<int> searchResultList = cpu.ReferenceEntities;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
                 // Revert and hash check
@@ -1049,19 +1025,11 @@ namespace EngineTests
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // State hash has changed
                 // Now check trigger
                 StepResult res = sm.TriggerDebugStep();
-                GameEngineEvent debugEvent = null;
-                foreach (GameEngineEvent ev in res.events)
-                {
-                    if (ev.eventType == EventType.DEBUG_CHECK)
-                    {
-                        debugEvent = ev;
-                        break;
-                    }
-                }
-                Assert.IsNotNull(debugEvent); // Found it!
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res);
+                Assert.IsNotNull(cpu);
                 // Check returned targets
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                List<int> searchResultList = cpu.ReferenceEntities;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
                 // Reversion
@@ -1106,10 +1074,10 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Now I init a building in first tile
                 Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
-                TestHelperFunctions.ManualInitEntity(state, PlayTargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
-                state.NextUniqueIndex = 3; 
+                TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
+                state.NextUniqueIndex = 3;
                 List<EntityType> buildingEntityTypes = [EntityType.UNIT, EntityType.BUILDING];
-                List<EntityType> filterEntityTypes = [EntityType.UNIT, EntityType.BUILDING, EntityType.BUILDING|EntityType.UNIT];
+                List<EntityType> filterEntityTypes = [EntityType.UNIT, EntityType.BUILDING, EntityType.BUILDING | EntityType.UNIT];
                 foreach (EntityType buildingEntityType in buildingEntityTypes)
                 {
                     foreach (EntityType filterEntityType in filterEntityTypes)
@@ -1123,21 +1091,14 @@ namespace EngineTests
                         // Pre-play prep
                         int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play unit anywhere (PLAINS)
-                        GameEngineEvent debugEvent = null;
-                        foreach (GameEngineEvent ev in res.Item2.events)
-                        {
-                            if (ev.eventType == EventType.DEBUG_CHECK)
-                            {
-                                debugEvent = ev;
-                                break;
-                            }
-                        }
-                        Assert.IsNotNull(debugEvent); // Found it!
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                        Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                        CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                        Assert.IsNotNull(cpu);
                         // Check returned targets
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                        List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
-                        if(filterEntityType.HasFlag(buildingEntityType)) // Then, if types match, id get sth as target, otherwise no
+                        List<int> searchResultList = cpu.ReferenceEntities;
+                        if (filterEntityType.HasFlag(buildingEntityType)) // Then, if types match, id get sth as target, otherwise no
                         {
                             Assert.AreEqual(searchResultList.Count, 1);
                             Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 2); // Building shoudl've been initialized as id = 2 (and unit = 3)
@@ -1188,8 +1149,8 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Now I init a building in first tile
                 Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
-                TestHelperFunctions.ManualInitEntity(state, PlayTargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
-                state.NextUniqueIndex = 3; 
+                TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
+                state.NextUniqueIndex = 3;
                 List<EntityOwner> buildingEntityOwners = [EntityOwner.OWNER, EntityOwner.OPPONENT]; // This is weird and never should happen in real code
                 List<EntityOwner> filterEntityOwners = [EntityOwner.OWNER, EntityOwner.OPPONENT, EntityOwner.BOTH];
                 foreach (EntityOwner buildingEntityOwner in buildingEntityOwners)
@@ -1205,20 +1166,13 @@ namespace EngineTests
                         // Pre-play prep
                         int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play unit anywhere (PLAINS)
-                        GameEngineEvent debugEvent = null;
-                        foreach (GameEngineEvent ev in res.Item2.events)
-                        {
-                            if (ev.eventType == EventType.DEBUG_CHECK)
-                            {
-                                debugEvent = ev;
-                                break;
-                            }
-                        }
-                        Assert.IsNotNull(debugEvent); // Found it!
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                        Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                        CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                        Assert.IsNotNull(cpu);
                         // Check returned targets
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                        List<int> searchResultList = ((EntityEvent<CpuState>)debugEvent).entity.ReferenceEntities;
+                        List<int> searchResultList = cpu.ReferenceEntities;
                         if (filterEntityOwner.HasFlag(buildingEntityOwner)) // Then, if types match, id get sth as target, otherwise no
                         {
                             Assert.AreEqual(searchResultList.Count, 1);
@@ -1299,21 +1253,13 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly
+                    Assert.AreEqual(cpu.Acc, desiredValue); // Check if ACC loaded properly
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -1335,11 +1281,11 @@ namespace EngineTests
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // I create many units in the board, 4 units Attack 0,1,2,3
                 Unit testUnit = TestCardGenerator.CreateUnit(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
-                for(int i = 0; i < 4; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     testUnit.Attack.BaseValue = i;
                     // Clone unit and put in the right place. Indices 0,1, are already reserved
-                    TestHelperFunctions.ManualInitEntity(state, PlayTargetLocation.PLAINS, 0, i + 2, playerIndex, (Unit)testUnit.Clone());
+                    TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, i + 2, playerIndex, (Unit)testUnit.Clone());
                 }
                 // Cards
                 CardFinder cardDb = new CardFinder();
@@ -1349,7 +1295,7 @@ namespace EngineTests
                 Effect searchEffect = new Effect()// Finds all units
                 {
                     EffectType = EffectType.FIND_ENTITIES,
-                    TargetLocation = PlayTargetLocation.BOARD,
+                    EffectLocation = EffectLocation.BOARD,
                     TargetPlayer = EntityOwner.BOTH,
                     TargetType = EntityType.UNIT,
                     SearchCriterion = SearchCriterion.ALL,
@@ -1390,21 +1336,13 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly
+                    Assert.AreEqual(cpu.Acc, desiredValue); // Check if ACC loaded properly
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -1468,25 +1406,17 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Test
-                int desiredValue = firstValue * secondValue; 
+                int desiredValue = firstValue * secondValue;
                 // Pre-play prep
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
-                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play unit in any lane idc
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                GameEngineEvent debugEvent = null;
-                foreach (GameEngineEvent ev in res.Item2.events)
-                {
-                    if (ev.eventType == EventType.DEBUG_CHECK)
-                    {
-                        debugEvent = ev;
-                        break;
-                    }
-                }
-                Assert.IsNotNull(debugEvent); // Found it!
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.IsNotNull(cpu);
                 // Check returned targets
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly
+                Assert.AreEqual(cpu.Acc, desiredValue); // Check if ACC loaded properly
                 // Revert and hash check
                 sm.UndoPreviousStep();
                 Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -1557,21 +1487,13 @@ namespace EngineTests
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
                 sm.PlayFromHand(2, PlayTargetLocation.PLAINS); // Play unit in any lane idc
-                Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the skill
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                GameEngineEvent debugEvent = null;
-                foreach (GameEngineEvent ev in res.Item2.events)
-                {
-                    if (ev.eventType == EventType.DEBUG_CHECK)
-                    {
-                        debugEvent = ev;
-                        break;
-                    }
-                }
-                Assert.IsNotNull(debugEvent); // Found it!
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.IsNotNull(cpu);
                 // Check returned targets
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                Assert.AreEqual(((EntityEvent<CpuState>)debugEvent).entity.Acc, desiredValue); // Check if ACC loaded properly, and no interference from trigger
+                Assert.AreEqual(cpu.Acc, desiredValue); // Check if ACC loaded properly, and no interference from trigger
                 // Revert and hash check
                 sm.UndoPreviousStep();
                 sm.UndoPreviousStep();
@@ -1637,8 +1559,8 @@ namespace EngineTests
                         // Pre-play prep
                         int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
-                        Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the skill
-                        Assert.AreEqual(res.Item1, PlayOutcome.OK);
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the skill
+                        Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                         // Check gold then
                         if (owner.HasFlag(EntityOwner.OWNER)) // Check if this player's gold had to be modified or remains as starting
                             Assert.AreEqual(sm.DetailedState.PlayerStates[playerIndex].CurrentGold, desiredValue);
@@ -1696,24 +1618,16 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    if (stopExpected) // Check whether I should be finding the debug event depending on assertion type
                     {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    if(stopExpected) // Check whether I should be finding the debug event depending on assertion type
-                    {
-                        Assert.IsNull(debugEvent);
+                        Assert.IsNull(cpu);
                     }
                     else
                     {
-                        Assert.IsNotNull(debugEvent); // Found it!
+                        Assert.IsNotNull(cpu);
                     }
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed

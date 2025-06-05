@@ -34,8 +34,8 @@ namespace CardGenerationHelper
         void InitializeEffectBox()
         {
             // Now preload each box
-            TargetLocationBox.Items.AddRange(Enum.GetValues(typeof(SearchLocation)).Cast<object>().ToArray());
-            TargetLocationBox.SelectedIndex = 0;
+            EffectLocationBox.Items.AddRange(Enum.GetValues(typeof(EffectLocation)).Cast<object>().ToArray());
+            EffectLocationBox.SelectedIndex = 0;
             TargetPlayerEnumBox.SetEnum(typeof(EntityOwner));
             SearchCriterionBox.Items.AddRange(Enum.GetValues(typeof(SearchCriterion)).Cast<object>().ToArray());
             SearchCriterionBox.SelectedIndex = 0;
@@ -57,9 +57,9 @@ namespace CardGenerationHelper
         }
         void ResetAll()
         {
-            TargetLocationBox.SelectedIndex = 0;
-            TargetLocationBox.Hide();
-            TargetLocationLabel.Hide();
+            EffectLocationBox.SelectedIndex = 0;
+            EffectLocationBox.Hide();
+            EffectLocationLabel.Hide();
             TargetPlayerEnumBox.Clear();
             TargetPlayerEnumBox.Hide();
             TargetPlayerLabel.Hide();
@@ -89,8 +89,8 @@ namespace CardGenerationHelper
                 EffectType.TRIGGER_DEBUG => [],
                 EffectType.DEBUG_STORE => [],
                 EffectType.SELECT_ENTITY => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel],
-                EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel, TargetLocationBox, TargetLocationLabel, InputBox, InputLabel, MultiVariableBox, MultiVariableLabel],
-                EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerEnumBox, TargetLocationBox, TargetLocationLabel, InputBox, InputBox, MultiVariableBox, MultiVariableLabel],
+                EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel, EffectLocationBox, EffectLocationLabel, InputBox, InputLabel, MultiVariableBox, MultiVariableLabel],
+                EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerEnumBox, EffectLocationBox, EffectLocationLabel, InputBox, InputBox, MultiVariableBox, MultiVariableLabel],
                 EffectType.MODIFIER => [ModifierOperationBox, ModifierOperationLabel, InputBox, InputLabel, OutputBox, OutputLabel, TargetPlayerEnumBox, TargetPlayerLabel, MultiVariableBox, MultiVariableLabel],
                 EffectType.ASSERT => [InputBox, InputLabel],
                 _ => throw new NotImplementedException("Unhandled effect type"),
@@ -113,7 +113,7 @@ namespace CardGenerationHelper
             return new Effect()
             {
                 EffectType = (EffectType)EffectTypeComboBox.SelectedItem,
-                TargetLocation = (SearchLocation)TargetLocationBox.SelectedItem,
+                EffectLocation = (EffectLocation)EffectLocationBox.SelectedItem,
                 TargetPlayer = (EntityOwner)TargetPlayerEnumBox.GetEnumValue(),
                 SearchCriterion = (SearchCriterion)SearchCriterionBox.SelectedItem,
                 TargetType = (EntityType)TargetTypeEnumBox.GetEnumValue(),
@@ -136,7 +136,7 @@ namespace CardGenerationHelper
         {
             EffectTypeComboBox.SelectedItem = effect.EffectType;
             // Should be an auto update here
-            TargetLocationBox.SelectedItem = effect.TargetLocation;
+            EffectLocationBox.SelectedItem = effect.EffectLocation;
             TargetPlayerEnumBox.SetFlags((int)effect.TargetPlayer);
             SearchCriterionBox.SelectedItem = effect.SearchCriterion;
             TargetTypeEnumBox.SetFlags((int)effect.TargetType);

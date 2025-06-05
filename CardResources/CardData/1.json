@@ -6,19 +6,19 @@
     "WHEN_PLAYED": [
       {
         "EffectType": "SUMMON_UNIT",
-        "TargetLocation": "PLAINS",
+        "EffectLocation": "PLAINS",
         "TargetPlayer": "OWNER",
         "TempVariable": 1
       },
       {
         "EffectType": "SUMMON_UNIT",
-        "TargetLocation": "FOREST",
+        "EffectLocation": "FOREST",
         "TargetPlayer": "OWNER",
         "TempVariable": 1
       },
       {
         "EffectType": "SUMMON_UNIT",
-        "TargetLocation": "MOUNTAIN",
+        "EffectLocation": "MOUNTAIN",
         "TargetPlayer": "OWNER",
         "TempVariable": 1
       }

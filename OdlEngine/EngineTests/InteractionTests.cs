@@ -1,9 +1,4 @@
 ﻿using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EngineTests
 {
@@ -32,19 +27,12 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the card
-                Assert.AreEqual(PlayOutcome.OK, playRes.Item1);
+                Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the card
+                Assert.AreEqual(PlayOutcome.OK, playRes.Item1.PlayOutcome);
                 Assert.IsNotNull(playRes.Item2);
-                bool debugFlagFound = false; // Check if the debug check was added when card was played
-                foreach (GameEngineEvent gameEngineEvent in playRes.Item2.events)
-                {
-                    if (gameEngineEvent.eventType == EventType.DEBUG_CHECK)
-                    {
-                        debugFlagFound = true;
-                        break;
-                    }
-                }
-                Assert.IsTrue(debugFlagFound);
+                // Check if debug event is there
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(playRes.Item2);
+                Assert.IsNotNull(cpu);
             }
         }
         [TestMethod]
@@ -68,7 +56,8 @@ namespace EngineTests
                 // Card 2, a building, just casually placed on first tile
                 Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
                 // Now add the building into the board
-                TestHelperFunctions.ManualInitEntity(state, PlayTargetLocation.PLAINS, 0, 2, playerIndex, building); // Now building is in place
+                int tileCoord = (playerIndex == 0) ? 0 : 3; // Puts in the first plains lane (RELATIVE TO PLAYER!)
+                TestHelperFunctions.ManualInitEntity(state, tileCoord, 2, playerIndex, building); // Now building is in place
                 state.NextUniqueIndex = 3;
                 // Create the "on step" effect
                 Effect debugEffect = new Effect()
@@ -101,22 +90,15 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayOutcome, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play unit anywhere (PLAINS)
-                    Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.Item2.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play unit anywhere (PLAINS)
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    // Check if debug event is there
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
-                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.CurrentSpecificContext.ActivatedEntity.EntityType);
+                    Assert.AreEqual(entityType, cpu.CurrentSpecificContext.ActivatedEntity.EntityType);
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -133,7 +115,7 @@ namespace EngineTests
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentState = States.DRAW_PHASE;
                 state.CurrentPlayer = player;
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
@@ -144,8 +126,10 @@ namespace EngineTests
                 // Card 2, a building, just casually placed on second tile
                 Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
                 // Now add the building into the board
-                TestHelperFunctions.ManualInitEntity(state, PlayTargetLocation.PLAINS, 1, 2, playerIndex, building); // Now building is in place
-                state.NextUniqueIndex = 3;
+                int tileCoord = (playerIndex == 0) ? 1 : 2; // Puts in the second plains lane (RELATIVE TO PLAYER!)
+                TestHelperFunctions.ManualInitEntity(state, tileCoord, 2, playerIndex, building); // Now building is in place
+                tileCoord = (playerIndex == 0) ? 0 : 3; // Puts in the first plains lane (RELATIVE TO PLAYER!)
+                TestHelperFunctions.ManualInitEntity(state, tileCoord, 3, playerIndex, unit); // Now unit is there too
                 // Create the "on step" effect
                 Effect debugEffect = new Effect()
                 {
@@ -174,33 +158,17 @@ namespace EngineTests
                     // I'll load the game
                     GameStateMachine sm = new GameStateMachine(cardDb);
                     sm.LoadGame(state); // Start from here
-                    // Pre-play prep
+                    // Before the advance
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                    // Play
-                    sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play unit anywhere (PLAINS)
-                    sm.EndTurn(); // Ends turn
-                    sm.Step(); // Opp draw phase
-                    sm.EndTurn(); // End opp turn
                     StepResult res = sm.Step(); // Do my draw phase, trigger advance now
-                    GameEngineEvent debugEvent = null;
-                    foreach (GameEngineEvent ev in res.events)
-                    {
-                        if (ev.eventType == EventType.DEBUG_CHECK)
-                        {
-                            debugEvent = ev;
-                            break;
-                        }
-                    }
-                    Assert.IsNotNull(debugEvent); // Found it!
+                    // Check if debug event is there
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res);
+                    Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                     // Want to make sure the entity activated is speicfically the building OR the unit (whatever im tracking)
-                    Assert.AreEqual(entityType, ((EntityEvent<CpuState>)debugEvent).entity.CurrentSpecificContext.ActivatedEntity.EntityType);
+                    Assert.AreEqual(entityType, cpu.CurrentSpecificContext.ActivatedEntity.EntityType);
                     // Revert EVERYTHING and hash check
-                    sm.UndoPreviousStep();
-                    sm.UndoPreviousStep();
-                    sm.UndoPreviousStep();
-                    sm.UndoPreviousStep();
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
