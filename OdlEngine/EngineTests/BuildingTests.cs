@@ -145,7 +145,7 @@ namespace EngineTests
                 Assert.IsFalse(res.PlayTarget.HasFlag(PlayTargetLocation.MOUNTAIN));
                 TryBuild(PlayTargetLocation.ALL_BUT_MOUNTAIN);
                 // Finally in mountain
-                int mountainCoord = sm.DetailedState.BoardState.MountainLane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.MOUNTAIN_NUMBER_IF_TILES));
+                int mountainCoord = sm.DetailedState.BoardState.MountainLane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.MOUNTAIN_NUMBER_OF_TILES));
                 TestHelperFunctions.ManualInitEntity(sm.DetailedState, mountainCoord, -3, playerIndex, unit);
                 res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
                 Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK);

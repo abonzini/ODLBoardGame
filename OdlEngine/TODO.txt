@@ -1,6 +1,5 @@
 Ongoing tasks in order of priority:
-- Refactor:
-	- Fix tests
+- Now finally can go back to refactoring triggers
 - 4,5:
 	Triginter related to march, maybe assertions
 - Implement rest of rulebook

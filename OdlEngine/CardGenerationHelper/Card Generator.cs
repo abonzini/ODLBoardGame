@@ -267,7 +267,7 @@ namespace CardGenerationHelper
                 {
                     PlayTargetLocation.PLAINS => GameConstants.PLAINS_NUMBER_OF_TILES,
                     PlayTargetLocation.FOREST => GameConstants.FOREST_NUMBER_OF_TILES,
-                    PlayTargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_NUMBER_IF_TILES,
+                    PlayTargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_NUMBER_OF_TILES,
                     _ => throw new Exception("Invalid lane BP")
                 };
                 bpElements = new int[Math.Min(choices.Length, maxTiles)]; // Bp limited by tile amount and also by how many fields

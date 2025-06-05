@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ODLGameEngine
+﻿namespace ODLGameEngine
 {
     public static class GameConstants
     {
@@ -12,7 +6,7 @@ namespace ODLGameEngine
         public const int BOARD_NUMBER_OF_LANES = 3;
         public const int PLAINS_NUMBER_OF_TILES = 4;
         public const int FOREST_NUMBER_OF_TILES = 6;
-        public const int MOUNTAIN_NUMBER_IF_TILES = 8;
+        public const int MOUNTAIN_NUMBER_OF_TILES = 8;
         // May need to be moved to player class if different between them or sth
         public const int STARTING_HP = 20;
         public const int STARTING_GOLD = 5;
