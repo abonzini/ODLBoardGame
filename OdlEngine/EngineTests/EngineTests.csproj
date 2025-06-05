@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="BuildingTests.cs" />
     <Compile Remove="DeckTests.cs" />
     <Compile Remove="DeserializeAllCards.cs" />
     <Compile Remove="EffectTests.cs" />
