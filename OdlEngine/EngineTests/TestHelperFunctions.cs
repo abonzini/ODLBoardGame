@@ -149,7 +149,7 @@ namespace EngineTests
             HashSetVerification(testState, hashes, true);
         }
         /// <summary>
-        /// Inits and adds an entity into a game state, no checking or summoning, just init, regoster and adding into BLT
+        /// Inits and adds an entity into a game state, no checking or summoning, NO CLONING, just init, regoster and adding into BLT
         /// </summary>
         /// <param name="state"></param>
         /// <param name="tileCoord"></param>

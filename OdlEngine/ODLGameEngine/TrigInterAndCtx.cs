@@ -1,10 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
@@ -44,7 +39,7 @@ namespace ODLGameEngine
     /// When searchign for a target, which location is searched
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum SearchLocation
+    public enum EffectLocation
     {
         BOARD,
         PLAINS,
@@ -127,7 +122,7 @@ namespace ODLGameEngine
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EffectType EffectType;
         [JsonConverter(typeof(StringEnumConverter))]
-        public SearchLocation TargetLocation;
+        public EffectLocation EffectLocation;
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EntityOwner TargetPlayer;
         [JsonConverter(typeof(StringEnumConverter))]

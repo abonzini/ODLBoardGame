@@ -1,9 +1,4 @@
 ﻿using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EngineTests
 {
@@ -31,15 +26,15 @@ namespace EngineTests
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                Tuple<PlayOutcome, PlayTargetLocation> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
+                PlayContext optionRes = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
                 // Card should not be playable in any lane because there's no target
-                Assert.AreEqual(optionRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                Assert.AreEqual(optionRes.Item2, PlayTargetLocation.INVALID); // Bc invalid...
+                Assert.AreEqual(optionRes.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
+                Assert.AreEqual(optionRes.PlayTarget, PlayTargetLocation.INVALID); // Bc invalid...
                 PlayTargetLocation[] targetTest = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
                 foreach(PlayTargetLocation target in targetTest)
                 {
-                    Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, target);
-                    Assert.AreEqual(playRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
+                    Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, target);
+                    Assert.AreEqual(playRes.Item1.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
                     Assert.IsNull(playRes.Item2); // Bc invalid...
                 }
             }
@@ -63,15 +58,15 @@ namespace EngineTests
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                Tuple<PlayOutcome, PlayTargetLocation> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
+                PlayContext optionRes = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
                 // Card should not be playable in any lane, but because it's missing the unit!
-                Assert.AreEqual(optionRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                Assert.AreEqual(optionRes.Item2, PlayTargetLocation.INVALID); // Bc invalid...
+                Assert.AreEqual(optionRes.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
+                Assert.AreEqual(optionRes.PlayTarget, PlayTargetLocation.INVALID); // Bc invalid...
                 PlayTargetLocation[] targetTest = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
                 foreach (PlayTargetLocation target in targetTest)
                 {
-                    Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, target);
-                    Assert.AreEqual(playRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
+                    Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, target);
+                    Assert.AreEqual(playRes.Item1.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
                     Assert.IsNull(playRes.Item2); // Bc invalid...
                 }
             }
@@ -79,6 +74,7 @@ namespace EngineTests
         [TestMethod]
         public void VerifyPlayabilityOnceTheresUnit()
         {
+            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -90,47 +86,36 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere
                 cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
-                // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
+                // Basic unit
+                Unit unit = TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                // And 3 cheap units 1-G-HP-ATK-MOV-DENOM-TGT
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                // Card should not be playable in any lane, but because it's missing the unit!
-                Assert.AreEqual(res.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID); // Bc invalid...
-                PlayTargetLocation[] targetTest = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
-                foreach (PlayTargetLocation target in targetTest)
-                {
-                    Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, target);
-                    Assert.AreEqual(playRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                    Assert.IsNull(playRes.Item2); // Bc invalid...
-                }
-                // Ok but now I play unit in plains, and building should be playable in plains only
-                sm.PlayFromHand(2, PlayTargetLocation.PLAINS);
-                res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.PLAINS));
-                Assert.IsFalse(res.Item2.HasFlag(PlayTargetLocation.FOREST));
-                Assert.IsFalse(res.Item2.HasFlag(PlayTargetLocation.MOUNTAIN));
+                // Card should not be playable in any lane, but because it's missing the unit. This is proven in another test...
+                // ...but now I inject unit in plains, and building should be playable in plains only
+                int plainsCoord = sm.DetailedState.BoardState.PlainsLane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES)); // Get lane's random tile. Buildings BP should make it buildable anywhere so this should never fail
+                TestHelperFunctions.ManualInitEntity(sm.DetailedState, plainsCoord, -1, playerIndex, unit); // Add unit (will use negative ids not to interfere with the building id)
+                PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND); // What happens if I attempt to play building from hand?
+                Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK);
+                Assert.IsTrue(res.PlayTarget.HasFlag(PlayTargetLocation.PLAINS)); // Would be playable in lane and none other
+                Assert.IsFalse(res.PlayTarget.HasFlag(PlayTargetLocation.FOREST));
+                Assert.IsFalse(res.PlayTarget.HasFlag(PlayTargetLocation.MOUNTAIN));
+                /// Helper function, attempts to build a building in any lane, and asserts it builds only in wouldBeValidTarget 
                 void TryBuild(PlayTargetLocation wouldBeValidTarget)
                 {
                     PlayTargetLocation[] targetTest = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
                     foreach (PlayTargetLocation target in targetTest)
                     {
                         int prePlayHash = sm.DetailedState.GetHashCode();
-                        Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, target);
+                        Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, target);
                         if (wouldBeValidTarget.HasFlag(target)) // if target is correct
                         {
                             // Building should've played ok
-                            Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
+                            Assert.AreEqual(playRes.Item1.PlayOutcome, PlayOutcome.OK);
+                            Assert.AreEqual(playRes.Item1.PlayTarget, target);
                             Assert.IsNotNull(playRes.Item2);
                             Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash should've changed
                             Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Player has building
@@ -143,138 +128,32 @@ namespace EngineTests
                         }
                         else
                         {
-                            Assert.AreEqual(playRes.Item1, PlayOutcome.INVALID_TARGET); // Would be an error!
+                            Assert.AreEqual(playRes.Item1.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
+                            Assert.AreEqual(playRes.Item1.PlayTarget, PlayTargetLocation.INVALID);
                             Assert.IsNull(playRes.Item2); // Bc invalid...
                         }
                     }
                 }
                 TryBuild(PlayTargetLocation.PLAINS);
-                // Then in forest
-                sm.PlayFromHand(2, PlayTargetLocation.FOREST);
-                res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.PLAINS));
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.FOREST));
-                Assert.IsFalse(res.Item2.HasFlag(PlayTargetLocation.MOUNTAIN));
+                // Same in forest
+                int forestCoord = sm.DetailedState.BoardState.ForestLane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.FOREST_NUMBER_OF_TILES));
+                TestHelperFunctions.ManualInitEntity(sm.DetailedState, forestCoord, -2, playerIndex, unit);
+                res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK);
+                Assert.IsTrue(res.PlayTarget.HasFlag(PlayTargetLocation.PLAINS));
+                Assert.IsTrue(res.PlayTarget.HasFlag(PlayTargetLocation.FOREST));
+                Assert.IsFalse(res.PlayTarget.HasFlag(PlayTargetLocation.MOUNTAIN));
                 TryBuild(PlayTargetLocation.ALL_BUT_MOUNTAIN);
                 // Finally in mountain
-                sm.PlayFromHand(2, PlayTargetLocation.MOUNTAIN);
-                res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.PLAINS));
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.FOREST));
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.MOUNTAIN));
+                int mountainCoord = sm.DetailedState.BoardState.MountainLane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.MOUNTAIN_NUMBER_OF_TILES));
+                TestHelperFunctions.ManualInitEntity(sm.DetailedState, mountainCoord, -3, playerIndex, unit);
+                res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK);
+                Assert.IsTrue(res.PlayTarget.HasFlag(PlayTargetLocation.PLAINS));
+                Assert.IsTrue(res.PlayTarget.HasFlag(PlayTargetLocation.FOREST));
+                Assert.IsTrue(res.PlayTarget.HasFlag(PlayTargetLocation.MOUNTAIN));
                 TryBuild(PlayTargetLocation.ALL_LANES);
-                // And due reversions...
-                sm.UndoPreviousStep();
-                res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.PLAINS));
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.FOREST));
-                Assert.IsFalse(res.Item2.HasFlag(PlayTargetLocation.MOUNTAIN));
-                TryBuild(PlayTargetLocation.ALL_BUT_MOUNTAIN);
-                sm.UndoPreviousStep();
-                res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                Assert.IsTrue(res.Item2.HasFlag(PlayTargetLocation.PLAINS));
-                Assert.IsFalse(res.Item2.HasFlag(PlayTargetLocation.FOREST));
-                Assert.IsFalse(res.Item2.HasFlag(PlayTargetLocation.MOUNTAIN));
-                TryBuild(PlayTargetLocation.PLAINS);
-                sm.UndoPreviousStep();
-                res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(res.Item1, PlayOutcome.NO_TARGET_AVAILABLE);
-                Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID);
-                foreach (PlayTargetLocation target in targetTest)
-                {
-                    Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, target);
-                    Assert.AreEqual(playRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                    Assert.IsNull(playRes.Item2); // Bc invalid...
-                }
-            }
-        }
-        [TestMethod]
-        public void VerifyPlayabilityOnceAdvanced()
-        {
-            Random _rng = new Random();
-            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
-            foreach (CurrentPlayer player in players)
-            {
-                int playerIndex = (int)player;
-                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
-                // Cards
-                PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(3)); // Random target
-                CardFinder cardDb = new CardFinder();
-                // Card 1: test building that can be targeted only in tile 2
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 1, [1], [1], [1]));
-                // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
-                // Insert 3 buildings
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                // And 3 cheap units 1-G-HP-ATK-MOV-DENOM-TGT
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                // Finally add one card to decks to avoid crash
-                state.PlayerStates[playerIndex].Deck.InitializeDeck("-107,-107"); // Whatever
-                state.PlayerStates[1-playerIndex].Deck.InitializeDeck("-107,-107"); // Whatever
-                GameStateMachine sm = new GameStateMachine(cardDb);
-                sm.LoadGame(state); // Start from here
-                Tuple<PlayOutcome, PlayTargetLocation> res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                // Card should not be playable in any lane, but because it's missing the unit!
-                Assert.AreEqual(res.Item1, PlayOutcome.NO_TARGET_AVAILABLE);
-                Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID);
-                PlayTargetLocation[] targetTest = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
-                foreach (PlayTargetLocation playTarget in targetTest)
-                {
-                    Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, playTarget);
-                    Assert.AreEqual(playRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                    Assert.IsNull(playRes.Item2); // Bc invalid...
-                }
-                // Ok but now I play unit in plains... and should still be invalid
-                sm.PlayFromHand(2, target);
-                res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(res.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Still fails...
-                Assert.AreEqual(res.Item2, PlayTargetLocation.INVALID);
-                foreach (PlayTargetLocation playTarget in targetTest)
-                {
-                    Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, playTarget);
-                    Assert.AreEqual(playRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                    Assert.IsNull(playRes.Item2); // Bc invalid...
-                }
-                // End turn shuffle
-                sm.EndTurn(); // End p1
-                sm.Step(); // Draw p2
-                sm.EndTurn(); // End p2
-                sm.Step(); // Draw (and advance) p1
-                // So now the unit advanced, this should pass
-                res = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(res.Item1, PlayOutcome.OK);
-                Assert.AreEqual(res.Item2, target);
-                // I finally attempt to actually play the building which would only succeed in the right lane
-                foreach (PlayTargetLocation playTarget in targetTest)
-                {
-                    int prePlayHash = sm.DetailedState.GetHashCode();
-                    Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, playTarget);
-                    if (target.HasFlag(playTarget)) // if target is correct
-                    {
-                        // Building should've played ok
-                        Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
-                        Assert.IsNotNull(playRes.Item2);
-                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash should've changed
-                        Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Player has building
-                        Assert.AreEqual(sm.DetailedState.BoardState.GetLane(playTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Lane has building
-                        // Revert this, assert reversion
-                        sm.UndoPreviousStep();
-                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
-                        Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
-                        Assert.AreEqual(sm.DetailedState.BoardState.GetLane(playTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
-                    }
-                    else
-                    {
-                        Assert.AreEqual(playRes.Item1, PlayOutcome.INVALID_TARGET); // Would be an error!
-                        Assert.IsNull(playRes.Item2); // Bc invalid...
-                    }
-                }
+                // Old reversions are ignored because they involved reversions of unit playing, which are done elsewhere
             }
         }
         [TestMethod]
@@ -294,25 +173,22 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere but has 0 hp
                 cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 0, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
-                // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
+                // Basic unit
+                Unit unit = TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                // And 3 cheap units 1-G-HP-ATK-MOV-DENOM-TGT
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                PlayTargetLocation laneTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Random target
+                PlayTargetLocation laneTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Random lane target
                 // Play unit in lane
-                sm.PlayFromHand(2, laneTarget);
+                int tileCoord = sm.DetailedState.BoardState.GetLane(laneTarget).FirstTileIndexOffset; // Get a coord from this lane idc
+                TestHelperFunctions.ManualInitEntity(sm.DetailedState, tileCoord, -1, playerIndex, unit); // Add unit (will use negative ids not to interfere with the building id)
                 // Check my building will be buildable
-                Tuple<PlayOutcome, PlayTargetLocation> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);
-                Assert.AreEqual(optionRes.Item2, laneTarget);
+                PlayContext optionRes = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                Assert.AreEqual(optionRes.PlayOutcome, PlayOutcome.OK);
+                Assert.AreEqual(optionRes.PlayTarget, laneTarget);
                 // Pre play, ensure building's not there
                 int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode();
                 int prePlayStateHash = sm.DetailedState.GetHashCode();
@@ -351,34 +227,31 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere
                 cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
-                // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
+                // Basic unit
+                Unit unit = TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                // And 3 cheap units 1-G-HP-ATK-MOV-DENOM-TGT
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayTargetLocation laneTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Random target
                 // Play unit in lane
-                sm.PlayFromHand(2, laneTarget);
+                int tileCoord = sm.DetailedState.BoardState.GetLane(laneTarget).FirstTileIndexOffset; // Get a coord from this lane idc
+                TestHelperFunctions.ManualInitEntity(sm.DetailedState, tileCoord, -1, playerIndex, unit); // Add unit (will use negative ids not to interfere with the building id)
                 // Check my building will be buildable
-                Tuple<PlayOutcome, PlayTargetLocation> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);
-                Assert.AreEqual(optionRes.Item2, laneTarget);
+                PlayContext optionRes = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                Assert.AreEqual(optionRes.PlayOutcome, PlayOutcome.OK);
+                Assert.AreEqual(optionRes.PlayTarget, laneTarget);
                 // Now I play the building
                 sm.PlayFromHand(1, laneTarget);
                 // Check if same building is buildable (shouldn't be, no available target)
-                optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(optionRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE);
-                Assert.AreEqual(optionRes.Item2, PlayTargetLocation.INVALID);
+                optionRes = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                Assert.AreEqual(optionRes.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE);
+                Assert.AreEqual(optionRes.PlayTarget, PlayTargetLocation.INVALID);
                 // Try build anyway
-                Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, laneTarget);
-                Assert.AreEqual(playRes.Item1, PlayOutcome.NO_TARGET_AVAILABLE);
+                Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, laneTarget);
+                Assert.AreEqual(playRes.Item1.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE);
                 Assert.IsNull(playRes.Item2);
             }
         }
@@ -398,57 +271,57 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that can be targeted anywhere
                 cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
-                // Card 2: Basic unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
+                // Basic unit
+                Unit unit =  TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                // And 3 cheap units 1-G-HP-ATK-MOV-DENOM-TGT
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
-                state.PlayerStates[playerIndex].Hand.InsertCard(2);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayTargetLocation laneTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Random target
                 // Play unit in lane
-                sm.PlayFromHand(2, laneTarget);
-                // HACK, add the same unit in 2 different tiles to avoid needing to advance
-                state = sm.DetailedState;
-                Tile secondTile = state.BoardState.GetLane(laneTarget).GetTileRelative(1, playerIndex);
-                secondTile.EntityListOperation((PlacedEntity)state.EntityData[state.BoardState.GetPlacedEntities(EntityType.UNIT).First()], EntityListOperation.ADD); // Add unit also here, this is a weird invalid state but should work for this test
-                // Check my building will be buildable, prepare for playing
-                Tuple<PlayOutcome, PlayTargetLocation> optionRes = sm.GetPlayableOptions(1, PlayType.PLAY_FROM_HAND);
-                Assert.AreEqual(optionRes.Item1, PlayOutcome.OK);
-                Assert.AreEqual(optionRes.Item2, laneTarget);
+                int firstTileCoord = sm.DetailedState.BoardState.GetLane(laneTarget).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex); // Get 1st coord
+                int secondTileCoord = sm.DetailedState.BoardState.GetLane(laneTarget).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex); // Get 1st coord
+                TestHelperFunctions.ManualInitEntity(sm.DetailedState, firstTileCoord, -1, playerIndex, unit); // Add unit (will use negative ids not to interfere with the building id)
+                TestHelperFunctions.ManualInitEntity(sm.DetailedState, secondTileCoord, -2, playerIndex, unit);
                 int prePlayHash1 = sm.DetailedState.GetHashCode();
                 // Now I play the building
-                Tuple<PlayOutcome, StepResult> playRes = sm.PlayFromHand(1, laneTarget);
-                Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
+                Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, laneTarget);
+                Assert.AreEqual(playRes.Item1.PlayOutcome, PlayOutcome.OK);
                 Assert.IsNotNull(playRes.Item2);
+                Assert.AreEqual(((ConstructionContext)(playRes.Item1.LastAuxContext)).AbsoluteConstructionTile, firstTileCoord); // Verify building was first built in the first coord
                 int prePlayHash2 = sm.DetailedState.GetHashCode();
                 Assert.AreNotEqual(prePlayHash1, prePlayHash2); // Hash should've changed
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Player has building
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Lane has building
+                Assert.AreEqual(sm.DetailedState.BoardState.Tiles[firstTileCoord].GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Tile has building
+                Assert.AreEqual(sm.DetailedState.BoardState.Tiles[secondTileCoord].GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0); // But not the second tile yet
                 // Play second building
                 playRes = sm.PlayFromHand(1, laneTarget);
-                Assert.AreEqual(playRes.Item1, PlayOutcome.OK);
+                Assert.AreEqual(playRes.Item1.PlayOutcome, PlayOutcome.OK);
                 Assert.IsNotNull(playRes.Item2);
+                Assert.AreEqual(((ConstructionContext)(playRes.Item1.LastAuxContext)).AbsoluteConstructionTile, secondTileCoord); // Verify building was built in the second coord
                 Assert.AreNotEqual(prePlayHash1, sm.DetailedState.GetHashCode()); // Hash should've changed
                 Assert.AreNotEqual(prePlayHash2, sm.DetailedState.GetHashCode()); // Hash should've changed
-                Assert.AreNotEqual(prePlayHash1, prePlayHash2); // Hash should've changed
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 2); // Player has 2 buildings
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 2); // Lane has 2 buildings
+                Assert.AreEqual(sm.DetailedState.BoardState.Tiles[firstTileCoord].GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Both tiles have
+                Assert.AreEqual(sm.DetailedState.BoardState.Tiles[secondTileCoord].GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1);
                 // Revert 2nd Building
                 sm.UndoPreviousStep();
                 Assert.AreEqual(prePlayHash2, sm.DetailedState.GetHashCode());
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Player has 1 building
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Lane has building
+                Assert.AreEqual(sm.DetailedState.BoardState.Tiles[firstTileCoord].GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 1); // Tile has building
+                Assert.AreEqual(sm.DetailedState.BoardState.Tiles[secondTileCoord].GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0); // But not the second tile yet
                 // Revert first building
                 sm.UndoPreviousStep();
                 Assert.AreEqual(prePlayHash1, sm.DetailedState.GetHashCode());
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.Tiles[firstTileCoord].GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
+                Assert.AreEqual(sm.DetailedState.BoardState.Tiles[secondTileCoord].GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
             }
         }
         [TestMethod]
@@ -459,7 +332,6 @@ namespace EngineTests
             {
                 UniqueId = 1,
                 Owner = 0,
-                LaneCoordinate = LaneID.PLAINS,
                 TileCoordinate = 2
             };
             b1.Hp.BaseValue = 10;

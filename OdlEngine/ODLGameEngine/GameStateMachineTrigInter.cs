@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ODLGameEngine
+﻿namespace ODLGameEngine
 {
     public partial class GameStateMachine // Deals with triggers and interactions
     {
@@ -117,11 +111,11 @@ namespace ODLGameEngine
                         break;
                     case EffectType.FIND_ENTITIES:
                         // Searches for entities, reference being the selected reference (since there can be multiple references, a single one (the first) is used
-                        cpu.ReferenceEntities = GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, GetTargetLocationsFromReference(effect.TargetLocation, cpu)[0], inputValue, FetchEntity(cpu.ReferenceEntities[0]).Owner);
+                        cpu.ReferenceEntities = GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, GetTargetLocationsFromReference(effect.EffectLocation, cpu)[0], inputValue, FetchEntity(cpu.ReferenceEntities[0]).Owner);
                         break;
                     case EffectType.SUMMON_UNIT:
                         {
-                            BoardElement[] targets = GetTargetLocationsFromReference(effect.TargetLocation, cpu); // Get the actual place where this is played, even if relative
+                            BoardElement[] targets = GetTargetLocationsFromReference(effect.EffectLocation, cpu); // Get the actual place where this is played, even if relative
                             for (int i = 0; i < cpu.ReferenceEntities.Count; i++) // Summon sth for each entity found (!!)
                             {
                                 IngameEntity entity = FetchEntity(cpu.ReferenceEntities[i]); // Got the next reference entity
@@ -273,7 +267,7 @@ namespace ODLGameEngine
         /// <param name="searchLocation">Place to search, can be absolute lanes, board, or even relative things</param>
         /// <param name="cpuContext">Context where I find the relevant info</param>
         /// <returns>One board element per entity</returns>
-        BoardElement[] GetTargetLocationsFromReference(SearchLocation searchLocation, CpuState cpuContext)
+        BoardElement[] GetTargetLocationsFromReference(EffectLocation searchLocation, CpuState cpuContext)
         {
             int numberOfReferences = cpuContext.ReferenceEntities.Count;
             BoardElement[] res = new BoardElement[numberOfReferences];
@@ -281,11 +275,11 @@ namespace ODLGameEngine
             {
                 res[i] = searchLocation switch
                 {
-                    SearchLocation.BOARD => DetailedState.BoardState,
-                    SearchLocation.PLAINS => DetailedState.BoardState.PlainsLane,
-                    SearchLocation.FOREST => DetailedState.BoardState.ForestLane,
-                    SearchLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
-                    SearchLocation.PLAY_TARGET => (((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget == PlayTargetLocation.BOARD) ? DetailedState.BoardState : DetailedState.BoardState.GetLane(((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget),
+                    EffectLocation.BOARD => DetailedState.BoardState,
+                    EffectLocation.PLAINS => DetailedState.BoardState.PlainsLane,
+                    EffectLocation.FOREST => DetailedState.BoardState.ForestLane,
+                    EffectLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
+                    EffectLocation.PLAY_TARGET => (((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget == PlayTargetLocation.BOARD) ? DetailedState.BoardState : DetailedState.BoardState.GetLane(((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget),
                     _ => throw new Exception("Reference search location not implemented")
                 };
             }

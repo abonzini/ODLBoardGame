@@ -294,12 +294,12 @@ namespace ODLGameEngine
                 Lane oldLane = DetailedState.BoardState.GetLaneContainingTile(entity.TileCoordinate);
                 Lane newLane = DetailedState.BoardState.GetLaneContainingTile(tileCoord);
                 // Change tiles
-                if (entity.TileCoordinate > 0) // If the old tile coordinate was valid
+                if (entity.TileCoordinate >= 0) // If the old tile coordinate was valid
                 {
                     DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, EntityListOperation.REMOVE); // Remove entity from this tile
                 }
                 entity.TileCoordinate = tileCoord;
-                if (entity.TileCoordinate > 0) // If the new tile coordinate is valid
+                if (entity.TileCoordinate >= 0) // If the new tile coordinate is valid
                 {
                     DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, EntityListOperation.ADD); // Add entity to tile
                 }

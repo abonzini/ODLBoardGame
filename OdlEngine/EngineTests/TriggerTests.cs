@@ -1,9 +1,4 @@
 ﻿using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EngineTests
 {
@@ -40,17 +35,10 @@ namespace EngineTests
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // State hash has changed
                 Assert.IsTrue(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER)); // And the state is there!
                 // Now to trigger
-                bool debugFlagFound = false; // Check if the debug check was added when card was played
                 StepResult res = sm.TriggerDebugStep();
-                foreach (GameEngineEvent gameEngineEvent in res.events)
-                {
-                    if (gameEngineEvent.eventType == EventType.DEBUG_CHECK)
-                    {
-                        debugFlagFound = true;
-                        break;
-                    }
-                }
-                Assert.IsTrue(debugFlagFound);
+                // Check if debug event is there
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res);
+                Assert.IsNotNull(cpu);
                 // Reversion
                 sm.UndoPreviousStep(); // Undoes the debug trigger
                 sm.UndoPreviousStep(); // Undoes card play
@@ -88,17 +76,10 @@ namespace EngineTests
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // State hash has changed because hand and placeable counter changed
                 Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER)); // However this is the same
                 // Now to trigger
-                bool debugFlagFound = false; // Check if the debug check was added when card was played (should not be!)
                 StepResult res = sm.TriggerDebugStep();
-                foreach (GameEngineEvent gameEngineEvent in res.events)
-                {
-                    if (gameEngineEvent.eventType == EventType.DEBUG_CHECK)
-                    {
-                        debugFlagFound = true;
-                        break;
-                    }
-                }
-                Assert.IsFalse(debugFlagFound);
+                // Check if debug event is there
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res);
+                Assert.IsNull(cpu);
                 // Reversion
                 sm.UndoPreviousStep(); // Undoes the debug trigger
                 sm.UndoPreviousStep(); // Undoes card play

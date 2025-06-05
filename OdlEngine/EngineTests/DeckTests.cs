@@ -104,32 +104,5 @@ namespace EngineTests
             deck2.SwapCards(swap1, swap2);
             Assert.AreEqual(deck1.GetHashCode(), deck2.GetHashCode());
         }
-        //[TestMethod]
-        //public void HashStressTest()
-        //{
-        //    HashSet<int> hashes = new HashSet<int>();
-        //    float total = 0;
-        //    float collisions = 0;
-        //    Random _rng = new Random();
-        //    for (int i = 0; i < 1000000; i++) // Test 1000000 times, create unique cols and verify few collisions
-        //    {
-        //        Deck deck = new Deck();
-        //        int repeat = _rng.Next(5, 31);
-        //        for (int j = 0; j < repeat; j++) // Add cards 0-99 between 5-30 times (test that unique deck are unique, not ones with few cards)
-        //        {
-        //            deck.InsertCard(_rng.Next(100));
-        //        }
-        //        total++;
-        //        if (hashes.Contains(deck.GetHash()))
-        //        {
-        //            collisions++;
-        //        }
-        //        else
-        //        {
-        //            hashes.Add(deck.GetHash());
-        //        }
-        //    }
-        //    Assert.IsTrue(collisions / total < 0.01); // Try for 1% or less of collisions
-        //}
     }
 }

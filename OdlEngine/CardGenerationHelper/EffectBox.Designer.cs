@@ -32,8 +32,8 @@
             TempValueUpDown = new Label();
             ValueUpDown = new NumericUpDown();
             ParamsPanel = new TableLayoutPanel();
-            TargetLocationLabel = new Label();
-            TargetLocationBox = new ComboBox();
+            EffectLocationLabel = new Label();
+            EffectLocationBox = new ComboBox();
             TargetPlayerLabel = new Label();
             SearchCriterionLabel = new Label();
             TargetTypeLabel = new Label();
@@ -91,8 +91,8 @@
             ParamsPanel.ColumnCount = 2;
             ParamsPanel.ColumnStyles.Add(new ColumnStyle());
             ParamsPanel.ColumnStyles.Add(new ColumnStyle());
-            ParamsPanel.Controls.Add(TargetLocationLabel, 0, 0);
-            ParamsPanel.Controls.Add(TargetLocationBox, 1, 0);
+            ParamsPanel.Controls.Add(EffectLocationLabel, 0, 0);
+            ParamsPanel.Controls.Add(EffectLocationBox, 1, 0);
             ParamsPanel.Controls.Add(TargetPlayerLabel, 0, 1);
             ParamsPanel.Controls.Add(SearchCriterionLabel, 0, 2);
             ParamsPanel.Controls.Add(TargetTypeLabel, 0, 3);
@@ -121,24 +121,24 @@
             ParamsPanel.Size = new Size(300, 244);
             ParamsPanel.TabIndex = 5;
             // 
-            // TargetLocationLabel
+            // EffectLocationLabel
             // 
-            TargetLocationLabel.AutoSize = true;
-            TargetLocationLabel.Font = new Font("Segoe UI", 9F);
-            TargetLocationLabel.Location = new Point(3, 0);
-            TargetLocationLabel.Name = "TargetLocationLabel";
-            TargetLocationLabel.Size = new Size(111, 20);
-            TargetLocationLabel.TabIndex = 0;
-            TargetLocationLabel.Text = "Target Location";
+            EffectLocationLabel.AutoSize = true;
+            EffectLocationLabel.Font = new Font("Segoe UI", 9F);
+            EffectLocationLabel.Location = new Point(3, 0);
+            EffectLocationLabel.Name = "EffectLocationLabel";
+            EffectLocationLabel.Size = new Size(108, 20);
+            EffectLocationLabel.TabIndex = 0;
+            EffectLocationLabel.Text = "Effect Location";
             // 
-            // TargetLocationBox
+            // EffectLocationBox
             // 
-            TargetLocationBox.Font = new Font("Segoe UI", 9F);
-            TargetLocationBox.FormattingEnabled = true;
-            TargetLocationBox.Location = new Point(146, 3);
-            TargetLocationBox.Name = "TargetLocationBox";
-            TargetLocationBox.Size = new Size(151, 28);
-            TargetLocationBox.TabIndex = 1;
+            EffectLocationBox.Font = new Font("Segoe UI", 9F);
+            EffectLocationBox.FormattingEnabled = true;
+            EffectLocationBox.Location = new Point(146, 3);
+            EffectLocationBox.Name = "EffectLocationBox";
+            EffectLocationBox.Size = new Size(151, 28);
+            EffectLocationBox.TabIndex = 1;
             // 
             // TargetPlayerLabel
             // 
@@ -315,8 +315,8 @@
         private Label TempValueUpDown;
         private NumericUpDown ValueUpDown;
         private TableLayoutPanel ParamsPanel;
-        private Label TargetLocationLabel;
-        private ComboBox TargetLocationBox;
+        private Label EffectLocationLabel;
+        private ComboBox EffectLocationBox;
         private Label TargetPlayerLabel;
         private Label SearchCriterionLabel;
         private Label TargetTypeLabel;

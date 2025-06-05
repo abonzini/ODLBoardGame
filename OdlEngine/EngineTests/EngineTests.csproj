@@ -10,20 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="AssortedCardCollectionTests.cs" />
-    <Compile Remove="BuildingTests.cs" />
-    <Compile Remove="DeckTests.cs" />
-    <Compile Remove="DeserializeAllCards.cs" />
-    <Compile Remove="EffectTests.cs" />
-    <Compile Remove="GameEngineTests.cs" />
-    <Compile Remove="InteractionTests.cs" />
-    <Compile Remove="PlayabilityAndTargetingTests.cs" />
-    <Compile Remove="StatTests.cs" />
-    <Compile Remove="TriggerTests.cs" />
-    <Compile Remove="UnitAndBattleTests.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />

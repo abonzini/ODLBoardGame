@@ -270,7 +270,7 @@ namespace ODLGameEngine
         public Board()
         {
             ElementType = BoardElementType.BOARD;
-            int numberOfTiles = GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_IF_TILES;
+            int numberOfTiles = GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES;
             Tiles = new Tile[numberOfTiles]; // Inits all the tiles
             for (int i = 0; i < numberOfTiles; i++)
             {
@@ -279,7 +279,7 @@ namespace ODLGameEngine
             }
             PlainsLane = new Lane(LaneID.PLAINS, GameConstants.PLAINS_NUMBER_OF_TILES, Tiles, 0);
             ForestLane = new Lane(LaneID.FOREST, GameConstants.FOREST_NUMBER_OF_TILES, Tiles, GameConstants.PLAINS_NUMBER_OF_TILES);
-            MountainLane = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_NUMBER_IF_TILES, Tiles, GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES);
+            MountainLane = new Lane(LaneID.MOUNTAIN, GameConstants.MOUNTAIN_NUMBER_OF_TILES, Tiles, GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES);
             Lanes = [PlainsLane, ForestLane, MountainLane]; // Reference lane properly
         }
         // Methods, obtain and do stuff
@@ -315,7 +315,7 @@ namespace ODLGameEngine
             {
                 return ForestLane;
             }
-            else if (tileCoord < (GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_IF_TILES))
+            else if (tileCoord < (GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES))
             {
                 return MountainLane;
             }

@@ -170,14 +170,14 @@ These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of sea
 If you want to change the reference of the search, you may need to do a ```SELECT_ENTITY``` call first, for example in an effect like *"When a card is played, all of that player's Units receive 1 damage"*, where the reference is not necesarily the same in every trigger.
     
     Parameters:
-    - ```TargetLocation``` where to search for the entity in question
+    - ```EffectLocation``` where to search for the entity in question
     - ```TargetPlayer``` serves as a filter where you only get the entities of the player owner in question
     - ```TargetType``` the type of entities that can be targeted 
     - ```SearchCriterion``` determines which target(s) can be found as valid targets. Some search criterions use a value $n$ as an input
     - The ```Input``` is used alongside some ```SearchCriterion``` cases as the value $n$. Negative values imply the search is done in reverse order
 
     This may seem convoluted but it's a robust way to target arbitrary combination of target conditions.
-    Keep in mind that, no matter the ```TargetLocation```, the order of valid targets will be: ***[PLAYER]->[LOCATION]->[PLAYER]*** where which player is first is determined by the sign of $n$.
+    Keep in mind that, no matter the ```EffectLocation```, the order of valid targets will be: ***[PLAYER]->[LOCATION]->[PLAYER]*** where which player is first is determined by the sign of $n$.
     When looking for entities on a lane, the system traverses the lane in order determined by $n$ sign.
     In case of multiple entities in the same position, the unit that was played first is targeted first.
 
@@ -186,7 +186,7 @@ This allows crazy effects like *"When a unit dies, play a skeleton in the oppone
 
     Parameters:
     - ```TargetPlayer``` is the player who will own the unit (relative to reference entity)
-    - ```TargetLocation``` is one or more lane targets where the card(s) will be summoned
+    - ```EffectLocation``` is one or more lane targets where the card(s) will be summoned
     - ```Input``` will contain the card number of the unit summoned
 
 - ```MODIFIER``` A mathematical operation, where an Output is changed, using the Input and an operation.
@@ -207,7 +207,7 @@ Useful for effect with complex conditions where a part of the effect is conditio
 
 ## Possible Parameter Values
 
-- ```TargetLocation```
+- ```EffectLocation```
     - ```BOARD``` will target the board
     - ```PLAINS```/```FOREST```/```MOUNTAIN``` wil target these lanes specifically
     - ```PLAY_TARGET``` the play target of the card just played is used, whatever that was. Only makes sense in cards with effects ```WHEN_PLAYED```.
