@@ -7,14 +7,14 @@ namespace ODLGameEngine
         public override bool CanConvert(Type objectType)
         {
             // Can convert only if its a flagged enum
-            return objectType.IsDefined(typeof(FlagsAttribute),false) && objectType.IsEnum;
+            return objectType.IsDefined(typeof(FlagsAttribute), false) && objectType.IsEnum;
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             string enumString = reader.Value.ToString();
             // Get sub-strings split by | and trim
-            string[] values = enumString.Split("|", StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries);
+            string[] values = enumString.Split("|", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             int result = 0; // Work in int
             foreach (string value in values)

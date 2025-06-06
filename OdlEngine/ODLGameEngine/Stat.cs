@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 
 namespace ODLGameEngine
 {
@@ -113,7 +107,7 @@ namespace ODLGameEngine
                     {
                         string propertyName = reader.Value.ToString();
                         reader.Read(); // Move to the value token
-                        switch(propertyName)
+                        switch (propertyName)
                         {
                             case "BaseValue":
                                 ret.BaseValue = Convert.ToInt32(reader.Value);
@@ -147,7 +141,6 @@ namespace ODLGameEngine
                 writer.WriteValue(theStat.Modifier);
                 writer.WriteEndObject();
             }
-            
         }
     }
 }

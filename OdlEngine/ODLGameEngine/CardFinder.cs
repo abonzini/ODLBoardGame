@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace ODLGameEngine
@@ -35,7 +30,7 @@ namespace ODLGameEngine
             }
             // Otherwise fetch the card, assuming I'm in the correct folder
             string cardJsonFile = Path.Combine(_baseDir, $"{id}.json");
-            if(Path.Exists(cardJsonFile))
+            if (Path.Exists(cardJsonFile))
             {
                 // Attempt to find what is this card
                 EntityType cardType;

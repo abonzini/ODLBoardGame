@@ -1,13 +1,4 @@
 ﻿using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CardGenerationHelper
 {
@@ -41,7 +32,7 @@ namespace CardGenerationHelper
         public int GetEnumValue()
         {
             int result = 0;
-            for(int i = 0; i < CheckboxesPanel.Controls.Count; i++)
+            for (int i = 0; i < CheckboxesPanel.Controls.Count; i++)
             {
                 int flag = 1 << i;
                 if (((CheckBox)CheckboxesPanel.Controls[i]).Checked)

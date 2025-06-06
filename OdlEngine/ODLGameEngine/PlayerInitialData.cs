@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ODLGameEngine
+﻿namespace ODLGameEngine
 {
     /// <summary>
     /// Defines a player who plays the game

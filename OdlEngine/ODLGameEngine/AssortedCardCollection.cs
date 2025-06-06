@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Newtonsoft.Json;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace ODLGameEngine
 {
@@ -14,8 +9,8 @@ namespace ODLGameEngine
         private int _hash;
         private bool _dirtyHash = true;
         [JsonProperty]
-        private readonly SortedList<int,int> _cards = new SortedList<int, int>();
-        [JsonProperty] 
+        private readonly SortedList<int, int> _cards = new SortedList<int, int>();
+        [JsonProperty]
         private int _size = 0;
         public int CardCount { get { return _size; } }
         /// <summary>
@@ -72,7 +67,7 @@ namespace ODLGameEngine
             if (_dirtyHash) // Recalculates only when dirty
             {
                 HashCode hash = new HashCode();
-                foreach(KeyValuePair<int, int> kvp in _cards)
+                foreach (KeyValuePair<int, int> kvp in _cards)
                 {
                     hash.Add(kvp.Key);
                     hash.Add(kvp.Value);
@@ -98,7 +93,7 @@ namespace ODLGameEngine
         {
             AssortedCardCollection newCollection = new AssortedCardCollection();
             newCollection._size = _size;
-            foreach(KeyValuePair<int, int> kvp in _cards)
+            foreach (KeyValuePair<int, int> kvp in _cards)
             {
                 newCollection._cards[kvp.Key] = kvp.Value;
             }

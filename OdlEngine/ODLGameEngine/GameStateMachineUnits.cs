@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ODLGameEngine
+﻿namespace ODLGameEngine
 {
     public partial class GameStateMachine // Deals with unit and unit related stuff, maybe advancing
     {
@@ -54,7 +48,7 @@ namespace ODLGameEngine
             int unitOwnerId = unit.Owner;
             int opponentId = 1 - unitOwnerId;
             int cooldown = unit.MvtCooldownTimer;
-            if(cooldown > unit.MovementDenominator.Total) // if denominator was reduced, need to make sure unit can advance properly
+            if (cooldown > unit.MovementDenominator.Total) // if denominator was reduced, need to make sure unit can advance properly
             {
                 cooldown = 0;
             }
@@ -75,7 +69,7 @@ namespace ODLGameEngine
                     if (DetailedState.BoardState.Tiles[unit.TileCoordinate].GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop march here (and also attack)
                     {
                         marchCtx.CurrentMovement = 0;
-                        Unit enemyUnit = (Unit)DetailedState.EntityData[lane.GetPlacedEntities(EntityType.UNIT,opponentId).First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
+                        Unit enemyUnit = (Unit)DetailedState.EntityData[lane.GetPlacedEntities(EntityType.UNIT, opponentId).First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile
                         UNIT_Combat(unit, enemyUnit); // Let them fight.
                     }
                     else if (lane.IsRelativeEndOfLane(LaneRelativeIndexType.ABSOLUTE, unit.TileCoordinate, unit.Owner)) // Otherwise, if unit in last tile won't advance (and attack enemy player)
@@ -97,7 +91,7 @@ namespace ODLGameEngine
             }
             cooldown++; // Cycle the timer so that next advance it's updated!
             cooldown %= unit.MovementDenominator.Total;
-            if(unit.MvtCooldownTimer != cooldown) // If unit has changed cooldown, need to activate this
+            if (unit.MvtCooldownTimer != cooldown) // If unit has changed cooldown, need to activate this
             {
                 ENGINE_UnitMovementCooldownChange(unit, cooldown);
             }
@@ -114,7 +108,7 @@ namespace ODLGameEngine
 
             // Surely, unit will apply damage to the victim
             attackerDmgCtx = BOARDENTITY_DamageStep(attacker, defender, attacker.Attack.Total); // TODO: GetAttack fn to incorporate buffs and such
-            if(defender is Unit defendingUnit)
+            if (defender is Unit defendingUnit)
             {
                 // If defender was also a unit, then the attacker also receives damage
                 defenderDmgCtx = BOARDENTITY_DamageStep(defender, attacker, defendingUnit.Attack.Total);

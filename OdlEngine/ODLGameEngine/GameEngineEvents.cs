@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ODLGameEngine
+﻿namespace ODLGameEngine
 {
     /// <summary>
     /// Available tags for step
@@ -77,7 +71,7 @@ namespace ODLGameEngine
             return description; // Default is no info leaked
         }
     }
-    public class EntityValueEvent<E,T> : GameEngineEvent
+    public class EntityValueEvent<E, T> : GameEngineEvent
     {
         public E entity;
         public T value;
@@ -87,7 +81,7 @@ namespace ODLGameEngine
         public T oldValue;
         public T newValue;
     }
-    public class EntityTransitionEvent<E,T> : GameEngineEvent
+    public class EntityTransitionEvent<E, T> : GameEngineEvent
     {
         public E entity;
         public T oldValue;

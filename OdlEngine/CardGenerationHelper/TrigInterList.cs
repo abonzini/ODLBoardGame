@@ -1,13 +1,4 @@
 ﻿using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CardGenerationHelper
 {
@@ -84,7 +75,7 @@ namespace CardGenerationHelper
                 KeyValuePair<InteractionType, List<Effect>> kvp = effs.GetInteractionEffects();
                 res[kvp.Key] = kvp.Value;
             }
-            if(res.Count == 0)
+            if (res.Count == 0)
             {
                 res = null;
             }
@@ -114,7 +105,7 @@ namespace CardGenerationHelper
             ClearPanel();
             // Now, set stuff
             if (dict == null) return;
-            foreach(KeyValuePair<InteractionType, List<Effect>> kvp in dict)
+            foreach (KeyValuePair<InteractionType, List<Effect>> kvp in dict)
             {
                 TriginterEffects newBox = new TriginterEffects();
                 newBox.SetTrigInterType(trigInter);

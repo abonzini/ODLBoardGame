@@ -72,7 +72,7 @@ namespace CardGenerationHelper
         bool entityTypeAlreadyLoaded = false;
         private void EntityTypeDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(entityTypeAlreadyLoaded)
+            if (entityTypeAlreadyLoaded)
             {
                 entityTypeAlreadyLoaded = false;
                 return;
@@ -366,7 +366,7 @@ namespace CardGenerationHelper
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(file))
                 {
                     // Json file found. Now, will try to deserialize
-                    if(file.Contains("-illustration.json")) // Illustration file
+                    if (file.Contains("-illustration.json")) // Illustration file
                     {
                         illustrationFile = file;
                     }
@@ -377,7 +377,7 @@ namespace CardGenerationHelper
                 }
             }
             // Got illust file now, need to check if exists
-            if(!File.Exists(illustrationFile)) { return; } // Finish here if non existing
+            if (!File.Exists(illustrationFile)) { return; } // Finish here if non existing
             // Otherwise I can load illustration data!
             _currentIllustrationInfo = JsonConvert.DeserializeObject<CardIllustrationInfo>(File.ReadAllText(illustrationFile));
             // Obtain card ID and folder
@@ -393,7 +393,7 @@ namespace CardGenerationHelper
         void UpdateFields(bool cardLoaded)
         {
             entityTypeAlreadyLoaded = true; // Notify the system not to reset the info
-            
+
             EntityTypeDropdown.SelectedItem = _currentEntity.EntityType; // Todo -1 player doesnt have correct entity type
             TargetOptionsDropdown.SelectedItem = _currentEntity.TargetOptions;
             CardIdUpdown.Value = _currentEntity.Id;
@@ -416,7 +416,7 @@ namespace CardGenerationHelper
             }
             if (typeof(Building).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
             {
-                if(((Building)_currentEntity).PlainsBp != null) PlainsBpTextBox.Text = string.Join(",", ((Building)_currentEntity).PlainsBp);
+                if (((Building)_currentEntity).PlainsBp != null) PlainsBpTextBox.Text = string.Join(",", ((Building)_currentEntity).PlainsBp);
                 if (((Building)_currentEntity).ForestBp != null) ForestBpTextBox.Text = string.Join(",", ((Building)_currentEntity).ForestBp);
                 if (((Building)_currentEntity).MountainBp != null) MountainBpTextBox.Text = string.Join(",", ((Building)_currentEntity).MountainBp);
             }

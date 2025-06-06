@@ -1,11 +1,4 @@
 ﻿using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace EngineTests
 {
@@ -175,7 +168,7 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardFinder);
                 int seed = (id == CurrentPlayer.PLAYER_2) ? p2Seed : p1Seed;
                 sm.LoadGame(InitialStatesGenerator.GetInitialPlayerState(id, seed));
-                if(id  == CurrentPlayer.PLAYER_1)
+                if (id == CurrentPlayer.PLAYER_1)
                 {
                     sm.Step();
                 }
@@ -185,7 +178,7 @@ namespace EngineTests
                 // Good, now I go back and check that seeds are correct
                 sm.UndoPreviousStep(); // Goes back to P2 Init
                 Assert.AreEqual(p2Seed, sm.DetailedState.Seed);
-                if(id == CurrentPlayer.PLAYER_1)
+                if (id == CurrentPlayer.PLAYER_1)
                 {
                     sm.UndoPreviousStep(); // Back to P1
                     Assert.AreEqual(p1Seed, sm.DetailedState.Seed);
@@ -360,7 +353,7 @@ namespace EngineTests
                 Assert.AreEqual(plState.DamageTokens, GameConstants.DECKOUT_DAMAGE);
                 Assert.AreEqual(plState.Deck.DeckSize, 0);
                 Assert.AreEqual(sm.DetailedState.CurrentState, States.EOG); // Game ends here
-                Assert.AreEqual(sm.DetailedState.CurrentPlayer, (CurrentPlayer)(1-(int)id)); // other player won
+                Assert.AreEqual(sm.DetailedState.CurrentPlayer, (CurrentPlayer)(1 - (int)id)); // other player won
                 // Revert
                 sm.UndoPreviousStep();
                 Assert.AreEqual(deckHash, plState.Deck.GetHashCode());

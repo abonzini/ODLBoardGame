@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ODLGameEngine
+﻿namespace ODLGameEngine
 {
     /// <summary>
     /// Occurs when game ends and someone loses the game
@@ -72,7 +65,7 @@ namespace ODLGameEngine
         {
             try // Something here may make the game end so I need to catch!
             {
-                switch(DetailedState.CurrentState)
+                switch (DetailedState.CurrentState)
                 {
                     case States.START:
                     case States.ACTION_PHASE:
@@ -202,7 +195,7 @@ namespace ODLGameEngine
                 // Obtain all elements in list to iterate on, do it like this to allow iteration even if a unit dies during the march (iteration integrity)
                 foreach (int unitId in playerUnitsIds)
                 {
-                    if(DetailedState.EntityData.TryGetValue(unitId, out LivingEntity unit)) // Check if unit is still alive, if not, no need to march
+                    if (DetailedState.EntityData.TryGetValue(unitId, out LivingEntity unit)) // Check if unit is still alive, if not, no need to march
                     {
                         UNIT_UnitMarch((Unit)unit); // Then the unit marches on!
                     }
@@ -229,7 +222,7 @@ namespace ODLGameEngine
             // Fisher Yates Algorithm for Shuffling, mix starting from last, first card isn't swapped with itself
             for (int i = DetailedState.PlayerStates[player].Deck.DeckSize - 1; i > 0; i--)
             {
-                ENGINE_SwapCardsInDeck(player, i, _rng.Next(i+1));
+                ENGINE_SwapCardsInDeck(player, i, _rng.Next(i + 1));
             }
         }
         /// <summary>
@@ -240,7 +233,7 @@ namespace ODLGameEngine
         void STATE_DeckDrawMultiple(int player, int n)
         {
             ENGINE_AddMessageEvent($"P{player + 1}'s draws {n}");
-            for (int i  = 0; i < n; i++)
+            for (int i = 0; i < n; i++)
             {
                 int card = DetailedState.PlayerStates[player].Deck.PeepAt(); // Found card in deck
                 ENGINE_DeckDrawSingle(player); // Removes from deck
@@ -254,11 +247,11 @@ namespace ODLGameEngine
         public void UndoPreviousStep()
         {
             if (_currentStep == null || _currentStep.tag == Tag.FIRST_STATE) { return; } // Nothing to do here
-            if(_currentStep.events.Count != 0) { throw new Exception("Standing in a non-empty current event!"); } // This should never happen
+            if (_currentStep.events.Count != 0) { throw new Exception("Standing in a non-empty current event!"); } // This should never happen
 
             _currentStep = _stepHistory.Last();
             _stepHistory.RemoveAt(_stepHistory.Count - 1); // Removes last step from history!
-            for(int i = _currentStep.events.Count - 1; i >= 0; i--) // Pops events in reverse order, one by one
+            for (int i = _currentStep.events.Count - 1; i >= 0; i--) // Pops events in reverse order, one by one
             {
                 ENGINE_RevertEvent(_currentStep.events[i]); // Revert the event
             }

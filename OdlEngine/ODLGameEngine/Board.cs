@@ -36,7 +36,7 @@ namespace ODLGameEngine
             // Also define the flags to allow into generalised lists
             int allOwners = -1;
             List<EntityType> allowedEntities = new List<EntityType>([EntityType.UNIT, EntityType.BUILDING]);
-            if(allowedEntities.Remove(entity.EntityType)) // This one is always 1 so I don't need to iterate on it
+            if (allowedEntities.Remove(entity.EntityType)) // This one is always 1 so I don't need to iterate on it
             {
                 // Only continue if entity type was really present
                 int index = entity.UniqueId;
@@ -50,7 +50,7 @@ namespace ODLGameEngine
                     {
                         if ((i & bit) != 0) // Entity is present in this combination
                         {
-                            nextEntityCombination |= allowedEntities[bit-1]; // In this case, it's added to a combination
+                            nextEntityCombination |= allowedEntities[bit - 1]; // In this case, it's added to a combination
                         }
                     }
                     // At this point a new combination has been created, check if any of them is new and needs to be init
@@ -101,7 +101,7 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(coord);
-            foreach(int entity in GetPlacedEntities(EntityType.UNIT|EntityType.BUILDING))
+            foreach (int entity in GetPlacedEntities(EntityType.UNIT | EntityType.BUILDING))
             {
                 hash.Add(entity);
             }
@@ -128,7 +128,7 @@ namespace ODLGameEngine
     public class Lane : BoardElement /// Player 0 goes from 0 -> N-1 and vice versa. Absolute truth is always w.r.t. player 0
     {
         [JsonProperty]
-        public LaneID Id {get; set;} = LaneID.NO_LANE;
+        public LaneID Id { get; set; } = LaneID.NO_LANE;
         [JsonProperty]
         public int Len { get; set; } = 0;
         [JsonProperty]
@@ -142,7 +142,7 @@ namespace ODLGameEngine
             Len = n;
             FirstTileIndexOffset = firstTileIndex;
             Tiles = new List<Tile>(n);
-            for(int i = 0; i < Len; i++)
+            for (int i = 0; i < Len; i++)
             {
                 Tiles.Add(tiles[firstTileIndex + i]);
             }
@@ -157,12 +157,12 @@ namespace ODLGameEngine
         /// <returns></returns>
         public int GetCoordinateConversion(LaneRelativeIndexType outIndexType, LaneRelativeIndexType inIndexType, int inIndex, int referencePlayer = -1)
         {
-            if(outIndexType == inIndexType)
+            if (outIndexType == inIndexType)
             {
                 return inIndex; // This means there was no conversion to do
             }
             int laneCoordinate; // Coordinate relative to this lane
-            switch(inIndexType)
+            switch (inIndexType)
             {
                 case LaneRelativeIndexType.RELATIVE_TO_PLAYER:
                     laneCoordinate = inIndex;

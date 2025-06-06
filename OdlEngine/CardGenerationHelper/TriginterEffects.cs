@@ -1,14 +1,5 @@
 ﻿using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CardGenerationHelper
 {
@@ -112,7 +103,7 @@ namespace CardGenerationHelper
         }
         private void DeleteButton_Click(object sender, EventArgs e)
         {
-            if(owner != null)
+            if (owner != null)
             {
                 owner.RequestEffectDeletion(this);
             }
@@ -125,7 +116,7 @@ namespace CardGenerationHelper
             ClearPanel();
             // Now, set stuff
             EventTypeComboBox.SelectedItem = kvp.Key;
-            foreach(Effect effect in kvp.Value)
+            foreach (Effect effect in kvp.Value)
             {
                 EffectBox newBox = new EffectBox();
                 newBox.SetEffect(effect);

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ODLGameEngine
+﻿namespace ODLGameEngine
 {
     public partial class GameStateMachine // General handler of all placeable stuff, isntantiation, setting of coordinate, also check health (including player!)
     {
@@ -30,7 +23,7 @@ namespace ODLGameEngine
         public void BOARDENTITY_InsertInTile(PlacedEntity entity, int tileCoord)
         {
             ENGINE_EntityTileTransition(entity, tileCoord);
-            if(entity.TileCoordinate > -1) // Checks if unit entered a nev (valid) tile
+            if (entity.TileCoordinate > -1) // Checks if unit entered a nev (valid) tile
             {
                 if (entity.EntityType == EntityType.UNIT) // In case of units, there may be building interactions
                 {
@@ -67,12 +60,12 @@ namespace ODLGameEngine
         void BOARDENTITY_CleanUnit(LivingEntity entity)
         {
             ENGINE_AddMessageEvent($"{entity.Name} was destroyed");
-            if(entity.EntityType == EntityType.UNIT || entity.EntityType == EntityType.BUILDING)
+            if (entity.EntityType == EntityType.UNIT || entity.EntityType == EntityType.BUILDING)
             {
                 BOARDENTITY_InsertInTile((PlacedEntity)entity, -1); // Removes unit from its tile
                 ENGINE_DeinitializeEntity((PlacedEntity)entity); // Deinits entity
             }
-            else if(entity.EntityType == EntityType.PLAYER) // Somethign more sinister, this is a game-ending situation, a player just died
+            else if (entity.EntityType == EntityType.PLAYER) // Somethign more sinister, this is a game-ending situation, a player just died
             {
                 throw new EndOfGameException($"{entity.Name} dead by HP", 1 - entity.Owner); // Other player wins!
             }

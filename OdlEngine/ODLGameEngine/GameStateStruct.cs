@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System.Xml.Linq;
 
 namespace ODLGameEngine
 {
@@ -95,10 +88,10 @@ namespace ODLGameEngine
                 hash.Add(kvp.Key);
                 hash.Add(kvp.Value.GetHashCode());
             }
-            foreach (KeyValuePair< TriggerType, SortedSet<int>> trigger in Triggers)
+            foreach (KeyValuePair<TriggerType, SortedSet<int>> trigger in Triggers)
             {
                 hash.Add(trigger.Key);
-                foreach(int entity in  trigger.Value)
+                foreach (int entity in trigger.Value)
                 {
                     hash.Add(entity);
                 }

@@ -1,6 +1,4 @@
 using ODLGameEngine;
-using System.Diagnostics.Metrics;
-using System.Text.Json;
 
 namespace EngineTests
 {
@@ -46,7 +44,7 @@ namespace EngineTests
             {
                 Assert.IsTrue(col.HasCard(i));
                 col.RemoveCard(i); // Remove the card
-                if(i == 1)
+                if (i == 1)
                 {
                     Assert.IsFalse(col.HasCard(i));
                 }
@@ -85,7 +83,7 @@ namespace EngineTests
             for (int i = 0; i < 10; i++) // Add cards 0-9 but in different insertion order
             {
                 col1.InsertCard(i);
-                col2.InsertCard(9-i);
+                col2.InsertCard(9 - i);
             }
             Assert.AreEqual(col1.GetHashCode(), col2.GetHashCode()); // Still should have same hash
         }

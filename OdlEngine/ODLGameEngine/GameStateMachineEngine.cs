@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ODLGameEngine
+﻿namespace ODLGameEngine
 {
     public partial class GameStateMachine
     {
@@ -56,7 +49,7 @@ namespace ODLGameEngine
                 case EventType.PLAYER_GOLD_TRANSITION:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
                     ((EntityTransitionEvent<int, int>)e).oldValue = DetailedState.PlayerStates[auxInt1].CurrentGold;
-                    DetailedState.PlayerStates[auxInt1].CurrentGold = ((EntityTransitionEvent<int,int>)e).newValue;
+                    DetailedState.PlayerStates[auxInt1].CurrentGold = ((EntityTransitionEvent<int, int>)e).newValue;
                     break;
                 case EventType.MESSAGE:
                 case EventType.DEBUG_CHECK:
@@ -304,13 +297,13 @@ namespace ODLGameEngine
                     DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, EntityListOperation.ADD); // Add entity to tile
                 }
                 // Change lane (if applies)
-                if(oldLane != newLane) // There's a change in lane so i need to deal with it
+                if (oldLane != newLane) // There's a change in lane so i need to deal with it
                 {
-                    if(oldLane != null)
+                    if (oldLane != null)
                     {
                         oldLane.EntityListOperation(entity, EntityListOperation.REMOVE); // Remove unit from old lane
                     }
-                    if(newLane != null)
+                    if (newLane != null)
                     {
                         newLane.EntityListOperation(entity, EntityListOperation.ADD); // Add entity to the new lane
                     }
@@ -514,7 +507,7 @@ namespace ODLGameEngine
         void ENGINE_UnitMovementCooldownChange(Unit unit, int cooldown)
         {
             ENGINE_ExecuteEvent(
-                new EntityTransitionEvent<Unit,int>()
+                new EntityTransitionEvent<Unit, int>()
                 {
                     eventType = EventType.UNIT_MOVEMENT_COOLDOWN_VALUE,
                     entity = unit,
@@ -543,7 +536,7 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="player">Which player</param>
         /// <param name="powerAvailability">New state</param>
-        void ENGINE_ChangePlayerPowerAvailability(Player player, bool  powerAvailability)
+        void ENGINE_ChangePlayerPowerAvailability(Player player, bool powerAvailability)
         {
             ENGINE_ExecuteEvent(
                 new EntityTransitionEvent<Player, bool>()

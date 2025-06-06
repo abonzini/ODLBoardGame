@@ -1,10 +1,5 @@
 ﻿using Newtonsoft.Json;
 using ODLGameEngine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EngineTests
 {
@@ -16,9 +11,9 @@ namespace EngineTests
         {
             Random _rng = new Random();
             // Create 3 random numbers
-            int _v1 = _rng.Next(1,100);
-            int _v2 = _rng.Next(1,100);
-            int _v3 = _rng.Next(1,100);
+            int _v1 = _rng.Next(1, 100);
+            int _v2 = _rng.Next(1, 100);
+            int _v3 = _rng.Next(1, 100);
             string _singleIntJson = $"{_v1}";
             string _fullObjectJson = $"{{\"BaseValue\": {_v2}, \"Modifier\": {_v3}}}";
 

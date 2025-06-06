@@ -1,9 +1,5 @@
 ﻿using ODLGameEngine;
-using System.Diagnostics;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Text;
-using static CardGenerationHelper.CardGenerator;
 
 namespace CardGenerationHelper
 {
@@ -33,7 +29,7 @@ namespace CardGenerationHelper
         {
             if (_brush != null) { return _brush; }
             Bitmap bitmap = new Bitmap(ImagePath);
-            if(WhiteTint != Color.White)
+            if (WhiteTint != Color.White)
             {
                 for (int x = 0; x < bitmap.Width; x++)
                 {
@@ -53,7 +49,7 @@ namespace CardGenerationHelper
                             }
                         }
                         // Tint it
-                        Color newColor = Color.FromArgb(WhiteTint.R * originalColor.R/255, WhiteTint.G * originalColor.G / 255, WhiteTint.B * originalColor.B / 255);
+                        Color newColor = Color.FromArgb(WhiteTint.R * originalColor.R / 255, WhiteTint.G * originalColor.G / 255, WhiteTint.B * originalColor.B / 255);
                         // Re-apply
                         bitmap.SetPixel(x, y, newColor);
                     }
@@ -73,7 +69,7 @@ namespace CardGenerationHelper
         public static Dictionary<string, FillHelper> _savedBrushes = new Dictionary<string, FillHelper>();
         public static FillHelper GetImageBrushOrColor(Rectangle container, string path, Color imageColorTint, Color defaultColor, int blackLighten = 0)
         {
-            if(_savedBrushes.ContainsKey(path)) return _savedBrushes[path];
+            if (_savedBrushes.ContainsKey(path)) return _savedBrushes[path];
             FillHelper brush;
             if (Path.Exists(path)) // Check if image exists
             {
@@ -121,7 +117,7 @@ namespace CardGenerationHelper
 
                 // Fill the rectangle
                 g.FillPath(filler.GetBrush(), path);
-                
+
                 // Draw the border
                 using (Pen pen = new Pen(borderColor, border))
                 {
@@ -316,11 +312,11 @@ namespace CardGenerationHelper
             foreach (string word in words)
             {
                 string[] auxWords = word.Split("\r\n"); // May be multiple new lines here
-                for(int i = 0; i< auxWords.Length; i++)
+                for (int i = 0; i < auxWords.Length; i++)
                 {
                     WordToDraw theWord = new WordToDraw();
-                    if(currentBoldChar == null)
-                    {   
+                    if (currentBoldChar == null)
+                    {
                         if (auxWords[i].StartsWith('*'))
                         {
                             currentBoldChar = '*';
@@ -329,14 +325,14 @@ namespace CardGenerationHelper
                         {
                             currentBoldChar = '#';
                         }
-                        if(currentBoldChar != null) // Theres a bold char, remove it
+                        if (currentBoldChar != null) // Theres a bold char, remove it
                         {
-                            auxWords[i] = auxWords[i].Remove(0,1);
+                            auxWords[i] = auxWords[i].Remove(0, 1);
                         }
                     }
                     if (currentBoldChar != null)
                     {
-                        if(nextWordToggleBold) // Ok its stopped
+                        if (nextWordToggleBold) // Ok its stopped
                         {
                             nextWordToggleBold = false;
                             currentBoldChar = null;
@@ -703,7 +699,7 @@ namespace CardGenerationHelper
                 // Draw line now
                 Pen dashedPen = new Pen(Color.White, DrawConstants.dashedLineSize);
                 dashedPen.DashStyle = DashStyle.Dash;
-                g.DrawLine(dashedPen, new Point(xMap + (widthMap / 2), yMap), new Point(xMap + (widthMap / 2), yMap + heightMap));    
+                g.DrawLine(dashedPen, new Point(xMap + (widthMap / 2), yMap), new Point(xMap + (widthMap / 2), yMap + heightMap));
             }
             return bitmap;
         }

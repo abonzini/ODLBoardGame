@@ -1,12 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.ComponentModel;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ODLGameEngine
 {
@@ -14,11 +8,11 @@ namespace ODLGameEngine
     [Flags]
     public enum EntityType
     {
-        NONE        = 0,
-        UNIT        = 1,
-        BUILDING    = 2,
-        SKILL       = 4,
-        PLAYER      = 8
+        NONE = 0,
+        UNIT = 1,
+        BUILDING = 2,
+        SKILL = 4,
+        PLAYER = 8
     }
     /// <summary>
     /// Which expansion the card belongs to
@@ -159,10 +153,10 @@ namespace ODLGameEngine
         }
         public override object Clone()
         {
-            LivingEntity newEntity = (LivingEntity) base.Clone(); // Clones parent first
+            LivingEntity newEntity = (LivingEntity)base.Clone(); // Clones parent first
             // Now my individual elements
             newEntity.Name = Name;
-            newEntity.Hp = (Min0Stat) Hp.Clone();
+            newEntity.Hp = (Min0Stat)Hp.Clone();
             newEntity.DamageTokens = DamageTokens;
             return newEntity;
         }
@@ -174,10 +168,10 @@ namespace ODLGameEngine
         [JsonProperty]
         [DefaultValue(-1)]
         public int TileCoordinate { get; set; } = -1;
-        
+
         public override object Clone()
         {
-            PlacedEntity newEntity = (PlacedEntity) base.Clone();
+            PlacedEntity newEntity = (PlacedEntity)base.Clone();
             newEntity.TileCoordinate = TileCoordinate;
             return newEntity;
         }

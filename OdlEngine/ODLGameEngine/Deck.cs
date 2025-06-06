@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Newtonsoft.Json;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace ODLGameEngine
 {
@@ -30,7 +25,7 @@ namespace ODLGameEngine
 
             // Now I add string to the deck
             string[] cardStrings = deckString.Split(',');
-            foreach(string card in cardStrings)
+            foreach (string card in cardStrings)
             {
                 int cardId = int.Parse(card);
                 if (!_cardHistogram.TryGetValue(cardId, out int value))
@@ -87,7 +82,7 @@ namespace ODLGameEngine
         public int PopCard(int position = -1)
         {
             int card;
-            if(position == -1)
+            if (position == -1)
             {
                 card = _cards.Last(); // Get card
                 _cards.RemoveAt(DeckSize - 1); // Pop it
@@ -97,7 +92,7 @@ namespace ODLGameEngine
                 card = _cards[position]; // Get card
                 _cards.RemoveAt(position); // Pop it
             }
-            
+
             _cardHistogram[card]--;
             _deckSize--;
             _dirtyHash = true;
@@ -107,9 +102,9 @@ namespace ODLGameEngine
         /// Adds card back into last place
         /// </summary>
         /// <param name="card">The card to add to top of deck</param>
-        public void InsertCard(int card, int position=-1)
+        public void InsertCard(int card, int position = -1)
         {
-            if(position == -1)
+            if (position == -1)
             {
                 position = DeckSize;
             }
@@ -147,7 +142,7 @@ namespace ODLGameEngine
         /// <returns>The next card in deck (doesn't remove)</returns>
         public int PeepAt(int i = -1)
         {
-            if(i == -1)
+            if (i == -1)
             {
                 return _cards.Last();
             }
@@ -163,7 +158,7 @@ namespace ODLGameEngine
         /// <returns>How many</returns>
         public int CheckAmount(int card)
         {
-            if(_cardHistogram.TryGetValue(card,out int value))
+            if (_cardHistogram.TryGetValue(card, out int value))
             {
                 return value;
             }

@@ -18,7 +18,7 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test building that cant be targeted anywhere
-                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1,"TEST", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []));
+                cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []));
                 for (int i = 0; i < 10; i++)
                 {
                     // Insert useless building in hand. Building wouldn't have valid targets
@@ -31,7 +31,7 @@ namespace EngineTests
                 Assert.AreEqual(optionRes.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
                 Assert.AreEqual(optionRes.PlayTarget, PlayTargetLocation.INVALID); // Bc invalid...
                 PlayTargetLocation[] targetTest = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
-                foreach(PlayTargetLocation target in targetTest)
+                foreach (PlayTargetLocation target in targetTest)
                 {
                     Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, target);
                     Assert.AreEqual(playRes.Item1.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
@@ -272,7 +272,7 @@ namespace EngineTests
                 // Card 1: test building that can be targeted anywhere
                 cardDb.InjectCard(1, TestCardGenerator.CreateBuilding(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 1, [0, 1, 2, 3], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6, 7]));
                 // Basic unit
-                Unit unit =  TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
                 // Insert 3 buildings
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);

@@ -37,7 +37,7 @@
                 }
             }
         }
-        
+
         readonly Dictionary<int, CpuState> _chainContext = new Dictionary<int, CpuState>(); // To be used only in effect resolution chain
         IngameEntity FetchEntity(int id) // Helper fn that gets the desired entity from an id, can search for skills so I need to operate this properly
         {
@@ -97,11 +97,11 @@
                                 SearchCriterion.AFFECTED_ENTITY => ((AffectingEffectContext)specificContext).Affected,
                                 _ => throw new NotImplementedException("Invalid target for entity selection")
                             };
-                            if(effect.TargetType.HasFlag(tgt.EntityType)) // The unit is of the valid type
+                            if (effect.TargetType.HasFlag(tgt.EntityType)) // The unit is of the valid type
                             {
                                 // Determine who owns this unit then
                                 EntityOwner owner = (tgt.Owner == specificContext.ActivatedEntity.Owner) ? EntityOwner.OWNER : EntityOwner.OPPONENT;
-                                if(effect.TargetPlayer.HasFlag(owner)) // If it's a valid owner, then target is valid
+                                if (effect.TargetPlayer.HasFlag(owner)) // If it's a valid owner, then target is valid
                                 {
                                     res.Add(tgt.UniqueId); // This is now the target
                                 }
@@ -169,7 +169,7 @@
                                 foreach (int entityTarget in cpu.ReferenceEntities) // Modify gold for each entity found (!!)
                                 {
                                     IngameEntity entity = FetchEntity(entityTarget); // Got the entity
-                                    if(effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Does owner of this entity get gold?
+                                    if (effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Does owner of this entity get gold?
                                     {
                                         TRIGINTER_ModifyPlayersGold(entity.Owner, inputValue, effect.ModifierOperation);
                                     }
@@ -184,7 +184,7 @@
                         }
                         break;
                     case EffectType.ASSERT:
-                        if(inputValue == 0) // Asserts input, if false, then the loop breaks
+                        if (inputValue == 0) // Asserts input, if false, then the loop breaks
                         {
                             breakLoop = true;
                         }
@@ -192,13 +192,13 @@
                     default:
                         throw new NotImplementedException("Effect type not implemented yet");
                 }
-                if(breakLoop)
+                if (breakLoop)
                 {
                     break;
                 }
             }
             // End of effect chain
-            if(firstEntryInChain) // It was I who created this so I need to remove context now
+            if (firstEntryInChain) // It was I who created this so I need to remove context now
             {
                 _chainContext.Remove(activatedEntityId);
             }
@@ -212,13 +212,13 @@
         /// <returns>Value</returns>
         private int GetInput(CpuState cpu, Variable input, MultiInputProcessing multiInputOperation)
         {
-            switch(input)
+            switch (input)
             {
                 case Variable.TEMP_VARIABLE:
                     return cpu.TempValue;
                 case Variable.ACC:
                     return cpu.Acc;
-                default: 
+                default:
                     break;
             }
             int result = 0; // This will require iteration...
@@ -239,7 +239,7 @@
                         Variable.PLAYERS_GOLD => DetailedState.PlayerStates[FetchEntity(entityTarget).Owner].CurrentGold,
                         _ => throw new Exception("This shouldn't have gotten here! Invalid input source!")
                     };
-                    if(multiInputOperation == MultiInputProcessing.FIRST) // If I only needed the first value...
+                    if (multiInputOperation == MultiInputProcessing.FIRST) // If I only needed the first value...
                     {
                         return auxInt;
                     }
@@ -253,7 +253,7 @@
                         _ => throw new Exception("Invalid MultiInputOperation")
                     };
                 }
-                if(multiInputOperation == MultiInputProcessing.AVERAGE) // Check if I need to apply average
+                if (multiInputOperation == MultiInputProcessing.AVERAGE) // Check if I need to apply average
                 {
                     result /= cpu.ReferenceEntities.Count;
                 }
@@ -271,7 +271,7 @@
         {
             int numberOfReferences = cpuContext.ReferenceEntities.Count;
             BoardElement[] res = new BoardElement[numberOfReferences];
-            for(int i = 0; i < numberOfReferences; i++) // One target per reference!
+            for (int i = 0; i < numberOfReferences; i++) // One target per reference!
             {
                 res[i] = searchLocation switch
                 {
@@ -310,7 +310,7 @@
         static List<int> GetTargets(EntityOwner targetPlayer, EntityType targetType, SearchCriterion searchCriterion, BoardElement searchLocation, int n, int ownerPlayerPov)
         {
             // If nothing to search for, just return an empty list
-            if(targetPlayer == EntityOwner.NONE || targetType == EntityType.NONE || (searchCriterion == SearchCriterion.QUANTITY && n == 0))
+            if (targetPlayer == EntityOwner.NONE || targetType == EntityType.NONE || (searchCriterion == SearchCriterion.QUANTITY && n == 0))
             {
                 return new List<int>();
             }
@@ -322,7 +322,7 @@
             int referencePlayer; // Order reference depends on indexing
             int playerFilter = -1; // Filter of which player to search for (defautl is -1 both players)
             // Prepare settings/masks for this target search
-            if(searchLocation.ElementType == BoardElementType.LANE) // Since its a lane, it'll be lane search
+            if (searchLocation.ElementType == BoardElementType.LANE) // Since its a lane, it'll be lane search
             {
                 if (searchCriterion != SearchCriterion.ALL) // If target is everything, no need to check tile by tile
                 {
@@ -332,7 +332,7 @@
             if (n < 0) // Negative indexing implies reverse indexing
             {
                 n *= -1;
-                if(searchCriterion == SearchCriterion.ORDINAL) // In ordinals, -1 is 0 from reverse. In quant, -1 is 1 in reverse
+                if (searchCriterion == SearchCriterion.ORDINAL) // In ordinals, -1 is 0 from reverse. In quant, -1 is 1 in reverse
                 {
                     n -= 1; // Need to index starting from 0!
                 }
@@ -346,7 +346,7 @@
                 SearchCriterion.ALL => int.MaxValue, // Get everything possible
                 _ => throw new NotImplementedException("Invalid search criterion"),
             };
-            if(targetPlayer == EntityOwner.OWNER)
+            if (targetPlayer == EntityOwner.OWNER)
             {
                 playerFilter = ownerPlayerPov;
             }
@@ -383,9 +383,9 @@
                         currentSearchState = TargetingStateMachine.GET_ENTITIES_IN_REGION; // Once finished, go to next state (get elements to search for entities)
                         break;
                     case TargetingStateMachine.GET_ENTITIES_IN_REGION: // Gets the list of entities in the desired board element, also checks if need to subdivide lane
-                        if(tileSectioning) // Lane needs to be divided in tiles
+                        if (tileSectioning) // Lane needs to be divided in tiles
                         {
-                            if(tileCounter < ((Lane)searchLocation).Len) // Check if I still have ongoing lane available
+                            if (tileCounter < ((Lane)searchLocation).Len) // Check if I still have ongoing lane available
                             {
                                 entities = ((Lane)searchLocation).GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, tileCounter, referencePlayer).GetPlacedEntities(targetType, playerFilter); // Search for requested target for requested players
                                 tileCounter++;
@@ -404,14 +404,14 @@
                         localOrdinal = 0;
                         break;
                     case TargetingStateMachine.TARGETS_IN_REGION: // This searches the region to add as many entities as it can find
-                        if(localOrdinal < entities.Count) // Can still explore this one
+                        if (localOrdinal < entities.Count) // Can still explore this one
                         {
                             nextCandidateEntity = entities.ElementAt(localOrdinal); // Get next element
                             localOrdinal++;
                         }
                         else // Means I finished region
                         {
-                            if(tileSectioning) // May want to look for next tile (if available)
+                            if (tileSectioning) // May want to look for next tile (if available)
                             {
                                 currentSearchState = TargetingStateMachine.GET_ENTITIES_IN_REGION;
                             }
@@ -438,12 +438,12 @@
                     case TargetingStateMachine.END:
                         break;
                 }
-                if(nextCandidateEntity != -1) // Found next potential candidate entity, need to verify if applies
+                if (nextCandidateEntity != -1) // Found next potential candidate entity, need to verify if applies
                 {
                     bool addEntity = true;
-                    if(searchCriterion == SearchCriterion.ORDINAL) // Need to ensure the unit # matches!
+                    if (searchCriterion == SearchCriterion.ORDINAL) // Need to ensure the unit # matches!
                     {
-                        if(totalOrdinal != n) // Not the entity I was looking for, unfortunately
+                        if (totalOrdinal != n) // Not the entity I was looking for, unfortunately
                         {
                             addEntity = false;
                         }
@@ -495,7 +495,7 @@
             {
                 unitPlayCtx.AbsoluteInitialTile = ((Tile)placeToSummon).coord;
             }
-            else if(placeToSummon.ElementType == BoardElementType.LANE) // In this case I assume its just beginning of tile (for now?!)
+            else if (placeToSummon.ElementType == BoardElementType.LANE) // In this case I assume its just beginning of tile (for now?!)
             {
                 unitPlayCtx.AbsoluteInitialTile = ((Lane)placeToSummon).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerOwner);
             }

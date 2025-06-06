@@ -46,7 +46,7 @@ namespace EngineTests
                 {
                     int ownerPlayer = (playerTarget == EntityOwner.OWNER) ? playerIndex : 1 - playerIndex;
                     PlayTargetLocation[] laneOptions = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
-                    foreach(PlayTargetLocation location in laneOptions)
+                    foreach (PlayTargetLocation location in laneOptions)
                     {
                         // Summon effect in one of each lane
                         EffectLocation laneTarget = location switch
