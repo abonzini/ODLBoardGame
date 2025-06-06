@@ -5,16 +5,16 @@ namespace EngineTests
     [TestClass]
     public class DeserializeAllCards
     {
-        CardFinder cardFinderToTest = new CardFinder(".\\..\\..\\..\\..\\..\\CardResources\\CardData");
-        public bool IsJsonValid(int cardId)
+        public static bool IsJsonValid(int cardId)
         {
-            bool valid = false;
+            CardFinder cardFinderToTest = new CardFinder(".\\..\\..\\..\\..\\..\\CardResources\\CardData");
+            bool valid;
             try
             {
                 EntityBase card = cardFinderToTest.GetCard(cardId);
                 valid = card != null;
             }
-            catch (Exception ex)
+            catch
             {
                 valid = false;
             }

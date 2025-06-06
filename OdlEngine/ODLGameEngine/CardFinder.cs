@@ -40,24 +40,14 @@ namespace ODLGameEngine
                     cardType = json["EntityType"].ToObject<EntityType>();
                 }
                 // Load the specific card data
-                switch (cardType)
+                cardEntity = cardType switch
                 {
-                    case EntityType.UNIT:
-                        cardEntity = JsonConvert.DeserializeObject<Unit>(File.ReadAllText(cardJsonFile));
-                        break;
-                    case EntityType.SKILL:
-                        cardEntity = JsonConvert.DeserializeObject<Skill>(File.ReadAllText(cardJsonFile));
-                        break;
-                    case EntityType.BUILDING:
-                        cardEntity = JsonConvert.DeserializeObject<Building>(File.ReadAllText(cardJsonFile));
-                        break;
-                    case EntityType.PLAYER:
-                        cardEntity = JsonConvert.DeserializeObject<Player>(File.ReadAllText(cardJsonFile));
-                        break;
-                    case EntityType.NONE:
-                    default:
-                        throw new Exception("Unrecognised card type when deserializing");
-                }
+                    EntityType.UNIT => JsonConvert.DeserializeObject<Unit>(File.ReadAllText(cardJsonFile)),
+                    EntityType.SKILL => JsonConvert.DeserializeObject<Skill>(File.ReadAllText(cardJsonFile)),
+                    EntityType.BUILDING => JsonConvert.DeserializeObject<Building>(File.ReadAllText(cardJsonFile)),
+                    EntityType.PLAYER => JsonConvert.DeserializeObject<Player>(File.ReadAllText(cardJsonFile)),
+                    _ => throw new Exception("Unrecognised card type when deserializing"),
+                };
                 cardData[id] = cardEntity;
                 return cardEntity;
             }

@@ -31,8 +31,10 @@
         /// <returns>The context that tells us whether the card is playable</returns>
         public PlayContext GetPlayabilityOptions(int card, PlayType playType, PlayTargetLocation playLocationFilter = PlayTargetLocation.ALL_LANES)
         {
-            PlayContext resultingPlayContext = new PlayContext();
-            resultingPlayContext.PlayType = playType;
+            PlayContext resultingPlayContext = new PlayContext
+            {
+                PlayType = playType
+            };
             // First stage, non card-related
             // Check whether we're in the right place first (can only do this on play state)
             if (DetailedState.CurrentState != States.ACTION_PHASE)

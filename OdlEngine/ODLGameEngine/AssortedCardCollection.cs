@@ -91,8 +91,10 @@ namespace ODLGameEngine
         }
         public object Clone()
         {
-            AssortedCardCollection newCollection = new AssortedCardCollection();
-            newCollection._size = _size;
+            AssortedCardCollection newCollection = new AssortedCardCollection
+            {
+                _size = _size
+            };
             foreach (KeyValuePair<int, int> kvp in _cards)
             {
                 newCollection._cards[kvp.Key] = kvp.Value;

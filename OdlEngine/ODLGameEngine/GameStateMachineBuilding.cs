@@ -29,7 +29,7 @@
                 {
                     res.Actor = (Unit)DetailedState.EntityData[tile.GetPlacedEntities(EntityType.UNIT, player).First()];
                     res.Affected = building;
-                    res.AbsoluteConstructionTile = tile.coord; // This is the tile!
+                    res.AbsoluteConstructionTile = tile.Coord; // This is the tile!
                     break;
                 }
             }

@@ -11,7 +11,7 @@ namespace CardGenerationHelper
         string _resourcesPath = Properties.Settings.Default.ResourcesPath;
         bool _debug = Properties.Settings.Default.Debug;
 
-        System.Windows.Forms.Timer _drawUpdateTimer = new System.Windows.Forms.Timer();
+        readonly System.Windows.Forms.Timer _drawUpdateTimer = new System.Windows.Forms.Timer();
         private void DrawTimeout(object sender, EventArgs e)
         {
             _drawUpdateTimer.Stop();
@@ -19,7 +19,7 @@ namespace CardGenerationHelper
         }
         private void DrawIllustration()
         {
-            Bitmap bitmap = null;
+            Bitmap bitmap;
             if (BlueprintCheckBox.Checked)
             {
                 bitmap = DrawHelper.DrawBlueprint(_currentIllustrationInfo, (Building)_currentEntity, _resourcesPath, _debug);
@@ -77,8 +77,10 @@ namespace CardGenerationHelper
                 entityTypeAlreadyLoaded = false;
                 return;
             }
-            _currentIllustrationInfo = new CardIllustrationInfo();
-            _currentIllustrationInfo.EntityType = (EntityType)EntityTypeDropdown.SelectedItem;
+            _currentIllustrationInfo = new CardIllustrationInfo
+            {
+                EntityType = (EntityType)EntityTypeDropdown.SelectedItem
+            };
             _currentEntity = _currentIllustrationInfo.EntityType switch
             {
                 EntityType.NONE => new EntityBase(),
@@ -170,16 +172,14 @@ namespace CardGenerationHelper
 
         private void CardPicturePathLoadButton_Click(object sender, EventArgs e)
         {
-            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
-            {
-                DialogResult result = folderDialog.ShowDialog();
+            FolderBrowserDialog folderDialog = new FolderBrowserDialog();
+            DialogResult result = folderDialog.ShowDialog();
 
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
-                {
-                    _resourcesPath = folderDialog.SelectedPath;
-                    Properties.Settings.Default.ResourcesPath = _resourcesPath;
-                    Properties.Settings.Default.Save();
-                }
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
+            {
+                _resourcesPath = folderDialog.SelectedPath;
+                Properties.Settings.Default.ResourcesPath = _resourcesPath;
+                Properties.Settings.Default.Save();
             }
         }
 
@@ -212,19 +212,19 @@ namespace CardGenerationHelper
 
         private void SavePictureButton_Click(object sender, EventArgs e)
         {
-            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
-                saveFileDialog.Title = "Save card Image";
-                saveFileDialog.DefaultExt = "png"; // Default file type
+                Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp",
+                Title = "Save card Image",
+                DefaultExt = "png" // Default file type
+            };
 
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    string filePath = saveFileDialog.FileName;
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = saveFileDialog.FileName;
 
-                    // Example: Assuming you have a PictureBox named pictureBox1
-                    CardPicture.Image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
-                }
+                // Example: Assuming you have a PictureBox named pictureBox1
+                CardPicture.Image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
             }
         }
 
@@ -344,21 +344,18 @@ namespace CardGenerationHelper
             string cardJson = JsonConvert.SerializeObject(_currentEntity, settings);
             string cardPrintJson = JsonConvert.SerializeObject(_currentIllustrationInfo, settings);
             // Get folder where I save this
-            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            FolderBrowserDialog folderDialog = new FolderBrowserDialog();
+            DialogResult result = folderDialog.ShowDialog();
+            string folderPath = folderDialog.SelectedPath;
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
             {
-                DialogResult result = folderDialog.ShowDialog();
-                string folderPath = folderDialog.SelectedPath;
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
-                {
-                    File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id + ".json"), cardJson);
-                    File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id + "-illustration.json"), cardPrintJson);
-                }
+                File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id + ".json"), cardJson);
+                File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id + "-illustration.json"), cardPrintJson);
             }
         }
         private void LoadJsonButton_Click(object sender, EventArgs e)
         {
             string illustrationFile = "";
-            int cardId = 0;
             using (OpenFileDialog fileDialog = new OpenFileDialog())
             {
                 DialogResult result = fileDialog.ShowDialog();
@@ -381,7 +378,7 @@ namespace CardGenerationHelper
             // Otherwise I can load illustration data!
             _currentIllustrationInfo = JsonConvert.DeserializeObject<CardIllustrationInfo>(File.ReadAllText(illustrationFile));
             // Obtain card ID and folder
-            cardId = _currentIllustrationInfo.Id;
+            int cardId = _currentIllustrationInfo.Id;
             // Use card finder technology to fetch the card data from the directory
             CardFinder cardFinder = new CardFinder(Path.GetDirectoryName(illustrationFile));
             _currentEntity = cardFinder.GetCard(cardId);

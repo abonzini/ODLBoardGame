@@ -299,14 +299,8 @@
                 // Change lane (if applies)
                 if (oldLane != newLane) // There's a change in lane so i need to deal with it
                 {
-                    if (oldLane != null)
-                    {
-                        oldLane.EntityListOperation(entity, EntityListOperation.REMOVE); // Remove unit from old lane
-                    }
-                    if (newLane != null)
-                    {
-                        newLane.EntityListOperation(entity, EntityListOperation.ADD); // Add entity to the new lane
-                    }
+                    oldLane?.EntityListOperation(entity, EntityListOperation.REMOVE); // Remove unit from old lane
+                    newLane?.EntityListOperation(entity, EntityListOperation.ADD); // Add entity to the new lane
                 }
             }
         }

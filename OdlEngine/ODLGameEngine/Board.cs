@@ -92,7 +92,7 @@ namespace ODLGameEngine
     public class Tile : BoardElement
     {
         [JsonProperty]
-        public int coord { get; set; } = -1;
+        public int Coord { get; set; } = -1;
         public Tile()
         {
             ElementType = BoardElementType.TILE;
@@ -100,7 +100,7 @@ namespace ODLGameEngine
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(coord);
+            hash.Add(Coord);
             foreach (int entity in GetPlacedEntities(EntityType.UNIT | EntityType.BUILDING))
             {
                 hash.Add(entity);
@@ -274,8 +274,10 @@ namespace ODLGameEngine
             Tiles = new Tile[numberOfTiles]; // Inits all the tiles
             for (int i = 0; i < numberOfTiles; i++)
             {
-                Tiles[i] = new Tile();
-                Tiles[i].coord = i;
+                Tiles[i] = new Tile
+                {
+                    Coord = i
+                };
             }
             PlainsLane = new Lane(LaneID.PLAINS, GameConstants.PLAINS_NUMBER_OF_TILES, Tiles, 0);
             ForestLane = new Lane(LaneID.FOREST, GameConstants.FOREST_NUMBER_OF_TILES, Tiles, GameConstants.PLAINS_NUMBER_OF_TILES);
@@ -323,7 +325,7 @@ namespace ODLGameEngine
         }
         public Lane GetLaneContainingTile(Tile tile)
         {
-            return GetLaneContainingTile(tile.coord);
+            return GetLaneContainingTile(tile.Coord);
         }
 
         //EntityListOperation(PlacedEntity entity, EntityListOperation op)

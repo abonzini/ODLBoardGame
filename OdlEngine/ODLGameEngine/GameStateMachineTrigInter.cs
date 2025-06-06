@@ -493,7 +493,7 @@
             };
             if (placeToSummon.ElementType == BoardElementType.TILE) // In this case, I know exactly where the unit will be placed
             {
-                unitPlayCtx.AbsoluteInitialTile = ((Tile)placeToSummon).coord;
+                unitPlayCtx.AbsoluteInitialTile = ((Tile)placeToSummon).Coord;
             }
             else if (placeToSummon.ElementType == BoardElementType.LANE) // In this case I assume its just beginning of tile (for now?!)
             {
