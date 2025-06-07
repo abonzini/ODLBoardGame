@@ -111,7 +111,15 @@
                         break;
                     case EffectType.FIND_ENTITIES:
                         // Searches for entities, reference being the selected reference (since there can be multiple references, a single one (the first) is used
-                        cpu.ReferenceEntities = GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, GetTargetLocationsFromReference(effect.EffectLocation, cpu)[0], inputValue, FetchEntity(cpu.ReferenceEntities[0]).Owner);
+                        {
+                            BoardElement[] searchLocations = GetTargetLocationsFromReference(effect.EffectLocation, cpu); // First, I'll find all the locations for searching
+                            List<int> newList = new List<int>(); // Now I'll prepare the new list result
+                            for (int i = 0; i < cpu.ReferenceEntities.Count; i++) // Attach the whole sets of units found (this may duplicate findings! be careful!)
+                            {
+                                newList.AddRange(GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, searchLocations[i], inputValue, FetchEntity(cpu.ReferenceEntities[i]).Owner));
+                            }
+                            cpu.ReferenceEntities = newList;
+                        }
                         break;
                     case EffectType.SUMMON_UNIT:
                         {
