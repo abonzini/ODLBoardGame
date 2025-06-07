@@ -151,15 +151,7 @@
         /// <returns></returns>
         public StepResult TestActivateTrigger(TriggerType trigger, EffectLocation location, EffectContext specificContext)
         {
-            BoardElement place = location switch
-            {
-                EffectLocation.BOARD => DetailedState.BoardState,
-                EffectLocation.PLAINS => DetailedState.BoardState.PlainsLane,
-                EffectLocation.FOREST => DetailedState.BoardState.ForestLane,
-                EffectLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
-                _ => throw new Exception("Not a valid absolute location for triggers")
-            };
-            TRIGINTER_ProcessTrigger(trigger, place, specificContext);
+            EFFECT_ActivateTrigger(trigger, location, specificContext); // DOes the trigger
             ENGINE_ChangeState(DetailedState.CurrentState); // Repeat current state to flush event queue
             return _stepHistory.Last(); // Returns everything that happened in this triggering
         }

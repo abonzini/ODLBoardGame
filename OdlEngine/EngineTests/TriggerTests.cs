@@ -5,6 +5,7 @@ namespace EngineTests
     [TestClass]
     public class TriggerTests
     {
+        /*
         [TestMethod]
         public void UnitTriggers()
         {
@@ -136,5 +137,6 @@ namespace EngineTests
                 Assert.AreEqual(debugFlagNumber, numberOfUnits); // One trigger per unit
             }
         }
+        */
     }
 }

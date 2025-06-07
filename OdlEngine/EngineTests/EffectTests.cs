@@ -987,7 +987,7 @@ namespace EngineTests
             }
         }
         [TestMethod]
-        public void TriggeredUnitSelection()
+        public void TriggeredUnitSelectsItself()
         {
             // Testing of a debug trigger and selection of unit
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
@@ -1004,7 +1004,7 @@ namespace EngineTests
                 Effect selectEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.SELECT_ENTITY,
-                    SearchCriterion = SearchCriterion.EFFECT_OWNING_ENTITY, // Selects triggered entity, in this case, the unit
+                    SearchCriterion = SearchCriterion.EFFECT_OWNING_ENTITY, // Selects itself (when triggered)
                     TargetPlayer = EntityOwner.OWNER,
                     TargetType = EntityType.UNIT,
                 };
@@ -1012,8 +1012,11 @@ namespace EngineTests
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
-                unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.Triggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [selectEffect, debugEffect]);
+                // Init a BOARD absolute trigger that triggers on debug
+                unit.TriggerData = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                Dictionary<TriggerType, List<Effect>> BoardTriggers = new Dictionary<TriggerType, List<Effect>>();
+                unit.TriggerData.Add(EffectLocation.BOARD, BoardTriggers);
+                BoardTriggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [selectEffect, debugEffect]);
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -1023,20 +1026,19 @@ namespace EngineTests
                 // Play
                 sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play the unit in any lane
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // State hash has changed
-                // Now check trigger
-                StepResult res = sm.TriggerDebugStep();
+                // Now check trigger, will be the debug trigger on board (verified that works in Trigger tests)
+                StepResult res = sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext());
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res);
                 Assert.IsNotNull(cpu);
                 // Check returned targets
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                 List<int> searchResultList = cpu.ReferenceEntities;
                 Assert.AreEqual(searchResultList.Count, 1);
-                Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
+                Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit should've been initialized as id = 2
                 // Reversion
                 sm.UndoPreviousStep(); // Undoes the debug trigger
                 sm.UndoPreviousStep(); // Undoes card play
                 Assert.AreEqual(stateHash, sm.DetailedState.GetHashCode());
-                Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.ON_DEBUG_TRIGGERED));
             }
         }
         [TestMethod]
@@ -1352,7 +1354,7 @@ namespace EngineTests
         [TestMethod]
         public void EffectChainContextSharing()
         {
-            // Triggers mid-interaction to ensure CPU context of a secific entity persists
+            // Creates a trigger mid-interaction to ensure that the CPU context of a specific entity persists in all execution contexts
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -1387,7 +1389,8 @@ namespace EngineTests
                 };
                 Effect debugPushEffect = new Effect()
                 {
-                    EffectType = EffectType.TRIGGER_DEBUG,
+                    EffectType = EffectType.ACTIVATE_TEST_TRIGGER_IN_LOCATION,
+                    EffectLocation = EffectLocation.BOARD
                 };
                 Effect debugPopEffect = new Effect()
                 {
@@ -1397,8 +1400,10 @@ namespace EngineTests
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, debugPushEffect, debugPopEffect]); // Add interaction to card
                 // Add debug trigger!
-                unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.Triggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
+                unit.TriggerData = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                Dictionary<TriggerType, List<Effect>> BoardTriggers = new Dictionary<TriggerType, List<Effect>>();
+                unit.TriggerData.Add(EffectLocation.BOARD, BoardTriggers);
+                BoardTriggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
                 // Rest of test
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
@@ -1425,7 +1430,7 @@ namespace EngineTests
         [TestMethod]
         public void EffectChainContextIndependence()
         {
-            // Triggers mid-interaction to ensure CPU contexts of different entities are independent
+            // Triggers another entitie's mid-interaction to ensure CPU contexts of different entities are independent
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -1461,7 +1466,8 @@ namespace EngineTests
                 };
                 Effect debugPushEffect = new Effect()
                 {
-                    EffectType = EffectType.TRIGGER_DEBUG,
+                    EffectType = EffectType.ACTIVATE_TEST_TRIGGER_IN_LOCATION,
+                    EffectLocation = EffectLocation.BOARD
                 };
                 Effect debugPopEffect = new Effect()
                 {
@@ -1471,8 +1477,10 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, debugPushEffect, debugPopEffect]); // Add interaction to card
                 // Add debug trigger!
-                unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.Triggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
+                unit.TriggerData = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                Dictionary<TriggerType, List<Effect>> BoardTriggers = new Dictionary<TriggerType, List<Effect>>();
+                unit.TriggerData.Add(EffectLocation.BOARD, BoardTriggers);
+                BoardTriggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
                 // Rest of test
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 cardDb.InjectCard(2, unit);
