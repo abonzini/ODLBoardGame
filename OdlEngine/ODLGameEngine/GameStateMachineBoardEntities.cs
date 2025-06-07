@@ -12,6 +12,8 @@
             entity.UniqueId = unitId;
             // Unit ready to be added
             ENGINE_InitializeEntity(entity); // Now entity is attached to game
+            // Register the absolute triggers of entity
+            TRIGINTER_RegisterEntityAbsoluteTriggers(entity);
             // Finally, need to increment playable counter
             ENGINE_IncrementPlaceableCounter();
         }

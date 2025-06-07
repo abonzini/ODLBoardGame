@@ -140,8 +140,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public int DamageTokens { get; set; } = 0;
         [JsonProperty]
-        public Dictionary<TriggerType, List<Effect>> Triggers { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
-
+        public Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>> TriggerData { get; set; } = null;
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();

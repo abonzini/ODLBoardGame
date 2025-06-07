@@ -2,7 +2,7 @@
 
 namespace ODLGameEngine
 {
-    public enum EntityListOperation
+    public enum BoardElementListOperation
     {
         ADD,
         REMOVE
@@ -21,6 +21,8 @@ namespace ODLGameEngine
         public BoardElementType ElementType { get; set; } = BoardElementType.NONE;
         [JsonProperty]
         public Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities { get; set; } = new Dictionary<(EntityType, int), SortedSet<int>>();
+        [JsonProperty]
+        public Dictionary<TriggerType, List<Tuple<int, EffectLocation>>> TriggerList = new Dictionary<TriggerType, List<Tuple<int, EffectLocation>>>();
         public SortedSet<int> GetPlacedEntities(EntityType entityTypes, int owner = -1)
         {
             EntityType entityMask = EntityType.UNIT | EntityType.BUILDING; // Ignore noise as it can't be in board anyway
@@ -31,7 +33,7 @@ namespace ODLGameEngine
             }
             return PlacedEntities[(entityTypes, owner)];
         }
-        public void EntityListOperation(PlacedEntity entity, EntityListOperation op)
+        public void EntityListOperation(PlacedEntity entity, BoardElementListOperation op)
         {
             // Also define the flags to allow into generalised lists
             int allOwners = -1;
@@ -65,11 +67,11 @@ namespace ODLGameEngine
                     // Then add the elements where they belong
                     switch (op)
                     {
-                        case ODLGameEngine.EntityListOperation.ADD:
+                        case BoardElementListOperation.ADD:
                             PlacedEntities[(nextEntityCombination, allOwners)].Add(index);
                             PlacedEntities[(nextEntityCombination, owner)].Add(index);
                             break;
-                        case ODLGameEngine.EntityListOperation.REMOVE:
+                        case BoardElementListOperation.REMOVE:
                             PlacedEntities[(nextEntityCombination, allOwners)].Remove(index);
                             PlacedEntities[(nextEntityCombination, owner)].Remove(index);
                             break;
@@ -79,9 +81,60 @@ namespace ODLGameEngine
                 }
             }
         }
+        /// <summary>
+        /// Gets all the subscribed triggers for this board element and this trigger
+        /// </summary>
+        /// <param name="triggerType">Type of trigger</param>
+        /// <returns>All of the subscribed triggers (if any)</returns>
+        public List<Tuple<int, EffectLocation>> GetSubscribedTriggers(TriggerType triggerType)
+        {
+            TriggerList.TryGetValue(triggerType, out List<Tuple<int, EffectLocation>> result);
+            return result;
+        }
+        /// <summary>
+        /// Adds or removes a trigger from this element's trigger list
+        /// </summary>
+        /// <param name="trigger">Trigger type</param>
+        /// <param name="id">Id of unit</param>
+        /// <param name="relativeLocation">Relative location of unit trigger w.r.t. this board element</param>
+        public void TriggerListOperation(TriggerType trigger, int id, EffectLocation relativeLocation, BoardElementListOperation op)
+        {
+            Tuple<int, EffectLocation> triggerDescriptor = new Tuple<int, EffectLocation>(id, relativeLocation);
+            if (!TriggerList.TryGetValue(trigger, out List<Tuple<int, EffectLocation>> thisTriggerList)) // Create trigger handler and list if doesn't exist
+            {
+                thisTriggerList = new List<Tuple<int, EffectLocation>>();
+                TriggerList.Add(trigger, thisTriggerList);
+            }
+            // Then I'll add or remove the elements
+            switch (op)
+            {
+                case BoardElementListOperation.ADD:
+                    thisTriggerList.Add(triggerDescriptor);
+                    break;
+                case BoardElementListOperation.REMOVE:
+                    thisTriggerList.Remove(triggerDescriptor);
+                    if (thisTriggerList.Count == 0) // Emptied the list
+                    {
+                        TriggerList.Remove(trigger); // Remove the trigger from this
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException("Invalid list operation");
+            }
+        }
         public override int GetHashCode()
         {
-            return 0;
+            HashCode hash = new HashCode();
+            foreach (KeyValuePair<TriggerType, List<Tuple<int, EffectLocation>>> kvp in TriggerList)
+            {
+                hash.Add(kvp.Key);
+                foreach (Tuple<int, EffectLocation> trigdata in kvp.Value)
+                {
+                    hash.Add(trigdata.Item1);
+                    hash.Add(trigdata.Item2);
+                }
+            }
+            return hash.ToHashCode();
         }
         public override string ToString()
         {
@@ -100,6 +153,7 @@ namespace ODLGameEngine
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
+            hash.Add(base.GetHashCode()); // Adds trigger data
             hash.Add(Coord);
             foreach (int entity in GetPlacedEntities(EntityType.UNIT | EntityType.BUILDING))
             {
@@ -241,6 +295,7 @@ namespace ODLGameEngine
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
+            hash.Add(base.GetHashCode()); // Adds trigger data
             foreach (Tile tile in Tiles)
             {
                 hash.Add(tile.GetHashCode());
@@ -332,6 +387,7 @@ namespace ODLGameEngine
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
+            hash.Add(base.GetHashCode()); // Adds trigger data
             hash.Add(PlainsLane.GetHashCode());
             hash.Add(ForestLane.GetHashCode());
             hash.Add(MountainLane.GetHashCode());

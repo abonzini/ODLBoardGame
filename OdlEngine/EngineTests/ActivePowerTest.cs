@@ -167,7 +167,7 @@ namespace EngineTests
                 Skill skill = TestCardGenerator.CreateSkill(1, "BRICK", 5, PlayTargetLocation.BOARD);
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Triggers debug event and saves in list of results
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Triggers debug event and saves in list of results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [debugEffect]); // Add interaction to card

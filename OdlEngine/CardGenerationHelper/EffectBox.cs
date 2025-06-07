@@ -79,7 +79,7 @@ namespace CardGenerationHelper
             Control[] relevant = effect switch
             {
                 EffectType.TRIGGER_DEBUG => [],
-                EffectType.DEBUG_STORE => [],
+                EffectType.STORE_DEBUG_IN_EVENT_PILE => [],
                 EffectType.SELECT_ENTITY => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel],
                 EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel, EffectLocationBox, EffectLocationLabel, InputBox, InputLabel, MultiVariableBox, MultiVariableLabel],
                 EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerEnumBox, EffectLocationBox, EffectLocationLabel, InputBox, InputBox, MultiVariableBox, MultiVariableLabel],

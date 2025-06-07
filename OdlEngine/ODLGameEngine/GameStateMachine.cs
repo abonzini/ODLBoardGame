@@ -143,14 +143,25 @@
             return _stepHistory.Last(); // Returns everything that happened in this
         }
         /// <summary>
-        /// Doesnt do anything really, just made to test triggers, creates an empty turn made for triggering externally
+        /// Test API to activate a trigger to pretend it comes from any ingame event
         /// </summary>
-        /// <returns>Actions occurring during this debug step</returns>
-        public StepResult TriggerDebugStep()
+        /// <param name="trigger">Trigger type</param>
+        /// <param name="place">In which place to do this</param>
+        /// <param name="specificContext">Specific context, to pretend it's a specific situation</param>
+        /// <returns></returns>
+        public StepResult TestActivateTrigger(TriggerType trigger, EffectLocation location, EffectContext specificContext)
         {
-            TRIGINTER_ProcessTrigger(TriggerType.DEBUG_TRIGGER, new EffectContext()); // No debug context (for now?)
-            ENGINE_ChangeState(DetailedState.CurrentState); // Reiterate whatever the current state is now
-            return _stepHistory.Last();
+            BoardElement place = location switch
+            {
+                EffectLocation.BOARD => DetailedState.BoardState,
+                EffectLocation.PLAINS => DetailedState.BoardState.PlainsLane,
+                EffectLocation.FOREST => DetailedState.BoardState.ForestLane,
+                EffectLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
+                _ => throw new Exception("Not a valid absolute location for triggers")
+            };
+            TRIGINTER_ProcessTrigger(trigger, place, specificContext);
+            ENGINE_ChangeState(DetailedState.CurrentState); // Repeat current state to flush event queue
+            return _stepHistory.Last(); // Returns everything that happened in this triggering
         }
         /// <summary>
         /// Loads the initial player data including deck sizes name and class
@@ -209,7 +220,7 @@
             {
                 BOARDENTITY_DamageStep(player, player, GameConstants.DECKOUT_DAMAGE);
             }
-            TRIGINTER_ModifyPlayersGold(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED, ModifierOperation.ADD);
+            EFFECTS_ModifyPlayersGold(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED, ModifierOperation.ADD);
             ENGINE_ChangePlayerPowerAvailability(player, true); // Player can now use active power again
         }
         /// <summary>

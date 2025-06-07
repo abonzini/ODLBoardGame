@@ -17,8 +17,7 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum TriggerType
     {
-        NONE,
-        DEBUG_TRIGGER
+        ON_DEBUG_TRIGGERED
     }
     // Effects
     /// <summary>
@@ -27,8 +26,8 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum EffectType
     {
-        TRIGGER_DEBUG,
-        DEBUG_STORE,
+        STORE_DEBUG_IN_EVENT_PILE,
+        ACTIVATE_TEST_TRIGGER_IN_LOCATION,
         SELECT_ENTITY,
         FIND_ENTITIES,
         SUMMON_UNIT,
@@ -41,7 +40,7 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum EffectLocation
     {
-        BOARD,
+        BOARD = 0,
         PLAINS,
         FOREST,
         MOUNTAIN,

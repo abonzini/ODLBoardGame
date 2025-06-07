@@ -215,17 +215,34 @@
             switch (entity.EntityType)
             {
                 case EntityType.UNIT:
-                    return UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (UnitPlayContext)playCtx.LastAuxContext);
+                    Unit newUnit = UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (UnitPlayContext)playCtx.LastAuxContext); // Creates unit
+                    PLAYABLE_RegisterOnPlayTrigger(newUnit, playCtx); // If unit has triggers on play location, register them
+                    return newUnit;
                 case EntityType.SKILL: // Nothing needed as skills don't introduce new entities
                     Skill skillData = (Skill)entity.Clone(); // Instances a local version of skill
                     skillData.Owner = (int)DetailedState.CurrentPlayer;
                     skillData.UniqueId = -1; // Default id for a skill (they don't persist after played)
                     return skillData;
                 case EntityType.BUILDING:
-                    return BUILDING_ConstructBuilding((int)DetailedState.CurrentPlayer, (ConstructionContext)playCtx.LastAuxContext);
+                    Building newBuilding = BUILDING_ConstructBuilding((int)DetailedState.CurrentPlayer, (ConstructionContext)playCtx.LastAuxContext);
+                    PLAYABLE_RegisterOnPlayTrigger(newBuilding, playCtx); // If building has triggers on play location, register them
+                    return newBuilding;
                 default:
                     throw new NotImplementedException("Trying to play a non-supported type!");
             }
+        }
+        void PLAYABLE_RegisterOnPlayTrigger(LivingEntity entity, PlayContext playCtx)
+        {
+            // TRIGGER REGISTRATION: ON PLAYED LOCATION
+            BoardElement finalPlayTargetPlace = playCtx.PlayTarget switch
+            {
+                PlayTargetLocation.BOARD => DetailedState.BoardState,
+                PlayTargetLocation.PLAINS => DetailedState.BoardState.PlainsLane,
+                PlayTargetLocation.FOREST => DetailedState.BoardState.ForestLane,
+                PlayTargetLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
+                _ => throw new NotImplementedException("How was the play target in the other locations?")
+            };
+            TRIGINTER_VerifyEntityAndRegisterTriggers(finalPlayTargetPlace, EffectLocation.PLAY_TARGET, entity);
         }
         /// <summary>
         /// Checks if the player can afford to play a card
@@ -244,7 +261,7 @@
         void PLAYABLE_PayCost(int cost)
         {
             Player player = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer];
-            TRIGINTER_ModifyPlayersGold(player.Owner, -cost, ModifierOperation.ADD);
+            EFFECTS_ModifyPlayersGold(player.Owner, -cost, ModifierOperation.ADD);
         }
     }
 }

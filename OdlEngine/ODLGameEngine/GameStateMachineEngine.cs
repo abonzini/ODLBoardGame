@@ -52,7 +52,7 @@
                     DetailedState.PlayerStates[auxInt1].CurrentGold = ((EntityTransitionEvent<int, int>)e).newValue;
                     break;
                 case EventType.MESSAGE:
-                case EventType.DEBUG_CHECK:
+                case EventType.DEBUG_EVENT:
                     break;
                 case EventType.CARD_DECK_SWAP:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
@@ -78,9 +78,8 @@
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
+                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, BoardElementListOperation.ADD);
                     DetailedState.EntityData.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
-                    ENGINE_RegisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     DetailedState.NextUniqueIndex++;
@@ -89,13 +88,12 @@
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, int>)e).entity;
                     ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue = auxPlacedEntity.TileCoordinate; // Store old value first
                     auxInt1 = ((EntityTransitionEvent<PlacedEntity, int>)e).newValue; // The new coord!
-                    ENGINE_ChangeEntityCoord(auxPlacedEntity, auxInt1);
+                    ChangeEntityCoord(auxPlacedEntity, auxInt1);
                     break;
                 case EventType.DEINIT_ENTITY: // Unit simply leaves field and user loses the unit
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
+                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, BoardElementListOperation.REMOVE);
                     DetailedState.EntityData.Remove(auxPlacedEntity.UniqueId);
-                    ENGINE_DeregisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
@@ -123,6 +121,18 @@
                     auxStat = ((EntityTransitionEvent<Stat, int>)e).entity;
                     ((EntityTransitionEvent<Stat, int>)e).oldValue = auxStat.Modifier;
                     auxStat.Modifier = ((EntityTransitionEvent<Stat, int>)e).newValue;
+                    break;
+                case EventType.TRIGGER_SUBSCRIBE:
+                    {
+                        EntityValueEvent<BoardElement, TrigInfoHelper> auxTriggerEvent = (EntityValueEvent<BoardElement, TrigInfoHelper>)e;
+                        SubscribeTrigger(auxTriggerEvent.entity, auxTriggerEvent.value);
+                    }
+                    break;
+                case EventType.TRIGGER_UNSUBSCRIBE:
+                    {
+                        EntityValueEvent<BoardElement, TrigInfoHelper> auxTriggerEvent = (EntityValueEvent<BoardElement, TrigInfoHelper>)e;
+                        UnsubscribeTrigger(auxTriggerEvent.entity, auxTriggerEvent.value);
+                    }
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -161,7 +171,7 @@
                     DetailedState.PlayerStates[auxInt1].CurrentGold = ((EntityTransitionEvent<int, int>)e).oldValue;
                     break;
                 case EventType.MESSAGE:
-                case EventType.DEBUG_CHECK:
+                case EventType.DEBUG_EVENT:
                     break;
                 case EventType.CARD_DECK_SWAP:
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
@@ -189,9 +199,8 @@
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, EntityListOperation.REMOVE);
+                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, BoardElementListOperation.REMOVE);
                     DetailedState.EntityData.Remove(auxPlacedEntity.UniqueId);
-                    ENGINE_DeregisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     DetailedState.NextUniqueIndex--;
@@ -199,13 +208,12 @@
                 case EventType.ENTITY_COORD_TRANSITION:
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, int>)e).entity;
                     auxInt1 = ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue; // The old coord!
-                    ENGINE_ChangeEntityCoord(auxPlacedEntity, auxInt1);
+                    ChangeEntityCoord(auxPlacedEntity, auxInt1);
                     break;
                 case EventType.DEINIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
-                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, EntityListOperation.ADD);
+                    DetailedState.BoardState.EntityListOperation(auxPlacedEntity, BoardElementListOperation.ADD);
                     DetailedState.EntityData.Add(auxPlacedEntity.UniqueId, auxPlacedEntity);
-                    ENGINE_RegisterEntityTriggers(auxPlacedEntity);
                     break;
                 case EventType.UNIT_MOVEMENT_COOLDOWN_VALUE:
                     auxUnit = ((EntityTransitionEvent<Unit, int>)e).entity;
@@ -229,57 +237,28 @@
                     auxStat = ((EntityTransitionEvent<Stat, int>)e).entity;
                     auxStat.Modifier = ((EntityTransitionEvent<Stat, int>)e).oldValue;
                     break;
+                case EventType.TRIGGER_SUBSCRIBE:
+                    {
+                        EntityValueEvent<BoardElement, TrigInfoHelper> auxTriggerEvent = (EntityValueEvent<BoardElement, TrigInfoHelper>)e;
+                        UnsubscribeTrigger(auxTriggerEvent.entity, auxTriggerEvent.value);
+                    }
+                    break;
+                case EventType.TRIGGER_UNSUBSCRIBE:
+                    {
+                        EntityValueEvent<BoardElement, TrigInfoHelper> auxTriggerEvent = (EntityValueEvent<BoardElement, TrigInfoHelper>)e;
+                        SubscribeTrigger(auxTriggerEvent.entity, auxTriggerEvent.value);
+                    }
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
         }
         /// <summary>
-        /// Registers an entity's trigger
-        /// </summary>
-        /// <param name="entity">Entity</param>
-        void ENGINE_RegisterEntityTriggers(PlacedEntity entity)
-        {
-            if (entity.Triggers != null) // Check if unit has triggers to process
-            {
-                foreach (TriggerType trigger in entity.Triggers.Keys) // Register this unit's trigger
-                {
-                    if (DetailedState.Triggers.TryGetValue(trigger, out SortedSet<int> subscribedEntities)) // If tigger already created, just add to list
-                    {
-                        subscribedEntities.Add(entity.UniqueId);
-                    }
-                    else // Otherwise create new list with this unit as trigger
-                    {
-                        subscribedEntities = new SortedSet<int>();
-                        DetailedState.Triggers.Add(trigger, subscribedEntities);
-                        subscribedEntities.Add(entity.UniqueId);
-                    }
-                }
-            }
-        }
-        /// <summary>
-        /// Deregisters an entity's trigger (ENGINE HELPER)
-        /// </summary>
-        /// <param name="entity">Entity</param>
-        void ENGINE_DeregisterEntityTriggers(PlacedEntity entity)
-        {
-            if (entity.Triggers != null) // Check if unit has triggers to process
-            {
-                foreach (TriggerType trigger in entity.Triggers.Keys) // Deregisters all the triggers present in the unit
-                {
-                    DetailedState.Triggers[trigger].Remove(entity.UniqueId);
-                    if (DetailedState.Triggers[trigger].Count == 0) // Removes trigger so that disctionary can be reverted identically if needed
-                    {
-                        DetailedState.Triggers.Remove(trigger);
-                    }
-                }
-            }
-        }
-        /// <summary>
-        /// Deals with anything regarding a unit moving to a new coord. Deals with registration too execpt to board ofc
+        /// Deals with anything regarding a unit moving to a new coord. Deals with registration too execpt to board ofc. PRIVATE
         /// </summary>
         /// <param name="entity">Entity to change coord</param>
         /// <param name="tileCoord">Which coord to put into</param>
-        public void ENGINE_ChangeEntityCoord(PlacedEntity entity, int tileCoord)
+        public void ChangeEntityCoord(PlacedEntity entity, int tileCoord)
         {
             if (entity.TileCoordinate != tileCoord) // Otherwise nothing changes
             {
@@ -289,20 +268,38 @@
                 // Change tiles
                 if (entity.TileCoordinate >= 0) // If the old tile coordinate was valid
                 {
-                    DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, EntityListOperation.REMOVE); // Remove entity from this tile
+                    DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, BoardElementListOperation.REMOVE); // Remove entity from this tile
                 }
                 entity.TileCoordinate = tileCoord;
                 if (entity.TileCoordinate >= 0) // If the new tile coordinate is valid
                 {
-                    DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, EntityListOperation.ADD); // Add entity to tile
+                    DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, BoardElementListOperation.ADD); // Add entity to tile
                 }
                 // Change lane (if applies)
                 if (oldLane != newLane) // There's a change in lane so i need to deal with it
                 {
-                    oldLane?.EntityListOperation(entity, EntityListOperation.REMOVE); // Remove unit from old lane
-                    newLane?.EntityListOperation(entity, EntityListOperation.ADD); // Add entity to the new lane
+                    oldLane?.EntityListOperation(entity, BoardElementListOperation.REMOVE); // Remove unit from old lane
+                    newLane?.EntityListOperation(entity, BoardElementListOperation.ADD); // Add entity to the new lane
                 }
             }
+        }
+        /// <summary>
+        /// Subscribes a trigger to a place
+        /// </summary>
+        /// <param name="place">Place</param>
+        /// <param name="trigInfo">TrigInfo</param>
+        static public void SubscribeTrigger(BoardElement place, TrigInfoHelper trigInfo)
+        {
+            place.TriggerListOperation(trigInfo.Trigger, trigInfo.EntityId, trigInfo.RelativeLocation, BoardElementListOperation.ADD);
+        }
+        /// <summary>
+        /// Unsubscribes a trigger from a place
+        /// </summary>
+        /// <param name="place">Place</param>
+        /// <param name="trigInfo">TrigInfo</param>
+        static public void UnsubscribeTrigger(BoardElement place, TrigInfoHelper trigInfo)
+        {
+            place.TriggerListOperation(trigInfo.Trigger, trigInfo.EntityId, trigInfo.RelativeLocation, BoardElementListOperation.REMOVE);
         }
         // --------------------------------------------------------------------------------------
         // -------------------------------  GAME ENGINE REQUESTS --------------------------------
@@ -443,7 +440,6 @@
         /// </summary>
         /// <param name="p">Player who owns the unit</param>
         /// <param name="unit">Unit</param>
-
         void ENGINE_InitializeEntity(PlacedEntity entity)
         {
             ENGINE_ExecuteEvent(
@@ -549,7 +545,7 @@
             ENGINE_ExecuteEvent(
                 new EntityEvent<CpuState>()
                 {
-                    eventType = EventType.DEBUG_CHECK,
+                    eventType = EventType.DEBUG_EVENT,
                     entity = ctx
                 });
         }
@@ -581,6 +577,58 @@
                     eventType = EventType.STAT_MODIFIER_TRANSITION,
                     entity = stat,
                     newValue = value
+                });
+        }
+        public class TrigInfoHelper
+        {
+            public TriggerType Trigger;
+            public int EntityId;
+            public EffectLocation RelativeLocation;
+        }
+        /// <summary>
+        /// Subscribes a trigger to the corresponding board element
+        /// </summary>
+        /// <param name="boardElement">BoardElement to subscribe</param>
+        /// <param name="trigger">Trigger</param>
+        /// <param name="entityId">Entity id</param>
+        /// <param name="relativeLocation">Rel location of trigger</param>
+        void ENGINE_SubscribeTrigger(BoardElement boardElement, TriggerType trigger, int entityId, EffectLocation relativeLocation)
+        {
+            TrigInfoHelper trigInfoHelper = new TrigInfoHelper()
+            {
+                Trigger = trigger,
+                EntityId = entityId,
+                RelativeLocation = relativeLocation
+            };
+            ENGINE_ExecuteEvent(
+                new EntityValueEvent<BoardElement, TrigInfoHelper>()
+                {
+                    eventType = EventType.TRIGGER_SUBSCRIBE,
+                    entity = boardElement,
+                    value = trigInfoHelper
+                });
+        }
+        /// <summary>
+        /// Unsubscribes a trigger to the corresponding board element
+        /// </summary>
+        /// <param name="boardElement">BoardElement to subscribe</param>
+        /// <param name="trigger">Trigger</param>
+        /// <param name="entityId">Entity id</param>
+        /// <param name="relativeLocation">Rel location of trigger</param>
+        void ENGINE_UnsubscribeTrigger(BoardElement boardElement, TriggerType trigger, int entityId, EffectLocation relativeLocation)
+        {
+            TrigInfoHelper trigInfoHelper = new TrigInfoHelper()
+            {
+                Trigger = trigger,
+                EntityId = entityId,
+                RelativeLocation = relativeLocation
+            };
+            ENGINE_ExecuteEvent(
+                new EntityValueEvent<BoardElement, TrigInfoHelper>()
+                {
+                    eventType = EventType.TRIGGER_UNSUBSCRIBE,
+                    entity = boardElement,
+                    value = trigInfoHelper
                 });
         }
     }

@@ -70,8 +70,6 @@ namespace ODLGameEngine
         public Player[] PlayerStates { get; set; } = new Player[2];
         [JsonProperty]
         public Board BoardState { get; set; } = new Board();
-        [JsonProperty]
-        public Dictionary<TriggerType, SortedSet<int>> Triggers { get; set; } = new Dictionary<TriggerType, SortedSet<int>>();
         // Entities
         [JsonProperty]
         public readonly SortedList<int, LivingEntity> EntityData = new SortedList<int, LivingEntity>();
@@ -87,14 +85,6 @@ namespace ODLGameEngine
             {
                 hash.Add(kvp.Key);
                 hash.Add(kvp.Value.GetHashCode());
-            }
-            foreach (KeyValuePair<TriggerType, SortedSet<int>> trigger in Triggers)
-            {
-                hash.Add(trigger.Key);
-                foreach (int entity in trigger.Value)
-                {
-                    hash.Add(entity);
-                }
             }
             return hash.ToHashCode();
         }

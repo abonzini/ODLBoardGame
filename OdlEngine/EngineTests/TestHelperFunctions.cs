@@ -157,14 +157,14 @@ namespace EngineTests
             entity.UniqueId = uniqueId;
             // Add to board and sm
             state.EntityData.Add(uniqueId, entity);
-            state.BoardState.EntityListOperation(entity, EntityListOperation.ADD);
+            state.BoardState.EntityListOperation(entity, BoardElementListOperation.ADD);
             // Add to lane
             Lane laneToAddTo = state.BoardState.GetLaneContainingTile(tileCoord);
-            laneToAddTo.EntityListOperation(entity, EntityListOperation.ADD);
+            laneToAddTo.EntityListOperation(entity, BoardElementListOperation.ADD);
             // Add to tile
             entity.TileCoordinate = tileCoord;
             Tile tile = state.BoardState.Tiles[tileCoord];
-            tile.EntityListOperation(entity, EntityListOperation.ADD);
+            tile.EntityListOperation(entity, BoardElementListOperation.ADD);
         }
         /// <summary>
         /// Given a SM list of events, fetches the first DebugEvent found and returns the Event CPU state for that
@@ -176,7 +176,7 @@ namespace EngineTests
             CpuState cpuState = null;
             foreach (GameEngineEvent ev in stepResult.events)
             {
-                if (ev.eventType == EventType.DEBUG_CHECK)
+                if (ev.eventType == EventType.DEBUG_EVENT)
                 {
                     cpuState = ((EntityEvent<CpuState>)ev).entity;
                     break;

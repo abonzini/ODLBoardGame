@@ -20,7 +20,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing
                 Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
-                Effect debugEffect = new Effect() { EffectType = EffectType.DEBUG_STORE };
+                Effect debugEffect = new Effect() { EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
@@ -62,7 +62,7 @@ namespace EngineTests
                 // Create the "on step" effect
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 Dictionary<InteractionType, List<Effect>> stepInteraction = new Dictionary<InteractionType, List<Effect>>();
                 stepInteraction.Add(InteractionType.UNIT_ENTERS_BUILDING, [debugEffect]); // Add interaction to card
@@ -133,7 +133,7 @@ namespace EngineTests
                 // Create the "on step" effect
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 Dictionary<InteractionType, List<Effect>> stepInteraction = new Dictionary<InteractionType, List<Effect>>();
                 stepInteraction.Add(InteractionType.UNIT_ENTERS_BUILDING, [debugEffect]); // Add interaction to card

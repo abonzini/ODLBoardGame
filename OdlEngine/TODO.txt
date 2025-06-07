@@ -1,10 +1,5 @@
 Ongoing tasks in order of priority:
 - Trigger refactoring:
-	- Add triggers not to State but to BoardElements
-	- BoardElements have trigger of the shape Dict<TriggerTypes, int unit, SearchLocation relatedTriggerPosition> -> So that the unit can pick up the trigger perfectly.
-	- Meanwhile, entities with triggers have them defined as Dict<RelatedTriggerPosition, Dict<TriggerType, List<effect>>> with the idea that these are obtained only on summon anyway and on fetching later
-	- All play positions obviously have their time to shine. Absolutes are just attached immediately on State attach. OnPlayed will be attached on unit played. OnCurrentTile/Lane is attached on current place but is special because it auto-changes on movement! Therefore need to re-attach when corresponding, and all this will require careful gameEngine manipulations but it'll be ok. Hashing considers triggers
-	- Testing now will see the board elements just adding debug stuff in the middle and not changing the step, and the trigger_debug now just popping the current stack, useful for testing
 	- Revise current testing and ensure we can just do a trigger that injects effect Cpu on the spot. Then we change debug step to just pop the stack. Check because there's a trig<->inter colaboration test and we need to see what that does
 	- Do a test of attachment combos. I.e. all 8 combinations of registering and popping, and counting, this ensures proper absolute triggering?
 	- OnPlay trigger popping, similar situation, this trigger is registered on play lane only on play event. Pops exactly like, but there's a single pop

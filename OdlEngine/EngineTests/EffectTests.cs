@@ -124,7 +124,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -280,7 +280,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -385,7 +385,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -490,7 +490,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -593,7 +593,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
@@ -711,7 +711,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 Effect buffEffect = new Effect() // Operation that'll replace the stat for the new value
                 {
@@ -811,7 +811,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 Effect buffEffect = new Effect() // Operation that'll replace the stat for the new value
                 {
@@ -902,7 +902,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.WHEN_PLAYED, [selectEffect, debugEffect]); // Add interaction to card
@@ -955,7 +955,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
@@ -1010,10 +1010,10 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [selectEffect, debugEffect]);
+                unit.Triggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [selectEffect, debugEffect]);
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -1036,7 +1036,7 @@ namespace EngineTests
                 sm.UndoPreviousStep(); // Undoes the debug trigger
                 sm.UndoPreviousStep(); // Undoes card play
                 Assert.AreEqual(stateHash, sm.DetailedState.GetHashCode());
-                Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.DEBUG_TRIGGER));
+                Assert.IsFalse(sm.DetailedState.Triggers.ContainsKey(TriggerType.ON_DEBUG_TRIGGERED));
             }
         }
         [TestMethod]
@@ -1066,7 +1066,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
@@ -1141,7 +1141,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
@@ -1227,7 +1227,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, operationEffect, debugEffect]); // Add interaction to card
@@ -1309,7 +1309,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, multiInputCalcEffect, debugEffect]); // Add interaction to card
@@ -1391,14 +1391,14 @@ namespace EngineTests
                 };
                 Effect debugPopEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 // Add when played inter
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, debugPushEffect, debugPopEffect]); // Add interaction to card
                 // Add debug trigger!
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [secondOperationEffect]);
+                unit.Triggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
                 // Rest of test
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
@@ -1465,14 +1465,14 @@ namespace EngineTests
                 };
                 Effect debugPopEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 // Add when played inter
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, debugPushEffect, debugPopEffect]); // Add interaction to card
                 // Add debug trigger!
                 unit.Triggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.Triggers.Add(TriggerType.DEBUG_TRIGGER, [secondOperationEffect]);
+                unit.Triggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
                 // Rest of test
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 cardDb.InjectCard(2, unit);
@@ -1601,7 +1601,7 @@ namespace EngineTests
                 };
                 Effect debugEffect = new Effect()
                 {
-                    EffectType = EffectType.DEBUG_STORE, // Pops debug results, useful
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [assertEffect, debugEffect]); // Add interaction to card
