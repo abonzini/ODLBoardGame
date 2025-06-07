@@ -66,7 +66,7 @@ namespace ODLGameEngine
         [JsonConverter(typeof(StringEnumConverter))]
         public ExpansionId Expansion { get; set; } = ExpansionId.VANILLA;
         [JsonConverter(typeof(StringEnumConverter))]
-        public PlayerClassType ClassType { get; set; } = PlayerClassType.BASE;
+        public PlayerTribe Tribe { get; set; } = PlayerTribe.BASE;
     }
 
     [JsonObject(MemberSerialization.OptIn)]

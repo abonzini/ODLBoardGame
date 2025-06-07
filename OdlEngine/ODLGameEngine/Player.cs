@@ -4,9 +4,9 @@ using System.ComponentModel;
 namespace ODLGameEngine
 {
     /// <summary>
-    /// Classes types. Number same as the card number
+    /// Classes types. Number will be same as the card number, most likely negative
     /// </summary>
-    public enum PlayerClassType
+    public enum PlayerTribe
     {
         BASE = -1
     }

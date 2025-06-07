@@ -4,5 +4,5 @@
   "Name": "CONSCRIPTION",
   "Text": "Place a #MILITIA# in each *lane.*",
   "Cost": "5",
-  "ClassType": "BASE"
+  "Tribe": "BASE"
 }

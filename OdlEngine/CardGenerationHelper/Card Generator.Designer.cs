@@ -386,7 +386,7 @@
             label4.Name = "label4";
             label4.Size = new Size(42, 20);
             label4.TabIndex = 6;
-            label4.Text = "Class";
+            label4.Text = "Tribe";
             // 
             // flagEnumCheckbox1
             // 

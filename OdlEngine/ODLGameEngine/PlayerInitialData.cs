@@ -12,7 +12,7 @@
         /// <summary>
         /// Class the player is using
         /// </summary>
-        public PlayerClassType PlayerClass { get; set; } = PlayerClassType.BASE;
+        public PlayerTribe PlayerClass { get; set; } = PlayerTribe.BASE;
         /// <summary>
         /// The decks the player is starting with
         /// </summary>

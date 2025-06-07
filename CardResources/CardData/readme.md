@@ -60,8 +60,7 @@ Player classes have many similarities to some cards.
 For example, players contain Hp, like Units and Buildings.
 Moreover, player classes may also contain complex mechanics, including Triggers and Interactions, caused either by card effects but also as "Passives" of the class.
 After much deliberation, it was decided to incorporate classes as a *type of card*.
-Naturally, you won't be able to add them into the deck (unless its some sort of weird hearthstone hero-change effect???) but it is loaded and interpreted as such.
-The base class "description card" has an Id of 0, rest of classes will be other things I guess.
+Naturally, you won't be able to add them into the deck (unless its some sort of weird hearthstone tribe-change effect???) but it is loaded and interpreted as such.
 Thay have the following properties:
 - ```Name:``` Name of player (nickname), this doesn't need to be set in .json as it is loaded by the game engine
 - ```Hp:``` Starting HP of player

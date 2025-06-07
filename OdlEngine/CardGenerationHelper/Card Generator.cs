@@ -65,7 +65,7 @@ namespace CardGenerationHelper
             TargetOptionsDropdown.SelectedIndex = 0;
             ExpansionDropdown.Items.AddRange(Enum.GetValues(typeof(ExpansionId)).Cast<object>().ToArray());
             ExpansionDropdown.SelectedIndex = 0;
-            ClassDropdown.Items.AddRange(Enum.GetValues(typeof(PlayerClassType)).Cast<object>().ToArray());
+            ClassDropdown.Items.AddRange(Enum.GetValues(typeof(PlayerTribe)).Cast<object>().ToArray());
             ClassDropdown.SelectedIndex = 0;
             RedrawUi();
         }
@@ -166,7 +166,7 @@ namespace CardGenerationHelper
 
         private void ClassDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _currentIllustrationInfo.ClassType = (PlayerClassType)ClassDropdown.SelectedItem;
+            _currentIllustrationInfo.Tribe = (PlayerTribe)ClassDropdown.SelectedItem;
             RefreshDrawTimer();
         }
 
@@ -399,7 +399,7 @@ namespace CardGenerationHelper
             CardNameBox.Text = _currentIllustrationInfo.Name;
             EffectDescriptionBox.Text = _currentIllustrationInfo.Text;
             ExpansionDropdown.SelectedItem = _currentIllustrationInfo.Expansion;
-            ClassDropdown.SelectedItem = _currentIllustrationInfo.ClassType;
+            ClassDropdown.SelectedItem = _currentIllustrationInfo.Tribe;
             if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP and triggers
             {
                 HpUpDown.Value = ((LivingEntity)_currentEntity).Hp.BaseValue;
