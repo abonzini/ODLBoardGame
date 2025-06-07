@@ -133,13 +133,20 @@
         /// <returns>Actions occurring during EOT</returns>
         public StepResult EndTurn()
         {
-            if (DetailedState.CurrentState != States.ACTION_PHASE) // Need to be in action phase!
+            try
             {
-                return null;
+                if (DetailedState.CurrentState != States.ACTION_PHASE) // Need to be in action phase!
+                {
+                    return null;
+                }
+                // HERE BE EOT EFFECTS
+                ENGINE_SetNextPlayer(GetNextPlayer()); // Swap player
+                ENGINE_ChangeState(States.DRAW_PHASE); // Next is draw phase
             }
-            // HERE BE EOT EFFECTS
-            ENGINE_SetNextPlayer(GetNextPlayer()); // Swap player
-            ENGINE_ChangeState(States.DRAW_PHASE); // Next is draw phase
+            catch (EndOfGameException e)
+            {
+                STATE_TriggerEndOfGame(e.PlayerWhoWon);
+            }
             return _stepHistory.Last(); // Returns everything that happened in this
         }
         /// <summary>
@@ -151,8 +158,15 @@
         /// <returns></returns>
         public StepResult TestActivateTrigger(TriggerType trigger, EffectLocation location, EffectContext specificContext)
         {
-            EFFECT_ActivateTrigger(trigger, location, specificContext); // DOes the trigger
-            ENGINE_ChangeState(DetailedState.CurrentState); // Repeat current state to flush event queue
+            try
+            {
+                EFFECT_ActivateTrigger(trigger, location, specificContext); // DOes the trigger
+                ENGINE_ChangeState(DetailedState.CurrentState); // Repeat current state to flush event queue
+            }
+            catch (EndOfGameException e)
+            {
+                STATE_TriggerEndOfGame(e.PlayerWhoWon);
+            }
             return _stepHistory.Last(); // Returns everything that happened in this triggering
         }
         /// <summary>
