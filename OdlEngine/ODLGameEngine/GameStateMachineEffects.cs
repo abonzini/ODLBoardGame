@@ -33,13 +33,13 @@
                 _chainContext.Add(activatedEntityId, cpu);
                 firstEntryInChain = true;
             }
-            cpu.CurrentSpecificContext = specificContext;
             // Now that the CPU has been configured, can execute effect chain
             for (int effectIndex = 0; effectIndex < effects.Count; effectIndex++) // Execute series of events for the card in question
             {
                 Effect effect = effects[effectIndex]; // Next effect
                 bool breakLoop = false; // Wether loop goes on or is broken by an assert operation
                 // Define values of registers as may be needed
+                cpu.CurrentSpecificContext = specificContext; // Refresh context just in case cpu context was highjacked by a trigger in the meantime or something
                 cpu.TempValue = effect.TempVariable;
                 int inputValue = GetInput(cpu, effect.Input, effect.MultiInputProcessing);
                 // Now to process the effect
@@ -50,7 +50,7 @@
                         break;
                     case EffectType.ACTIVATE_TEST_TRIGGER_IN_LOCATION:
                         // Triggers this in the place chosen
-                        TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, effect.EffectLocation, new EffectContext());
+                        EFFECT_ActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, effect.EffectLocation, new EffectContext());
                         break;
                     case EffectType.SELECT_ENTITY:
                         { // In this case there's a simple, single BoardEntity target related to the ctx in question
@@ -488,6 +488,18 @@
         void EFFECTS_ModifyPlayersGold(int playerId, int value, ModifierOperation operation)
         {
             ENGINE_SetPlayerGold(playerId, GetModifiedValue(DetailedState.PlayerStates[playerId].CurrentGold, value, operation));
+        }
+        void EFFECT_ActivateTrigger(TriggerType trigger, EffectLocation location, EffectContext specificContext)
+        {
+            BoardElement place = location switch
+            {
+                EffectLocation.BOARD => DetailedState.BoardState,
+                EffectLocation.PLAINS => DetailedState.BoardState.PlainsLane,
+                EffectLocation.FOREST => DetailedState.BoardState.ForestLane,
+                EffectLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
+                _ => throw new Exception("Not a valid absolute location for triggers")
+            };
+            TRIGINTER_ProcessTrigger(trigger, place, specificContext);
         }
     }
 }
