@@ -1013,9 +1013,9 @@ namespace EngineTests
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 // Init a BOARD absolute trigger that triggers on debug
-                unit.TriggerData = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                unit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
                 Dictionary<TriggerType, List<Effect>> BoardTriggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.TriggerData.Add(EffectLocation.BOARD, BoardTriggers);
+                unit.Triggers.Add(EffectLocation.BOARD, BoardTriggers);
                 BoardTriggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [selectEffect, debugEffect]);
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
@@ -1400,9 +1400,9 @@ namespace EngineTests
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, debugPushEffect, debugPopEffect]); // Add interaction to card
                 // Add debug trigger!
-                unit.TriggerData = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                unit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
                 Dictionary<TriggerType, List<Effect>> BoardTriggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.TriggerData.Add(EffectLocation.BOARD, BoardTriggers);
+                unit.Triggers.Add(EffectLocation.BOARD, BoardTriggers);
                 BoardTriggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
                 // Rest of test
                 cardDb.InjectCard(1, unit); // Add to cardDb
@@ -1477,9 +1477,9 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, debugPushEffect, debugPopEffect]); // Add interaction to card
                 // Add debug trigger!
-                unit.TriggerData = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                unit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
                 Dictionary<TriggerType, List<Effect>> BoardTriggers = new Dictionary<TriggerType, List<Effect>>();
-                unit.TriggerData.Add(EffectLocation.BOARD, BoardTriggers);
+                unit.Triggers.Add(EffectLocation.BOARD, BoardTriggers);
                 BoardTriggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
                 // Rest of test
                 cardDb.InjectCard(1, skill); // Add to cardDb

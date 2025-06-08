@@ -1,8 +1,4 @@
 Ongoing tasks in order of priority:
-- Trigger refactoring:
-	- Revise current testing and ensure we can just do a trigger that injects effect Cpu on the spot. Then we change debug step to just pop the stack. Check because there's a trig<->inter colaboration test and we need to see what that does
-	- Do a test of attachment combos. I.e. all 8 combinations of registering and popping, and counting, this ensures proper absolute triggering?
-	- OnPlay trigger popping, similar situation, this trigger is registered on play lane only on play event. Pops exactly like, but there's a single pop
 - 4,5:
 	- New trigger subscription "on current tile", test it with initialization of a unit/building and popping debug on the tile
 	- New modifier targets as the current march value and init_march flag (readonly), then a trigger related to "marching in tile" context, including beginning of march or marching through, test by reading both march values, doing some operation and popping cpu stack, value should corroborate

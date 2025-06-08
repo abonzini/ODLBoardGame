@@ -25,9 +25,9 @@
         /// <param name="entity">Trigger-owning enitity</param>
         void TRIGINTER_VerifyEntityAndRegisterTriggers(BoardElement absoluteLocation, EffectLocation relativeLocation, LivingEntity entity)
         {
-            if (entity.TriggerData != null) // Check the entity's triggers
+            if (entity.Triggers != null) // Check the entity's triggers
             {
-                if (entity.TriggerData.TryGetValue(relativeLocation, out Dictionary<TriggerType, List<Effect>> foundTrigger)) // See if entity has a trigger for this location
+                if (entity.Triggers.TryGetValue(relativeLocation, out Dictionary<TriggerType, List<Effect>> foundTrigger)) // See if entity has a trigger for this location
                 {
                     foreach (TriggerType triggerType in foundTrigger.Keys) // Add all the corresponding triggers to this location
                     {
@@ -87,7 +87,7 @@
                     if (DetailedState.EntityData.TryGetValue(nextEntity.Item1, out LivingEntity entity))
                     {
                         specificContext.ActivatedEntity = entity; // This entity will be the owner of this trigger context (regardless of action)
-                        EFFECTS_ProcessEffects(entity.TriggerData[nextEntity.Item2][trigger], specificContext); // Find effects in unit
+                        EFFECTS_ProcessEffects(entity.Triggers[nextEntity.Item2][trigger], specificContext); // Find effects in unit
                     }
                     else // Entity is dead, need to clean this from the place so it never triggers again
                     {

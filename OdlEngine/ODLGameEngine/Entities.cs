@@ -140,7 +140,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public int DamageTokens { get; set; } = 0;
         [JsonProperty]
-        public Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>> TriggerData { get; set; } = null;
+        public Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>> Triggers { get; set; } = null;
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();

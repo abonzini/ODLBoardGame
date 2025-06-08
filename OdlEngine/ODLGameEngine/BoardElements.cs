@@ -22,7 +22,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities { get; set; } = new Dictionary<(EntityType, int), SortedSet<int>>();
         [JsonProperty]
-        public Dictionary<TriggerType, List<Tuple<int, EffectLocation>>> TriggerList = new Dictionary<TriggerType, List<Tuple<int, EffectLocation>>>();
+        public SortedDictionary<TriggerType, List<Tuple<int, EffectLocation>>> TriggerList = new SortedDictionary<TriggerType, List<Tuple<int, EffectLocation>>>();
         public SortedSet<int> GetPlacedEntities(EntityType entityTypes, int owner = -1)
         {
             EntityType entityMask = EntityType.UNIT | EntityType.BUILDING; // Ignore noise as it can't be in board anyway

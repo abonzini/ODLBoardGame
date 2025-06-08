@@ -72,60 +72,25 @@ Thay have the following properties:
 These define a card's "effects" and very complex behaviours.
 The two types are:
 
-- **Triggers:** These will trigger when something happens globally, outside of the card's control.
-For example cards that are designed as "At the end of turn do X", or "When a player does X, this card does Y".
-When this event happens, the corresponding entity will be triggered and do the effects.
 - **Interactions:** Effects that are activated when something happens with a card. For example, a card that does something when taking damage, or when played.
 Skills will have interactions only as they don't persist after it's effect resolves.
+These are simple to describe in any card, as a Dictionary called ```Interactions``` where the Key is the **"Interaction Type"** (options described below) and then a sequence (list) of effects in order.
+- **Triggers:** These are more complex as the entity needs to "subscribe" to a specific trigger in a specific location, because they trigger when something happens globally, outside of the card's control.
+For example cards that are designed as "At the end of turn do X", or "When a player does X, this card does Y".
+However triggers are also used when entities have location-based buffing effects or similar, as the buff has to be triggered every time a separate entity enters/exists the place.
+These are described weirdly, as entities that can have Triggers (all but spells) describe it as a Dictionary called ```Triggers``` where the keys are the **"Effect Location"** where the trigger(s) will be attached (can be either absolute places or relative, position-based ones, options seen in ```EffectLocation``` enum), and the values are *another* dictionary this time with all the possible **Trigger Types** (optios below) and then the sequence (list) of effects. Basically they're similar to interactions but with an extra layer as they're subscribed to a specific location in the game.
 
-The way to define them on a card is with the same syntax, adding ```Interactions``` or ```Triggers``` effect.
-They are defined in json as a dictionary.
-The key is the type of trigger/interaction, and the value is a list of the effects that will be performed in sequence:
-
-```
-"Interactions":
-    {
-        "INTERACTION_TYPE":
-            [
-                {
-                    "EffectType": <...>
-                    <Param 1>: <...>
-                    <Param 2>: <...>
-                    <...>
-                },
-                {
-                    "EffectType": <...>
-                    <Param 1>: <...>
-                    <Param 2>: <...>
-                    <...>
-                },
-                <etc>
-            ],
-        "INTERACTION_TYPE":
-            [
-                {
-                    "EffectType": <...>
-                    <Param 1>: <...>
-                    <Param 2>: <...>
-                    <...>
-                },
-                {
-                    "EffectType": <...>
-                    <Param 1>: <...>
-                    <Param 2>: <...>
-                    <...>
-                },
-                <etc>
-            ],
-    }
-```
-
-In the example above, the card would contain 2 interactions, and then each would perform a sequence of effects.
+As you can see this is the more complex property of cards, so I really suggest taking a look at the ```.jsons``` and avoid doing these manually and just go through the Card Generator app if need to add or edit.
 
 ## Interaction Types
 
-- ```WHEN_PLAYED``` Will be executed when the card is played (FROM HAND) for the first time.
+- ```WHEN_PLAYED``` Will be executed when the card is played (FROM HAND) for the first time. **Actor:** The card played
 - ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during march). This interaction happens only once, and the Unit/Building will need to each process the effect from their own POV.
+**Actor:** The unit entering, **Affected:** The building entered
+
+## Trigger Types
+
+Coming soon
 
 # Effect Mechanism
 
