@@ -78,7 +78,7 @@ namespace CardGenerationHelper
         {
             Control[] relevant = effect switch
             {
-                EffectType.TRIGGER_DEBUG => [],
+                EffectType.ACTIVATE_TEST_TRIGGER_IN_LOCATION => [EffectLocationLabel, EffectLocationBox],
                 EffectType.STORE_DEBUG_IN_EVENT_PILE => [],
                 EffectType.SELECT_ENTITY => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel],
                 EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel, EffectLocationBox, EffectLocationLabel, InputBox, InputLabel, MultiVariableBox, MultiVariableLabel],
@@ -119,10 +119,7 @@ namespace CardGenerationHelper
         // When I request to be deleted
         private void DeleteButton_Click(object sender, EventArgs e)
         {
-            if (owner != null)
-            {
-                owner.RequestEffectDeletion(this);
-            }
+            owner?.RequestEffectDeletion(this);
         }
         public void SetEffect(Effect effect)
         {

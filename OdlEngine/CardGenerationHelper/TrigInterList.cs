@@ -30,17 +30,12 @@ namespace CardGenerationHelper
         }
         void RefreshUi()
         {
-            switch (trigInter)
+            TrigInterLabel.Text = trigInter switch
             {
-                case TrigOrInter.TRIGGER:
-                    TrigInterLabel.Text = "Triggers";
-                    break;
-                case TrigOrInter.INTERACTION:
-                    TrigInterLabel.Text = "Interactions";
-                    break;
-                default:
-                    throw new ArgumentException("No other type");
-            }
+                TrigOrInter.TRIGGER => "Triggers",
+                TrigOrInter.INTERACTION => "Interactions",
+                _ => throw new ArgumentException("No other type"),
+            };
         }
         public void RequestEffectDeletion(TriginterEffects trigInterEffects)
         {
@@ -81,15 +76,21 @@ namespace CardGenerationHelper
             }
             return res;
         }
-        public Dictionary<TriggerType, List<Effect>> GetTriggersDict()
+        public Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>> GetTriggersDict()
         {
             if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not a trigger control!");
-            Dictionary<TriggerType, List<Effect>> res = new Dictionary<TriggerType, List<Effect>>();
+            Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>> res = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
             for (int i = 0; i < TriginterEffectsPanel.Controls.Count - 1; i++) // -1 because last one is the add button
             {
                 TriginterEffects effs = (TriginterEffects)TriginterEffectsPanel.Controls[i];
-                KeyValuePair<TriggerType, List<Effect>> kvp = effs.GetTriggerEffects();
-                res[kvp.Key] = kvp.Value;
+                Tuple<EffectLocation, KeyValuePair<TriggerType, List<Effect>>> theTuple = effs.GetTriggerEffects();
+                if(!res.TryGetValue(theTuple.Item1, out Dictionary<TriggerType, List<Effect>> value))
+                {
+                    value = new Dictionary<TriggerType, List<Effect>>();
+                    res[theTuple.Item1] = value;
+                }
+
+                value.Add(theTuple.Item2.Key, theTuple.Item2.Value);
             }
             if (res.Count == 0)
             {
@@ -113,7 +114,7 @@ namespace CardGenerationHelper
                 AddTriginterEffects(newBox);
             }
         }
-        public void SetTriggerDict(Dictionary<TriggerType, List<Effect>> dict)
+        public void SetTriggerDict(Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>> dict)
         {
             if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not an trigger control!");
             // Cleans current effects
@@ -121,12 +122,15 @@ namespace CardGenerationHelper
             ClearPanel();
             // Now, set stuff
             if (dict == null) return;
-            foreach (KeyValuePair<TriggerType, List<Effect>> kvp in dict)
+            foreach (KeyValuePair<EffectLocation, Dictionary<TriggerType, List<Effect>>> kvp1 in dict)
             {
-                TriginterEffects newBox = new TriginterEffects();
-                newBox.SetTrigInterType(trigInter);
-                newBox.SetTriggerEffects(kvp);
-                AddTriginterEffects(newBox);
+                foreach(KeyValuePair<TriggerType, List<Effect>> kvp2 in kvp1.Value)
+                {
+                    TriginterEffects newBox = new TriginterEffects();
+                    newBox.SetTrigInterType(trigInter);
+                    newBox.SetTriggerEffects(kvp1.Key, kvp2);
+                    AddTriginterEffects(newBox);
+                }
             }
         }
     }

@@ -33,6 +33,7 @@
             EffectsPanel = new FlowLayoutPanel();
             AddButton = new Button();
             panel1 = new Panel();
+            TriggerLocationComboBox = new ComboBox();
             EffectsPanel.SuspendLayout();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -42,7 +43,7 @@
             EventTypeComboBox.FormattingEnabled = true;
             EventTypeComboBox.Location = new Point(3, 3);
             EventTypeComboBox.Name = "EventTypeComboBox";
-            EventTypeComboBox.Size = new Size(153, 28);
+            EventTypeComboBox.Size = new Size(120, 28);
             EventTypeComboBox.TabIndex = 0;
             // 
             // DeleteButton
@@ -51,7 +52,7 @@
             DeleteButton.Dock = DockStyle.Right;
             DeleteButton.Font = new Font("Segoe UI", 9F);
             DeleteButton.ForeColor = SystemColors.ButtonHighlight;
-            DeleteButton.Location = new Point(156, 0);
+            DeleteButton.Location = new Point(254, 0);
             DeleteButton.Name = "DeleteButton";
             DeleteButton.Size = new Size(30, 34);
             DeleteButton.TabIndex = 5;
@@ -84,13 +85,22 @@
             // 
             panel1.AutoSize = true;
             panel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            panel1.Controls.Add(TriggerLocationComboBox);
             panel1.Controls.Add(DeleteButton);
             panel1.Controls.Add(EventTypeComboBox);
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(186, 34);
+            panel1.Size = new Size(284, 34);
             panel1.TabIndex = 7;
+            // 
+            // TriggerLocationComboBox
+            // 
+            TriggerLocationComboBox.FormattingEnabled = true;
+            TriggerLocationComboBox.Location = new Point(129, 3);
+            TriggerLocationComboBox.Name = "TriggerLocationComboBox";
+            TriggerLocationComboBox.Size = new Size(120, 28);
+            TriggerLocationComboBox.TabIndex = 8;
             // 
             // TriginterEffects
             // 
@@ -101,9 +111,9 @@
             BorderStyle = BorderStyle.Fixed3D;
             Controls.Add(panel1);
             Controls.Add(EffectsPanel);
-            MinimumSize = new Size(190, 80);
+            MinimumSize = new Size(284, 81);
             Name = "TriginterEffects";
-            Size = new Size(186, 78);
+            Size = new Size(284, 81);
             EffectsPanel.ResumeLayout(false);
             panel1.ResumeLayout(false);
             ResumeLayout(false);
@@ -117,5 +127,6 @@
         private FlowLayoutPanel EffectsPanel;
         private Button AddButton;
         private Panel panel1;
+        private ComboBox TriggerLocationComboBox;
     }
 }

@@ -47,9 +47,11 @@ namespace CardGenerationHelper
             {
                 case TrigOrInter.TRIGGER:
                     EventTypeComboBox.Items.AddRange(Enum.GetValues(typeof(TriggerType)).Cast<object>().ToArray());
+                    TriggerLocationComboBox.Items.AddRange(Enum.GetValues(typeof(EffectLocation)).Cast<object>().ToArray());
                     break;
                 case TrigOrInter.INTERACTION:
                     EventTypeComboBox.Items.AddRange(Enum.GetValues(typeof(InteractionType)).Cast<object>().ToArray());
+                    TriggerLocationComboBox.Hide();
                     break;
                 default:
                     throw new ArgumentException("No other type");
@@ -95,18 +97,15 @@ namespace CardGenerationHelper
             List<Effect> effects = GetEffects();
             return new KeyValuePair<InteractionType, List<Effect>>((InteractionType)EventTypeComboBox.SelectedItem, effects);
         }
-        public KeyValuePair<TriggerType, List<Effect>> GetTriggerEffects()
+        public Tuple<EffectLocation, KeyValuePair<TriggerType, List<Effect>>> GetTriggerEffects()
         {
             if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not a trigger control!");
             List<Effect> effects = GetEffects();
-            return new KeyValuePair<TriggerType, List<Effect>>((TriggerType)EventTypeComboBox.SelectedItem, effects);
+            return new Tuple<EffectLocation, KeyValuePair<TriggerType, List<Effect>>>((EffectLocation)TriggerLocationComboBox.SelectedItem, new KeyValuePair<TriggerType, List<Effect>>((TriggerType)EventTypeComboBox.SelectedItem, effects));
         }
         private void DeleteButton_Click(object sender, EventArgs e)
         {
-            if (owner != null)
-            {
-                owner.RequestEffectDeletion(this);
-            }
+            owner?.RequestEffectDeletion(this);
         }
         public void SetInteractionEffects(KeyValuePair<InteractionType, List<Effect>> kvp)
         {
@@ -123,13 +122,14 @@ namespace CardGenerationHelper
                 AddNewEffectBox(newBox);
             }
         }
-        public void SetTriggerEffects(KeyValuePair<TriggerType, List<Effect>> kvp)
+        public void SetTriggerEffects(EffectLocation location, KeyValuePair<TriggerType, List<Effect>> kvp)
         {
             if (trigInter != TrigOrInter.TRIGGER) throw new Exception("This is not a trigger control!");
             // Cleans current effects
             RefreshUi();
             ClearPanel();
             // Now, set stuff
+            TriggerLocationComboBox.SelectedItem = location;
             EventTypeComboBox.SelectedItem = kvp.Key;
             foreach (Effect effect in kvp.Value)
             {
