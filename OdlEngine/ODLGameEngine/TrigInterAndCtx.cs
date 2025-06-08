@@ -187,7 +187,7 @@ namespace ODLGameEngine
     /// </summary>
     public class MarchingContext : EffectContext
     {
-        public int InitialMovement = 0;
+        public bool FirstTileMarch = false;
         public int CurrentMovement = 0;
     }
     public class UnitPlayContext : EffectContext

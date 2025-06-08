@@ -84,7 +84,7 @@ namespace CardGenerationHelper
             {
                 TriginterEffects effs = (TriginterEffects)TriginterEffectsPanel.Controls[i];
                 Tuple<EffectLocation, KeyValuePair<TriggerType, List<Effect>>> theTuple = effs.GetTriggerEffects();
-                if(!res.TryGetValue(theTuple.Item1, out Dictionary<TriggerType, List<Effect>> value))
+                if (!res.TryGetValue(theTuple.Item1, out Dictionary<TriggerType, List<Effect>> value))
                 {
                     value = new Dictionary<TriggerType, List<Effect>>();
                     res[theTuple.Item1] = value;
@@ -124,7 +124,7 @@ namespace CardGenerationHelper
             if (dict == null) return;
             foreach (KeyValuePair<EffectLocation, Dictionary<TriggerType, List<Effect>>> kvp1 in dict)
             {
-                foreach(KeyValuePair<TriggerType, List<Effect>> kvp2 in kvp1.Value)
+                foreach (KeyValuePair<TriggerType, List<Effect>> kvp2 in kvp1.Value)
                 {
                     TriginterEffects newBox = new TriginterEffects();
                     newBox.SetTrigInterType(trigInter);

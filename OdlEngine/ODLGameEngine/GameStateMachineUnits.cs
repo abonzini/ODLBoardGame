@@ -58,13 +58,14 @@
             };
             if (cooldown == 0)
             {
-                marchCtx.InitialMovement = unit.Movement.Total; // How much to advance
+                marchCtx.CurrentMovement = unit.Movement.Total; // How much to advance
                 Lane lane = DetailedState.BoardState.GetLaneContainingTile(unit.TileCoordinate); // Lane of march
                 // Ready to march
-                marchCtx.CurrentMovement = marchCtx.InitialMovement;
+                marchCtx.FirstTileMarch = true;
                 while (marchCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
-                    // Exiting current tile first
+                    // About to start march in the current tile, begin march check
+                    // TODO SEND TRIGGER HERE
                     if (DetailedState.BoardState.Tiles[unit.TileCoordinate].GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop march here (and also attack)
                     {
                         marchCtx.CurrentMovement = 0;
@@ -86,6 +87,7 @@
                         nextTileCoord = lane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextTileCoord, unit.Owner);
                         BOARDENTITY_InsertInTile(unit, nextTileCoord);
                     }
+                    marchCtx.FirstTileMarch = false; // From now on the unit is in the middle of the march
                 }
             }
             cooldown++; // Cycle the timer so that next advance it's updated!
