@@ -51,7 +51,6 @@
                     ((EntityTransitionEvent<int, int>)e).oldValue = DetailedState.PlayerStates[auxInt1].CurrentGold;
                     DetailedState.PlayerStates[auxInt1].CurrentGold = ((EntityTransitionEvent<int, int>)e).newValue;
                     break;
-                case EventType.MESSAGE:
                 case EventType.DEBUG_EVENT:
                     break;
                 case EventType.CARD_DECK_SWAP:
@@ -170,7 +169,6 @@
                     auxInt1 = ((EntityTransitionEvent<int, int>)e).entity;
                     DetailedState.PlayerStates[auxInt1].CurrentGold = ((EntityTransitionEvent<int, int>)e).oldValue;
                     break;
-                case EventType.MESSAGE:
                 case EventType.DEBUG_EVENT:
                     break;
                 case EventType.CARD_DECK_SWAP:
@@ -315,8 +313,7 @@
                 new TransitionEvent<States>()
                 {
                     eventType = EventType.STATE_TRANSITION,
-                    newValue = state,
-                    description = $"Next state: {Enum.GetName(state)}"
+                    newValue = state
                 });
         }
         /// <summary>
@@ -328,8 +325,7 @@
                 new TransitionEvent<CurrentPlayer>()
                 {
                     eventType = EventType.PLAYER_TRANSITION,
-                    newValue = nextPlayer,
-                    description = $"Switched to {Enum.GetName(nextPlayer)}"
+                    newValue = nextPlayer
                 });
         }
         /// <summary>
@@ -357,21 +353,7 @@
                 {
                     eventType = EventType.PLAYER_GOLD_TRANSITION,
                     entity = p,
-                    newValue = gold,
-                    description = $"P{p + 1} now has {gold} gold"
-                });
-        }
-        /// <summary>
-        /// Adds message that can be seen by player
-        /// </summary>
-        /// <param name="msg">Message</param>
-        void ENGINE_AddMessageEvent(string msg)
-        {
-            ENGINE_ExecuteEvent(
-                new GameEngineEvent()
-                {
-                    eventType = EventType.MESSAGE,
-                    description = msg
+                    newValue = gold
                 });
         }
         /// <summary>
@@ -431,8 +413,7 @@
                 {
                     eventType = EventType.DISCARD_FROM_HAND,
                     entity = p,
-                    value = cardPlayed,
-                    description = $"P{p + 1} played #{cardPlayed}"
+                    value = cardPlayed
                 });
         }
         /// <summary>
@@ -447,7 +428,6 @@
                 {
                     eventType = EventType.INIT_ENTITY,
                     entity = entity,
-                    description = $"P{entity.Owner + 1} now has a {entity.Name}"
                 });
         }
         /// <summary>
@@ -511,14 +491,12 @@
         /// <param name="newDamageCounters">How much damage</param>
         void ENGINE_ChangeEntityDamageTokens(LivingEntity entity, int newDamageCounters)
         {
-            int delta = newDamageCounters - entity.DamageTokens;
             ENGINE_ExecuteEvent(
                 new EntityTransitionEvent<LivingEntity, int>()
                 {
                     eventType = EventType.ENTITY_DAMAGE_COUNTER_CHANGE,
                     entity = entity,
                     newValue = newDamageCounters,
-                    description = $"P{entity.Owner + 1}'s {entity.Name} {((delta > 0) ? "received" : "healed")} {Math.Abs(delta)} damage"
                 });
         }
         /// <summary>

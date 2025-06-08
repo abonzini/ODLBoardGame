@@ -21,7 +21,6 @@
             bool first = true;
             foreach (GameEngineEvent e in events)
             {
-                if (e.description == "") continue; // Not print if empty
                 ret += "\n";
                 if (first)
                 {
@@ -45,7 +44,6 @@
         PLAYER_TRANSITION,
         RNG_TRANSITION,
         PLAYER_GOLD_TRANSITION,
-        MESSAGE,
         CARD_DECK_SWAP,
         REMOVE_TOPDECK,
         ADD_CARD_TO_HAND,
@@ -67,10 +65,9 @@
     public class GameEngineEvent
     {
         public EventType eventType;
-        public string description = "";
         public override string ToString()
         {
-            return description; // Default is no info leaked
+            return eventType.ToString(); // Default is no info leaked
         }
     }
     public class EntityValueEvent<E, T> : GameEngineEvent

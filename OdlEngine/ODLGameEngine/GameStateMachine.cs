@@ -235,7 +235,6 @@
         /// <param name="player">Player</param>
         void STATE_ShufflePlayerDeck(int player)
         {
-            ENGINE_AddMessageEvent($"P{player + 1}'s deck shuffled");
             // Fisher Yates Algorithm for Shuffling, mix starting from last, first card isn't swapped with itself
             for (int i = DetailedState.PlayerStates[player].Deck.DeckSize - 1; i > 0; i--)
             {
@@ -249,7 +248,6 @@
         /// <param name="n">Cards to draw</param>
         void STATE_DeckDrawMultiple(int player, int n)
         {
-            ENGINE_AddMessageEvent($"P{player + 1}'s draws {n}");
             for (int i = 0; i < n; i++)
             {
                 int card = DetailedState.PlayerStates[player].Deck.PeepAt(); // Found card in deck
@@ -280,7 +278,6 @@
         /// <param name="playerWhoWon">Which player won?</param>
         private void STATE_TriggerEndOfGame(int playerWhoWon) // Gets stuck in EOG forever for now
         {
-            ENGINE_AddMessageEvent($"GAME OVER, {DetailedState.PlayerStates[playerWhoWon].Name} WON");
             ENGINE_SetNextPlayer((CurrentPlayer)playerWhoWon); // The "current player" in this status is also the one who won the game
             ENGINE_ChangeState(States.EOG); // Switches to EOG and the game then gets stuck here
         }

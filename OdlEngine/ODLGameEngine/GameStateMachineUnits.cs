@@ -58,7 +58,6 @@
             };
             if (cooldown == 0)
             {
-                ENGINE_AddMessageEvent($"P{unitOwnerId + 1}'s {unit.Name} advances");
                 marchCtx.InitialMovement = unit.Movement.Total; // How much to advance
                 Lane lane = DetailedState.BoardState.GetLaneContainingTile(unit.TileCoordinate); // Lane of march
                 // Ready to march
@@ -104,7 +103,6 @@
         void UNIT_Combat(Unit attacker, LivingEntity defender)
         {
             DamageContext attackerDmgCtx, defenderDmgCtx;
-            ENGINE_AddMessageEvent($"Combat between P{attacker.Owner + 1}'s {attacker.Name} and P{defender.Owner + 1}'s {defender.Name}");
 
             // Surely, unit will apply damage to the victim
             attackerDmgCtx = BOARDENTITY_DamageStep(attacker, defender, attacker.Attack.Total); // TODO: GetAttack fn to incorporate buffs and such

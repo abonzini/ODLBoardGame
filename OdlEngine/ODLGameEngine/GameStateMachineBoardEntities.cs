@@ -61,7 +61,6 @@
         /// <param name="unitId">Which unit</param>
         void BOARDENTITY_CleanUnit(LivingEntity entity)
         {
-            ENGINE_AddMessageEvent($"{entity.Name} was destroyed");
             if (entity.EntityType == EntityType.UNIT || entity.EntityType == EntityType.BUILDING)
             {
                 BOARDENTITY_InsertInTile((PlacedEntity)entity, -1); // Removes unit from its tile
