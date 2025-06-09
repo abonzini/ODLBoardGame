@@ -14,6 +14,14 @@ namespace ODLGameEngine
         LANE,
         TILE
     }
+    class TriggerTupleComparer : IComparer<Tuple<int, EffectLocation>>
+    {
+        public int Compare(Tuple<int, EffectLocation> x, Tuple<int, EffectLocation> y)
+        {
+            int result = x.Item1.CompareTo(y.Item1);
+            return result != 0 ? result : x.Item2.CompareTo(y.Item2);
+        }
+    }
     [JsonObject(MemberSerialization.OptIn)]
     public abstract class BoardElement
     {
@@ -22,7 +30,7 @@ namespace ODLGameEngine
         [JsonProperty]
         public Dictionary<(EntityType, int), SortedSet<int>> PlacedEntities { get; set; } = new Dictionary<(EntityType, int), SortedSet<int>>();
         [JsonProperty]
-        public SortedDictionary<TriggerType, List<Tuple<int, EffectLocation>>> TriggerList = new SortedDictionary<TriggerType, List<Tuple<int, EffectLocation>>>();
+        public SortedDictionary<TriggerType, SortedSet<Tuple<int, EffectLocation>>> TriggerList = new SortedDictionary<TriggerType, SortedSet<Tuple<int, EffectLocation>>>();
         public SortedSet<int> GetPlacedEntities(EntityType entityTypes, int owner = -1)
         {
             EntityType entityMask = EntityType.UNIT | EntityType.BUILDING; // Ignore noise as it can't be in board anyway
@@ -86,9 +94,9 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="triggerType">Type of trigger</param>
         /// <returns>All of the subscribed triggers (if any)</returns>
-        public List<Tuple<int, EffectLocation>> GetSubscribedTriggers(TriggerType triggerType)
+        public SortedSet<Tuple<int, EffectLocation>> GetSubscribedTriggers(TriggerType triggerType)
         {
-            TriggerList.TryGetValue(triggerType, out List<Tuple<int, EffectLocation>> result);
+            TriggerList.TryGetValue(triggerType, out SortedSet<Tuple<int, EffectLocation>> result);
             return result;
         }
         /// <summary>
@@ -100,9 +108,9 @@ namespace ODLGameEngine
         public void TriggerListOperation(TriggerType trigger, int id, EffectLocation relativeLocation, BoardElementListOperation op)
         {
             Tuple<int, EffectLocation> triggerDescriptor = new Tuple<int, EffectLocation>(id, relativeLocation);
-            if (!TriggerList.TryGetValue(trigger, out List<Tuple<int, EffectLocation>> thisTriggerList)) // Create trigger handler and list if doesn't exist
+            if (!TriggerList.TryGetValue(trigger, out SortedSet<Tuple<int, EffectLocation>> thisTriggerList)) // Create trigger handler and list if doesn't exist
             {
-                thisTriggerList = new List<Tuple<int, EffectLocation>>();
+                thisTriggerList = new SortedSet<Tuple<int, EffectLocation>>(new TriggerTupleComparer());
                 TriggerList.Add(trigger, thisTriggerList);
             }
             // Then I'll add or remove the elements
@@ -125,7 +133,7 @@ namespace ODLGameEngine
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            foreach (KeyValuePair<TriggerType, List<Tuple<int, EffectLocation>>> kvp in TriggerList)
+            foreach (KeyValuePair<TriggerType, SortedSet<Tuple<int, EffectLocation>>> kvp in TriggerList)
             {
                 hash.Add(kvp.Key);
                 foreach (Tuple<int, EffectLocation> trigdata in kvp.Value)
@@ -209,7 +217,7 @@ namespace ODLGameEngine
         /// <param name="inIndex">Index</param>
         /// <param name="referencePlayer">If input/output is relative to player, then i need the player reference</param>
         /// <returns></returns>
-        public int GetCoordinateConversion(LaneRelativeIndexType outIndexType, LaneRelativeIndexType inIndexType, int inIndex, int referencePlayer = -1)
+        public int GetTileCoordinateConversion(LaneRelativeIndexType outIndexType, LaneRelativeIndexType inIndexType, int inIndex, int referencePlayer = -1)
         {
             if (outIndexType == inIndexType)
             {
@@ -275,7 +283,7 @@ namespace ODLGameEngine
         /// <returns>The tile</returns>
         public Tile GetTileFromCoordinate(LaneRelativeIndexType inIndexType, int inIndex, int referencePlayer = -1)
         {
-            int laneCoordinate = GetCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, inIndexType, inIndex, referencePlayer);
+            int laneCoordinate = GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, inIndexType, inIndex, referencePlayer);
             // At this point the coordinate is exactly relative to this current lane, assert to be within bounds
             if (laneCoordinate < 0 || laneCoordinate >= Len) throw new Exception("Invalid reference tile for this lane!");
             return Tiles[laneCoordinate];
@@ -289,7 +297,7 @@ namespace ODLGameEngine
         /// <returns>Whether this tile coord is the end of a lane</returns>
         public bool IsRelativeEndOfLane(LaneRelativeIndexType inIndexType, int inIndex, int referencePlayer)
         {
-            int laneCoordinate = GetCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_PLAYER, inIndexType, inIndex, referencePlayer);
+            int laneCoordinate = GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_PLAYER, inIndexType, inIndex, referencePlayer);
             return laneCoordinate == (Len - 1);
         }
         public override int GetHashCode()

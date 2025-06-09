@@ -76,11 +76,11 @@
         /// <param name="specificContext">Specific context of trigger</param>
         void TRIGINTER_ProcessTrigger(TriggerType trigger, BoardElement place, EffectContext specificContext)
         {
-            List<Tuple<int, EffectLocation>> triggerList = place.GetSubscribedTriggers(trigger);
+            SortedSet<Tuple<int, EffectLocation>> triggerList = place.GetSubscribedTriggers(trigger);
             if (triggerList != null) // Some triggers were found
             {
                 // Clone triggers, this is important as if in a trigger chain, the entity dies, the trigger will still be here until deleted so I can't iterate on a variable list!
-                List<Tuple<int, EffectLocation>> allPossibleTriggers = new List<Tuple<int, EffectLocation>>(triggerList);
+                List<Tuple<int, EffectLocation>> allPossibleTriggers = triggerList.ToList();
                 foreach (Tuple<int, EffectLocation> nextEntity in allPossibleTriggers)
                 {
                     // Check if entity is is still alive

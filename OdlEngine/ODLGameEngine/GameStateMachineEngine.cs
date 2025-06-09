@@ -267,11 +267,27 @@
                 if (entity.TileCoordinate >= 0) // If the old tile coordinate was valid
                 {
                     DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, BoardElementListOperation.REMOVE); // Remove entity from this tile
+                    // Check if entity had relative triggers for the current tile
+                    if (entity.Triggers != null && entity.Triggers.TryGetValue(EffectLocation.CURRENT_TILE, out Dictionary<TriggerType, List<Effect>> relativeTriggers))
+                    {
+                        foreach (TriggerType triggerType in relativeTriggers.Keys) // Remove all triggers
+                        {
+                            DetailedState.BoardState.Tiles[entity.TileCoordinate].TriggerListOperation(triggerType, entity.UniqueId, EffectLocation.CURRENT_TILE, BoardElementListOperation.REMOVE);
+                        }
+                    }
                 }
                 entity.TileCoordinate = tileCoord;
                 if (entity.TileCoordinate >= 0) // If the new tile coordinate is valid
                 {
                     DetailedState.BoardState.Tiles[entity.TileCoordinate].EntityListOperation(entity, BoardElementListOperation.ADD); // Add entity to tile
+                    // Check if entity has relative triggers for the current tile
+                    if (entity.Triggers != null && entity.Triggers.TryGetValue(EffectLocation.CURRENT_TILE, out Dictionary<TriggerType, List<Effect>> relativeTriggers))
+                    {
+                        foreach (TriggerType triggerType in relativeTriggers.Keys) // Remove all triggers
+                        {
+                            DetailedState.BoardState.Tiles[entity.TileCoordinate].TriggerListOperation(triggerType, entity.UniqueId, EffectLocation.CURRENT_TILE, BoardElementListOperation.ADD);
+                        }
+                    }
                 }
                 // Change lane (if applies)
                 if (oldLane != newLane) // There's a change in lane so i need to deal with it

@@ -44,7 +44,8 @@ namespace ODLGameEngine
         PLAINS,
         FOREST,
         MOUNTAIN,
-        PLAY_TARGET
+        PLAY_TARGET,
+        CURRENT_TILE
     }
     /// <summary>
     /// When searching for a target, which entity is found

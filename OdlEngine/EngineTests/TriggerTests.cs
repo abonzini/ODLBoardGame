@@ -312,5 +312,153 @@ namespace EngineTests
                 Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
             }
         }
+        [TestMethod]
+        public void CurrentTileTriggerTesting()
+        {
+            Random _rng = new Random();
+            // Subscribes a unit to a relative "current tile" location. Tests proper subscription and subscription reversion too
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that triggers where played and places debug event in pile
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
+                };
+                Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
+                triggerEffect.Add(TriggerType.ON_DEBUG_TRIGGERED, [debugEffect]); // Means that when triggered, it'll push the debug effect
+                unit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                unit.Triggers.Add(EffectLocation.CURRENT_TILE, triggerEffect); // Adds trigger specifically where the unit is currently located
+                // Setup
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Beginning of test loop will play the unit in original tile or move elsewhere
+                bool[] testInOriginalTileCases = [true, false];
+                PlayTargetLocation playLane = (PlayTargetLocation)(1 << _rng.Next(GameConstants.BOARD_NUMBER_OF_LANES));
+                int firstTileCoord = sm.DetailedState.BoardState.GetLane(playLane).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int randomTileCoord;
+                do
+                {
+                    randomTileCoord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                } while (randomTileCoord == firstTileCoord); // Get another random tile coord different to original
+                foreach (bool testInOriginalTileCase in testInOriginalTileCases)
+                {
+                    // Play the unit in the specific location
+                    int prePlayHash = sm.DetailedState.GetHashCode();
+                    sm.PlayFromHand(1, playLane);
+                    if (!testInOriginalTileCase) // Requested to move unit elsewhere
+                    {
+                        PlacedEntity theEntity = (PlacedEntity)sm.DetailedState.EntityData.Last().Value; // Get the last unit I had summoned
+                        Assert.AreEqual(firstTileCoord, theEntity.TileCoordinate); // Ensure I'm not about to mess up
+                        sm.LIVINGENTITY_InsertInTile(theEntity, randomTileCoord); // Move entity elsewhere
+                        // Harmless trigger in void to properly terminate effect stack, has no effect but to unbreak stuff
+                        sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext());
+                    }
+                    int postPlayHash = sm.DetailedState.GetHashCode();
+                    Assert.AreNotEqual(prePlayHash, postPlayHash);
+                    Tile playTile = sm.DetailedState.BoardState.Tiles[firstTileCoord];
+                    Tile randomTile = sm.DetailedState.BoardState.Tiles[randomTileCoord];
+                    // Test trigger in playtile
+                    StepResult res = sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, playTile, new EffectContext());
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
+                    if (testInOriginalTileCase)
+                    {
+                        Assert.IsNotNull(cpu);
+                    }
+                    else
+                    {
+                        Assert.IsNull(cpu);
+                    }
+                    sm.UndoPreviousStep(); // Undo debug trigger
+                    // Test trigger in other
+                    res = sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, randomTile, new EffectContext());
+                    cpu = TestHelperFunctions.FetchDebugEvent(res);
+                    if (!testInOriginalTileCase)
+                    {
+                        Assert.IsNotNull(cpu);
+                    }
+                    else
+                    {
+                        Assert.IsNull(cpu);
+                    }
+                    sm.UndoPreviousStep(); // Undo debug trigger
+                    // May need to revert the manual movement
+                    if (!testInOriginalTileCase)
+                    {
+                        sm.UndoPreviousStep();
+                    }
+                    // Finally revert the unit play
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                }
+            }
+        }
+        [TestMethod]
+        public void TriggersInBoardElementHashConsistency()
+        {
+            Random _rng = new Random();
+            // Create unit with "current place" trigger, moves the unit away, and returns (not by reverting) ensures hash also reversed if all else unchanged
+            // Create secpond unit with "current place" trigger
+            // Want to make sure that subscribed triggers are invariant of addition order
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that triggers where played and places debug event in pile
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
+                };
+                Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
+                triggerEffect.Add(TriggerType.ON_DEBUG_TRIGGERED, [debugEffect]); // Means that when triggered, it'll push the debug effect
+                unit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                unit.Triggers.Add(EffectLocation.CURRENT_TILE, triggerEffect); // Adds trigger specifically where the unit is currently located
+                // Setup
+                cardDb.InjectCard(1, unit); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add 2 of these cards to hand
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Beginning of test
+                PlayTargetLocation playLane = (PlayTargetLocation)(1 << _rng.Next(GameConstants.BOARD_NUMBER_OF_LANES));
+                int firstTileCoord = sm.DetailedState.BoardState.GetLane(playLane).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int randomTileCoord;
+                do
+                {
+                    randomTileCoord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                } while (randomTileCoord == firstTileCoord); // Get another random tile coord different to original
+                // Play 2 units in the specific location
+                int prePlayHash = sm.DetailedState.GetHashCode();
+                sm.PlayFromHand(1, playLane);
+                PlacedEntity theEntity = (PlacedEntity)sm.DetailedState.EntityData.Last().Value; // Get this summoned unit
+                sm.PlayFromHand(1, playLane);
+                int postPlayHash = sm.DetailedState.GetHashCode();
+                Assert.AreNotEqual(prePlayHash, postPlayHash);
+                // Now move unit 1
+                Assert.AreEqual(firstTileCoord, theEntity.TileCoordinate); // Ensure I'm not about to mess up
+                sm.LIVINGENTITY_InsertInTile(theEntity, randomTileCoord); // Move entity elsewhere
+                int postmoveHash = sm.DetailedState.GetHashCode();
+                Assert.AreNotEqual(prePlayHash, postmoveHash);
+                Assert.AreNotEqual(postmoveHash, postPlayHash);
+                // Now, move unit again to original place
+                sm.LIVINGENTITY_InsertInTile(theEntity, firstTileCoord); // Return manually to first tile
+                Assert.AreEqual(sm.DetailedState.GetHashCode(), postPlayHash); // Hash is same value as before without reversion, means unit trigger is order invariant
+            }
+        }
     }
 }

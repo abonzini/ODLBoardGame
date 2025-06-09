@@ -465,12 +465,12 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Will try this in all lanes!
                 Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 9, 1);
-                int firstPlains = state.BoardState.GetLane(LaneID.PLAINS).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int lastPlains = state.BoardState.GetLane(LaneID.PLAINS).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
-                int firstForest = state.BoardState.GetLane(LaneID.FOREST).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int lastForest = state.BoardState.GetLane(LaneID.FOREST).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
-                int firstMountains = state.BoardState.GetLane(LaneID.MOUNTAIN).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int lastMountains = state.BoardState.GetLane(LaneID.MOUNTAIN).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
+                int firstPlains = state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int lastPlains = state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
+                int firstForest = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int lastForest = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
+                int firstMountains = state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int lastMountains = state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, firstPlains, 2, playerIndex, (Unit)unit.Clone());
                 TestHelperFunctions.ManualInitEntity(state, firstForest, 3, playerIndex, (Unit)unit.Clone());
                 TestHelperFunctions.ManualInitEntity(state, firstMountains, 4, playerIndex, (Unit)unit.Clone());
@@ -531,9 +531,9 @@ namespace EngineTests
                 Unit unit1 = (Unit)unit.Clone();
                 Unit unit2 = (Unit)unit.Clone();
                 Unit unit3 = (Unit)unit.Clone();
-                int firstPlains = state.BoardState.GetLane(LaneID.PLAINS).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int firstForest = state.BoardState.GetLane(LaneID.FOREST).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int firstMountains = state.BoardState.GetLane(LaneID.MOUNTAIN).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstPlains = state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstForest = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstMountains = state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, firstPlains, 2, playerIndex, unit1);
                 TestHelperFunctions.ManualInitEntity(state, firstForest, 3, playerIndex, unit2);
                 TestHelperFunctions.ManualInitEntity(state, firstMountains, 4, playerIndex, unit3);
@@ -844,9 +844,9 @@ namespace EngineTests
                     Unit unit1 = (Unit)playerUnit.Clone();
                     Unit unit2 = (Unit)playerUnit.Clone();
                     Unit unit3 = (Unit)playerUnit.Clone();
-                    int firstPlains = state.BoardState.GetLane(LaneID.PLAINS).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                    int firstForest = state.BoardState.GetLane(LaneID.FOREST).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                    int firstMountains = state.BoardState.GetLane(LaneID.MOUNTAIN).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                    int firstPlains = state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                    int firstForest = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                    int firstMountains = state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, firstPlains, 2, playerIndex, unit1);
                     TestHelperFunctions.ManualInitEntity(state, firstForest, 3, playerIndex, unit2);
                     TestHelperFunctions.ManualInitEntity(state, firstMountains, 4, playerIndex, unit3);
@@ -967,9 +967,9 @@ namespace EngineTests
                     Unit unit5 = (Unit)oppUnit.Clone();
                     int theTile = lane switch
                     {
-                        PlayTargetLocation.PLAINS => state.BoardState.GetLane(LaneID.PLAINS).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex),
-                        PlayTargetLocation.FOREST => state.BoardState.GetLane(LaneID.FOREST).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex),
-                        PlayTargetLocation.MOUNTAIN => state.BoardState.GetLane(LaneID.MOUNTAIN).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex),
+                        PlayTargetLocation.PLAINS => state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex),
+                        PlayTargetLocation.FOREST => state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex),
+                        PlayTargetLocation.MOUNTAIN => state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex),
                         _ => throw new Exception("not valid for this test")
                     };
                     TestHelperFunctions.ManualInitEntity(state, theTile, 2, otherPlayerIndex, unit4);
@@ -1063,7 +1063,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 9, 1);
                 PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
-                int tileInitial = state.BoardState.GetLane(target).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int tileInitial = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, tileInitial, 2, playerIndex, unit); // Unit in place
                 // Begin sim
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -1126,8 +1126,8 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 2, 1, 9, 1);
                 PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
-                int tileInitial = state.BoardState.GetLane(target).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int tileFinal = state.BoardState.GetLane(target).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
+                int tileInitial = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int tileFinal = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, tileInitial, 2, playerIndex, (Unit)unit.Clone()); // Unit in place
                 TestHelperFunctions.ManualInitEntity(state, tileFinal, 3, otherPlayerIndex, (Unit)unit.Clone()); // Opp unit in place
                 // Add some cards to players to avoid deckout
@@ -1203,7 +1203,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 9, 1);
                 PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
-                int tileInitial = state.BoardState.GetLane(target).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int tileInitial = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, tileInitial, 2, playerIndex, (Unit)unit.Clone()); // Unit in place
                 // Add some cards to avoid deckout damage
                 for (int i = 0; i < 5; i++)
@@ -1276,7 +1276,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 9, 1);
                 PlayTargetLocation target = (PlayTargetLocation)(1 << _rng.Next(0, 3)); // Random lane target, it doesn't really matter
-                int tileInitial = state.BoardState.GetLane(target).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int tileInitial = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, tileInitial, 2, playerIndex, (Unit)unit.Clone()); // Unit in place
                 // Add some cards to avoid deckout damage
                 for (int i = 0; i < 5; i++)
@@ -1349,9 +1349,9 @@ namespace EngineTests
                     // In all lanes, I summon units
                     CardFinder cardDb = new CardFinder();
                     Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 9, 1);
-                    int plainsInitial = state.BoardState.GetLane(LaneID.PLAINS).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                    int forestInitial = state.BoardState.GetLane(LaneID.FOREST).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                    int mountainInitial = state.BoardState.GetLane(LaneID.MOUNTAIN).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                    int plainsInitial = state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                    int forestInitial = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                    int mountainInitial = state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, plainsInitial, 2, playerIndex, (Unit)unit.Clone()); // Unit in place
                     TestHelperFunctions.ManualInitEntity(state, forestInitial, 3, playerIndex, (Unit)unit.Clone()); // Unit in place
                     TestHelperFunctions.ManualInitEntity(state, mountainInitial, 4, playerIndex, (Unit)unit.Clone()); // Unit in place
@@ -1457,7 +1457,7 @@ namespace EngineTests
                 Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, PlayTargetLocation.ALL_LANES, attack + 1, [], [], []);
                 testBldg.Owner = otherPlayerIndex;
                 // Initialize building in first tile
-                int firstTileCoord = state.BoardState.GetLane(target).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstTileCoord = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, firstTileCoord, 2, otherPlayerIndex, testBldg); // Insert building in field, in beginning of player
                 state.NextUniqueIndex = 3;
                 // Create a new blank SM from load game
@@ -1509,8 +1509,8 @@ namespace EngineTests
                 Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 2, 1);
                 Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, PlayTargetLocation.ALL_LANES, attack + 1, [], [], []);
                 Lane lane = state.BoardState.GetLane(target);
-                int firstTile = lane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int secondTile = lane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int firstTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int secondTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, firstTile, 2, playerIndex, testUnit);
                 TestHelperFunctions.ManualInitEntity(state, secondTile, 3, otherPlayerIndex, testBldg);
                 // Begin sim
@@ -1568,8 +1568,8 @@ namespace EngineTests
                 Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, attack, 2, 1);
                 Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, PlayTargetLocation.ALL_LANES, attack, [], [], []);
                 Lane lane = state.BoardState.GetLane(target);
-                int firstTile = lane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int secondTile = lane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int firstTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int secondTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, firstTile, 2, playerIndex, testUnit);
                 TestHelperFunctions.ManualInitEntity(state, secondTile, 3, otherPlayerIndex, testBldg);
                 // Create blank SM

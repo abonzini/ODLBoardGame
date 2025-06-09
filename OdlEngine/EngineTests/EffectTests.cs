@@ -100,6 +100,62 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void SummonUnitEffectInTile()
+        {
+            Random _rng = new Random();
+            // Testing effect where unit is summoned in the same tile of the original unit
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that summons a friend in its own tile
+                Unit summonerUnit = TestCardGenerator.CreateUnit(1, "SUMMONER", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Effect summonEffect = new Effect()
+                {
+                    EffectType = EffectType.SUMMON_UNIT, // Summons unit
+                    TempVariable = 2, // Always summons card 2
+                    EffectLocation = EffectLocation.CURRENT_TILE,
+                    TargetPlayer = EntityOwner.OWNER,
+                };
+                summonerUnit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                summonerUnit.Interactions.Add(InteractionType.WHEN_PLAYED, [summonEffect]); // Add interaction to card
+                cardDb.InjectCard(1, summonerUnit); // Add to cardDb
+                // Card 2: placeholder simple unit
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add summoner card to hand
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Test begins
+                state = sm.DetailedState;
+                // Play unit in a random lane
+                PlayTargetLocation lane = (PlayTargetLocation)(1 << _rng.Next(GameConstants.BOARD_NUMBER_OF_LANES));
+                Lane laneContext = state.BoardState.GetLane(lane);
+                Tile tileContext = laneContext.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                // Pre play tests
+                int prePlayHash = state.GetHashCode();
+                Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0); // Before playing there's no unit anywhere
+                Assert.AreEqual(laneContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0);
+                Assert.AreEqual(tileContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0);
+                // Summon unit
+                sm.PlayFromHand(1, lane);
+                Assert.AreEqual(2, state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 2); // Now there's 2 units!
+                Assert.AreEqual(2, laneContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 2);
+                Assert.AreEqual(2, tileContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 2);
+                Assert.AreNotEqual(prePlayHash, state.GetHashCode()); // Hash also changed
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0); // Board empty again
+                Assert.AreEqual(laneContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0);
+                Assert.AreEqual(tileContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0);
+                Assert.AreEqual(prePlayHash, state.GetHashCode()); // Hash restored
+            }
+        }
+        [TestMethod]
         public void TestTargetingFilters()
         {
             Random _rng = new Random();
@@ -137,10 +193,10 @@ namespace EngineTests
                 PlayTargetLocation otherLane1 = (PlayTargetLocation)(1 << lane); // Get the other lanes for extra testing
                 lane++; lane %= 3;
                 PlayTargetLocation otherLane2 = (PlayTargetLocation)(1 << lane);
-                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
-                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
-                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
                 TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
@@ -293,10 +349,10 @@ namespace EngineTests
                 PlayTargetLocation otherLane1 = (PlayTargetLocation)(1 << lane); // Get the other lanes for extra testing
                 lane++; lane %= 3;
                 PlayTargetLocation otherLane2 = (PlayTargetLocation)(1 << lane);
-                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
-                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
-                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
                 TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
@@ -394,10 +450,10 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
-                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
-                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
-                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
                 TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
@@ -499,10 +555,10 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
-                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
-                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
-                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
                 TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
@@ -602,10 +658,10 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 int lane = _rng.Next(0, 3);
                 PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
-                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int firstOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
-                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
-                int secondOppTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int secondOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
                 TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
                 {
                     EntityType = EntityType.UNIT,
@@ -734,8 +790,8 @@ namespace EngineTests
                 theUnit.Hp.BaseValue = statValue;
                 theUnit.Movement.BaseValue = statValue;
                 theUnit.MovementDenominator.BaseValue = statValue;
-                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 2, playerIndex, (PlacedEntity)theUnit.Clone());
                 TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 3, playerIndex, (PlacedEntity)theUnit.Clone());
                 // Finally load the game
@@ -834,8 +890,8 @@ namespace EngineTests
                 theUnit.Hp.BaseValue = statValue;
                 theUnit.Movement.BaseValue = statValue;
                 theUnit.MovementDenominator.BaseValue = statValue;
-                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
+                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 2, playerIndex, (PlacedEntity)theUnit.Clone());
                 TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 3, playerIndex, (PlacedEntity)theUnit.Clone());
                 // Finally load the game

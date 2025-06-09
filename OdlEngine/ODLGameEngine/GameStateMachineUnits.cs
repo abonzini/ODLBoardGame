@@ -15,7 +15,7 @@
             UnitPlayContext res = new UnitPlayContext
             {
                 Actor = unit,
-                AbsoluteInitialTile = DetailedState.BoardState.GetLane(laneTarget).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, player)
+                AbsoluteInitialTile = DetailedState.BoardState.GetLane(laneTarget).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, player)
             };
             return res;
         }
@@ -32,11 +32,11 @@
             newSpawnedUnit.Owner = player;
             playContext.Actor = newSpawnedUnit;
             // Add to board
-            BOARDENTITY_InitializeEntity(newSpawnedUnit);
+            LIVINGENTITY_InitializeEntity(newSpawnedUnit);
             // Places unit in correct coord
-            BOARDENTITY_InsertInTile(newSpawnedUnit, playContext.AbsoluteInitialTile);
+            LIVINGENTITY_InsertInTile(newSpawnedUnit, playContext.AbsoluteInitialTile);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
-            BOARDENTITY_CheckIfUnitAlive(newSpawnedUnit);
+            LIVINGENTITY_CheckIfUnitAlive(newSpawnedUnit);
             return newSpawnedUnit;
         }
         /// <summary>
@@ -81,11 +81,11 @@
                     {
                         marchCtx.CurrentMovement--;
                         // Current tile
-                        int nextTileCoord = lane.GetCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_PLAYER, LaneRelativeIndexType.ABSOLUTE, unit.TileCoordinate, unit.Owner);
+                        int nextTileCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_PLAYER, LaneRelativeIndexType.ABSOLUTE, unit.TileCoordinate, unit.Owner);
                         nextTileCoord++; // Advancement, now its 1 more
                         // Finally get the following lane
-                        nextTileCoord = lane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextTileCoord, unit.Owner);
-                        BOARDENTITY_InsertInTile(unit, nextTileCoord);
+                        nextTileCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextTileCoord, unit.Owner);
+                        LIVINGENTITY_InsertInTile(unit, nextTileCoord);
                     }
                     marchCtx.FirstTileMarch = false; // From now on the unit is in the middle of the march
                 }
@@ -107,11 +107,11 @@
             DamageContext attackerDmgCtx, defenderDmgCtx;
 
             // Surely, unit will apply damage to the victim
-            attackerDmgCtx = BOARDENTITY_DamageStep(attacker, defender, attacker.Attack.Total); // TODO: GetAttack fn to incorporate buffs and such
+            attackerDmgCtx = LIVINGENTITY_DamageStep(attacker, defender, attacker.Attack.Total); // TODO: GetAttack fn to incorporate buffs and such
             if (defender is Unit defendingUnit)
             {
                 // If defender was also a unit, then the attacker also receives damage
-                defenderDmgCtx = BOARDENTITY_DamageStep(defender, attacker, defendingUnit.Attack.Total);
+                defenderDmgCtx = LIVINGENTITY_DamageStep(defender, attacker, defendingUnit.Attack.Total);
             }
 
             // TODO: Contexts are checked here! even death and damage taking, to avoid Units doing stuff in this critical damage step

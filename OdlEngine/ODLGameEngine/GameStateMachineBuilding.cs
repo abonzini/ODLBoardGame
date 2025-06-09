@@ -48,11 +48,11 @@
             constructionContext.Affected = newSpawnedBuilding; // Construction context updated with actual building
             newSpawnedBuilding.Owner = player; // Building owner
             // Add to board
-            BOARDENTITY_InitializeEntity(newSpawnedBuilding);
+            LIVINGENTITY_InitializeEntity(newSpawnedBuilding);
             // Places building in new coordinate
-            BOARDENTITY_InsertInTile(newSpawnedBuilding, constructionContext.AbsoluteConstructionTile);
+            LIVINGENTITY_InsertInTile(newSpawnedBuilding, constructionContext.AbsoluteConstructionTile);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
-            BOARDENTITY_CheckIfUnitAlive(newSpawnedBuilding);
+            LIVINGENTITY_CheckIfUnitAlive(newSpawnedBuilding);
             return newSpawnedBuilding;
         }
     }

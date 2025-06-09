@@ -252,7 +252,8 @@
                     EffectLocation.PLAINS => DetailedState.BoardState.PlainsLane,
                     EffectLocation.FOREST => DetailedState.BoardState.ForestLane,
                     EffectLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
-                    EffectLocation.PLAY_TARGET => (((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget == PlayTargetLocation.BOARD) ? DetailedState.BoardState : DetailedState.BoardState.GetLane(((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget),
+                    EffectLocation.PLAY_TARGET => (((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget == PlayTargetLocation.BOARD) ? DetailedState.BoardState : DetailedState.BoardState.GetLane(((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget), // Expects play context
+                    EffectLocation.CURRENT_TILE => DetailedState.BoardState.Tiles[((PlacedEntity)DetailedState.EntityData[cpuContext.ReferenceEntities[i]]).TileCoordinate], // Expects the entities here to have current tile coordinate
                     _ => throw new Exception("Reference search location not implemented")
                 };
             }
@@ -470,7 +471,7 @@
             }
             else if (placeToSummon.ElementType == BoardElementType.LANE) // In this case I assume its just beginning of tile (for now?!)
             {
-                unitPlayCtx.AbsoluteInitialTile = ((Lane)placeToSummon).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerOwner);
+                unitPlayCtx.AbsoluteInitialTile = ((Lane)placeToSummon).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerOwner);
             }
             else
             {

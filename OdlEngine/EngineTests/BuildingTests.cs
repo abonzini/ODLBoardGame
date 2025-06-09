@@ -96,7 +96,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Card should not be playable in any lane, but because it's missing the unit. This is proven in another test...
                 // ...but now I inject unit in plains, and building should be playable in plains only
-                int plainsCoord = sm.DetailedState.BoardState.PlainsLane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES)); // Get lane's random tile. Buildings BP should make it buildable anywhere so this should never fail
+                int plainsCoord = sm.DetailedState.BoardState.PlainsLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES)); // Get lane's random tile. Buildings BP should make it buildable anywhere so this should never fail
                 TestHelperFunctions.ManualInitEntity(sm.DetailedState, plainsCoord, -1, playerIndex, unit); // Add unit (will use negative ids not to interfere with the building id)
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND); // What happens if I attempt to play building from hand?
                 Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK);
@@ -136,7 +136,7 @@ namespace EngineTests
                 }
                 TryBuild(PlayTargetLocation.PLAINS);
                 // Same in forest
-                int forestCoord = sm.DetailedState.BoardState.ForestLane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.FOREST_NUMBER_OF_TILES));
+                int forestCoord = sm.DetailedState.BoardState.ForestLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.FOREST_NUMBER_OF_TILES));
                 TestHelperFunctions.ManualInitEntity(sm.DetailedState, forestCoord, -2, playerIndex, unit);
                 res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
                 Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK);
@@ -145,7 +145,7 @@ namespace EngineTests
                 Assert.IsFalse(res.PlayTarget.HasFlag(PlayTargetLocation.MOUNTAIN));
                 TryBuild(PlayTargetLocation.ALL_BUT_MOUNTAIN);
                 // Finally in mountain
-                int mountainCoord = sm.DetailedState.BoardState.MountainLane.GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.MOUNTAIN_NUMBER_OF_TILES));
+                int mountainCoord = sm.DetailedState.BoardState.MountainLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_LANE, _rng.Next(GameConstants.MOUNTAIN_NUMBER_OF_TILES));
                 TestHelperFunctions.ManualInitEntity(sm.DetailedState, mountainCoord, -3, playerIndex, unit);
                 res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
                 Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK);
@@ -281,8 +281,8 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 PlayTargetLocation laneTarget = (PlayTargetLocation)(1 << _rng.Next(3)); // Random target
                 // Play unit in lane
-                int firstTileCoord = sm.DetailedState.BoardState.GetLane(laneTarget).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex); // Get 1st coord
-                int secondTileCoord = sm.DetailedState.BoardState.GetLane(laneTarget).GetCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex); // Get 1st coord
+                int firstTileCoord = sm.DetailedState.BoardState.GetLane(laneTarget).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex); // Get 1st coord
+                int secondTileCoord = sm.DetailedState.BoardState.GetLane(laneTarget).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex); // Get 1st coord
                 TestHelperFunctions.ManualInitEntity(sm.DetailedState, firstTileCoord, -1, playerIndex, unit); // Add unit (will use negative ids not to interfere with the building id)
                 TestHelperFunctions.ManualInitEntity(sm.DetailedState, secondTileCoord, -2, playerIndex, unit);
                 int prePlayHash1 = sm.DetailedState.GetHashCode();

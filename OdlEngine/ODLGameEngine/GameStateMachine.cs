@@ -160,7 +160,27 @@
         {
             try
             {
-                EFFECT_ActivateTrigger(trigger, location, specificContext); // DOes the trigger
+                EFFECT_ActivateTrigger(trigger, location, specificContext); // Does the trigger
+                ENGINE_ChangeState(DetailedState.CurrentState); // Repeat current state to flush event queue
+            }
+            catch (EndOfGameException e)
+            {
+                STATE_TriggerEndOfGame(e.PlayerWhoWon);
+            }
+            return _stepHistory.Last(); // Returns everything that happened in this triggering
+        }
+        /// <summary>
+        /// Test API to activate a trigger to pretend it comes from any ingame event, checks a literal place of the board
+        /// </summary>
+        /// <param name="trigger">What trigger</param>
+        /// <param name="location">Board location (absolute, can reference a tile too)</param>
+        /// <param name="specificContext">Specific context to send</param>
+        /// <returns></returns>
+        public StepResult TestActivateTrigger(TriggerType trigger, BoardElement location, EffectContext specificContext)
+        {
+            try
+            {
+                TRIGINTER_ProcessTrigger(trigger, location, specificContext); // Does the trigger
                 ENGINE_ChangeState(DetailedState.CurrentState); // Repeat current state to flush event queue
             }
             catch (EndOfGameException e)
@@ -224,7 +244,7 @@
             }
             else // Else there's a deck out event, player receives self inflicted deck-out damage
             {
-                BOARDENTITY_DamageStep(player, player, GameConstants.DECKOUT_DAMAGE);
+                LIVINGENTITY_DamageStep(player, player, GameConstants.DECKOUT_DAMAGE);
             }
             EFFECTS_ModifyPlayersGold(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED, ModifierOperation.ADD);
             ENGINE_ChangePlayerPowerAvailability(player, true); // Player can now use active power again
