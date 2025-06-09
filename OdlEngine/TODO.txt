@@ -1,6 +1,8 @@
 Ongoing tasks in order of priority:
-- 4,5:
-	- #4 and #5 as buildings with simple "on current tile" trigger. One asserts enemy, not in initial march and multiplies by 0. Other just filters ally and adds +1 to march
+- 6:
+	- Instakill effect. move the "check if unit alive" effect to a "KILL" which then deinits
+	- Add instakill to effect, i.e. of targets. Ensure it goes through reversible
+	- Add card #6. gets actor enemy, asserts, and kills
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it

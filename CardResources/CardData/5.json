@@ -1,0 +1,53 @@
+{
+  "PlainsBp": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "ForestBp": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "MountainBp": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "Name": "STONE ROAD",
+  "Hp": 3,
+  "Triggers": {
+    "CURRENT_TILE": {
+      "ON_MARCH": [
+        {
+          "EffectType": "SELECT_ENTITY",
+          "TargetPlayer": "OWNER",
+          "SearchCriterion": "ACTOR_ENTITY",
+          "TargetType": "UNIT"
+        },
+        {
+          "EffectType": "ASSERT",
+          "Input": "TARGET_COUNT"
+        },
+        {
+          "EffectType": "MODIFIER",
+          "ModifierOperation": "ADD",
+          "Output": "MARCH_CURRENT_MOVEMENT",
+          "TempVariable": 1
+        }
+      ]
+    }
+  },
+  "EntityType": "BUILDING",
+  "Id": 5,
+  "Cost": 2
+}

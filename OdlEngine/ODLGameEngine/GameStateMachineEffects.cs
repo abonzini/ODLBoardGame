@@ -163,10 +163,11 @@
                         }
                         break;
                     case EffectType.ASSERT:
-                        if (inputValue == 0) // Asserts input, if false, then the loop breaks
+                        breakLoop = effect.ModifierOperation switch // Breaks the loop on assert, but allows to use the NOT modifier to assert posi
                         {
-                            breakLoop = true;
-                        }
+                            ModifierOperation.NOT => (inputValue != 0),
+                            _ => (inputValue == 0)
+                        };
                         break;
                     default:
                         throw new NotImplementedException("Effect type not implemented yet");
@@ -197,6 +198,8 @@
                     return cpu.TempValue;
                 case Variable.ACC:
                     return cpu.Acc;
+                case Variable.TARGET_COUNT:
+                    return cpu.ReferenceEntities.Count;
                 case Variable.MARCH_START_FLAG:
                     return ((MarchingContext)cpu.CurrentSpecificContext).FirstTileMarch ? 1 : 0;
                 case Variable.MARCH_CURRENT_MOVEMENT:
@@ -205,43 +208,36 @@
                     break;
             }
             int result = 0; // This will require iteration...
-            if (multiInputOperation == MultiInputProcessing.COUNT) // ...unless its a count operation
+            foreach (int entityTarget in cpu.ReferenceEntities)
             {
-                return cpu.ReferenceEntities.Count;
+                int auxInt = input switch
+                {
+                    Variable.TARGET_HP => ((LivingEntity)FetchEntity(entityTarget)).Hp.Total,
+                    Variable.TARGET_ATTACK => ((Unit)FetchEntity(entityTarget)).Attack.Total,
+                    Variable.TARGET_MOVEMENT => ((Unit)FetchEntity(entityTarget)).Movement.Total,
+                    Variable.TARGET_MOVEMENT_DENOMINATOR => ((Unit)FetchEntity(entityTarget)).MovementDenominator.Total,
+                    Variable.PLAYERS_GOLD => DetailedState.PlayerStates[FetchEntity(entityTarget).Owner].CurrentGold,
+                    _ => throw new Exception("This shouldn't have gotten here! Invalid input source!")
+                };
+                if (multiInputOperation == MultiInputProcessing.FIRST) // If I only needed the first value...
+                {
+                    return auxInt;
+                }
+                // Otherwise I need to process data
+                result = multiInputOperation switch
+                {
+                    MultiInputProcessing.SUM => result + auxInt,
+                    MultiInputProcessing.AVERAGE => result + auxInt, // Average will be later
+                    MultiInputProcessing.MAX => Math.Max(result, auxInt),
+                    MultiInputProcessing.MIN => Math.Min(result, auxInt),
+                    _ => throw new Exception("Invalid MultiInputOperation")
+                };
             }
-            else
+            if (multiInputOperation == MultiInputProcessing.AVERAGE) // Check if I need to apply average
             {
-                foreach (int entityTarget in cpu.ReferenceEntities)
-                {
-                    int auxInt = input switch
-                    {
-                        Variable.TARGET_HP => ((LivingEntity)FetchEntity(entityTarget)).Hp.Total,
-                        Variable.TARGET_ATTACK => ((Unit)FetchEntity(entityTarget)).Attack.Total,
-                        Variable.TARGET_MOVEMENT => ((Unit)FetchEntity(entityTarget)).Movement.Total,
-                        Variable.TARGET_MOVEMENT_DENOMINATOR => ((Unit)FetchEntity(entityTarget)).MovementDenominator.Total,
-                        Variable.PLAYERS_GOLD => DetailedState.PlayerStates[FetchEntity(entityTarget).Owner].CurrentGold,
-                        _ => throw new Exception("This shouldn't have gotten here! Invalid input source!")
-                    };
-                    if (multiInputOperation == MultiInputProcessing.FIRST) // If I only needed the first value...
-                    {
-                        return auxInt;
-                    }
-                    // Otherwise I need to process data
-                    result = multiInputOperation switch
-                    {
-                        MultiInputProcessing.SUM => result + auxInt,
-                        MultiInputProcessing.AVERAGE => result + auxInt, // Average will be later
-                        MultiInputProcessing.MAX => Math.Max(result, auxInt),
-                        MultiInputProcessing.MIN => Math.Min(result, auxInt),
-                        _ => throw new Exception("Invalid MultiInputOperation")
-                    };
-                }
-                if (multiInputOperation == MultiInputProcessing.AVERAGE) // Check if I need to apply average
-                {
-                    result /= cpu.ReferenceEntities.Count;
-                }
-                return result;
+                result /= cpu.ReferenceEntities.Count;
             }
+            return result;
         }
         /// <summary>
         /// Will fetch, for each entity in the CPU entity list, the BoardElement location specified form a search location

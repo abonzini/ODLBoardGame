@@ -1,0 +1,10 @@
+{
+  "EntityType": "BUILDING",
+  "Id": 5,
+  "Name": "STONE ROAD",
+  "Text": "Friendly units *marching* through this building gain +1 *movement* during this *march.*",
+  "Cost": "2",
+  "Hp": "3",
+  "Rarity": 1,
+  "Tribe": "BASE"
+}

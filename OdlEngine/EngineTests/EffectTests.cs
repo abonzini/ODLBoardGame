@@ -1377,14 +1377,13 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Things I'll test
-                List<MultiInputProcessing> multiInputOperations = [MultiInputProcessing.FIRST, MultiInputProcessing.COUNT, MultiInputProcessing.SUM, MultiInputProcessing.AVERAGE, MultiInputProcessing.MAX, MultiInputProcessing.MIN];
+                List<MultiInputProcessing> multiInputOperations = [MultiInputProcessing.FIRST, MultiInputProcessing.SUM, MultiInputProcessing.AVERAGE, MultiInputProcessing.MAX, MultiInputProcessing.MIN];
                 foreach (MultiInputProcessing multiInputOperation in multiInputOperations)
                 {
                     multiInputCalcEffect.MultiInputProcessing = multiInputOperation; // Select calculator multiInputOp
                     int desiredValue = multiInputOperation switch
                     {
                         MultiInputProcessing.FIRST => 0,
-                        MultiInputProcessing.COUNT => 4,
                         MultiInputProcessing.SUM => 6,
                         MultiInputProcessing.AVERAGE => 1,
                         MultiInputProcessing.MAX => 3,
@@ -1675,29 +1674,35 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Set of stat targeting
-                List<bool> stopExpectedCases = [false, true];
-                foreach (bool stopExpected in stopExpectedCases)
+                List<int> assertValues = [0, 1];
+                List<bool> negatedAsserts = [false, true];
+                foreach (int assertValue in assertValues)
                 {
-                    assertEffect.TempVariable = stopExpected ? 0 : 1; // Sets the temp value depending whether I want it to trigger the assert
-                    // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                    // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
-                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
-                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
-                    if (stopExpected) // Check whether I should be finding the debug event depending on assertion type
+                    foreach (bool negatedAssert in negatedAsserts)
                     {
-                        Assert.IsNull(cpu);
+                        assertEffect.TempVariable = assertValue; // Sets the temp value
+                        assertEffect.ModifierOperation = negatedAssert ? ModifierOperation.NOT : ModifierOperation.NONE; // Sets negation or not
+                        // Pre-play prep
+                        int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                        // Play
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                        Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                        CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                        bool shouldAssert = ((assertValue == 1 && !negatedAssert) || (assertValue == 0 && negatedAssert));
+                        if (shouldAssert) // Check whether I should be finding the debug event depending on assertion type
+                        {
+                            Assert.IsNotNull(cpu);
+                        }
+                        else
+                        {
+                            Assert.IsNull(cpu);
+                        }
+                        // Check returned targets
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                                                                                         // Revert and hash check
+                        sm.UndoPreviousStep();
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                     }
-                    else
-                    {
-                        Assert.IsNotNull(cpu);
-                    }
-                    // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    // Revert and hash check
-                    sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
             }
         }

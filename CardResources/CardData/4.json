@@ -1,0 +1,45 @@
+{
+  "PlainsBp": [
+    1,
+    2
+  ],
+  "ForestBp": [
+    2,
+    3
+  ],
+  "MountainBp": [
+    3,
+    4
+  ],
+  "Name": "MUDDY ROADS",
+  "Hp": 5,
+  "Triggers": {
+    "CURRENT_TILE": {
+      "ON_MARCH": [
+        {
+          "EffectType": "SELECT_ENTITY",
+          "TargetPlayer": "OPPONENT",
+          "SearchCriterion": "ACTOR_ENTITY",
+          "TargetType": "UNIT"
+        },
+        {
+          "EffectType": "ASSERT",
+          "Input": "TARGET_COUNT"
+        },
+        {
+          "EffectType": "ASSERT",
+          "ModifierOperation": "NOT",
+          "Input": "MARCH_START_FLAG"
+        },
+        {
+          "EffectType": "MODIFIER",
+          "ModifierOperation": "SET",
+          "Output": "MARCH_CURRENT_MOVEMENT"
+        }
+      ]
+    }
+  },
+  "EntityType": "BUILDING",
+  "Id": 4,
+  "Cost": 1
+}

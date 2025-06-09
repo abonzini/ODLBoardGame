@@ -95,6 +95,7 @@ namespace ODLGameEngine
     {
         TEMP_VARIABLE,
         ACC,
+        TARGET_COUNT,
         TARGET_HP,
         TARGET_ATTACK,
         TARGET_MOVEMENT,
@@ -111,7 +112,6 @@ namespace ODLGameEngine
     public enum MultiInputProcessing
     {
         FIRST,
-        COUNT,
         SUM,
         AVERAGE,
         MAX,

@@ -84,7 +84,7 @@ namespace CardGenerationHelper
                 EffectType.FIND_ENTITIES => [SearchCriterionBox, SearchCriterionLabel, TargetPlayerEnumBox, TargetPlayerLabel, TargetTypeEnumBox, TargetTypeLabel, EffectLocationBox, EffectLocationLabel, InputBox, InputLabel, MultiVariableBox, MultiVariableLabel],
                 EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerEnumBox, EffectLocationBox, EffectLocationLabel, InputBox, InputBox, MultiVariableBox, MultiVariableLabel],
                 EffectType.MODIFIER => [ModifierOperationBox, ModifierOperationLabel, InputBox, InputLabel, OutputBox, OutputLabel, TargetPlayerEnumBox, TargetPlayerLabel, MultiVariableBox, MultiVariableLabel],
-                EffectType.ASSERT => [InputBox, InputLabel],
+                EffectType.ASSERT => [InputBox, InputLabel, MultiVariableLabel, MultiVariableBox, ModifierOperationLabel, ModifierOperationBox],
                 _ => throw new NotImplementedException("Unhandled effect type"),
             };
             foreach (Control control in relevant)
