@@ -1,4 +1,4 @@
-<img src="./../../../CardResources/CardBlueprintsFull/3.png" width="200"><img src="./../../../CardResources/CardImagesFull/3.png" width="150"><img src="./../../../CardResources/CardBlueprintsFull/4.png" width="200"><img src="./../../../CardResources/CardImagesFull/4.png" width="150"><img src="./../../../CardResources/CardBlueprintsFull/5.png" width="200"><img src="./../../../CardResources/CardImagesFull/5.png" width="150">
+<img src="./../../../CardResources/CardBlueprintsFull/3.png" width="180"><img src="./../../../CardResources/CardImagesFull/3.png" width="150"><img src="./../../../CardResources/CardBlueprintsFull/4.png" width="180"><img src="./../../../CardResources/CardImagesFull/4.png" width="150"><img src="./../../../CardResources/CardBlueprintsFull/5.png" width="180"><img src="./../../../CardResources/CardImagesFull/5.png" width="150">
 
 ![](./../../BaseSet/4.png)
 ![](./../../BaseSet/5.png)
