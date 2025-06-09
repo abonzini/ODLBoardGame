@@ -152,6 +152,12 @@
                                     }
                                 }
                                 break;
+                            case Variable.MARCH_CURRENT_MOVEMENT:
+                                {
+                                    MarchingContext marchCtx = (MarchingContext)cpu.CurrentSpecificContext;
+                                    marchCtx.CurrentMovement = GetModifiedValue(marchCtx.CurrentMovement, inputValue, effect.ModifierOperation);
+                                }
+                                break;
                             default:
                                 throw new NotImplementedException("Variable is read only!");
                         }
@@ -191,6 +197,10 @@
                     return cpu.TempValue;
                 case Variable.ACC:
                     return cpu.Acc;
+                case Variable.MARCH_START_FLAG:
+                    return ((MarchingContext)cpu.CurrentSpecificContext).FirstTileMarch ? 1 : 0;
+                case Variable.MARCH_CURRENT_MOVEMENT:
+                    return ((MarchingContext)cpu.CurrentSpecificContext).CurrentMovement;
                 default:
                     break;
             }

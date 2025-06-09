@@ -1701,5 +1701,82 @@ namespace EngineTests
                 }
             }
         }
+        [TestMethod]
+        public void MarchRelatedVariables()
+        {
+            // Pretend a march is occurring and see if we can read/write corresponding values
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                Random _rng = new Random();
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE; // Prepare for march
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that just moves
+                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Effect readMarchRemainingEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Input = Variable.MARCH_CURRENT_MOVEMENT,
+                    ModifierOperation = ModifierOperation.SET,
+                    Output = Variable.ACC
+                };
+                int multiplier = _rng.Next(2, 100);
+                Effect modfyAcc = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Input = Variable.TEMP_VARIABLE,
+                    ModifierOperation = ModifierOperation.MULTIPLY,
+                    TempVariable = multiplier,
+                    Output = Variable.ACC
+                };
+                Effect readMarchStartEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Input = Variable.MARCH_START_FLAG,
+                    ModifierOperation = ModifierOperation.MULTIPLY,
+                    Output = Variable.ACC
+                };
+                Effect modifyMarchMovementEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Input = Variable.ACC,
+                    ModifierOperation = ModifierOperation.SET,
+                    Output = Variable.MARCH_CURRENT_MOVEMENT
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
+                };
+                Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
+                triggerEffect.Add(TriggerType.ON_MARCH, [readMarchRemainingEffect, modfyAcc, readMarchStartEffect, modifyMarchMovementEffect, debugEffect]); // Slew of operations to ensure I can rw all march related effects
+                marchingUnit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                marchingUnit.Triggers.Add(EffectLocation.CURRENT_TILE, triggerEffect); // Adds trigger specifically where building is currently located
+                // Setup
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Beginning of test cases
+                int originalMarch = _rng.Next(1, 100);
+                bool[] isMarchingFlags = [true, false];
+                foreach (bool isMarchingFlag in isMarchingFlags)
+                {
+                    sm.UNIT_PlayUnit(playerIndex, new UnitPlayContext() { Actor = marchingUnit, AbsoluteInitialTile = 0 }); // Manually insert unit
+                    MarchingContext dummyMarchCtx = new MarchingContext()
+                    {
+                        CurrentMovement = originalMarch,
+                        FirstTileMarch = isMarchingFlag,
+                    };
+                    // Pretend trigger a march on the tile the unit is. Check the dummy march context
+                    StepResult res = sm.TestActivateTrigger(TriggerType.ON_MARCH, sm.DetailedState.BoardState.Tiles[0], dummyMarchCtx);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
+                    Assert.IsNotNull(cpu); // Ensure unit hasn't triggered
+                    int expectedValue = isMarchingFlag ? originalMarch * multiplier : 0; // March calculation should've occurred and modified the existing march ctx!
+                    Assert.AreEqual(expectedValue, dummyMarchCtx.CurrentMovement);
+                }
+            }
+        }
     }
 }

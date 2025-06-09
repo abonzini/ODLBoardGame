@@ -17,7 +17,8 @@ namespace ODLGameEngine
     [JsonConverter(typeof(StringEnumConverter))]
     public enum TriggerType
     {
-        ON_DEBUG_TRIGGERED
+        ON_DEBUG_TRIGGERED,
+        ON_MARCH
     }
     // Effects
     /// <summary>
@@ -99,6 +100,8 @@ namespace ODLGameEngine
         TARGET_MOVEMENT,
         TARGET_MOVEMENT_DENOMINATOR,
         PLAYERS_GOLD,
+        MARCH_START_FLAG,
+        MARCH_CURRENT_MOVEMENT
         // Todo, damage, advancement, playability check, etc
     }
     /// <summary>

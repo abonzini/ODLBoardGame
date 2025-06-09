@@ -41,7 +41,7 @@
         /// <param name="player">Player who'll own the building</param>
         /// <param name="constructionContext">Building construction context</param>
         /// <returns>The initialised building</returns>
-        Building BUILDING_ConstructBuilding(int player, ConstructionContext constructionContext)
+        public Building BUILDING_ConstructBuilding(int player, ConstructionContext constructionContext)
         {
             // Clone building
             Building newSpawnedBuilding = (Building)constructionContext.Affected.Clone();

@@ -83,15 +83,19 @@
                 List<Tuple<int, EffectLocation>> allPossibleTriggers = triggerList.ToList();
                 foreach (Tuple<int, EffectLocation> nextEntity in allPossibleTriggers)
                 {
-                    // Check if entity is is still alive
-                    if (DetailedState.EntityData.TryGetValue(nextEntity.Item1, out LivingEntity entity))
+                    // Ensure that a unit doesn't trigger itself if it's also the actor
+                    if (specificContext.Actor == null || nextEntity.Item1 != specificContext.Actor.UniqueId)
                     {
-                        specificContext.ActivatedEntity = entity; // This entity will be the owner of this trigger context (regardless of action)
-                        EFFECTS_ProcessEffects(entity.Triggers[nextEntity.Item2][trigger], specificContext); // Find effects in unit
-                    }
-                    else // Entity is dead, need to clean this from the place so it never triggers again
-                    {
-                        TRIGINTER_DeregisterSpecificEntityTriggers(place, trigger, nextEntity.Item2, nextEntity.Item1);
+                        // Check if entity is is still alive
+                        if (DetailedState.EntityData.TryGetValue(nextEntity.Item1, out LivingEntity entity))
+                        {
+                            specificContext.ActivatedEntity = entity; // This entity will be the owner of this trigger context (regardless of action)
+                            EFFECTS_ProcessEffects(entity.Triggers[nextEntity.Item2][trigger], specificContext); // Find effects in unit
+                        }
+                        else // Entity is dead, need to clean this from the place so it never triggers again
+                        {
+                            TRIGINTER_DeregisterSpecificEntityTriggers(place, trigger, nextEntity.Item2, nextEntity.Item1);
+                        }
                     }
                 }
             }

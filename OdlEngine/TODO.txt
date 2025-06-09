@@ -1,6 +1,5 @@
 Ongoing tasks in order of priority:
 - 4,5:
-	- New modifier targets as the current march value and init_march flag (readonly), then a trigger related to "marching in tile" context, including beginning of march or marching through, test by reading both march values, doing some operation and popping cpu stack, value should corroborate
 	- #4 and #5 as buildings with simple "on current tile" trigger. One asserts enemy, not in initial march and multiplies by 0. Other just filters ally and adds +1 to march
 - Implement rest of rulebook
 	- Procedure:

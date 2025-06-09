@@ -460,5 +460,110 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.GetHashCode(), postPlayHash); // Hash is same value as before without reversion, means unit trigger is order invariant
             }
         }
+        [TestMethod]
+        public void OnMarchTriggerTesting()
+        {
+            Random _rng = new Random();
+            // Subscribes 2 units unit to a relative "current tile" on march trigger
+            // Then, first unit (intantiated) will march and we'll see if second unit's trigger marched
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE; // Prepare for march
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that just moves
+                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                // Card 2: Building that detects marching that happens on it's tile
+                Building marchDetectingBuilding = TestCardGenerator.CreateBuilding(2, "SENSOR_BUILDING", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
+                };
+                Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
+                triggerEffect.Add(TriggerType.ON_MARCH, [debugEffect]); // Means that when triggered, it'll push the debug effect
+                marchDetectingBuilding.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                marchDetectingBuilding.Triggers.Add(EffectLocation.CURRENT_TILE, triggerEffect); // Adds trigger specifically where building is currently located
+                // Setup
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Beginning of test loop will play the unit in same place as building or elsewhere
+                int buildingCoord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                int randomCoord;
+                do
+                {
+                    randomCoord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                } while (randomCoord == buildingCoord); // Get another random tile coord different to original
+                bool[] testinSameLocationCases = [true, false];
+                foreach (bool testinsameLocationCase in testinSameLocationCases)
+                {
+                    int unitCoord = testinsameLocationCase ? buildingCoord : randomCoord;
+                    sm.UNIT_PlayUnit(playerIndex, new UnitPlayContext() { Actor = marchingUnit, AbsoluteInitialTile = unitCoord }); // Manually insert unit
+                    sm.BUILDING_ConstructBuilding(playerIndex, new ConstructionContext() { AbsoluteConstructionTile = buildingCoord, Affected = marchDetectingBuilding }); // Manually insert building
+                    sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger useless debug event to properly terminate event stack
+                    int preMarchHash = sm.DetailedState.GetHashCode();
+                    StepResult res = sm.Step(); // This should trigger marching of units and such
+                    int postMarchHash = sm.DetailedState.GetHashCode();
+                    Assert.AreNotEqual(postMarchHash, preMarchHash);
+                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
+                    if (testinsameLocationCase)
+                    {
+                        Assert.IsNotNull(cpu);
+                    }
+                    else
+                    {
+                        Assert.IsNull(cpu);
+                    }
+                    // Finally revert march
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(preMarchHash, sm.DetailedState.GetHashCode());
+                    sm.UndoPreviousStep(); // Also undo unit/building injection
+                }
+            }
+        }
+        [TestMethod]
+        public void NoSelfTriggering()
+        {
+            // Verify that a unit can't trigger when it's an action its doing by itself (as it should be resolved by interactions
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE; // Prepare for march
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that just moves
+                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
+                };
+                Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
+                triggerEffect.Add(TriggerType.ON_MARCH, [debugEffect]); // Means that when triggered, it'll push the debug effect
+                marchingUnit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                marchingUnit.Triggers.Add(EffectLocation.CURRENT_TILE, triggerEffect); // Adds trigger specifically where building is currently located
+                // Setup
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Beginning of test will play the unit and make it march
+                sm.UNIT_PlayUnit(playerIndex, new UnitPlayContext() { Actor = marchingUnit, AbsoluteInitialTile = 0 }); // Manually insert unit
+                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger useless debug event to properly terminate event stack
+                int preMarchHash = sm.DetailedState.GetHashCode();
+                StepResult res = sm.Step(); // This should trigger marching of units and such
+                int postMarchHash = sm.DetailedState.GetHashCode();
+                Assert.AreNotEqual(postMarchHash, preMarchHash);
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
+                Assert.IsNull(cpu); // Ensure unit hasn't triggered
+                // Finally revert march
+                sm.UndoPreviousStep();
+                Assert.AreEqual(preMarchHash, sm.DetailedState.GetHashCode());
+                sm.UndoPreviousStep(); // Also undo unit/building injection
+            }
+        }
     }
 }

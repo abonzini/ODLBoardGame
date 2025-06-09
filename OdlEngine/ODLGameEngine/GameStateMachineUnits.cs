@@ -25,7 +25,7 @@
         /// <param name="player">Player owner</param>
         /// <param name="playContext">Context of playability</param>
         /// <returns></returns>
-        Unit UNIT_PlayUnit(int player, UnitPlayContext playContext)
+        public Unit UNIT_PlayUnit(int player, UnitPlayContext playContext)
         {
             // Clone unit, set player
             Unit newSpawnedUnit = (Unit)playContext.Actor.Clone();
@@ -64,9 +64,11 @@
                 marchCtx.FirstTileMarch = true;
                 while (marchCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
-                    // About to start march in the current tile, begin march check
-                    // TODO SEND TRIGGER HERE
-                    if (DetailedState.BoardState.Tiles[unit.TileCoordinate].GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop march here (and also attack)
+                    // About to start march in the current tile
+                    TRIGINTER_ProcessTrigger(TriggerType.ON_MARCH, DetailedState.BoardState.Tiles[unit.TileCoordinate], marchCtx); // Trigger
+                    if (marchCtx.CurrentMovement <= 0) // Re-check because it may have been altered by a card effect
+                    { }
+                    else if (DetailedState.BoardState.Tiles[unit.TileCoordinate].GetPlacedEntities(EntityType.UNIT, opponentId).Count > 0) // If enemy unit in tile, will stop march here (and also attack)
                     {
                         marchCtx.CurrentMovement = 0;
                         Unit enemyUnit = (Unit)DetailedState.EntityData[lane.GetPlacedEntities(EntityType.UNIT, opponentId).First()] ?? throw new Exception("There was no enemy unit in this tile after all, discrepancy in internal data!"); // Get first enemy found in the tile

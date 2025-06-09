@@ -79,6 +79,7 @@ These are simple to describe in any card, as a Dictionary called ```Interactions
 For example cards that are designed as "At the end of turn do X", or "When a player does X, this card does Y".
 However triggers are also used when entities have location-based buffing effects or similar, as the buff has to be triggered every time a separate entity enters/exists the place.
 These are described weirdly, as entities that can have Triggers (all but spells) describe it as a Dictionary called ```Triggers``` where the keys are the **"Effect Location"** where the trigger(s) will be attached (can be either absolute places or relative, position-based ones, options seen in ```EffectLocation``` enum), and the values are *another* dictionary this time with all the possible **Trigger Types** (optios below) and then the sequence (list) of effects. Basically they're similar to interactions but with an extra layer as they're subscribed to a specific location in the game.
+Units do not trigger themselves if the current actor of a trigger, this is to avoid effect duplication with some interactions.
 
 As you can see this is the more complex property of cards, so I really suggest taking a look at the ```.jsons``` and avoid doing these manually and just go through the Card Generator app if need to add or edit.
 
@@ -90,7 +91,10 @@ As you can see this is the more complex property of cards, so I really suggest t
 
 ## Trigger Types
 
-Coming soon
+As the triggers happen when "another entity" is doing something, Actor/Affected is likely to be a different entity to the Activated Trigger entity, although it may also be the same one.
+
+- ```ON_MARCH``` Triggers (currently only in Tiles) when a Unit marches in that tile. Specifically, it triggers when unit is about to move to escape the current tile.
+**ACTOR:** The unit marching.
 
 # Effect Mechanism
 
@@ -214,6 +218,8 @@ Useful for effect with complex conditions where a part of the effect is conditio
     - ```ACC``` the **Accumulator**'s value in the effect processing CPU
     - ```TARGET_HP```/```TAGET_ATTACK```/```TARGET_MOVEMENT```/```TARGET_MOVEMENT_DENOMINATOR``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, the total value of the stat
     - ```PLAYERS_GOLD``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, the owner's gold of those targets
+    - ```MARCH_START_FLAG``` when on a marching context, this is a *readonly* flag that is $\neq 0$ if this is the first advancement of the current march, and $=0$ if not
+    - ```MARCH_CURRENT_MOVEMENT``` when on a marching context, this is the number of remaining steps of the current march.
 - ```MultiInputProcessing``` for when an Input is an element present in a reference list with many items (e.g. after search)
     - ```FIRST``` checks only the first element
     - ```COUNT``` doesn't check any element, just gives the number of elements on the list of references
