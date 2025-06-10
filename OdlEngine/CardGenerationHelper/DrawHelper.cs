@@ -644,20 +644,23 @@ namespace CardGenerationHelper
                     return row + offset;
                 }
                 // Ok now I need to plot stuff, plot lane by lane
+                Color plainsColor = Color.FromArgb(255, 247, 171);
+                Color forestColor = Color.FromArgb(171, 255, 172);
+                Color mountainColor = Color.FromArgb(255, 212, 171);
                 for (int i = 0; i < GameConstants.PLAINS_NUMBER_OF_TILES; i++)
                 {
                     Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(i, LaneID.PLAINS));
-                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, plainsColor, DrawConstants.tileBorder, transparentBrush);
                 }
                 for (int i = 0; i < GameConstants.FOREST_NUMBER_OF_TILES; i++)
                 {
                     Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(i, LaneID.FOREST));
-                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, forestColor, DrawConstants.tileBorder, transparentBrush);
                 }
                 for (int i = 0; i < GameConstants.MOUNTAIN_NUMBER_OF_TILES; i++)
                 {
                     Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(i, LaneID.MOUNTAIN));
-                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, transparentBrush);
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, mountainColor, DrawConstants.tileBorder, transparentBrush);
                 }
                 // And now the actual BP
                 int[] bp = buildingInfo.PlainsBp;
@@ -666,7 +669,7 @@ namespace CardGenerationHelper
                     for (int i = 0; i < bp.Length; i++)
                     {
                         Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(bp[i], LaneID.PLAINS));
-                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, plainsColor, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = plainsColor });
                         float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
                         Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
                         DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
@@ -678,7 +681,7 @@ namespace CardGenerationHelper
                     for (int i = 0; i < bp.Length; i++)
                     {
                         Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(bp[i], LaneID.FOREST));
-                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, forestColor, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = forestColor });
                         float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
                         Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
                         DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
@@ -690,7 +693,7 @@ namespace CardGenerationHelper
                     for (int i = 0; i < bp.Length; i++)
                     {
                         Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(bp[i], LaneID.MOUNTAIN));
-                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, Color.White, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = Color.White });
+                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, mountainColor, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = mountainColor });
                         float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
                         Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
                         DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
