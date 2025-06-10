@@ -93,8 +93,10 @@ As you can see this is the more complex property of cards, so I really suggest t
 
 As the triggers happen when "another entity" is doing something, Actor/Affected is likely to be a different entity to the Activated Trigger entity, although it may also be the same one.
 
-- ```ON_MARCH``` Triggers (currently only in Tiles) when a Unit marches in that tile. Specifically, it triggers when unit is about to move to escape the current tile.
+- ```ON_MARCH``` Triggers (currently only in **Tiles**) when a Unit marches in that tile. Specifically, it triggers when unit is about to move to escape the current tile.
 **ACTOR:** The unit marching.
+- ```ON_END_OF_TURN``` Triggers (currently only in **Board**) a player ends their turn.
+**ACTOR:** The player ending their turn.
 
 # Effect Mechanism
 

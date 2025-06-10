@@ -3,7 +3,6 @@ Ongoing tasks in order of priority:
 	- Add card #6. gets actor enemy, asserts, and kills
 - 7
 - 8:
-	- End of turn trigger with turn player
 	- Direct effect damage handler
 	- Tests, UI,
 	- Do #8

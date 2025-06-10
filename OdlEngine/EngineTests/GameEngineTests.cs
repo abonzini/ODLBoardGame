@@ -212,11 +212,10 @@ namespace EngineTests
             {
                 int playerIndex = (int)id;
                 int otherPlayerIndex = 1 - playerIndex;
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = id
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = id;
+
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 // Ensure all in order before EOT

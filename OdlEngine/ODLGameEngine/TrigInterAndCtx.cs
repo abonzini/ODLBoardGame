@@ -18,7 +18,8 @@ namespace ODLGameEngine
     public enum TriggerType
     {
         ON_DEBUG_TRIGGERED,
-        ON_MARCH
+        ON_MARCH,
+        ON_END_OF_TURN
     }
     // Effects
     /// <summary>
@@ -158,6 +159,12 @@ namespace ODLGameEngine
     {
         public IngameEntity ActivatedEntity = null;
         public IngameEntity Actor = null;
+    }
+    /// <summary>
+    /// Context when there's end of turn effects happening. Actor is the player ending their turn
+    /// </summary>
+    public class EndOfTurnContext : EffectContext
+    {
     }
     /// <summary>
     /// Context regarding playing a card! This is helpful to determine both how a card could be played

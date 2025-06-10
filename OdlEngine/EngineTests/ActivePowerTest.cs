@@ -80,17 +80,13 @@ namespace EngineTests
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
-                Player pl = new Player()
-                {
-                    PowerAvailable = false // Neither playe can use their power at this stage
-                };
-                pl.Deck.InitializeDeck("1,1,1"); // Add 3 cards just to avoid deck out
-                GameStateStruct state = new GameStateStruct
-                {
-                    CurrentState = States.ACTION_PHASE,
-                    CurrentPlayer = 1 - player,
-                    PlayerStates = [pl, pl],
-                };
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.PlayerStates[0].PowerAvailable = false; // Neither playe can use their power at this stage
+                state.PlayerStates[1].PowerAvailable = false;
+                state.PlayerStates[0].Deck.InitializeDeck("1,1,1"); // Add 3 cards just to avoid deck out
+                state.PlayerStates[1].Deck.InitializeDeck("1,1,1");
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = 1 - player;
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 sm.EndTurn(); // End opposing player's turn

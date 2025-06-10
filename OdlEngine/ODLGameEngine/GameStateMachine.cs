@@ -139,7 +139,14 @@
                 {
                     return null;
                 }
-                // HERE BE EOT EFFECTS
+                // EOT effects
+                LivingEntity currentPlayer = DetailedState.EntityData[(int)DetailedState.CurrentPlayer];
+                EndOfTurnContext eotCtx = new EndOfTurnContext()
+                {
+                    Actor = currentPlayer
+                };
+                TRIGINTER_ProcessTrigger(TriggerType.ON_END_OF_TURN, DetailedState.BoardState, eotCtx); // Trigger EOT event
+                // Transition proper
                 ENGINE_SetNextPlayer(GetNextPlayer()); // Swap player
                 ENGINE_ChangeState(States.DRAW_PHASE); // Next is draw phase
             }

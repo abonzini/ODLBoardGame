@@ -1821,12 +1821,12 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Put a bunch of units (5) in random places
-                for(int i = 0; i<5; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     int coord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
                     Unit unitToSummon = (Unit)unit.Clone();
                     UnitPlayContext context = new UnitPlayContext()
-                    { 
+                    {
                         AbsoluteInitialTile = coord,
                         Actor = unit,
                     };

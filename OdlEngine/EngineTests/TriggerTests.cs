@@ -565,5 +565,57 @@ namespace EngineTests
                 sm.UndoPreviousStep(); // Also undo unit/building injection
             }
         }
+        [TestMethod]
+        public void OnEotTriggerTesting()
+        {
+            // Testing of end of turn triggering
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that just moves
+                Unit eotSensor = TestCardGenerator.CreateUnit(1, "ETO_SENSOR_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
+                };
+                Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
+                triggerEffect.Add(TriggerType.ON_END_OF_TURN, [debugEffect]); // Means that when triggered, it'll push the debug effect
+                eotSensor.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
+                eotSensor.Triggers.Add(EffectLocation.BOARD, triggerEffect); // Adds trigger specifically where building is currently located
+                cardDb.InjectCard(1, eotSensor); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
+                // Setup
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // FIRST: EOT and ensure nothing happens
+                // Simply end turn and see if thing had been pushed
+                int preEotHash = sm.DetailedState.GetHashCode();
+                StepResult res = sm.EndTurn();
+                Assert.AreNotEqual(preEotHash, sm.DetailedState.GetHashCode());
+                Assert.AreEqual(States.DRAW_PHASE, sm.DetailedState.CurrentState); // Ensure EOT happened ok
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
+                Assert.IsNull(cpu); // Ensure it's not here
+                // Finally revert EOT
+                sm.UndoPreviousStep();
+                Assert.AreEqual(preEotHash, sm.DetailedState.GetHashCode());
+                // SECOND: EOT and ensure now it's triggered
+                sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play the unit anywhere idc
+                preEotHash = sm.DetailedState.GetHashCode();
+                res = sm.EndTurn();
+                Assert.AreNotEqual(preEotHash, sm.DetailedState.GetHashCode());
+                Assert.AreEqual(States.DRAW_PHASE, sm.DetailedState.CurrentState); // Ensure EOT happened ok
+                cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
+                Assert.IsNotNull(cpu); // Ensure I got it now
+                // Finally revert EOT
+                sm.UndoPreviousStep();
+                Assert.AreEqual(preEotHash, sm.DetailedState.GetHashCode());
+            }
+        }
     }
 }
