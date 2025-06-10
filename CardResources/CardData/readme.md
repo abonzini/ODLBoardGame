@@ -149,12 +149,12 @@ If you want to change the reference of the search, you may need to do a ```SELEC
     When looking for entities on a lane, the system traverses the lane in order determined by $n$ sign.
     In case of multiple entities in the same position, the unit that was played first is targeted first.
 
-- ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes. Multiple units may be summoned if multiple lanes are defined, and/or if there's multiple references.
+- ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes. Multiple units may be summoned if there's multiple references.
 This allows crazy effects like *"When a unit dies, play a skeleton in the opponent's side"* or "Play a shadow demon for every unit the opponent has in the same lane".
 
     Parameters:
     - ```TargetPlayer``` is the player who will own the unit (relative to reference entity)
-    - ```EffectLocation``` is one or more lane targets where the card(s) will be summoned
+    - ```EffectLocation``` is the location where the card(s) will be summoned w.r.t. to each reference on the reference list
     - ```Input``` will contain the card number of the unit summoned
 
 - ```MODIFIER``` A mathematical operation, where an Output is changed, using the Input and an operation.
@@ -173,6 +173,8 @@ Useful for effect with complex conditions where a part of the effect is conditio
     Parameters:
     - ```Input``` contains the value $n$ to assert
     - ```ModifierOperation``` can be used but it only checks the ```NOT``` operation, in which case the asser asserts $\neq 0$. Other options just assert $=0$.
+
+- ```KILL_ENTITIES``` insta-kills (no damage step) each of the references on the current reference list
 
 ## Possible Parameter Values
 

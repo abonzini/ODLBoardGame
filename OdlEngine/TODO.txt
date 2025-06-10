@@ -1,8 +1,12 @@
 Ongoing tasks in order of priority:
 - 6:
-	- Instakill effect. move the "check if unit alive" effect to a "KILL" which then deinits
-	- Add instakill to effect, i.e. of targets. Ensure it goes through reversible
 	- Add card #6. gets actor enemy, asserts, and kills
+- 7
+- 8:
+	- End of turn trigger with turn player
+	- Direct effect damage handler
+	- Tests, UI,
+	- Do #8
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it

@@ -169,6 +169,13 @@
                             _ => (inputValue == 0)
                         };
                         break;
+                    case EffectType.KILL_ENTITIES:
+                        foreach (int entityTarget in cpu.ReferenceEntities)
+                        {
+                            LivingEntity nextEntity = (LivingEntity)FetchEntity(entityTarget);
+                            LIVINGENTITY_Kill(nextEntity);
+                        }
+                        break;
                     default:
                         throw new NotImplementedException("Effect type not implemented yet");
                 }

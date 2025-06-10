@@ -33,7 +33,8 @@ namespace ODLGameEngine
         FIND_ENTITIES,
         SUMMON_UNIT,
         MODIFIER,
-        ASSERT
+        ASSERT,
+        KILL_ENTITIES
     }
     /// <summary>
     /// When searchign for a target, which location is searched

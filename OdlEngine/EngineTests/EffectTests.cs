@@ -1783,5 +1783,68 @@ namespace EngineTests
                 }
             }
         }
+        [TestMethod]
+        public void KillEffect()
+        {
+            // Summons units and then kills them all
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                Random _rng = new Random();
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                // Card 2: Kill skill
+                Skill skill = TestCardGenerator.CreateSkill(2, "KILL_ALL", 0, PlayTargetLocation.BOARD);
+                Effect searchAllUnits = new Effect()
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    EffectLocation = EffectLocation.BOARD,
+                    TargetPlayer = EntityOwner.BOTH,
+                    TargetType = EntityType.UNIT,
+                    SearchCriterion = SearchCriterion.ALL,
+                };
+                Effect killAllUnits = new Effect()
+                {
+                    EffectType = EffectType.KILL_ENTITIES,
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchAllUnits, killAllUnits]);
+                cardDb.InjectCard(2, skill);
+                // Setup
+                state.PlayerStates[playerIndex].Hand.InsertCard(2); // Add card to hand
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Put a bunch of units (5) in random places
+                for(int i = 0; i<5; i++)
+                {
+                    int coord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                    Unit unitToSummon = (Unit)unit.Clone();
+                    UnitPlayContext context = new UnitPlayContext()
+                    { 
+                        AbsoluteInitialTile = coord,
+                        Actor = unit,
+                    };
+                    sm.UNIT_PlayUnit(playerIndex, context);
+                }
+                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Finalize event stack cleanly
+                // Pre kill test
+                Assert.AreEqual(5, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count());
+                int preKillHash = sm.DetailedState.GetHashCode();
+                // Play card, kill
+                sm.PlayFromHand(2, PlayTargetLocation.BOARD);
+                Assert.AreEqual(0, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count()); // All units dead
+                Assert.AreNotEqual(preKillHash, sm.DetailedState.GetHashCode());
+                // Revert
+                sm.UndoPreviousStep();
+                Assert.AreEqual(5, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count()); // All units dead
+                Assert.AreEqual(preKillHash, sm.DetailedState.GetHashCode());
+            }
+        }
     }
 }

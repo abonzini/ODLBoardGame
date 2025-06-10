@@ -47,13 +47,21 @@
         {
             if (entity.Hp.Total - entity.DamageTokens <= 0) // Entity is dead, will process death and return accordingly
             {
-                LIVINGENTITY_CleanUnit(entity);
+                LIVINGENTITY_Kill(entity);
                 return false;
             }
             else
             {
                 return true;
             }
+        }
+        /// <summary>
+        /// New wrapper to kill an entity. Allows to call this for instakill effects and some extra triggers
+        /// </summary>
+        /// <param name="entity"></param>
+        void LIVINGENTITY_Kill(LivingEntity entity)
+        {
+            LIVINGENTITY_CleanUnit(entity);
         }
         /// <summary>
         /// Unit needs to be killed for whatever reason, this process executes the action
@@ -68,7 +76,7 @@
             }
             else if (entity.EntityType == EntityType.PLAYER) // Somethign more sinister, this is a game-ending situation, a player just died
             {
-                throw new EndOfGameException($"{entity.Name} dead by HP", 1 - entity.Owner); // Other player wins!
+                throw new EndOfGameException($"{entity.Name} dead", 1 - entity.Owner); // Other player wins!
             }
             else
             {
