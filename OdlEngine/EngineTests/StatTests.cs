@@ -108,10 +108,10 @@ namespace EngineTests
             // Clone
             Min1Stat _clonedStat = (Min1Stat)_stat.Clone();
             // Does it conserve property?
-            _stat.Modifier = -10;
-            Assert.AreEqual(_stat.BaseValue, 10);
-            Assert.AreEqual(_stat.Modifier, -9);
-            Assert.AreEqual(_stat.Total, 1);
+            _clonedStat.Modifier = -10;
+            Assert.AreEqual(_clonedStat.BaseValue, 10);
+            Assert.AreEqual(_clonedStat.Modifier, -9);
+            Assert.AreEqual(_clonedStat.Total, 1);
         }
         [TestMethod]
         public void StatInEntityDeserializing()
