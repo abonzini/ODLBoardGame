@@ -15,7 +15,6 @@
     <Compile Remove="EffectTests.cs" />
     <Compile Remove="InteractionTests.cs" />
     <Compile Remove="TriggerTests.cs" />
-    <Compile Remove="UnitAndBattleTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
