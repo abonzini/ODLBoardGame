@@ -775,6 +775,149 @@ namespace EngineTests
                 }
             }
         }
+        [TestMethod]
+        public void VerifyValidEnemyUnitTargets()
+        {
+            // Like above but attempt to target enemy units
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Let's define valid tiles as the even ones
+                HashSet<int> validTiles = new HashSet<int>();
+                for (int i = 0; i < GameConstants.BOARD_NUMBER_OF_TILES; i++)
+                {
+                    if (i % 2 == 0) validTiles.Add(i); // Add even tiles
+                }
+                // Let's add random units
+                Unit theUnit = TestCardGenerator.CreateUnit(2, "TEST", 0, [], 1, 0, 1, 1);
+                int evenUnits = _rng.Next(2, 5);
+                int oddUnits = _rng.Next(2, 5);
+                HashSet<int> validUnits = new HashSet<int>();
+                HashSet<int> invalidUnits = new HashSet<int>();
+                int nextUniqueId = 2; // Next entity ID
+                for (int i = 0; i < evenUnits; i++)
+                {
+                    int nextCoord = _rng.Next(9) * 2;
+                    TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, otherPlayerIndex, (Unit)theUnit.Clone());
+                    validUnits.Add(nextUniqueId);
+                    nextUniqueId++;
+                }
+                for (int i = 0; i < oddUnits; i++)
+                {
+                    int nextCoord = (_rng.Next(9) * 2) + 1;
+                    TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, otherPlayerIndex, (Unit)theUnit.Clone());
+                    invalidUnits.Add(nextUniqueId);
+                    nextUniqueId++;
+                }
+                HashSet<int> allUnits = [.. validUnits, .. invalidUnits];
+                // Rest of init
+                CardFinder cardDb = new CardFinder();
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT);
+                boardTargetableSkill.TargetOwner = EntityOwner.OPPONENT;
+                cardDb.InjectCard(1, boardTargetableSkill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                Assert.AreEqual(evenUnits, res.ValidTargets.Count);
+                Assert.AreEqual(PlayOutcome.OK, res.PlayOutcome);
+                foreach (int unit in allUnits)
+                {
+                    if (validUnits.Contains(unit))
+                    {
+                        Assert.IsTrue(res.ValidTargets.Contains(unit));
+                    }
+                    else
+                    {
+                        Assert.IsFalse(res.ValidTargets.Contains(unit));
+                    }
+                }
+            }
+        }
+        [TestMethod]
+        public void VerifyPlayEnemyUnitTargets()
+        {
+            // Creates a skill with UNIT target, will be playable in even tiles
+            // Then, put a bunch of units in even tiles, and a bunch in odds, check it only plays in good ones
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Let's define valid tiles as the even ones
+                HashSet<int> validTiles = new HashSet<int>();
+                for (int i = 0; i < GameConstants.BOARD_NUMBER_OF_TILES; i++)
+                {
+                    if (i % 2 == 0) validTiles.Add(i); // Add even tiles
+                }
+                // Let's add random units
+                Unit theUnit = TestCardGenerator.CreateUnit(2, "TEST", 0, [], 1, 0, 1, 1);
+                int evenUnits = _rng.Next(2, 5);
+                int oddUnits = _rng.Next(2, 5);
+                HashSet<int> validUnits = new HashSet<int>();
+                HashSet<int> invalidUnits = new HashSet<int>();
+                int nextUniqueId = 2; // Next entity ID
+                for (int i = 0; i < evenUnits; i++)
+                {
+                    int nextCoord = _rng.Next(9) * 2;
+                    TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, otherPlayerIndex, (Unit)theUnit.Clone());
+                    validUnits.Add(nextUniqueId);
+                    nextUniqueId++;
+                }
+                for (int i = 0; i < oddUnits; i++)
+                {
+                    int nextCoord = (_rng.Next(9) * 2) + 1;
+                    TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, otherPlayerIndex, (Unit)theUnit.Clone());
+                    invalidUnits.Add(nextUniqueId);
+                    nextUniqueId++;
+                }
+                HashSet<int> allUnits = [.. validUnits, .. invalidUnits];
+                // Rest of init
+                CardFinder cardDb = new CardFinder();
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT);
+                boardTargetableSkill.TargetOwner = EntityOwner.OPPONENT;
+                Effect debugEvent = new Effect() { EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE };
+                boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
+                cardDb.InjectCard(1, boardTargetableSkill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                foreach (int unit in allUnits) // Check all units
+                {
+                    int prePlayHash = sm.DetailedState.GetHashCode();
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, unit); // Play in this target
+                    if (validUnits.Contains(unit)) // This was a valid target, ensure played correctly
+                    {
+                        CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2); // See if I got debug event
+                        // Asserts
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                        Assert.IsNotNull(cpu);
+                        Assert.AreEqual(unit, res.Item1.PlayedTarget);
+                        Assert.AreEqual(PlayOutcome.OK, res.Item1.PlayOutcome);
+                        // Reversion
+                        sm.UndoPreviousStep();
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    }
+                    else // Shouldn't have been able to be played here
+                    {
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                        Assert.IsNull(res.Item2);
+                        Assert.AreEqual(PlayOutcome.NO_TARGET_AVAILABLE, res.Item1.PlayOutcome);
+                    }
+                }
+            }
+        }
 
         // UNIT TARGETING, RELATIVE
         [TestMethod]
@@ -821,9 +964,7 @@ namespace EngineTests
                 HashSet<int> allUnits = [.. validUnits, .. invalidUnits];
                 if (player == CurrentPlayer.PLAYER_2) // Player 2 switches even units and odd units!
                 {
-                    HashSet<int> auxHashSet = validUnits;
-                    validUnits = invalidUnits;
-                    invalidUnits = auxHashSet;
+                    (invalidUnits, validUnits) = (validUnits, invalidUnits);
                 }
                 // Rest of init
                 CardFinder cardDb = new CardFinder();
@@ -891,9 +1032,7 @@ namespace EngineTests
                 HashSet<int> allUnits = [.. validUnits, .. invalidUnits];
                 if (player == CurrentPlayer.PLAYER_2) // Player 2 switches even units and odd units!
                 {
-                    HashSet<int> auxHashSet = validUnits;
-                    validUnits = invalidUnits;
-                    invalidUnits = auxHashSet;
+                    (invalidUnits, validUnits) = (validUnits, invalidUnits);
                 }
                 // Rest of init
                 CardFinder cardDb = new CardFinder();
