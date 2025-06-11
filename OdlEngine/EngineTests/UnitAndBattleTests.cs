@@ -21,7 +21,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: test unit with 1 in all stats, summonable anywhere
                 HashSet<int> allTiles = new HashSet<int>();
-                for(int i =0; i< GameConstants.BOARD_NUMBER_OF_TILES; i++)
+                for (int i = 0; i < GameConstants.BOARD_NUMBER_OF_TILES; i++)
                 {
                     allTiles.Add(i);
                 }
@@ -57,7 +57,7 @@ namespace EngineTests
                 Assert.AreEqual(boardHash, sm.DetailedState.BoardState.GetHashCode());
             }
         }
-        
+
         [TestMethod]
         public void UnitsAreIndependent() // Manually modify a unit, and check if next unit s independent of modified
         // THIS IS A SANITY TEST not actual gameplay that would happen like this
@@ -114,7 +114,7 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count, 0);
             }
         }
-        
+
         [TestMethod]
         public void SummonedUnitDiesIf0Hp()
         {
@@ -204,7 +204,7 @@ namespace EngineTests
                 int movement = _rng.Next(1, GameConstants.MOUNTAIN_NUMBER_OF_TILES); // Random movement unit, but want to make it so it never reaches castle
                 CardFinder cardDb = new CardFinder();
                 // Place unit in place, will try it in mountain (p0 in 10, p1 in 17)
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, 1, movement, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 1, movement, 1);
                 TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 10 : 17, 2, playerIndex, unit);
                 // Start simulation
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -251,7 +251,7 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 // Place units in place, will try it in mountain (p0 in 10, p1 in 17)
                 CardFinder cardDb = new CardFinder();
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4 , 10], 1, 0, 9, 1); // Max movement bc it's stopped by enemy anyway
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 9, 1); // Max movement bc it's stopped by enemy anyway
                 int beginningCoord = (playerIndex == 0) ? 10 : 17; // Where a player's unit begins
                 int intersectionCoord = 15; // Always the same intersection coord regardless
                 TestHelperFunctions.ManualInitEntity(state, beginningCoord, 2, playerIndex, (Unit)unit.Clone());
@@ -309,7 +309,7 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 // Will try this in all lanes!
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, 0, 9, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 9, 1);
                 int firstPlains = state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int lastPlains = state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
                 int firstForest = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
@@ -372,7 +372,7 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 // One unit in each lane
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, 0, 1, 9);
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 1, 9);
                 Unit unit1 = (Unit)unit.Clone();
                 Unit unit2 = (Unit)unit.Clone();
                 Unit unit3 = (Unit)unit.Clone();
@@ -524,8 +524,8 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 // Will try this in mountain as there's space!
                 CardFinder cardDb = new CardFinder();
-                Unit unit1 = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], hp, attack, 9, 1); // Gets to the end so it clashes
-                Unit unit2 = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0,4,10], hp, attack + 1, 3, 1); // Gets to the middle and waits there
+                Unit unit1 = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], hp, attack, 9, 1); // Gets to the end so it clashes
+                Unit unit2 = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0, 4, 10], hp, attack + 1, 3, 1); // Gets to the middle and waits there
                 int firstTile = (playerIndex == 0) ? 10 : 17;
                 int intersectionTile = 15;
                 TestHelperFunctions.ManualInitEntity(state, firstTile, 2, playerIndex, unit1); // Player unit advances
@@ -603,8 +603,8 @@ namespace EngineTests
                     state.CurrentPlayer = player;
                     CardFinder cardDb = new CardFinder();
                     // Will try this in mountain as there's space!
-                    Unit unit1 = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], hp, attackerStat, 9, 1); // Gets to the end so it clashes
-                    Unit unit2 = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0,4,10], hp, defenderStat, 3, 1); // Gets to the middle and waits there
+                    Unit unit1 = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], hp, attackerStat, 9, 1); // Gets to the end so it clashes
+                    Unit unit2 = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0, 4, 10], hp, defenderStat, 3, 1); // Gets to the middle and waits there
                     int firstTile = (playerIndex == 0) ? 10 : 17;
                     int intersectionTile = 15;
                     TestHelperFunctions.ManualInitEntity(state, firstTile, 2, playerIndex, unit1); // Player unit advances
@@ -666,7 +666,7 @@ namespace EngineTests
                 }
             }
         }
-        
+
         [TestMethod]
         public void TestMultipleWithoutBreakingAdvance()
         {
@@ -685,8 +685,8 @@ namespace EngineTests
                     state.CurrentPlayer = player;
                     CardFinder cardDb = new CardFinder();
                     // Inits the whole set
-                    Unit playerUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], stat, stat, 1, 1); // Gets to the end so it clashes
-                    Unit oppUnit = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0,4,10], stat, stat, 0, 1); // Gets to the middle and waits there
+                    Unit playerUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], stat, stat, 1, 1); // Gets to the end so it clashes
+                    Unit oppUnit = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0, 4, 10], stat, stat, 0, 1); // Gets to the middle and waits there
                     Unit unit1 = (Unit)playerUnit.Clone();
                     Unit unit2 = (Unit)playerUnit.Clone();
                     Unit unit3 = (Unit)playerUnit.Clone();
@@ -841,8 +841,8 @@ namespace EngineTests
                     state.CurrentPlayer = player;
                     CardFinder cardDb = new CardFinder();
                     // Inits all
-                    Unit oppUnit = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0,4,10], stat, stat, 0, 1); // Gets to the middle and waits there
-                    Unit playerUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], stat, stat, 1, 1); // Gets to the end so it clashes
+                    Unit oppUnit = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0, 4, 10], stat, stat, 0, 1); // Gets to the middle and waits there
+                    Unit playerUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], stat, stat, 1, 1); // Gets to the end so it clashes
                     Unit unit1 = (Unit)playerUnit.Clone();
                     Unit unit2 = (Unit)playerUnit.Clone();
                     Unit unit3 = (Unit)playerUnit.Clone();
@@ -944,7 +944,7 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = GameConstants.STARTING_HP;
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, attack, 9, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 9, 1);
                 LaneID target = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target, it doesn't really matter
                 int tileInitial = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, tileInitial, 2, playerIndex, unit); // Unit in place
@@ -1007,7 +1007,7 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = GameConstants.STARTING_HP;
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 2, 1, 9, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 2, 1, 9, 1);
                 LaneID target = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target, it doesn't really matter
                 int tileInitial = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int tileFinal = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex);
@@ -1066,7 +1066,7 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex).GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
             }
         }
-        
+
         [TestMethod]
         public void ExactDirectDamageKill()
         {
@@ -1085,7 +1085,7 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = attack; // Opp has less HP this time
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, attack, 9, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 9, 1);
                 LaneID target = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target, it doesn't really matter
                 int tileInitial = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, tileInitial, 2, playerIndex, (Unit)unit.Clone()); // Unit in place
@@ -1158,7 +1158,7 @@ namespace EngineTests
                 state.PlayerStates[otherPlayerIndex].Hp.BaseValue = attack - 1; // Opp has less HP this time
                 // Will try this in any lane
                 CardFinder cardDb = new CardFinder();
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, attack, 9, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 9, 1);
                 LaneID target = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target, it doesn't really matter
                 int tileInitial = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 TestHelperFunctions.ManualInitEntity(state, tileInitial, 2, playerIndex, (Unit)unit.Clone()); // Unit in place
@@ -1232,7 +1232,7 @@ namespace EngineTests
                     state.PlayerStates[otherPlayerIndex].Hp.BaseValue = 6; // Opp has 6HP which is pretty handy for this test
                     // In all lanes, I summon units
                     CardFinder cardDb = new CardFinder();
-                    Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, attack, 9, 1);
+                    Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 9, 1);
                     int plainsInitial = state.BoardState.GetLane(LaneID.PLAINS).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                     int forestInitial = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                     int mountainInitial = state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
@@ -1335,10 +1335,10 @@ namespace EngineTests
                     state.PlayerStates[otherPlayerIndex].Hand.InsertCard(1); // Add unit too
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, attack, 2, 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 2, 1);
                 CardFinder cardDb = new CardFinder(); // Card holder
                 cardDb.InjectCard(1, testUnit); // Add to cardDb
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0,4,10], attack + 1);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], attack + 1);
                 testBldg.Owner = otherPlayerIndex;
                 // Initialize building in first tile
                 int firstTileCoord = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
@@ -1390,8 +1390,8 @@ namespace EngineTests
                     state.PlayerStates[otherPlayerIndex].Hand.InsertCard(0);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, attack, 2, 1);
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0,4,10], attack + 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 2, 1);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], attack + 1);
                 Lane lane = state.BoardState.GetLane(target);
                 int firstTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int secondTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
@@ -1449,8 +1449,8 @@ namespace EngineTests
                     state.PlayerStates[otherPlayerIndex].Hand.InsertCard(0);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0,4,10], 1, attack, 2, 1);
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0,4,10], attack);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 2, 1);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], attack);
                 Lane lane = state.BoardState.GetLane(target);
                 int firstTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int secondTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);

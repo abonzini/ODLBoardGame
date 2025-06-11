@@ -210,6 +210,14 @@
                                     // Check all of the units in a tile
                                     foreach (int entity in DetailedState.BoardState.Tiles[possibleTarget].GetPlacedEntities(typeToLookFor, entityOwnerCheck))
                                     {
+                                        if (cardData.EntityType == EntityType.BUILDING)
+                                        {
+                                            // Specifically for building construction, need to ensure there's no building already here...
+                                            if (DetailedState.BoardState.Tiles[possibleTarget].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
+                                            {
+                                                continue; // So if there's a building already, skip this tile asap
+                                            }
+                                        }
                                         // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
                                         resultingPlayContext.ValidTargets.Add(entity);
                                     }
@@ -220,10 +228,23 @@
                         {
                             if (entityOwnerCheck == -1 || entityOwnerCheck == foundEntity.Owner) // Check to make sure it's the same ownership I'm looking for
                             {
-                                if (tilesToCheck.Contains(((PlacedEntity)foundEntity).TileCoordinate)) // Check if unit in a valid tile
+                                int tileCandidate = ((PlacedEntity)foundEntity).TileCoordinate;
+                                if (tilesToCheck.Contains(tileCandidate)) // Check if unit in a valid tile
                                 {
-                                    // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
-                                    resultingPlayContext.ValidTargets.Add(onlyRelevantTarget);
+                                    bool buildingCheckPassed = true;
+                                    if (cardData.EntityType == EntityType.BUILDING)
+                                    {
+                                        // Specifically for building construction, need to ensure there's no building already here...
+                                        if (DetailedState.BoardState.Tiles[tileCandidate].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
+                                        {
+                                            buildingCheckPassed = false; // So if there's a building already, skip this tile asap
+                                        }
+                                    }
+                                    if (buildingCheckPassed)
+                                    {
+                                        // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
+                                        resultingPlayContext.ValidTargets.Add(onlyRelevantTarget);
+                                    }
                                 }
                             }
                         }
