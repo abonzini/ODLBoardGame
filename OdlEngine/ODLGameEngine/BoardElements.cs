@@ -333,7 +333,7 @@ namespace ODLGameEngine
         public Board()
         {
             ElementType = BoardElementType.BOARD;
-            int numberOfTiles = GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES;
+            int numberOfTiles = GameConstants.BOARD_NUMBER_OF_TILES;
             Tiles = new Tile[numberOfTiles]; // Inits all the tiles
             for (int i = 0; i < numberOfTiles; i++)
             {
@@ -374,7 +374,7 @@ namespace ODLGameEngine
             {
                 return ForestLane;
             }
-            else if (tileCoord < (GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES))
+            else if (tileCoord < (GameConstants.BOARD_NUMBER_OF_TILES))
             {
                 return MountainLane;
             }

@@ -355,7 +355,14 @@
                     skillData.UniqueId = -1; // Default id for a skill (they don't persist after played)
                     return skillData;
                 case EntityType.BUILDING:
-                    Building newBuilding = BUILDING_ConstructBuilding((int)DetailedState.CurrentPlayer, playCtx);
+                    Unit constructor = (Unit)DetailedState.EntityData[playCtx.PlayedTarget];
+                    ConstructionContext constrCtx = new ConstructionContext() // This is complex so I need to make sure its ok
+                    {
+                        Actor = constructor, // Because target was building
+                        Affected = (Building)entity,
+                        AbsoluteConstructionTile = constructor.TileCoordinate
+                    };
+                    Building newBuilding = BUILDING_ConstructBuilding((int)DetailedState.CurrentPlayer, constrCtx);
                     PLAYABLE_RegisterOnPlayTrigger(newBuilding, playCtx); // If building has triggers on play location, register them
                     return newBuilding;
                 default:

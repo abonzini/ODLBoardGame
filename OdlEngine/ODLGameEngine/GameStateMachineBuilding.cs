@@ -6,18 +6,17 @@
         /// Constructs a building, given a player owner and the constructionContext that has all the data necessary for building to appear
         /// </summary>
         /// <param name="player">Player who'll own the building</param>
-        /// <param name="playContext">Playability context</param>
+        /// <param name="constructionContext">Construction context to separate unit target from actual tile</param>
         /// <returns>The initialised building</returns>
-        public Building BUILDING_ConstructBuilding(int player, PlayContext playContext)
+        public Building BUILDING_ConstructBuilding(int player, ConstructionContext constructionContext)
         {
             // Clone building
-            Building newSpawnedBuilding = (Building)playContext.Actor.Clone();
+            Building newSpawnedBuilding = (Building)constructionContext.Affected.Clone();
             newSpawnedBuilding.Owner = player; // Building owner
             // Add to board
             LIVINGENTITY_InitializeEntity(newSpawnedBuilding);
             // Places building in new coordinate
-            Unit buildingUnit = (Unit)DetailedState.EntityData[playContext.PlayedTarget]; // Building target will be the builder unit
-            LIVINGENTITY_InsertInTile(newSpawnedBuilding, buildingUnit.TileCoordinate);
+            LIVINGENTITY_InsertInTile(newSpawnedBuilding, constructionContext.AbsoluteConstructionTile);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             LIVINGENTITY_CheckIfUnitAlive(newSpawnedBuilding);
             // TODO: Construction events

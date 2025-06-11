@@ -19,7 +19,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect summonEffect = new Effect()
                 {
                     EffectType = EffectType.SUMMON_UNIT, // Summons unit
@@ -29,7 +29,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [summonEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Card 2: placeholder simple unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, [], 1, 1, 1, 1));
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -45,15 +45,15 @@ namespace EngineTests
                 foreach (EntityOwner playerTarget in playerTargets)
                 {
                     int ownerPlayer = (playerTarget == EntityOwner.OWNER) ? playerIndex : 1 - playerIndex;
-                    PlayTargetLocation[] laneOptions = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
-                    foreach (PlayTargetLocation location in laneOptions)
+                    LaneID[] laneOptions = [LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN];
+                    foreach (LaneID location in laneOptions)
                     {
                         // Summon effect in one of each lane
                         EffectLocation laneTarget = location switch
                         {
-                            PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
-                            PlayTargetLocation.FOREST => EffectLocation.FOREST,
-                            PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                            LaneID.PLAINS => EffectLocation.PLAINS,
+                            LaneID.FOREST => EffectLocation.FOREST,
+                            LaneID.MOUNTAIN => EffectLocation.MOUNTAIN,
                             _ => throw new Exception("Invalid location for test")
                         };
                         summonEffect.EffectLocation = laneTarget;
@@ -68,7 +68,7 @@ namespace EngineTests
                         Assert.AreEqual(state.BoardState.ForestLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         Assert.AreEqual(state.BoardState.MountainLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 0);
                         // Play
-                        Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the card
+                        Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, 0); // Play the card
                         Assert.AreEqual(PlayOutcome.OK, playRes.Item1.PlayOutcome);
                         Assert.IsNotNull(playRes.Item2);
                         // Hash assert
@@ -78,12 +78,12 @@ namespace EngineTests
                         // Location assert
                         Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, 1);
                         Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, 1);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.PLAINS) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.FOREST) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.MOUNTAIN) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.PLAINS) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.ForestLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.FOREST) ? 1 : 0);
-                        Assert.AreEqual(state.BoardState.MountainLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, location.HasFlag(PlayTargetLocation.MOUNTAIN) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, (location == LaneID.PLAINS) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, (location == LaneID.FOREST) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, (location == LaneID.MOUNTAIN) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.PlainsLane.GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, (location == LaneID.PLAINS) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.ForestLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, (location == LaneID.FOREST) ? 1 : 0);
+                        Assert.AreEqual(state.BoardState.MountainLane.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, ownerPlayer).GetPlacedEntities(EntityType.UNIT, ownerPlayer).Count, (location == LaneID.MOUNTAIN) ? 1 : 0);
                         // Revert
                         sm.UndoPreviousStep();
                         Assert.AreEqual(prePlayHash, state.GetHashCode());
@@ -114,7 +114,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that summons a friend in its own tile
-                Unit summonerUnit = TestCardGenerator.CreateUnit(1, "SUMMONER", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit summonerUnit = TestCardGenerator.CreateUnit(1, "SUMMONER", 0, [0, 3, 4, 9, 10, 17], 1, 0, 1, 1);
                 Effect summonEffect = new Effect()
                 {
                     EffectType = EffectType.SUMMON_UNIT, // Summons unit
@@ -126,14 +126,14 @@ namespace EngineTests
                 summonerUnit.Interactions.Add(InteractionType.WHEN_PLAYED, [summonEffect]); // Add interaction to card
                 cardDb.InjectCard(1, summonerUnit); // Add to cardDb
                 // Card 2: placeholder simple unit
-                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1));
+                cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1));
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add summoner card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Test begins
                 state = sm.DetailedState;
                 // Play unit in a random lane
-                PlayTargetLocation lane = (PlayTargetLocation)(1 << _rng.Next(GameConstants.BOARD_NUMBER_OF_LANES));
+                LaneID lane = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 Lane laneContext = state.BoardState.GetLane(lane);
                 Tile tileContext = laneContext.GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 // Pre play tests
@@ -142,7 +142,7 @@ namespace EngineTests
                 Assert.AreEqual(laneContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0);
                 Assert.AreEqual(tileContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 0);
                 // Summon unit
-                sm.PlayFromHand(1, lane);
+                sm.PlayFromHand(1, 0);
                 Assert.AreEqual(2, state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 2); // Now there's 2 units!
                 Assert.AreEqual(2, laneContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 2);
                 Assert.AreEqual(2, tileContext.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 2);
@@ -173,7 +173,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -187,12 +187,21 @@ namespace EngineTests
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
-                int lane = _rng.Next(0, 3);
-                PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
-                lane++; lane %= 3;
-                PlayTargetLocation otherLane1 = (PlayTargetLocation)(1 << lane); // Get the other lanes for extra testing
-                lane++; lane %= 3;
-                PlayTargetLocation otherLane2 = (PlayTargetLocation)(1 << lane);
+                LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
+                LaneID otherLane1 = targetLocation switch
+                {
+                    LaneID.PLAINS => LaneID.FOREST,
+                    LaneID.FOREST => LaneID.MOUNTAIN,
+                    LaneID.MOUNTAIN => LaneID.PLAINS,
+                    _ => throw new Exception("No more lanes")
+                };
+                LaneID otherLane2 = otherLane1 switch
+                {
+                    LaneID.PLAINS => LaneID.FOREST,
+                    LaneID.FOREST => LaneID.MOUNTAIN,
+                    LaneID.MOUNTAIN => LaneID.PLAINS,
+                    _ => throw new Exception("No more lanes")
+                };
                 int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
                 int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
@@ -219,20 +228,23 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set of targeting tests
                 searchEffect.SearchCriterion = SearchCriterion.ALL; // Search for all units in board, no weird lane situations yet
-                List<PlayTargetLocation> targetLocations = [PlayTargetLocation.BOARD, targetLocation, otherLane1, otherLane2];
+                EffectLocation getFromLane(LaneID lane)
+                {
+                    return lane switch
+                    {
+                        LaneID.PLAINS => EffectLocation.PLAINS,
+                        LaneID.FOREST => EffectLocation.FOREST,
+                        LaneID.MOUNTAIN => EffectLocation.MOUNTAIN,
+                        _ => throw new Exception("No more lanes")
+                    };
+                }
+                List<EffectLocation> targetLocations = [EffectLocation.BOARD, getFromLane(targetLocation), getFromLane(otherLane1), getFromLane(otherLane2)];
                 List<int> directionOptions = [0, -1];
                 List<EntityOwner> ownerOptions = [EntityOwner.OWNER, EntityOwner.OPPONENT];
                 List<EntityType> entityOptions = [EntityType.UNIT, EntityType.BUILDING, EntityType.PLAYER];
-                foreach (PlayTargetLocation loc in targetLocations)
+                foreach (EffectLocation loc in targetLocations)
                 {
-                    searchEffect.EffectLocation = loc switch
-                    {
-                        PlayTargetLocation.BOARD => EffectLocation.BOARD,
-                        PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
-                        PlayTargetLocation.FOREST => EffectLocation.FOREST,
-                        PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
-                        _ => throw new Exception("An invalid location for this test")
-                    };
+                    searchEffect.EffectLocation = loc;
                     foreach (int dir in directionOptions)
                     {
                         searchEffect.TempVariable = dir;
@@ -261,8 +273,8 @@ namespace EngineTests
                                 // Pre-play prep
                                 int expectedEntityNumber = 0;
                                 // Units and buildings are found only in a specific lane
-                                if (searchEffect.TargetType.HasFlag(EntityType.UNIT) && !(loc == otherLane1 || loc == otherLane2)) expectedEntityNumber++;
-                                if (searchEffect.TargetType.HasFlag(EntityType.BUILDING) && !(loc == otherLane1 || loc == otherLane2)) expectedEntityNumber++;
+                                if (searchEffect.TargetType.HasFlag(EntityType.UNIT) && !(loc == getFromLane(otherLane1) || loc == getFromLane(otherLane2))) expectedEntityNumber++;
+                                if (searchEffect.TargetType.HasFlag(EntityType.BUILDING) && !(loc == getFromLane(otherLane1) || loc == getFromLane(otherLane2))) expectedEntityNumber++;
                                 if (searchEffect.TargetType.HasFlag(EntityType.PLAYER)) expectedEntityNumber++;
                                 expectedEntityNumber *= searchEffect.TargetPlayer switch // Duplicated if both, 0 if none
                                 {
@@ -273,7 +285,7 @@ namespace EngineTests
                                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                                 int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                                 // Play
-                                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                                 Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                                 Assert.IsNotNull(cpu);
@@ -329,7 +341,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.ALL_LANES);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0, 1, 2], CardTargetingType.LANE);
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -343,12 +355,21 @@ namespace EngineTests
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
-                int lane = _rng.Next(0, 3);
-                PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
-                lane++; lane %= 3;
-                PlayTargetLocation otherLane1 = (PlayTargetLocation)(1 << lane); // Get the other lanes for extra testing
-                lane++; lane %= 3;
-                PlayTargetLocation otherLane2 = (PlayTargetLocation)(1 << lane);
+                LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
+                LaneID otherLane1 = targetLocation switch
+                {
+                    LaneID.PLAINS => LaneID.FOREST,
+                    LaneID.FOREST => LaneID.MOUNTAIN,
+                    LaneID.MOUNTAIN => LaneID.PLAINS,
+                    _ => throw new Exception("No more lanes")
+                };
+                LaneID otherLane2 = otherLane1 switch
+                {
+                    LaneID.PLAINS => LaneID.FOREST,
+                    LaneID.FOREST => LaneID.MOUNTAIN,
+                    LaneID.MOUNTAIN => LaneID.PLAINS,
+                    _ => throw new Exception("No more lanes")
+                };
                 int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
                 int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
@@ -379,15 +400,25 @@ namespace EngineTests
                 searchEffect.TempVariable = 0; // Forward
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
                 searchEffect.TargetType = EntityType.UNIT | EntityType.PLAYER | EntityType.BUILDING; // Search for all
-                List<PlayTargetLocation> playLocations = [targetLocation, otherLane1, otherLane2];
-                foreach (PlayTargetLocation loc in playLocations)
+                List<LaneID> playLocations = [targetLocation, otherLane1, otherLane2];
+                foreach (LaneID loc in playLocations)
                 {
                     // Pre-play prep
                     int expectedEntityNumber = (targetLocation == loc) ? 6 : 2; // 6 things if correct lane, otherwise only players
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, loc); // Play search card
+                    int getFromLane(LaneID lane)
+                    {
+                        return lane switch
+                        {
+                            LaneID.PLAINS => 0,
+                            LaneID.FOREST => 1,
+                            LaneID.MOUNTAIN => 2,
+                            _ => throw new Exception("No more lanes")
+                        };
+                    }
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, getFromLane(loc)); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                     Assert.IsNotNull(cpu);
@@ -434,7 +465,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -448,8 +479,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
-                int lane = _rng.Next(0, 3);
-                PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
+                LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
                 int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
@@ -478,9 +508,9 @@ namespace EngineTests
                 searchEffect.SearchCriterion = SearchCriterion.QUANTITY; // Search for first n elements (all ordered!)
                 searchEffect.EffectLocation = targetLocation switch
                 {
-                    PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
-                    PlayTargetLocation.FOREST => EffectLocation.FOREST,
-                    PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                    LaneID.PLAINS => EffectLocation.PLAINS,
+                    LaneID.FOREST => EffectLocation.FOREST,
+                    LaneID.MOUNTAIN => EffectLocation.MOUNTAIN,
                     _ => throw new Exception("Invalid for this test")
                 };
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
@@ -493,7 +523,7 @@ namespace EngineTests
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                     Assert.IsNotNull(cpu);
@@ -539,7 +569,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -553,8 +583,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
-                int lane = _rng.Next(0, 3);
-                PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
+                LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
                 int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
@@ -583,9 +612,9 @@ namespace EngineTests
                 searchEffect.SearchCriterion = SearchCriterion.ORDINAL; // Search for first n elements (all ordered!)
                 searchEffect.EffectLocation = targetLocation switch
                 {
-                    PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
-                    PlayTargetLocation.FOREST => EffectLocation.FOREST,
-                    PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                    LaneID.PLAINS => EffectLocation.PLAINS,
+                    LaneID.FOREST => EffectLocation.FOREST,
+                    LaneID.MOUNTAIN => EffectLocation.MOUNTAIN,
                     _ => throw new Exception("Invalid for this test")
                 };
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
@@ -597,7 +626,7 @@ namespace EngineTests
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                     Assert.IsNotNull(cpu);
@@ -642,7 +671,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -656,8 +685,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
-                int lane = _rng.Next(0, 3);
-                PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
+                LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
                 int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
@@ -686,9 +714,9 @@ namespace EngineTests
                 searchEffect.SearchCriterion = SearchCriterion.QUANTITY; // Search for first n elements (all ordered!)
                 searchEffect.EffectLocation = targetLocation switch
                 {
-                    PlayTargetLocation.PLAINS => EffectLocation.PLAINS,
-                    PlayTargetLocation.FOREST => EffectLocation.FOREST,
-                    PlayTargetLocation.MOUNTAIN => EffectLocation.MOUNTAIN,
+                    LaneID.PLAINS => EffectLocation.PLAINS,
+                    LaneID.FOREST => EffectLocation.FOREST,
+                    LaneID.MOUNTAIN => EffectLocation.MOUNTAIN,
                     _ => throw new Exception("Invalid for this test")
                 };
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
@@ -700,7 +728,7 @@ namespace EngineTests
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                     Assert.IsNotNull(cpu);
@@ -756,7 +784,7 @@ namespace EngineTests
                     newValue = _rng.Next(1, 100);
                 } while (newValue == statValue); // Will set to a new but different value
                 // Card 1: Skill that performs a search and buffs the specific stat of a unit
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect searchEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.FIND_ENTITIES,
@@ -780,8 +808,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Add stuff to board. In a random lane, add a few units for player
-                int lane = _rng.Next(0, 3);
-                PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
+                LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 Unit theUnit = new Unit() // This is the unit that'll be created
                 {
                     EntityType = EntityType.UNIT,
@@ -805,7 +832,7 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                     Assert.IsNotNull(cpu);
@@ -856,7 +883,7 @@ namespace EngineTests
                     buffValue = _rng.Next(2, 100);
                 } while (buffValue == statValue); // Will set to a new but different value
                 // Card 1: Skill that performs a search and buffs the specific stat of a unit
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect searchEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.FIND_ENTITIES,
@@ -880,8 +907,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Add stuff to board. In a random lane, add a few units for player
-                int lane = _rng.Next(0, 3);
-                PlayTargetLocation targetLocation = (PlayTargetLocation)(1 << lane); // Random lane
+                LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 Unit theUnit = new Unit() // This is the unit that'll be created
                 {
                     EntityType = EntityType.UNIT,
@@ -913,7 +939,7 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                     Assert.IsNotNull(cpu);
@@ -948,7 +974,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit with very basic stats
-                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Effect selectEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.SELECT_ENTITY,
@@ -971,7 +997,7 @@ namespace EngineTests
                 // Pre-play prep
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
-                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                 Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                 Assert.IsNotNull(cpu);
@@ -1001,7 +1027,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit with very basic stats
-                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Effect selectEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.SELECT_ENTITY,
@@ -1018,7 +1044,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Now I init a building in first tile
-                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, [0, 3, 4, 9, 10, 17], 1);
                 TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
                 state.NextUniqueIndex = 3;
                 // Finally load the game
@@ -1028,7 +1054,7 @@ namespace EngineTests
                 // Pre-play prep
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
-                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, (playerIndex == 0) ? 0 : 3); // Play search card
                 Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                 Assert.IsNotNull(cpu);
@@ -1056,7 +1082,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that has a debug trigger effect
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIG_UNIT", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Effect selectEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.SELECT_ENTITY,
@@ -1080,7 +1106,7 @@ namespace EngineTests
                 // Pre play assert ( specific state and no triggers )
                 int stateHash = sm.DetailedState.GetHashCode();
                 // Play
-                sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play the unit in any lane
+                sm.PlayFromHand(1, 0); // Play the unit in any lane
                 Assert.AreNotEqual(stateHash, sm.DetailedState.GetHashCode()); // State hash has changed
                 // Now check trigger, will be the debug trigger on board (verified that works in Trigger tests)
                 StepResult res = sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext());
@@ -1114,7 +1140,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit with very basic stats
-                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Effect selectEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.SELECT_ENTITY,
@@ -1131,7 +1157,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Now I init a building in first tile
-                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, [0, 3, 4, 9, 10, 17], 1);
                 TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
                 state.NextUniqueIndex = 3;
                 List<EntityType> buildingEntityTypes = [EntityType.UNIT, EntityType.BUILDING];
@@ -1149,7 +1175,7 @@ namespace EngineTests
                         // Pre-play prep
                         int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
-                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, (playerIndex == 0) ? 0 : 3); // Play search card
                         Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                         CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                         Assert.IsNotNull(cpu);
@@ -1189,7 +1215,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit with very basic stats
-                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Effect selectEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.SELECT_ENTITY,
@@ -1206,7 +1232,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Now I init a building in first tile
-                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, [0, 3, 4, 9, 10, 17], 1);
                 TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
                 state.NextUniqueIndex = 3;
                 List<EntityOwner> buildingEntityOwners = [EntityOwner.OWNER, EntityOwner.OPPONENT]; // This is weird and never should happen in real code
@@ -1224,7 +1250,7 @@ namespace EngineTests
                         // Pre-play prep
                         int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
-                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, (playerIndex == 0) ? 0 : 3); // Play search card
                         Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                         CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                         Assert.IsNotNull(cpu);
@@ -1267,7 +1293,7 @@ namespace EngineTests
                 int firstValue = _rng.Next(2, 100); // First will set the ACC
                 int secondValue = _rng.Next(2, 100); // Then ACC (op)= secondValue
                 // Card 1: Calculator skill, will set the value of ACC and return it as a debug trigger
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect setFirstValueEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
@@ -1311,7 +1337,7 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                     Assert.IsNotNull(cpu);
@@ -1338,7 +1364,7 @@ namespace EngineTests
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // I create many units in the board, 4 units Attack 0,1,2,3
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "TEST", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "TEST", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 for (int i = 0; i < 4; i++)
                 {
                     testUnit.Attack.BaseValue = i;
@@ -1349,7 +1375,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Values
                 // Card 1: Calculator skill, first looks for all units, then will set the value of ACC depending on multi input, return as debug trigger
-                Skill skill = TestCardGenerator.CreateSkill(2, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(2, 0, [0], CardTargetingType.BOARD);
                 Effect searchEffect = new Effect()// Finds all units
                 {
                     EffectType = EffectType.FIND_ENTITIES,
@@ -1393,7 +1419,7 @@ namespace EngineTests
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                     Assert.IsNotNull(cpu);
@@ -1425,7 +1451,7 @@ namespace EngineTests
                 int firstValue = 5; // First will set the ACC
                 int secondValue = 2; // Then ACC *= secondValue
                 // Card 1: Calculator skill, will set the value of ACC and return it as a debug trigger
-                Unit unit = TestCardGenerator.CreateUnit(1, "WHENPLAYED", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "WHENPLAYED", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Effect setFirstValueEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
@@ -1470,7 +1496,7 @@ namespace EngineTests
                 // Pre-play prep
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
-                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play search card
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                 Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                 Assert.IsNotNull(cpu);
@@ -1501,8 +1527,8 @@ namespace EngineTests
                 int firstValue = 5; // First will set the ACC
                 int secondValue = 2; // Then ACC *= secondValue
                 // Card 1: Calculator skill, will set the value of ACC and return it as a debug trigger
-                Skill skill = TestCardGenerator.CreateSkill(1, "WHENPLAYED", 0, PlayTargetLocation.BOARD);
-                Unit unit = TestCardGenerator.CreateUnit(2, "ONTRIGGER", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Unit unit = TestCardGenerator.CreateUnit(2, "ONTRIGGER", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Effect setFirstValueEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
@@ -1549,8 +1575,8 @@ namespace EngineTests
                 // Pre-play prep
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 // Play
-                sm.PlayFromHand(2, PlayTargetLocation.PLAINS); // Play unit in any lane idc
-                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                sm.PlayFromHand(2, 0); // Play unit in any lane idc
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                 Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                 Assert.IsNotNull(cpu);
@@ -1586,7 +1612,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that will modify  a player's gold
-                Skill skill = TestCardGenerator.CreateSkill(1, "GOLDBUFF", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect goldModifyEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
@@ -1622,7 +1648,7 @@ namespace EngineTests
                         // Pre-play prep
                         int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
-                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play the skill
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play the skill
                         Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                         // Check gold then
                         if (owner.HasFlag(EntityOwner.OWNER)) // Check if this player's gold had to be modified or remains as starting
@@ -1656,7 +1682,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Assert skill, kill the effect prematurely or not, depending on assert type
-                Skill skill = TestCardGenerator.CreateSkill(1, "ASSERT", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
                 Effect assertEffect = new Effect()
                 {
                     EffectType = EffectType.ASSERT,
@@ -1685,7 +1711,7 @@ namespace EngineTests
                         // Pre-play prep
                         int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                         // Play
-                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, PlayTargetLocation.BOARD); // Play search card
+                        Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                         Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
                         CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                         bool shouldAssert = ((assertValue == 1 && !negatedAssert) || (assertValue == 0 && negatedAssert));
@@ -1721,7 +1747,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that just moves
-                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, [0, 3, 4, 9, 10, 17], 1, 0, 1, 1);
                 Effect readMarchRemainingEffect = new Effect()
                 {
                     EffectType = EffectType.MODIFIER,
@@ -1768,7 +1794,7 @@ namespace EngineTests
                 bool[] isMarchingFlags = [true, false];
                 foreach (bool isMarchingFlag in isMarchingFlags)
                 {
-                    sm.UNIT_PlayUnit(playerIndex, new UnitPlayContext() { Actor = marchingUnit, AbsoluteInitialTile = 0 }); // Manually insert unit
+                    sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = marchingUnit, PlayedTarget = 0 }); // Manually insert unit
                     MarchingContext dummyMarchCtx = new MarchingContext()
                     {
                         CurrentMovement = originalMarch,
@@ -1798,9 +1824,9 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit
-                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 3, 4, 9, 10, 17], 1, 0, 1, 1);
                 // Card 2: Kill skill
-                Skill skill = TestCardGenerator.CreateSkill(2, "KILL_ALL", 0, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(2, 0, [0], CardTargetingType.BOARD);
                 Effect searchAllUnits = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES,
@@ -1825,9 +1851,9 @@ namespace EngineTests
                 {
                     int coord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
                     Unit unitToSummon = (Unit)unit.Clone();
-                    UnitPlayContext context = new UnitPlayContext()
+                    PlayContext context = new PlayContext()
                     {
-                        AbsoluteInitialTile = coord,
+                        PlayedTarget = coord,
                         Actor = unit,
                     };
                     sm.UNIT_PlayUnit(playerIndex, context);
@@ -1837,7 +1863,7 @@ namespace EngineTests
                 Assert.AreEqual(5, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count());
                 int preKillHash = sm.DetailedState.GetHashCode();
                 // Play card, kill
-                sm.PlayFromHand(2, PlayTargetLocation.BOARD);
+                sm.PlayFromHand(2, 0);
                 Assert.AreEqual(0, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count()); // All units dead
                 Assert.AreNotEqual(preKillHash, sm.DetailedState.GetHashCode());
                 // Revert

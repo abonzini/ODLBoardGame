@@ -11,9 +11,6 @@
 
   <ItemGroup>
     <Compile Remove="DeserializeAllCards.cs" />
-    <Compile Remove="EffectTests.cs" />
-    <Compile Remove="InteractionTests.cs" />
-    <Compile Remove="TriggerTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
