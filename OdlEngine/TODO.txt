@@ -1,4 +1,9 @@
 Ongoing tasks in order of priority:
+- Full retargeting:
+	- Fix UI
+	- Fix Deserializer
+	- Redo all cards and blueprints
+	- Finally rewrite rulebook
 - 6:
 	- Add card #6. gets actor enemy, asserts, and kills
 - 7

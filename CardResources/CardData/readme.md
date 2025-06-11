@@ -18,18 +18,7 @@ These elements define the basics of the basics for any type of card:
     - ```Id:``` Card ID number
     - ```Cost:``` How much it costs to play the card
     - ```EntityType:``` Type of card, such as ```UNIT```, ```SKILL```, ```BUILDING```, ```PLAYER```
-    - ```TargetOptions:``` Where the card can be targeted when playing. Valid options:
-        - ```BOARD```
-        - ```PLAINS```
-        - ```FOREST```
-        - ```MOUNTAIN```
-        - ```ALL_BUT_MOUNTAIN```
-        - ```ALL_BUT_FOREST```
-        - ```ALL_BUT_PLAINS```
-        - ```ALL_LANES```
-
-        These values are *Flags*, which means they can also be assembled with the ```|``` symbol.
-        For example, ```PLAINS|FOREST``` would work exactly like ```ALL_BUT_MOUNTAIN```.
+    - ```TargetOptions:``` Where the card can be targeted when playing. Collection containing the valid targeting options for example ```[0, 1, 2]```. Units target by tiles (relative to the player), and Buildings target by units but use ```TargetOptions``` as the Blueprint locations (also relative).
 
 Depending on the type of cards, additional fields are needed/used. Every type of card also can have **Interactions**.
 Living entities, e.g. entities that are permanent in the board (anything but skills), also have **Triggers**.
@@ -49,11 +38,15 @@ Building cards are similar to units, they contain the following:
 - ```Name:``` Name of building as it will show once in the field
 - ```Hp:``` Base Hp value of building when constructed
 - ```DamageTokens:``` How many damage tokens the building has. Default value is naturally 0 unless unit needs to start damaged for some weird reason
-- ```PlainsBp```/```ForestBp```/```MountainBp:``` Blueprint of the building for each lane. If left empty, building can't be built in that lane. It is an ordered collection. E.g. ```"PlainsBp": [2,1,3]``` means that, in plains, the building will attempt to be constructed first in tile 2, then 1, and then 3.
 
 ## Skills
-Skills do not contain any other info as they only have effects (I.e. "When played" interactions), and do not persist in the field.
-This is why also they don't contain triggers.
+Skills can be targeted absolutely anywhere unlike the other cards. For this reason they have the following fields:
+- ```TargetType``` determines what targeting this skill has. Works in tandem with ```TargetOptions``` list.
+    - ```BOARD``` targets the board, and so only has value ```0``` as target
+    - ```LANE``` can target one of the three lanes with options ```0,1,2``` respectively
+    - ```TILE```/```TILE_RELATIVE``` targets tiles ```0-17```. Use the relative one if the spell has a complex or non-symmetrical blueprint, but the other one is slightly more efficient as it treates tiles as absolute.
+    - ```UNIT```/```UNIT_RELATIVE```/```BUILDING``` targets units and buildings on the board but ```TargetOptions``` determines the valid possible tiles. Use relative to make the blueprint relative to a player, otherwise the absolutes are faster.
+- ```TargetOwner```, for ```UNIT```/```UNIT_RELATIVE```/```BUILDING```, allows to use the ```OWNER```/```OPPONENT```/```BOTH``` flags to choose the owner(s) of entities targeted
 
 ## Player Class
 Player classes have many similarities to some cards.
@@ -183,7 +176,7 @@ Useful for effect with complex conditions where a part of the effect is conditio
 - ```EffectLocation```
     - ```BOARD``` will target the board
     - ```PLAINS```/```FOREST```/```MOUNTAIN``` wil target these lanes specifically
-    - ```PLAY_TARGET``` the play target of the card just played is used, whatever that was. Only makes sense in cards with effects ```WHEN_PLAYED```.
+    - ```PLAY_TARGET``` the play target of the card just played is used, whatever that was. Only makes sense in cards with effects ```WHEN_PLAYED```. Searches in Board/Tile/Lane depending what the card has as "play target". Unit/Building targeting use the tile of the entity targeted.
 - ```TargetPlayer```
     - ```OWNER```: Owner of the card receives the effect
     - ```OPPONENT```: Player opposing the card owner will receive the effect
