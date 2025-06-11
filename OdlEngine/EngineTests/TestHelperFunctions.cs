@@ -184,5 +184,15 @@ namespace EngineTests
             }
             return cpuState;
         }
+        /// <summary>
+        /// Returns a random number from options
+        /// </summary>
+        /// <returns>One of these 3</returns>
+        public static T GetRandomChoice<T>(List<T> collection)
+        {
+            Random _rng = new Random();
+            int choice = _rng.Next(collection.Count);
+            return collection[choice];
+        }
     }
 }

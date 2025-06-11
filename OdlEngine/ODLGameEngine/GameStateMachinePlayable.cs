@@ -5,7 +5,6 @@
         OK,
         CANT_AFFORD,
         NO_TARGET_AVAILABLE,
-        INVALID_TARGET,
         INVALID_CARD,
         INVALID_GAME_STATE,
         POWER_ALREADY_USED
@@ -23,14 +22,15 @@
 
         // Public (access points)
         /// <summary>
-        /// Checker that verifies whether a card is playable, and if is, returns the whole data of how it could be played
+        /// Checks wether a card is playable and the valid targets if it is. Also used to verify before playing
         /// </summary>
-        /// <param name="card">The card number, of the that would be played</param>
-        /// <param name="playType">Type of play (i.e. where the card is played from)</param>
-        /// <param name="playLocationFilter">If added, will only check in those specific locations, important for actually playing the card, to not overcheck</param>
-        /// <returns>The context that tells us whether the card is playable</returns>
-        public PlayContext GetPlayabilityOptions(int card, PlayType playType, PlayTargetLocation playLocationFilter = PlayTargetLocation.ALL_LANES)
+        /// <param name="card">Card to check</param>
+        /// <param name="playType">Context of which play type</param>
+        /// <param name="onlyRelevantTarget">If a target is already chosen, just verifies this one</param>
+        /// <returns>Playcontext which tells you whether it's played ok</returns>
+        public PlayContext GetPlayabilityOptions(int card, PlayType playType, int onlyRelevantTarget = -1)
         {
+            int playerChecking = (int)DetailedState.CurrentPlayer; // For now only the current player is checking
             PlayContext resultingPlayContext = new PlayContext
             {
                 PlayType = playType
@@ -45,7 +45,7 @@
             // An extra check first, whether card actually exists in hand (if applicable)
             if (playType == PlayType.PLAY_FROM_HAND)
             {
-                AssortedCardCollection hand = DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].Hand;
+                AssortedCardCollection hand = DetailedState.PlayerStates[playerChecking].Hand;
                 if (!hand.HasCard(card)) // Card not in hand!
                 {
                     resultingPlayContext.PlayOutcome = PlayOutcome.INVALID_CARD;
@@ -55,7 +55,7 @@
             // In this case we check instead if the active power is allowed
             else if (playType == PlayType.ACTIVE_POWER)
             {
-                if (!DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].PowerAvailable) // Power not available!
+                if (!DetailedState.PlayerStates[playerChecking].PowerAvailable) // Power not available!
                 {
                     resultingPlayContext.PlayOutcome = PlayOutcome.POWER_ALREADY_USED;
                     return resultingPlayContext;
@@ -75,49 +75,191 @@
                 resultingPlayContext.PlayOutcome = PlayOutcome.CANT_AFFORD;
                 return resultingPlayContext;
             }
-            // Otherwise I can def afford, check if playable in the desired place
-            resultingPlayContext.PlayOutcome = PlayOutcome.NO_TARGET_AVAILABLE;
-            if (cardData.TargetOptions == PlayTargetLocation.BOARD) // Card is board-targetable
+            // Does it have any valid targets?
+            if (cardData.TargetOptions == null)
             {
-                // TODO: Here we'd raise a playability context request to ask the card if special conditions
-                resultingPlayContext.PlayOutcome = PlayOutcome.OK;
-                resultingPlayContext.PlayTarget = PlayTargetLocation.BOARD;
+                resultingPlayContext.PlayOutcome = PlayOutcome.NO_TARGET_AVAILABLE;
+                return resultingPlayContext;
             }
-            else if (cardData.TargetOptions <= PlayTargetLocation.ALL_LANES) // Otherwise need to verify individual VALID(!) lanes
+            // Otherwise I can def afford, and in principle playable somewhere
+            CardTargetingType targetType = cardData.EntityType switch
             {
-                PlayTargetLocation validTargetsIfPossible = PlayTargetLocation.BOARD;
-                for (int i = 0; i < GameConstants.BOARD_NUMBER_OF_LANES; i++)
-                {
-                    PlayTargetLocation nextLaneCandidate = (PlayTargetLocation)(1 << i);
-                    if (!playLocationFilter.HasFlag(nextLaneCandidate)) // Check only the ones I'm interested in
+                EntityType.UNIT => CardTargetingType.TILE_RELATIVE,
+                EntityType.BUILDING => CardTargetingType.UNIT_RELATIVE,
+                EntityType.PLAYER => CardTargetingType.BOARD, // ? We'll need to see
+                EntityType.SKILL => ((Skill)cardData).TargetType,
+                _ => throw new Exception("Invalid card type, no play data")
+            };
+            resultingPlayContext.TargetingType = targetType;
+            resultingPlayContext.ValidTargets = new HashSet<int>();
+            switch (targetType) // Finally, get list of valid targets depending on what to look for
+            {
+                case CardTargetingType.BOARD:
+                    // TODO: Here we'd raise a playability context request to ask the card if special conditions
+                    if (onlyRelevantTarget == 0 || onlyRelevantTarget == -1) // Valid answer always only 0 for board
                     {
-                        continue;
+                        resultingPlayContext.ValidTargets.Add(0);
                     }
-                    if (cardData.TargetOptions.HasFlag(nextLaneCandidate)) // If this lane is one of the valid ones for this card
+                    break;
+                case CardTargetingType.LANE:
                     {
-                        bool canPlay = true; // By default, can play
-                        if (cardData.EntityType == EntityType.BUILDING) // Buildings have an extra check, where they need to see if/how they can be built
+                        // Check lane by lane
+                        HashSet<int> optionsToCheck = null;
+                        if (onlyRelevantTarget == -1) optionsToCheck = cardData.TargetOptions;
+                        else if (cardData.TargetOptions.Contains(onlyRelevantTarget)) optionsToCheck = [onlyRelevantTarget];
+                        foreach (int possibleTarget in optionsToCheck ?? []) // Check all options
                         {
-                            // Get construction context
-                            ConstructionContext constructionContext = BUILDING_GetBuildingOptions((int)DetailedState.CurrentPlayer, (Building)cardData, nextLaneCandidate);
-                            resultingPlayContext.LastAuxContext = constructionContext;
-                            canPlay = (constructionContext.AbsoluteConstructionTile >= 0); // Playable if this found a valid coordinate
-                        }
-                        else if (cardData.EntityType == EntityType.UNIT)
-                        {
-                            // Get unit play context, canPlay may depend on other extra things
-                            UnitPlayContext unitPlayContext = UNIT_GetUnitPlayData((int)DetailedState.CurrentPlayer, (Unit)cardData, nextLaneCandidate);
-                            resultingPlayContext.LastAuxContext = unitPlayContext;
-                        }
-                        if (canPlay) // If building (or card in general) can play normally, then check
-                        {
-                            // TODO: Here we raise an extra playability context and ask the card if has any extra conditions
-                            resultingPlayContext.PlayOutcome = PlayOutcome.OK;
-                            validTargetsIfPossible |= nextLaneCandidate; // Add this lane option to list
+                            if (possibleTarget >= 0 && possibleTarget < GameConstants.BOARD_NUMBER_OF_LANES)
+                            {
+                                // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for lane checking
+                                resultingPlayContext.ValidTargets.Add(possibleTarget);
+                            }
                         }
                     }
-                }
-                resultingPlayContext.PlayTarget = (validTargetsIfPossible != PlayTargetLocation.BOARD) ? validTargetsIfPossible : PlayTargetLocation.INVALID;
+                    break;
+                case CardTargetingType.TILE:
+                case CardTargetingType.TILE_RELATIVE:
+                    {
+                        // Check tile by tile
+                        HashSet<int> optionsToCheck;
+                        // Check if I need to convert tiles to relative first
+                        if (targetType == CardTargetingType.TILE_RELATIVE)
+                        {
+                            optionsToCheck = new HashSet<int>();
+                            foreach (int targetOption in cardData.TargetOptions)
+                            {
+                                // target option is an absolute but it flips depending on player
+                                Lane refLane = DetailedState.BoardState.GetLaneContainingTile(targetOption);
+                                int coordRelativeToLane = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, targetOption); // Get relative to lane
+                                int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerChecking); // Obtain the equivalent for the player who's checking
+                                optionsToCheck.Add(absoluteCoord);
+                            }
+                        }
+                        else
+                        {
+                            optionsToCheck = cardData.TargetOptions;
+                        }
+                        // Now, check if I need to provide all tiles or just match a tile
+                        if (onlyRelevantTarget != -1) // In this case I need to extra filter to only the thing I'm looking for
+                        {
+                            if (optionsToCheck.Contains(onlyRelevantTarget)) // If target was present, then this is the one I want
+                            {
+                                optionsToCheck = [onlyRelevantTarget];
+                            }
+                            else
+                            {
+                                optionsToCheck = null;
+                            }
+                        }
+                        foreach (int possibleTarget in optionsToCheck ?? [])
+                        {
+                            if (possibleTarget >= 0 && possibleTarget < GameConstants.BOARD_NUMBER_OF_TILES)
+                            {
+                                // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for tile checking
+                                resultingPlayContext.ValidTargets.Add(possibleTarget);
+                            }
+                        }
+                    }
+                    break;
+                case CardTargetingType.BUILDING:
+                case CardTargetingType.UNIT:
+                case CardTargetingType.UNIT_RELATIVE:
+                    {
+                        // What am I looking for?
+                        EntityType typeToLookFor = targetType switch
+                        {
+                            CardTargetingType.UNIT or CardTargetingType.UNIT_RELATIVE => EntityType.UNIT,
+                            CardTargetingType.BUILDING => EntityType.BUILDING,
+                            _ => throw new NotImplementedException("Can never get here")
+                        };
+                        // Owner of the stuff I'm looking for
+                        int entityOwnerCheck = cardData.EntityType switch
+                        {
+                            EntityType.SKILL => ((Skill)cardData).TargetOwner switch
+                            {
+                                EntityOwner.OPPONENT => (1 - playerChecking),
+                                EntityOwner.BOTH => -1,
+                                _ => playerChecking,
+                            },
+                            _ => playerChecking,
+                        };
+                        HashSet<int> tilesToCheck;
+                        // Check if I need to convert tiles to relative first
+                        if (targetType == CardTargetingType.UNIT_RELATIVE)
+                        {
+                            tilesToCheck = new HashSet<int>();
+                            foreach (int targetOption in cardData.TargetOptions)
+                            {
+                                Lane refLane = DetailedState.BoardState.GetLaneContainingTile(targetOption);
+                                int coordRelativeToLane = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, targetOption); // Get relative to lane
+                                int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerChecking); // Obtain the equivalent for the player who's checking
+                                tilesToCheck.Add(absoluteCoord);
+                            }
+                        }
+                        else
+                        {
+                            tilesToCheck = cardData.TargetOptions;
+                        }
+                        // This one is kinda tricky, will go tile by tile, but look for entities instead so...
+                        if (onlyRelevantTarget == -1) // Get all valid entities in this case
+                        {
+                            foreach (int possibleTarget in tilesToCheck)
+                            {
+                                if (possibleTarget >= 0 && possibleTarget < GameConstants.BOARD_NUMBER_OF_TILES) // Check if valid tile
+                                {
+                                    // Check all of the units in a tile
+                                    foreach (int entity in DetailedState.BoardState.Tiles[possibleTarget].GetPlacedEntities(typeToLookFor, entityOwnerCheck))
+                                    {
+                                        if (cardData.EntityType == EntityType.BUILDING)
+                                        {
+                                            // Specifically for building construction, need to ensure there's no building already here...
+                                            if (DetailedState.BoardState.Tiles[possibleTarget].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
+                                            {
+                                                continue; // So if there's a building already, skip this tile asap
+                                            }
+                                        }
+                                        // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
+                                        resultingPlayContext.ValidTargets.Add(entity);
+                                    }
+                                }
+                            }
+                        }
+                        else if (DetailedState.EntityData.TryGetValue(onlyRelevantTarget, out LivingEntity foundEntity)) // Check if unit truly exists
+                        {
+                            if (entityOwnerCheck == -1 || entityOwnerCheck == foundEntity.Owner) // Check to make sure it's the same ownership I'm looking for
+                            {
+                                int tileCandidate = ((PlacedEntity)foundEntity).TileCoordinate;
+                                if (tilesToCheck.Contains(tileCandidate)) // Check if unit in a valid tile
+                                {
+                                    bool buildingCheckPassed = true;
+                                    if (cardData.EntityType == EntityType.BUILDING)
+                                    {
+                                        // Specifically for building construction, need to ensure there's no building already here...
+                                        if (DetailedState.BoardState.Tiles[tileCandidate].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
+                                        {
+                                            buildingCheckPassed = false; // So if there's a building already, skip this tile asap
+                                        }
+                                    }
+                                    if (buildingCheckPassed)
+                                    {
+                                        // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
+                                        resultingPlayContext.ValidTargets.Add(onlyRelevantTarget);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    throw new Exception("Not a valid/implemented target type");
+            }
+            if (resultingPlayContext.ValidTargets.Count == 0)
+            {
+                resultingPlayContext.PlayOutcome = PlayOutcome.NO_TARGET_AVAILABLE;
+            }
+            else
+            {
+                resultingPlayContext.PlayOutcome = PlayOutcome.OK;
             }
             // Returns our findings
             return resultingPlayContext;
@@ -126,9 +268,9 @@
         /// Begins attempt to play a card from hand
         /// </summary>
         /// <param name="card">Which card</param>
-        /// <param name="chosenTarget">Target location</param>
+        /// <param name="chosenTarget">Target. ALWAYS AN ABSOLUTE PLACE</param>
         /// <returns>Tuple of play context and the steps themselves</returns>
-        public Tuple<PlayContext, StepResult> PlayFromHand(int card, PlayTargetLocation chosenTarget)
+        public Tuple<PlayContext, StepResult> PlayFromHand(int card, int chosenTarget)
         {
             return PLAYABLE_PlayCard(card, chosenTarget, PlayType.PLAY_FROM_HAND);
         }
@@ -138,7 +280,7 @@
         /// <returns>Tuple of play context and the steps themselves</returns>
         public Tuple<PlayContext, StepResult> PlayActivePower()
         {
-            return PLAYABLE_PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerId, PlayTargetLocation.BOARD, PlayType.ACTIVE_POWER);
+            return PLAYABLE_PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerId, 0, PlayType.ACTIVE_POWER);
         }
         // Back-end (private)
         /// <summary>
@@ -146,63 +288,52 @@
         /// If not failed, this will change game state, function returns last step
         /// </summary>
         /// <param name="card">Which card to play</param>
-        /// <param name="chosenTarget">Where to play card</param>
+        /// <param name="chosenTarget">Target</param>
         /// <param name="playType">The type of play, default is standard "play from hand"</param>
         /// <returns>Outcome, and Step result (as in step() if successful)</returns>
-        Tuple<PlayContext, StepResult> PLAYABLE_PlayCard(int card, PlayTargetLocation chosenTarget, PlayType playType)
+        Tuple<PlayContext, StepResult> PLAYABLE_PlayCard(int card, int chosenTarget, PlayType playType)
         {
-            PlayContext playCtx = new PlayContext();
-            // First, make sure chosen target makes sense, card should be only playable exactly where I asked
-            if (((chosenTarget & chosenTarget - 1) != 0) || (chosenTarget >= PlayTargetLocation.INVALID)) // Check only power of 2 or 0, and less than invalid
-            {
-                // Invalid target, either 0 or a specific single lane, not multiple or values higher than the allowed lanes!
-                playCtx.PlayOutcome = PlayOutcome.INVALID_TARGET;
-                playCtx.PlayType = playType;
-                return new Tuple<PlayContext, StepResult>(playCtx, null);
-            }
-            // Then, all other checks
-            playCtx = GetPlayabilityOptions(card, playType, chosenTarget); // Checks where a card can be played and how
+            PlayContext playCtx;
+            // Perform playability checks
+            playCtx = GetPlayabilityOptions(card, playType, chosenTarget); // Checks if this selection can be played
             if (playCtx.PlayOutcome != PlayOutcome.OK)
             {
                 return new Tuple<PlayContext, StepResult>(playCtx, null); // If failure, return type of failure, can't be played!
             }
-            // Otherwise, card can be played somewhere. Should be only playable where I targeted         
-            if (playCtx.PlayTarget == chosenTarget) // Then just need to verify tagets match with playable options
+            // Otherwise, card can be played exactly on the chosen, and checks should've been properly made in the PlayOptions step
+            playCtx.PlayedTarget = (playCtx.ValidTargets.Count == 1) ? playCtx.ValidTargets.First() : throw new Exception("GetPlayabilityOptions return an invalid number of filtered targets");
+            // Ok shit is going down, card needs to be paid and played now, this will result in a step and change of game state
+            try // Also, a player may die!
             {
-                // Ok shit is going down, card needs to be paid and played now, this will result in a step and change of game state
-                try // Also, a player may die!
+                int currentPlayer = (int)DetailedState.CurrentPlayer;
+                PLAYABLE_PayCost(playCtx.PlayCost);
+                switch (playType)
                 {
-                    PLAYABLE_PayCost(playCtx.PlayCost);
-                    if (playType == PlayType.PLAY_FROM_HAND)
-                    {
-                        ENGINE_DiscardCardFromHand((int)DetailedState.CurrentPlayer, card);
-                    }
-                    else if (playType == PlayType.ACTIVE_POWER)
-                    {
-                        ENGINE_ChangePlayerPowerAvailability(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer], false);
-                    }
-                    IngameEntity createdEntity = (IngameEntity)CardDb.GetCard(card); // The card has to be a game entity...
-                    playCtx.ActivatedEntity = createdEntity; // Set this reference entity which will be played
-                    createdEntity = PLAYABLE_PlayEntity(playCtx); // Once played, an new entity is instantiated
-                    // INTERACTION: CARD IS PLAYED (effect on created entity)
-                    playCtx.ActivatedEntity = createdEntity;
-                    playCtx.Actor = createdEntity;
-                    TRIGINTER_ProcessInteraction(InteractionType.WHEN_PLAYED, playCtx);
-                    // Ends by transitioning to next action phase
-                    ENGINE_ChangeState(States.ACTION_PHASE);
+                    case PlayType.ACTIVE_POWER:
+                        ENGINE_ChangePlayerPowerAvailability(DetailedState.PlayerStates[currentPlayer], false);
+                        break;
+                    case PlayType.PLAY_FROM_HAND:
+                        ENGINE_DiscardCardFromHand(currentPlayer, card);
+                        break;
+                    default:
+                        throw new Exception("Invalid play type");
                 }
-                catch (EndOfGameException e)
-                {
-                    STATE_TriggerEndOfGame(e.PlayerWhoWon);
-                }
-                playCtx.PlayOutcome = PlayOutcome.OK;
-                return new Tuple<PlayContext, StepResult>(playCtx, _stepHistory.Last()); // Returns the thing
+                IngameEntity createdEntity = (IngameEntity)CardDb.GetCard(card); // The card has to be a game entity...
+                playCtx.Actor = createdEntity; // Entity performs the action of "is played"
+                createdEntity = PLAYABLE_PlayEntity(playCtx); // Once played, an new entity is instantiated
+                // INTERACTION: CARD IS PLAYED (effect on created entity)
+                playCtx.ActivatedEntity = createdEntity;
+                playCtx.Actor = createdEntity;
+                TRIGINTER_ProcessInteraction(InteractionType.WHEN_PLAYED, playCtx);
+                // Ends by transitioning to next action phase
+                ENGINE_ChangeState(States.ACTION_PHASE);
             }
-            else
+            catch (EndOfGameException e)
             {
-                playCtx.PlayOutcome = PlayOutcome.INVALID_TARGET;
-                return new Tuple<PlayContext, StepResult>(playCtx, null);
+                STATE_TriggerEndOfGame(e.PlayerWhoWon);
             }
+            playCtx.PlayOutcome = PlayOutcome.OK;
+            return new Tuple<PlayContext, StepResult>(playCtx, _stepHistory.Last()); // Returns the thing
         }
         /// <summary>
         /// Resolves the playable state where an entity is instantiated and played
@@ -211,11 +342,11 @@
         /// <returns>The instantiated entity</returns>
         IngameEntity PLAYABLE_PlayEntity(PlayContext playCtx)
         {
-            IngameEntity entity = playCtx.ActivatedEntity;
+            IngameEntity entity = playCtx.Actor;
             switch (entity.EntityType)
             {
                 case EntityType.UNIT:
-                    Unit newUnit = UNIT_PlayUnit((int)DetailedState.CurrentPlayer, (UnitPlayContext)playCtx.LastAuxContext); // Creates unit
+                    Unit newUnit = UNIT_PlayUnit((int)DetailedState.CurrentPlayer, playCtx); // Creates unit
                     PLAYABLE_RegisterOnPlayTrigger(newUnit, playCtx); // If unit has triggers on play location, register them
                     return newUnit;
                 case EntityType.SKILL: // Nothing needed as skills don't introduce new entities
@@ -224,24 +355,36 @@
                     skillData.UniqueId = -1; // Default id for a skill (they don't persist after played)
                     return skillData;
                 case EntityType.BUILDING:
-                    Building newBuilding = BUILDING_ConstructBuilding((int)DetailedState.CurrentPlayer, (ConstructionContext)playCtx.LastAuxContext);
+                    Unit constructor = (Unit)DetailedState.EntityData[playCtx.PlayedTarget];
+                    ConstructionContext constrCtx = new ConstructionContext() // This is complex so I need to make sure its ok
+                    {
+                        Actor = constructor, // Because target was building
+                        Affected = (Building)entity,
+                        AbsoluteConstructionTile = constructor.TileCoordinate
+                    };
+                    Building newBuilding = BUILDING_ConstructBuilding((int)DetailedState.CurrentPlayer, constrCtx);
                     PLAYABLE_RegisterOnPlayTrigger(newBuilding, playCtx); // If building has triggers on play location, register them
                     return newBuilding;
                 default:
                     throw new NotImplementedException("Trying to play a non-supported type!");
             }
         }
+        /// <summary>
+        /// For entities with triggers, registers them where played if needed
+        /// </summary>
+        /// <param name="entity">Trigger owning entity</param>
+        /// <param name="playCtx">Play context containing where to register</param>
         void PLAYABLE_RegisterOnPlayTrigger(LivingEntity entity, PlayContext playCtx)
         {
             // TRIGGER REGISTRATION: ON PLAYED LOCATION
-            BoardElement finalPlayTargetPlace = playCtx.PlayTarget switch
+            // Since it's a placed entity, target was either on a tile (unit) or on a unit (building), the result is always going to be on a tile then
+            int registerTile = playCtx.TargetingType switch
             {
-                PlayTargetLocation.BOARD => DetailedState.BoardState,
-                PlayTargetLocation.PLAINS => DetailedState.BoardState.PlainsLane,
-                PlayTargetLocation.FOREST => DetailedState.BoardState.ForestLane,
-                PlayTargetLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
+                CardTargetingType.TILE or CardTargetingType.TILE_RELATIVE => playCtx.PlayedTarget,
+                CardTargetingType.UNIT or CardTargetingType.UNIT_RELATIVE or CardTargetingType.BUILDING => ((PlacedEntity)DetailedState.EntityData[playCtx.PlayedTarget]).TileCoordinate,
                 _ => throw new NotImplementedException("How was the play target in the other locations?")
             };
+            BoardElement finalPlayTargetPlace = DetailedState.BoardState.Tiles[registerTile];
             TRIGINTER_VerifyEntityAndRegisterTriggers(finalPlayTargetPlace, EffectLocation.PLAY_TARGET, entity);
         }
         /// <summary>

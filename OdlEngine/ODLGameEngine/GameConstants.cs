@@ -7,6 +7,7 @@
         public const int PLAINS_NUMBER_OF_TILES = 4;
         public const int FOREST_NUMBER_OF_TILES = 6;
         public const int MOUNTAIN_NUMBER_OF_TILES = 8;
+        public const int BOARD_NUMBER_OF_TILES = PLAINS_NUMBER_OF_TILES + FOREST_NUMBER_OF_TILES + MOUNTAIN_NUMBER_OF_TILES;
         // May need to be moved to player class if different between them or sth
         public const int STARTING_HP = 20;
         public const int STARTING_GOLD = 5;

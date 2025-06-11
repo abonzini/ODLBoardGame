@@ -5,12 +5,6 @@ namespace ODLGameEngine
     [JsonObject(MemberSerialization.OptIn)]
     public class Building : PlacedEntity
     {
-        [JsonProperty]
-        public int[] PlainsBp { get; set; } = null;
-        [JsonProperty]
-        public int[] ForestBp { get; set; } = null;
-        [JsonProperty]
-        public int[] MountainBp { get; set; } = null;
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
@@ -24,9 +18,6 @@ namespace ODLGameEngine
         public override object Clone()
         {
             Building newBuilding = (Building)base.Clone();
-            newBuilding.ForestBp = ForestBp;
-            newBuilding.PlainsBp = PlainsBp;
-            newBuilding.MountainBp = MountainBp;
             return newBuilding;
         }
     }

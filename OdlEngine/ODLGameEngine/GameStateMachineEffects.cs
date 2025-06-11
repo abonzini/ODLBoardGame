@@ -265,12 +265,28 @@
                     EffectLocation.PLAINS => DetailedState.BoardState.PlainsLane,
                     EffectLocation.FOREST => DetailedState.BoardState.ForestLane,
                     EffectLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
-                    EffectLocation.PLAY_TARGET => (((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget == PlayTargetLocation.BOARD) ? DetailedState.BoardState : DetailedState.BoardState.GetLane(((PlayContext)cpuContext.CurrentSpecificContext).PlayTarget), // Expects play context
+                    EffectLocation.PLAY_TARGET => GetPlayTarget((PlayContext)cpuContext.CurrentSpecificContext),
                     EffectLocation.CURRENT_TILE => DetailedState.BoardState.Tiles[((PlacedEntity)DetailedState.EntityData[cpuContext.ReferenceEntities[i]]).TileCoordinate], // Expects the entities here to have current tile coordinate
                     _ => throw new Exception("Reference search location not implemented")
                 };
             }
             return res;
+        }
+        /// <summary>
+        /// If a card has been played and the "play target" is requested, get the board element of this play target
+        /// </summary>
+        /// <param name="playCtx">Play context</param>
+        /// <returns>The board element</returns>
+        BoardElement GetPlayTarget(PlayContext playCtx)
+        {
+            return playCtx.TargetingType switch
+            {
+                CardTargetingType.BOARD => DetailedState.BoardState,
+                CardTargetingType.LANE => DetailedState.BoardState.GetLane(playCtx.PlayedTarget),
+                CardTargetingType.TILE or CardTargetingType.TILE_RELATIVE => DetailedState.BoardState.Tiles[playCtx.PlayedTarget],
+                CardTargetingType.UNIT or CardTargetingType.UNIT_RELATIVE or CardTargetingType.BUILDING => DetailedState.BoardState.Tiles[((PlacedEntity)DetailedState.EntityData[playCtx.PlayedTarget]).TileCoordinate],
+                _ => throw new Exception("No other supported play targets for now")
+            };
         }
         /// <summary>
         /// Just a bunch of enums for the target-finding state machine
@@ -474,24 +490,24 @@
         {
             Unit auxCardData = (Unit)CardDb.GetCard(cardNumber);
             // Ctx I'll fill to place the unit exactly where I want
-            UnitPlayContext unitPlayCtx = new UnitPlayContext
+            PlayContext playCtx = new PlayContext()
             {
                 Actor = auxCardData
             };
             if (placeToSummon.ElementType == BoardElementType.TILE) // In this case, I know exactly where the unit will be placed
             {
-                unitPlayCtx.AbsoluteInitialTile = ((Tile)placeToSummon).Coord;
+                playCtx.PlayedTarget = ((Tile)placeToSummon).Coord;
             }
             else if (placeToSummon.ElementType == BoardElementType.LANE) // In this case I assume its just beginning of tile (for now?!)
             {
-                unitPlayCtx.AbsoluteInitialTile = ((Lane)placeToSummon).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerOwner);
+                playCtx.PlayedTarget = ((Lane)placeToSummon).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerOwner);
             }
             else
             {
                 throw new Exception("Invalid location where a unit can be placed");
             }
             // Got the summoning location, onwards to play it
-            UNIT_PlayUnit(playerOwner, unitPlayCtx);
+            UNIT_PlayUnit(playerOwner, playCtx);
         }
         /// <summary>
         /// Modifies a player's gold according to desired op+value

@@ -19,7 +19,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that can trigger anywhere and places debug event in pile
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, [0, 3, 4, 9, 10, 17], 1, 0, 1, 1);
                 Effect debugEffect = new Effect()
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
@@ -46,7 +46,7 @@ namespace EngineTests
                         unit.Triggers.Add(EffectLocation.MOUNTAIN, triggerEffect);
                     // Got the unit!
                     int prePlayHash = sm.DetailedState.GetHashCode();
-                    sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play in plains because the unit location itself doesn't matter really
+                    sm.PlayFromHand(1, 0); // Play somewhere (doesn't matter)
                     int postPlayHash = sm.DetailedState.GetHashCode();
                     Assert.AreNotEqual(prePlayHash, postPlayHash);
                     // TRIGGERING LOOP, will trigger absolutely everyhwere!
@@ -92,7 +92,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that triggers where played and places debug event in pile
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, [0, 4, 10], 1, 0, 1, 1);
                 Effect debugEffect = new Effect()
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
@@ -107,25 +107,34 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test loop plays unit in different locations
-                PlayTargetLocation[] playLocations = [PlayTargetLocation.PLAINS, PlayTargetLocation.FOREST, PlayTargetLocation.MOUNTAIN];
-                foreach (PlayTargetLocation playLocation in playLocations)
+                LaneID[] playLocations = [LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN];
+                foreach (LaneID playLocation in playLocations)
                 {
+                    int firstTileCoord = sm.DetailedState.BoardState.GetLane(playLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                     // Play the unit in the specific location
                     int prePlayHash = sm.DetailedState.GetHashCode();
-                    sm.PlayFromHand(1, playLocation);
+                    sm.PlayFromHand(1, firstTileCoord);
                     int postPlayHash = sm.DetailedState.GetHashCode();
                     Assert.AreNotEqual(prePlayHash, postPlayHash);
                     // TRIGGERING LOOP, will trigger absolutely everyhwere!
-                    EffectLocation[] locationsToProbe = [EffectLocation.BOARD, EffectLocation.PLAINS, EffectLocation.FOREST, EffectLocation.MOUNTAIN];
+                    EffectLocation[] locationsToProbe = [EffectLocation.PLAINS, EffectLocation.FOREST, EffectLocation.MOUNTAIN];
                     foreach (EffectLocation location in locationsToProbe) // Next location to test
                     {
                         // Play, test active trigger
-                        StepResult res = sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, location, new EffectContext());
+                        LaneID locationLane = location switch
+                        {
+                            EffectLocation.PLAINS => LaneID.PLAINS,
+                            EffectLocation.FOREST => LaneID.FOREST,
+                            EffectLocation.MOUNTAIN => LaneID.MOUNTAIN,
+                            _ => throw new Exception("Not a lane")
+                        };
+                        int locationCoord = sm.DetailedState.BoardState.GetLane(locationLane).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                        StepResult res = sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, sm.DetailedState.BoardState.Tiles[locationCoord], new EffectContext());
                         // Check if should've triggered
                         bool shouldHaveTriggered = false;
-                        if (location == EffectLocation.PLAINS && playLocation == PlayTargetLocation.PLAINS) shouldHaveTriggered = true;
-                        else if (location == EffectLocation.FOREST && playLocation == PlayTargetLocation.FOREST) shouldHaveTriggered = true;
-                        else if (location == EffectLocation.MOUNTAIN && playLocation == PlayTargetLocation.MOUNTAIN) shouldHaveTriggered = true;
+                        if (location == EffectLocation.PLAINS && playLocation == LaneID.PLAINS) shouldHaveTriggered = true;
+                        else if (location == EffectLocation.FOREST && playLocation == LaneID.FOREST) shouldHaveTriggered = true;
+                        else if (location == EffectLocation.MOUNTAIN && playLocation == LaneID.MOUNTAIN) shouldHaveTriggered = true;
                         CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
                         if (shouldHaveTriggered)
                         {
@@ -157,7 +166,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that registers trigger in board (could be anywhere) but insta dies, leaving the zombie trigger
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 0, 0, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, [0, 3, 4, 9, 10, 17], 0, 0, 1, 1);
                 Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
                 Effect debugEffect = new Effect()
                 {
@@ -174,7 +183,7 @@ namespace EngineTests
                 // Beginning of test
                 int prePlayHash = sm.DetailedState.GetHashCode();
                 int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode();
-                sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play in plains because the unit location itself doesn't matter really
+                sm.PlayFromHand(1, 0); // The unit location itself doesn't matter really
                 int postPlayHash = sm.DetailedState.GetHashCode();
                 int postPlayBoardHash = sm.DetailedState.BoardState.GetHashCode();
                 Assert.AreNotEqual(prePlayHash, postPlayHash); // General hash has changed because of hand size and stuff
@@ -211,7 +220,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that registers trigger in board
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
                 Effect debugEffect = new Effect()
                 {
@@ -228,8 +237,8 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Beginning of test
                 int prePlayHash = sm.DetailedState.GetHashCode();
-                sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play both units
-                sm.PlayFromHand(1, PlayTargetLocation.PLAINS);
+                sm.PlayFromHand(1, 0); // Play both units
+                sm.PlayFromHand(1, 0);
                 int postPlayHash = sm.DetailedState.GetHashCode();
                 Assert.AreNotEqual(prePlayHash, postPlayHash);
                 // Play, test "active" trigger in board
@@ -266,7 +275,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that registers trigger in board
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 1, 1, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
                 Dictionary<TriggerType, List<Effect>> triggerEffect = new Dictionary<TriggerType, List<Effect>>();
                 Effect debugEffect = new Effect()
                 {
@@ -276,7 +285,7 @@ namespace EngineTests
                 unit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
                 unit.Triggers.Add(EffectLocation.BOARD, triggerEffect); // Adds to board (location also not important)
                 // Card 2: Same but unit has 0 hp
-                Unit deadUnit = TestCardGenerator.CreateUnit(2, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 0, 0, 1, 1);
+                Unit deadUnit = TestCardGenerator.CreateUnit(2, "TRIGGER_TEST", 0, [0, 3, 4, 9, 10, 17], 0, 0, 1, 1);
                 deadUnit.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
                 deadUnit.Triggers.Add(EffectLocation.BOARD, triggerEffect);
                 // Setup
@@ -288,8 +297,8 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Beginning of test
                 int prePlayHash = sm.DetailedState.GetHashCode();
-                sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play both units
-                sm.PlayFromHand(2, PlayTargetLocation.PLAINS);
+                sm.PlayFromHand(1, 0); // Play both units
+                sm.PlayFromHand(2, 0);
                 int postPlayHash = sm.DetailedState.GetHashCode();
                 Assert.AreNotEqual(prePlayHash, postPlayHash);
                 // Play, test "active" trigger in board
@@ -327,7 +336,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that triggers where played and places debug event in pile
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, [0, 3, 4, 9, 10, 17], 1, 0, 1, 1);
                 Effect debugEffect = new Effect()
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
@@ -343,18 +352,18 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Beginning of test loop will play the unit in original tile or move elsewhere
                 bool[] testInOriginalTileCases = [true, false];
-                PlayTargetLocation playLane = (PlayTargetLocation)(1 << _rng.Next(GameConstants.BOARD_NUMBER_OF_LANES));
+                LaneID playLane = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]);
                 int firstTileCoord = sm.DetailedState.BoardState.GetLane(playLane).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int randomTileCoord;
                 do
                 {
-                    randomTileCoord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                    randomTileCoord = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
                 } while (randomTileCoord == firstTileCoord); // Get another random tile coord different to original
                 foreach (bool testInOriginalTileCase in testInOriginalTileCases)
                 {
                     // Play the unit in the specific location
                     int prePlayHash = sm.DetailedState.GetHashCode();
-                    sm.PlayFromHand(1, playLane);
+                    sm.PlayFromHand(1, firstTileCoord);
                     if (!testInOriginalTileCase) // Requested to move unit elsewhere
                     {
                         PlacedEntity theEntity = (PlacedEntity)sm.DetailedState.EntityData.Last().Value; // Get the last unit I had summoned
@@ -419,7 +428,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that triggers where played and places debug event in pile
-                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit unit = TestCardGenerator.CreateUnit(1, "TRIGGER_TEST", 0, [0, 3, 4, 9, 10, 17], 1, 0, 1, 1);
                 Effect debugEffect = new Effect()
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
@@ -435,18 +444,18 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test
-                PlayTargetLocation playLane = (PlayTargetLocation)(1 << _rng.Next(GameConstants.BOARD_NUMBER_OF_LANES));
+                LaneID playLane = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]);
                 int firstTileCoord = sm.DetailedState.BoardState.GetLane(playLane).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int randomTileCoord;
                 do
                 {
-                    randomTileCoord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                    randomTileCoord = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
                 } while (randomTileCoord == firstTileCoord); // Get another random tile coord different to original
                 // Play 2 units in the specific location
                 int prePlayHash = sm.DetailedState.GetHashCode();
-                sm.PlayFromHand(1, playLane);
+                sm.PlayFromHand(1, firstTileCoord);
                 PlacedEntity theEntity = (PlacedEntity)sm.DetailedState.EntityData.Last().Value; // Get this summoned unit
-                sm.PlayFromHand(1, playLane);
+                sm.PlayFromHand(1, firstTileCoord);
                 int postPlayHash = sm.DetailedState.GetHashCode();
                 Assert.AreNotEqual(prePlayHash, postPlayHash);
                 // Now move unit 1
@@ -476,9 +485,9 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that just moves
-                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, [], 1, 0, 1, 1);
                 // Card 2: Building that detects marching that happens on it's tile
-                Building marchDetectingBuilding = TestCardGenerator.CreateBuilding(2, "SENSOR_BUILDING", 0, PlayTargetLocation.ALL_LANES, 1, [], [], []);
+                Building marchDetectingBuilding = TestCardGenerator.CreateBuilding(2, "SENSOR_BUILDING", 0, [], 1);
                 Effect debugEffect = new Effect()
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
@@ -491,18 +500,18 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test loop will play the unit in same place as building or elsewhere
-                int buildingCoord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                int buildingCoord = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
                 int randomCoord;
                 do
                 {
-                    randomCoord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                    randomCoord = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
                 } while (randomCoord == buildingCoord); // Get another random tile coord different to original
                 bool[] testinSameLocationCases = [true, false];
                 foreach (bool testinsameLocationCase in testinSameLocationCases)
                 {
                     int unitCoord = testinsameLocationCase ? buildingCoord : randomCoord;
-                    sm.UNIT_PlayUnit(playerIndex, new UnitPlayContext() { Actor = marchingUnit, AbsoluteInitialTile = unitCoord }); // Manually insert unit
-                    sm.BUILDING_ConstructBuilding(playerIndex, new ConstructionContext() { AbsoluteConstructionTile = buildingCoord, Affected = marchDetectingBuilding }); // Manually insert building
+                    sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = marchingUnit, PlayedTarget = unitCoord }); // Manually insert unit
+                    sm.BUILDING_ConstructBuilding(playerIndex, new ConstructionContext() { AbsoluteConstructionTile = buildingCoord, Actor = marchingUnit, Affected = marchDetectingBuilding }); // Manually insert building
                     sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger useless debug event to properly terminate event stack
                     int preMarchHash = sm.DetailedState.GetHashCode();
                     StepResult res = sm.Step(); // This should trigger marching of units and such
@@ -538,7 +547,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that just moves
-                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit marchingUnit = TestCardGenerator.CreateUnit(1, "MARCHING_UNIT", 0, [], 1, 0, 1, 1);
                 Effect debugEffect = new Effect()
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
@@ -551,7 +560,7 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test will play the unit and make it march
-                sm.UNIT_PlayUnit(playerIndex, new UnitPlayContext() { Actor = marchingUnit, AbsoluteInitialTile = 0 }); // Manually insert unit
+                sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = marchingUnit, PlayedTarget = 0 }); // Manually insert unit
                 sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger useless debug event to properly terminate event stack
                 int preMarchHash = sm.DetailedState.GetHashCode();
                 StepResult res = sm.Step(); // This should trigger marching of units and such
@@ -579,7 +588,7 @@ namespace EngineTests
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that just moves
-                Unit eotSensor = TestCardGenerator.CreateUnit(1, "ETO_SENSOR_UNIT", 0, PlayTargetLocation.ALL_LANES, 1, 0, 1, 1);
+                Unit eotSensor = TestCardGenerator.CreateUnit(1, "ETO_SENSOR_UNIT", 0, [0, 3, 4, 9, 10, 17], 1, 0, 1, 1);
                 Effect debugEffect = new Effect()
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE
@@ -605,7 +614,7 @@ namespace EngineTests
                 sm.UndoPreviousStep();
                 Assert.AreEqual(preEotHash, sm.DetailedState.GetHashCode());
                 // SECOND: EOT and ensure now it's triggered
-                sm.PlayFromHand(1, PlayTargetLocation.PLAINS); // Play the unit anywhere idc
+                sm.PlayFromHand(1, 0); // Play the unit anywhere idc
                 preEotHash = sm.DetailedState.GetHashCode();
                 res = sm.EndTurn();
                 Assert.AreNotEqual(preEotHash, sm.DetailedState.GetHashCode());

@@ -333,7 +333,7 @@ namespace ODLGameEngine
         public Board()
         {
             ElementType = BoardElementType.BOARD;
-            int numberOfTiles = GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES;
+            int numberOfTiles = GameConstants.BOARD_NUMBER_OF_TILES;
             Tiles = new Tile[numberOfTiles]; // Inits all the tiles
             for (int i = 0; i < numberOfTiles; i++)
             {
@@ -359,15 +359,9 @@ namespace ODLGameEngine
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
-        public Lane GetLane(PlayTargetLocation laneTarget)
+        public Lane GetLane(int lane)
         {
-            return laneTarget switch
-            {
-                PlayTargetLocation.PLAINS => PlainsLane,
-                PlayTargetLocation.FOREST => ForestLane,
-                PlayTargetLocation.MOUNTAIN => MountainLane,
-                _ => throw new Exception("Unrecognized lane requested"),
-            };
+            return Lanes[lane];
         }
         public Lane GetLaneContainingTile(int tileCoord)
         {
@@ -380,7 +374,7 @@ namespace ODLGameEngine
             {
                 return ForestLane;
             }
-            else if (tileCoord < (GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES))
+            else if (tileCoord < (GameConstants.BOARD_NUMBER_OF_TILES))
             {
                 return MountainLane;
             }
@@ -390,7 +384,6 @@ namespace ODLGameEngine
         {
             return GetLaneContainingTile(tile.Coord);
         }
-
         //EntityListOperation(PlacedEntity entity, EntityListOperation op)
         public override int GetHashCode()
         {
