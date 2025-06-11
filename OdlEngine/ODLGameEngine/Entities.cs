@@ -34,7 +34,9 @@ namespace ODLGameEngine
         BOARD,
         LANE,
         TILE,
+        TILE_RELATIVE,
         UNIT,
+        UNIT_RELATIVE,
         BUILDING
     }
     /// <summary>

@@ -283,8 +283,8 @@
             {
                 CardTargetingType.BOARD => DetailedState.BoardState,
                 CardTargetingType.LANE => DetailedState.BoardState.GetLane(playCtx.PlayedTarget),
-                CardTargetingType.TILE => DetailedState.BoardState.Tiles[playCtx.PlayedTarget],
-                CardTargetingType.UNIT or CardTargetingType.BUILDING => DetailedState.BoardState.Tiles[((PlacedEntity)DetailedState.EntityData[playCtx.PlayedTarget]).TileCoordinate],
+                CardTargetingType.TILE or CardTargetingType.TILE_RELATIVE => DetailedState.BoardState.Tiles[playCtx.PlayedTarget],
+                CardTargetingType.UNIT or CardTargetingType.UNIT_RELATIVE or CardTargetingType.BUILDING => DetailedState.BoardState.Tiles[((PlacedEntity)DetailedState.EntityData[playCtx.PlayedTarget]).TileCoordinate],
                 _ => throw new Exception("No other supported play targets for now")
             };
         }

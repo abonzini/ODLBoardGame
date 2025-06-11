@@ -495,6 +495,145 @@ namespace EngineTests
             }
         }
 
+        // TILE TARGETING, RELATIVE
+        [TestMethod]
+        public void VerifyValidTileRelativeTargets()
+        {
+            // Creates a skill with TILE target, add some valid and some invalid tiles, check play
+            // Ensure playable only in the valid tiles
+            // Different players will have different tiles tho
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Let's define valid and invalid tiles
+                HashSet<int> validTiles = new HashSet<int>();
+                HashSet<int> invalidTiles = new HashSet<int>();
+                int tileCountInEachSet = _rng.Next(2, 5);
+                while (validTiles.Count < tileCountInEachSet)
+                {
+                    int nextTile = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
+                    if (!validTiles.Contains(nextTile) && !invalidTiles.Contains(nextTile))
+                    {
+                        validTiles.Add(nextTile);
+                    }
+                }
+                while (invalidTiles.Count < tileCountInEachSet)
+                {
+                    int nextTile = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
+                    if (!validTiles.Contains(nextTile) && !invalidTiles.Contains(nextTile))
+                    {
+                        invalidTiles.Add(nextTile);
+                    }
+                }
+                HashSet<int> allTiles = [.. validTiles, .. invalidTiles];
+                // Rest of init
+                CardFinder cardDb = new CardFinder();
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE_RELATIVE);
+                cardDb.InjectCard(1, boardTargetableSkill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                Assert.AreEqual(tileCountInEachSet, res.ValidTargets.Count);
+                Assert.AreEqual(PlayOutcome.OK, res.PlayOutcome);
+                foreach (int tile in allTiles)
+                {
+                    // This is the absolute!
+                    Lane refLane = sm.DetailedState.BoardState.GetLaneContainingTile(tile);
+                    int coordRelativeToLane = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, tile); // Get relative to lane
+                    int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerIndex); // Obtain the equivalent for the player who's checking
+                    if (validTiles.Contains(tile))
+                    {
+                        Assert.IsTrue(res.ValidTargets.Contains(absoluteCoord));
+                    }
+                    else
+                    {
+                        Assert.IsFalse(res.ValidTargets.Contains(absoluteCoord));
+                    }
+                }
+            }
+        }
+        [TestMethod]
+        public void VerifyPlayTileRelativeTargets()
+        {
+            // Creates a skill with TILE target, add some valid and some invalid tiles, check play
+            // Ensure plays only in the valid tiles
+            // Different players will have different tiles tho
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Let's define valid and invalid tiles
+                HashSet<int> validTiles = new HashSet<int>();
+                HashSet<int> invalidTiles = new HashSet<int>();
+                int tileCountInEachSet = _rng.Next(2, 5);
+                while (validTiles.Count < tileCountInEachSet)
+                {
+                    int nextTile = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
+                    if (!validTiles.Contains(nextTile) && !invalidTiles.Contains(nextTile))
+                    {
+                        validTiles.Add(nextTile);
+                    }
+                }
+                while (invalidTiles.Count < tileCountInEachSet)
+                {
+                    int nextTile = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
+                    if (!validTiles.Contains(nextTile) && !invalidTiles.Contains(nextTile))
+                    {
+                        invalidTiles.Add(nextTile);
+                    }
+                }
+                HashSet<int> allTiles = [.. validTiles, .. invalidTiles];
+                // Rest of init
+                CardFinder cardDb = new CardFinder();
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE_RELATIVE);
+                Effect debugEvent = new Effect() { EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE };
+                boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
+                cardDb.InjectCard(1, boardTargetableSkill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                foreach (int tile in allTiles) // Check all tiles
+                {
+                    // This is what I actually play
+                    Lane refLane = sm.DetailedState.BoardState.GetLaneContainingTile(tile);
+                    int coordRelativeToLane = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, tile); // Get relative to lane
+                    int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerIndex); // Obtain the equivalent for the player who's checking
+
+                    int prePlayHash = sm.DetailedState.GetHashCode();
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, absoluteCoord); // Play in this target
+                    if (validTiles.Contains(tile)) // This was a valid target (relative-wise), ensure played correctly
+                    {
+                        CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2); // See if I got debug event
+                        // Asserts
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                        Assert.IsNotNull(cpu);
+                        Assert.AreEqual(absoluteCoord, res.Item1.PlayedTarget);
+                        Assert.AreEqual(PlayOutcome.OK, res.Item1.PlayOutcome);
+                        // Reversion
+                        sm.UndoPreviousStep();
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    }
+                    else // Shouldn't have been able to be played here
+                    {
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                        Assert.IsNull(res.Item2);
+                        Assert.AreEqual(PlayOutcome.NO_TARGET_AVAILABLE, res.Item1.PlayOutcome);
+                    }
+                }
+            }
+        }
+
         // UNIT TARGETING
         [TestMethod]
         public void VerifyValidUnitTargets()
@@ -604,6 +743,161 @@ namespace EngineTests
                 // Rest of init
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT);
+                Effect debugEvent = new Effect() { EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE };
+                boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
+                cardDb.InjectCard(1, boardTargetableSkill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                foreach (int unit in allUnits) // Check all units
+                {
+                    int prePlayHash = sm.DetailedState.GetHashCode();
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, unit); // Play in this target
+                    if (validUnits.Contains(unit)) // This was a valid target, ensure played correctly
+                    {
+                        CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2); // See if I got debug event
+                        // Asserts
+                        Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                        Assert.IsNotNull(cpu);
+                        Assert.AreEqual(unit, res.Item1.PlayedTarget);
+                        Assert.AreEqual(PlayOutcome.OK, res.Item1.PlayOutcome);
+                        // Reversion
+                        sm.UndoPreviousStep();
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    }
+                    else // Shouldn't have been able to be played here
+                    {
+                        Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                        Assert.IsNull(res.Item2);
+                        Assert.AreEqual(PlayOutcome.NO_TARGET_AVAILABLE, res.Item1.PlayOutcome);
+                    }
+                }
+            }
+        }
+
+        // UNIT TARGETING, RELATIVE
+        [TestMethod]
+        public void VerifyValidUnitRelativeTargets()
+        {
+            // Creates a skill with UNIT target, will be playable in even tiles
+            // Then, put a bunch of units in even tiles, and a bunch in odds, check values are ok
+            // In this case, as UNIT tile map is relative, for P2, odd units are actually the playable ones
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Let's define valid tiles as the even ones
+                HashSet<int> validTiles = new HashSet<int>();
+                for (int i = 0; i < GameConstants.BOARD_NUMBER_OF_TILES; i++)
+                {
+                    if (i % 2 == 0) validTiles.Add(i); // Add even tiles
+                }
+                // Let's add random units
+                Unit theUnit = TestCardGenerator.CreateUnit(2, "TEST", 0, [], 1, 0, 1, 1);
+                int evenUnits = _rng.Next(2, 5);
+                int oddUnits = _rng.Next(2, 5);
+                HashSet<int> validUnits = new HashSet<int>();
+                HashSet<int> invalidUnits = new HashSet<int>();
+                int nextUniqueId = 2; // Next entity ID
+                for (int i = 0; i < evenUnits; i++)
+                {
+                    int nextCoord = _rng.Next(9) * 2;
+                    TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Unit)theUnit.Clone());
+                    validUnits.Add(nextUniqueId);
+                    nextUniqueId++;
+                }
+                for (int i = 0; i < oddUnits; i++)
+                {
+                    int nextCoord = (_rng.Next(9) * 2) + 1;
+                    TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Unit)theUnit.Clone());
+                    invalidUnits.Add(nextUniqueId);
+                    nextUniqueId++;
+                }
+                HashSet<int> allUnits = [.. validUnits, .. invalidUnits];
+                if(player == CurrentPlayer.PLAYER_2) // Player 2 switches even units and odd units!
+                {
+                    HashSet<int> auxHashSet = validUnits;
+                    validUnits = invalidUnits;
+                    invalidUnits = auxHashSet;
+                }
+                // Rest of init
+                CardFinder cardDb = new CardFinder();
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT_RELATIVE);
+                cardDb.InjectCard(1, boardTargetableSkill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
+                Assert.AreEqual(validUnits.Count, res.ValidTargets.Count);
+                Assert.AreEqual(PlayOutcome.OK, res.PlayOutcome);
+                foreach (int unit in allUnits)
+                {
+                    if (validUnits.Contains(unit))
+                    {
+                        Assert.IsTrue(res.ValidTargets.Contains(unit));
+                    }
+                    else
+                    {
+                        Assert.IsFalse(res.ValidTargets.Contains(unit));
+                    }
+                }
+            }
+        }
+        [TestMethod]
+        public void VerifyPlayUnitRelativeTargets()
+        {
+            // Creates a skill with UNIT target, will be playable in even tiles
+            // Then, put a bunch of units in even tiles, and a bunch in odds, check it only plays in good ones
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Let's define valid tiles as the even ones
+                HashSet<int> validTiles = new HashSet<int>();
+                for (int i = 0; i < GameConstants.BOARD_NUMBER_OF_TILES; i++)
+                {
+                    if (i % 2 == 0) validTiles.Add(i); // Add even tiles
+                }
+                // Let's add random units
+                Unit theUnit = TestCardGenerator.CreateUnit(2, "TEST", 0, [], 1, 0, 1, 1);
+                int evenUnits = _rng.Next(2, 5);
+                int oddUnits = _rng.Next(2, 5);
+                HashSet<int> validUnits = new HashSet<int>();
+                HashSet<int> invalidUnits = new HashSet<int>();
+                int nextUniqueId = 2; // Next entity ID
+                for (int i = 0; i < evenUnits; i++)
+                {
+                    int nextCoord = _rng.Next(9) * 2;
+                    TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Unit)theUnit.Clone());
+                    validUnits.Add(nextUniqueId);
+                    nextUniqueId++;
+                }
+                for (int i = 0; i < oddUnits; i++)
+                {
+                    int nextCoord = (_rng.Next(9) * 2) + 1;
+                    TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Unit)theUnit.Clone());
+                    invalidUnits.Add(nextUniqueId);
+                    nextUniqueId++;
+                }
+                HashSet<int> allUnits = [.. validUnits, .. invalidUnits];
+                if (player == CurrentPlayer.PLAYER_2) // Player 2 switches even units and odd units!
+                {
+                    HashSet<int> auxHashSet = validUnits;
+                    validUnits = invalidUnits;
+                    invalidUnits = auxHashSet;
+                }
+                // Rest of init
+                CardFinder cardDb = new CardFinder();
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT_RELATIVE);
                 Effect debugEvent = new Effect() { EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE };
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
