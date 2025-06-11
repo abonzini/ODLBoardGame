@@ -76,7 +76,7 @@
                 return resultingPlayContext;
             }
             // Does it have any valid targets?
-            if(cardData.TargetOptions == null)
+            if (cardData.TargetOptions == null)
             {
                 resultingPlayContext.PlayOutcome = PlayOutcome.NO_TARGET_AVAILABLE;
                 return resultingPlayContext;
@@ -96,7 +96,7 @@
             {
                 case CardTargetingType.BOARD:
                     // TODO: Here we'd raise a playability context request to ask the card if special conditions
-                    if(onlyRelevantTarget == 0 || onlyRelevantTarget == -1) // Valid answer always only 0 for board
+                    if (onlyRelevantTarget == 0 || onlyRelevantTarget == -1) // Valid answer always only 0 for board
                     {
                         resultingPlayContext.ValidTargets.Add(0);
                     }
@@ -165,38 +165,50 @@
                 case CardTargetingType.UNIT:
                 case CardTargetingType.UNIT_RELATIVE:
                     {
+                        // What am I looking for?
                         EntityType typeToLookFor = targetType switch
                         {
                             CardTargetingType.UNIT or CardTargetingType.UNIT_RELATIVE => EntityType.UNIT,
                             CardTargetingType.BUILDING => EntityType.BUILDING,
                             _ => throw new NotImplementedException("Can never get here")
                         };
-                        HashSet<int> optionsToCheck;
+                        // Owner of the stuff I'm looking for
+                        int entityOwnerCheck = cardData.EntityType switch
+                        {
+                            EntityType.SKILL => ((Skill)cardData).TargetOwner switch
+                            {
+                                EntityOwner.OPPONENT => (1 - playerChecking),
+                                EntityOwner.BOTH => -1,
+                                _ => playerChecking,
+                            },
+                            _ => playerChecking,
+                        };
+                        HashSet<int> tilesToCheck;
                         // Check if I need to convert tiles to relative first
                         if (targetType == CardTargetingType.UNIT_RELATIVE)
                         {
-                            optionsToCheck = new HashSet<int>();
+                            tilesToCheck = new HashSet<int>();
                             foreach (int targetOption in cardData.TargetOptions)
                             {
                                 Lane refLane = DetailedState.BoardState.GetLaneContainingTile(targetOption);
                                 int coordRelativeToLane = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, targetOption); // Get relative to lane
                                 int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerChecking); // Obtain the equivalent for the player who's checking
-                                optionsToCheck.Add(absoluteCoord);
+                                tilesToCheck.Add(absoluteCoord);
                             }
                         }
                         else
                         {
-                            optionsToCheck = cardData.TargetOptions;
+                            tilesToCheck = cardData.TargetOptions;
                         }
-                        // This one is kinda tricky, will go tile by tile, but look for units instead so...
-                        if (onlyRelevantTarget == -1) // Get all valid units here
+                        // This one is kinda tricky, will go tile by tile, but look for entities instead so...
+                        if (onlyRelevantTarget == -1) // Get all valid entities in this case
                         {
-                            foreach (int possibleTarget in optionsToCheck)
+                            foreach (int possibleTarget in tilesToCheck)
                             {
                                 if (possibleTarget >= 0 && possibleTarget < GameConstants.BOARD_NUMBER_OF_TILES) // Check if valid tile
                                 {
                                     // Check all of the units in a tile
-                                    foreach (int entity in DetailedState.BoardState.Tiles[possibleTarget].GetPlacedEntities(typeToLookFor, playerChecking))
+                                    foreach (int entity in DetailedState.BoardState.Tiles[possibleTarget].GetPlacedEntities(typeToLookFor, entityOwnerCheck))
                                     {
                                         // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
                                         resultingPlayContext.ValidTargets.Add(entity);
@@ -204,12 +216,15 @@
                                 }
                             }
                         }
-                        else if (DetailedState.EntityData.TryGetValue(onlyRelevantTarget, out LivingEntity value)) // Check if unit truly exists
+                        else if (DetailedState.EntityData.TryGetValue(onlyRelevantTarget, out LivingEntity foundEntity)) // Check if unit truly exists
                         {
-                            if (optionsToCheck.Contains(((PlacedEntity)value).TileCoordinate)) // Check if unit in a valid tile
+                            if (entityOwnerCheck == -1 || entityOwnerCheck == foundEntity.Owner) // Check to make sure it's the same ownership I'm looking for
                             {
-                                // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
-                                resultingPlayContext.ValidTargets.Add(onlyRelevantTarget);
+                                if (tilesToCheck.Contains(((PlacedEntity)foundEntity).TileCoordinate)) // Check if unit in a valid tile
+                                {
+                                    // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
+                                    resultingPlayContext.ValidTargets.Add(onlyRelevantTarget);
+                                }
                             }
                         }
                     }

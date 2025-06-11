@@ -135,7 +135,7 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 state.PlayerStates[playerIndex].CurrentGold = 5; // Player has 5 gold
                 // Play
-                for(int cost = 0; cost < 10; cost++)
+                for (int cost = 0; cost < 10; cost++)
                 {
                     boardTargetableSkill.Cost = cost; // Card is now a new price
                     GameStateMachine sm = new GameStateMachine(cardDb);
@@ -143,7 +143,7 @@ namespace EngineTests
                     int prePlayHash = sm.DetailedState.GetHashCode();
                     Assert.AreEqual(1, state.PlayerStates[playerIndex].Hand.CardCount);
                     Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Plays (board target)
-                    if(cost <= 5) // Should've been paid
+                    if (cost <= 5) // Should've been paid
                     {
                         Assert.AreEqual(0, state.PlayerStates[playerIndex].Hand.CardCount); // Used the card
                         CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
@@ -161,7 +161,7 @@ namespace EngineTests
                         Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                         Assert.IsNull(res.Item2);
                         Assert.AreEqual(PlayOutcome.CANT_AFFORD, res.Item1.PlayOutcome);
-                    }    
+                    }
                 }
             }
         }
@@ -217,7 +217,7 @@ namespace EngineTests
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 int prePlayHash = sm.DetailedState.GetHashCode();
-                Tuple<PlayContext, StepResult>  res = sm.PlayFromHand(1, 0); // Plays (board target)
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Plays (board target)
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
                 // Asserts
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -278,7 +278,7 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                for(int i = 0; i < 16; i++) // All combinations of valid lanes and one invalid
+                for (int i = 0; i < 16; i++) // All combinations of valid lanes and one invalid
                 {
                     int realLaneNumber = 0;
                     HashSet<int> targets = new HashSet<int>();
@@ -288,7 +288,7 @@ namespace EngineTests
                     if ((i & 0b1000) != 0) targets.Add(3); // Non existing lane 3
                     boardTargetableSkill.TargetOptions = targets;
                     PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
-                    if(realLaneNumber == 0) // Should be no valid lanes
+                    if (realLaneNumber == 0) // Should be no valid lanes
                     {
                         Assert.AreEqual(0, res.ValidTargets.Count);
                         Assert.AreEqual(PlayOutcome.NO_TARGET_AVAILABLE, res.PlayOutcome);
@@ -297,9 +297,9 @@ namespace EngineTests
                     {
                         Assert.AreEqual(realLaneNumber, res.ValidTargets.Count);
                         Assert.AreEqual(PlayOutcome.OK, res.PlayOutcome);
-                        foreach(int target in targets)
+                        foreach (int target in targets)
                         {
-                            if(target < GameConstants.BOARD_NUMBER_OF_LANES)
+                            if (target < GameConstants.BOARD_NUMBER_OF_LANES)
                             {
                                 Assert.IsTrue(res.ValidTargets.Contains(target));
                             }
@@ -340,7 +340,7 @@ namespace EngineTests
                     if ((i & 0b0010) != 0) targets.Add(1);
                     if ((i & 0b0100) != 0) targets.Add(2);
                     boardTargetableSkill.TargetOptions = targets;
-                    for(int j = 0; j < GameConstants.BOARD_NUMBER_OF_LANES; j++) // Play in each
+                    for (int j = 0; j < GameConstants.BOARD_NUMBER_OF_LANES; j++) // Play in each
                     {
                         int prePlayHash = sm.DetailedState.GetHashCode();
                         Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, j); // Play in this target
@@ -401,7 +401,7 @@ namespace EngineTests
                         invalidTiles.Add(nextTile);
                     }
                 }
-                HashSet<int> allTiles = [..validTiles, ..invalidTiles];
+                HashSet<int> allTiles = [.. validTiles, .. invalidTiles];
                 // Rest of init
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE);
@@ -650,9 +650,9 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 // Let's define valid tiles as the even ones
                 HashSet<int> validTiles = new HashSet<int>();
-                for(int i = 0; i < GameConstants.BOARD_NUMBER_OF_TILES; i++)
+                for (int i = 0; i < GameConstants.BOARD_NUMBER_OF_TILES; i++)
                 {
-                    if(i % 2 == 0) validTiles.Add(i); // Add even tiles
+                    if (i % 2 == 0) validTiles.Add(i); // Add even tiles
                 }
                 // Let's add random units
                 Unit theUnit = TestCardGenerator.CreateUnit(2, "TEST", 0, [], 1, 0, 1, 1);
@@ -819,7 +819,7 @@ namespace EngineTests
                     nextUniqueId++;
                 }
                 HashSet<int> allUnits = [.. validUnits, .. invalidUnits];
-                if(player == CurrentPlayer.PLAYER_2) // Player 2 switches even units and odd units!
+                if (player == CurrentPlayer.PLAYER_2) // Player 2 switches even units and odd units!
                 {
                     HashSet<int> auxHashSet = validUnits;
                     validUnits = invalidUnits;
