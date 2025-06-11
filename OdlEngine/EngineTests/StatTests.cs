@@ -32,9 +32,11 @@ namespace EngineTests
             // Create 3 random numbers
             int v1 = _rng.Next(1, 100);
             int v2 = _rng.Next(1, 100);
-            Stat _stat = new Stat();
-            _stat.BaseValue = v1;
-            _stat.Modifier = v2;
+            Stat _stat = new Stat
+            {
+                BaseValue = v1,
+                Modifier = v2
+            };
             int _statHash = _stat.GetHashCode(); // Gets Hash
             // Is hash dependent on base value only?
             _stat.BaseValue++;
@@ -51,9 +53,11 @@ namespace EngineTests
         public void Min1StatCheck()
         {
             // Create stat, add modifiers, verify the min possible total is 1 with multiple actions
-            Min1Stat _stat = new Min1Stat();
-            _stat.BaseValue = 10;
-            _stat.Modifier = -5;
+            Min1Stat _stat = new Min1Stat
+            {
+                BaseValue = 10,
+                Modifier = -5
+            };
             Assert.AreEqual(_stat.BaseValue, 10);
             Assert.AreEqual(_stat.Modifier, -5);
             Assert.AreEqual(_stat.Total, 5);
@@ -74,9 +78,11 @@ namespace EngineTests
         public void Min0StatCheck()
         {
             // Create stat, add modifiers, verify the min possible total is 1 with multiple actions
-            Min0Stat _stat = new Min0Stat();
-            _stat.BaseValue = 10;
-            _stat.Modifier = -5;
+            Min0Stat _stat = new Min0Stat
+            {
+                BaseValue = 10,
+                Modifier = -5
+            };
             Assert.AreEqual(_stat.BaseValue, 10);
             Assert.AreEqual(_stat.Modifier, -5);
             Assert.AreEqual(_stat.Total, 5);
@@ -97,9 +103,11 @@ namespace EngineTests
         public void StatCloningConservesProperty()
         {
             // Create stat, add modifiers, verify the min possible total is 1 with multiple actions
-            Min1Stat _stat = new Min1Stat();
-            _stat.BaseValue = 10;
-            _stat.Modifier = -9;
+            Min1Stat _stat = new Min1Stat
+            {
+                BaseValue = 10,
+                Modifier = -9
+            };
             // Stat has a min of 1 so this is a sanity check
             _stat.Modifier = -10;
             Assert.AreEqual(_stat.BaseValue, 10);
