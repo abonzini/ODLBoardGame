@@ -13,10 +13,7 @@
     <Compile Remove="BuildingTests.cs" />
     <Compile Remove="DeserializeAllCards.cs" />
     <Compile Remove="EffectTests.cs" />
-    <Compile Remove="GameEngineTests.cs" />
     <Compile Remove="InteractionTests.cs" />
-    <Compile Remove="PlayabilityAndTargetingTests.cs" />
-    <Compile Remove="StatTests.cs" />
     <Compile Remove="TriggerTests.cs" />
     <Compile Remove="UnitAndBattleTests.cs" />
   </ItemGroup>
