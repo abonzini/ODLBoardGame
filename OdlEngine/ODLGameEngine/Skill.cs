@@ -1,7 +1,20 @@
-﻿namespace ODLGameEngine
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.Xml.Linq;
+
+namespace ODLGameEngine
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class Skill : IngameEntity
     {
-        // Empty for now, card contains all necessary info, will not be instantiated either
+        [JsonProperty]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public CardTargetingType TargetType { get; set; } = CardTargetingType.BOARD;
+        public override object Clone()
+        {
+            Skill newSkill = (Skill)base.Clone();
+            newSkill.TargetType = TargetType;
+            return newSkill;
+        }
     }
 }

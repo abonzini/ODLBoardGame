@@ -15,14 +15,15 @@ namespace EngineTests
         /// <param name="cost">Cost</param>
         /// <param name="target">Targets</param>
         /// <returns></returns>
-        public static Skill CreateSkill(int id, string name, int cost, PlayTargetLocation target)
+        public static Skill CreateSkill(int id, int cost, HashSet<int> targetOptions, CardTargetingType skillTarget)
         {
             return new Skill() // Returns "brick" card
             {
                 Id = id,
                 Cost = cost,
                 EntityType = EntityType.SKILL,
-                TargetOptions = target,
+                TargetOptions = targetOptions,
+                TargetType = skillTarget
             };
         }
         /// <summary>
@@ -37,7 +38,7 @@ namespace EngineTests
         /// <param name="movement">Movement</param>
         /// <param name="denominator">Movement Denominator</param>
         /// <returns></returns>
-        public static Unit CreateUnit(int id, string name, int cost, PlayTargetLocation target, int hp, int attack, int movement, int denominator)
+        public static Unit CreateUnit(int id, string name, int cost, HashSet<int> target, int hp, int attack, int movement, int denominator)
         {
             Unit unit = new Unit()
             {
@@ -65,7 +66,7 @@ namespace EngineTests
         /// <param name="forestBp">Array with forest Bp options</param>
         /// <param name="mountainBp">Array with mountain Bp options</param>
         /// <returns></returns>
-        public static Building CreateBuilding(int id, string name, int cost, PlayTargetLocation target, int hp, int[] plainBp, int[] forestBp, int[] mountainBp)
+        public static Building CreateBuilding(int id, string name, int cost, HashSet<int> target, int hp)
         {
             Building building = new Building() // Returns "TOKEN_BUILDING" card
             {
@@ -73,10 +74,7 @@ namespace EngineTests
                 Name = name,
                 Cost = cost,
                 EntityType = EntityType.BUILDING,
-                TargetOptions = target,
-                PlainsBp = plainBp,
-                ForestBp = forestBp,
-                MountainBp = mountainBp,
+                TargetOptions = target
             };
             building.Hp.BaseValue = hp;
             return building;

@@ -64,12 +64,12 @@ namespace EngineTests
                     if (i <= 7)
                     {
                         Assert.AreEqual(res.PlayOutcome, PlayOutcome.OK); // OK
-                        Assert.AreEqual(res.PlayTarget, (PlayTargetLocation)i); // All them valid targets
+                        Assert.AreEqual(res.PlayedTarget, (PlayTargetLocation)i); // All them valid targets
                     }
                     else
                     {
                         Assert.AreEqual(res.PlayOutcome, PlayOutcome.NO_TARGET_AVAILABLE); // Would be an error!
-                        Assert.AreEqual(res.PlayTarget, PlayTargetLocation.INVALID); // Bc invalid...
+                        Assert.AreEqual(res.PlayedTarget, PlayTargetLocation.INVALID); // Bc invalid...
                     }
                 }
             }
@@ -94,7 +94,7 @@ namespace EngineTests
                     {
                         PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
                         Assert.AreEqual(res.PlayOutcome, PlayOutcome.INVALID_GAME_STATE);
-                        Assert.AreEqual(res.PlayTarget, PlayTargetLocation.INVALID);
+                        Assert.AreEqual(res.PlayedTarget, PlayTargetLocation.INVALID);
                     }
                 }
             }
@@ -125,7 +125,7 @@ namespace EngineTests
                     {
                         PlayContext res = sm.GetPlayabilityOptions(card, PlayType.PLAY_FROM_HAND);
                         Assert.AreEqual(res.PlayOutcome, PlayOutcome.INVALID_CARD); // Would be an error!
-                        Assert.AreEqual(res.PlayTarget, PlayTargetLocation.INVALID); // Also this invalid...
+                        Assert.AreEqual(res.PlayedTarget, PlayTargetLocation.INVALID); // Also this invalid...
                     }
                 }
             }

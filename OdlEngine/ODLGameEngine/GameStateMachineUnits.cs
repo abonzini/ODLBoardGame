@@ -3,29 +3,12 @@
     public partial class GameStateMachine // Deals with unit and unit related stuff, maybe advancing
     {
         /// <summary>
-        /// Obtains a Unit play context which describes where a unit can be placed
-        /// </summary>
-        /// <param name="player">Reference player owner</param>
-        /// <param name="unit">Unit to summon</param>
-        /// <param name="laneTarget">Lane to place it</param>
-        /// <returns>Context with info of where it's allowed to play unit</returns>
-        public UnitPlayContext UNIT_GetUnitPlayData(int player, Unit unit, PlayTargetLocation laneTarget)
-        {
-            // TODO: This can be extremely complex depending on future effects, for now, unit is literally placed on the first tile of lane
-            UnitPlayContext res = new UnitPlayContext
-            {
-                Actor = unit,
-                AbsoluteInitialTile = DetailedState.BoardState.GetLane(laneTarget).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, player)
-            };
-            return res;
-        }
-        /// <summary>
         /// Plays the unit as described by the context
         /// </summary>
         /// <param name="player">Player owner</param>
         /// <param name="playContext">Context of playability</param>
         /// <returns></returns>
-        public Unit UNIT_PlayUnit(int player, UnitPlayContext playContext)
+        public Unit UNIT_PlayUnit(int player, PlayContext playContext)
         {
             // Clone unit, set player
             Unit newSpawnedUnit = (Unit)playContext.Actor.Clone();
@@ -34,7 +17,7 @@
             // Add to board
             LIVINGENTITY_InitializeEntity(newSpawnedUnit);
             // Places unit in correct coord
-            LIVINGENTITY_InsertInTile(newSpawnedUnit, playContext.AbsoluteInitialTile);
+            LIVINGENTITY_InsertInTile(newSpawnedUnit, playContext.PlayedTarget);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             LIVINGENTITY_CheckIfUnitAlive(newSpawnedUnit);
             return newSpawnedUnit;

@@ -359,15 +359,9 @@ namespace ODLGameEngine
                 _ => throw new Exception("Unrecognized lane requested"),
             };
         }
-        public Lane GetLane(PlayTargetLocation laneTarget)
+        public Lane GetLane(int lane)
         {
-            return laneTarget switch
-            {
-                PlayTargetLocation.PLAINS => PlainsLane,
-                PlayTargetLocation.FOREST => ForestLane,
-                PlayTargetLocation.MOUNTAIN => MountainLane,
-                _ => throw new Exception("Unrecognized lane requested"),
-            };
+            return Lanes[lane];
         }
         public Lane GetLaneContainingTile(int tileCoord)
         {
@@ -390,7 +384,6 @@ namespace ODLGameEngine
         {
             return GetLaneContainingTile(tile.Coord);
         }
-
         //EntityListOperation(PlacedEntity entity, EntityListOperation op)
         public override int GetHashCode()
         {

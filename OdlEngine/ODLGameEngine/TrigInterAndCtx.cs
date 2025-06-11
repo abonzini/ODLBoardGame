@@ -172,9 +172,10 @@ namespace ODLGameEngine
     /// </summary>
     public class PlayContext : EffectContext
     {
-        public PlayTargetLocation PlayTarget = PlayTargetLocation.INVALID;
+        public CardTargetingType TargetingType = CardTargetingType.BOARD;
+        public HashSet<int> ValidTargets = null;
+        public int PlayedTarget = -1;
         public int PlayCost = 0;
-        public EffectContext LastAuxContext = null; // Some things like checking construction or unit will generate this. For playing in a line, this will put the context here for later use
         public PlayType PlayType = PlayType.PLAY_FROM_HAND;
         public PlayOutcome PlayOutcome = PlayOutcome.NO_TARGET_AVAILABLE;
     }
@@ -201,10 +202,6 @@ namespace ODLGameEngine
     {
         public bool FirstTileMarch = false;
         public int CurrentMovement = 0;
-    }
-    public class UnitPlayContext : EffectContext
-    {
-        public int AbsoluteInitialTile = -1;
     }
     /// <summary>
     /// When a construction takes place

@@ -4,6 +4,9 @@ using System.ComponentModel;
 
 namespace ODLGameEngine
 {
+    /// <summary>
+    /// Describes what type of entity a card is
+    /// </summary>
     [JsonConverter(typeof(FlagEnumJsonConverter))]
     [Flags]
     public enum EntityType
@@ -22,24 +25,17 @@ namespace ODLGameEngine
     {
         VANILLA
     }
-
     /// <summary>
-    /// Defines how/where card can be targeted, useful for giving options at a first glance to a player
+    /// Defines what sort of target a card has, normally fixed on many card type but skills may have different ones
     /// </summary>
-    [Flags]
-    [JsonConverter(typeof(FlagEnumJsonConverter))]
-    public enum PlayTargetLocation
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum CardTargetingType
     {
-        // Absolute targets (For playing and TrigInter)
-        BOARD = 0,
-        PLAINS = 1,
-        FOREST = 2,
-        MOUNTAIN = 4,
-        ALL_BUT_MOUNTAIN = 3,
-        ALL_BUT_FOREST = 5,
-        ALL_BUT_PLAINS = 6,
-        ALL_LANES = 7,
-        INVALID = 8
+        BOARD,
+        LANE,
+        TILE,
+        UNIT,
+        BUILDING
     }
     /// <summary>
     /// Will define how a card looks and works before it creates an instance in the board
@@ -76,8 +72,7 @@ namespace ODLGameEngine
         [JsonConverter(typeof(FlagEnumJsonConverter))]
         public EntityType EntityType { get; set; } = EntityType.NONE;
         [JsonProperty]
-        [JsonConverter(typeof(FlagEnumJsonConverter))]
-        public PlayTargetLocation TargetOptions { get; set; } = PlayTargetLocation.BOARD; // Which lane(s) if any the card could work on
+        public HashSet<int> TargetOptions { get; set; } = null; // Which are the valid targets for this, meaning depends on the type of card
         [JsonProperty]
         public int Id { get; set; } = 0;
         [JsonProperty]
@@ -167,7 +162,6 @@ namespace ODLGameEngine
         [JsonProperty]
         [DefaultValue(-1)]
         public int TileCoordinate { get; set; } = -1;
-
         public override object Clone()
         {
             PlacedEntity newEntity = (PlacedEntity)base.Clone();

@@ -42,7 +42,7 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Brick with cost 9
-                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 9, PlayTargetLocation.BOARD));
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, 9, [], CardTargetingType.BOARD));
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 sm.DetailedState.PlayerStates[(int)player].ActivePowerId = 1; // Use expensive brick as placeholder active effect
@@ -117,7 +117,7 @@ namespace EngineTests
             {
                 CardFinder cardDb = new CardFinder();
                 // Card 1: 5-cost brick
-                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, "BRICK", 5, PlayTargetLocation.BOARD));
+                cardDb.InjectCard(1, TestCardGenerator.CreateSkill(1, 5, [], CardTargetingType.BOARD));
                 // Init game state
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
                 state.PlayerStates[0].CurrentGold = 10;
@@ -160,7 +160,7 @@ namespace EngineTests
             {
                 CardFinder cardDb = new CardFinder();
                 // Card 1: 5-cost brick
-                Skill skill = TestCardGenerator.CreateSkill(1, "BRICK", 5, PlayTargetLocation.BOARD);
+                Skill skill = TestCardGenerator.CreateSkill(1, 5, [], CardTargetingType.BOARD);
                 Effect debugEffect = new Effect()
                 {
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Triggers debug event and saves in list of results
