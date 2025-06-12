@@ -1,16 +1,4 @@
 {
-  "PlainsBp": [
-    1,
-    2
-  ],
-  "ForestBp": [
-    2,
-    3
-  ],
-  "MountainBp": [
-    3,
-    4
-  ],
   "Name": "MUDDY ROADS",
   "Hp": 5,
   "Triggers": {
@@ -40,6 +28,14 @@
     }
   },
   "EntityType": "BUILDING",
+  "TargetOptions": [
+    1,
+    2,
+    6,
+    7,
+    13,
+    14
+  ],
   "Id": 4,
   "Cost": 1
 }

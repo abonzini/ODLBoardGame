@@ -5,7 +5,7 @@ The player who reaches 0HP loses the game.
 
 Players take turn, playing **Units**, **Skills** and **Buildings** to try and defeat their opponent.
 
-There are 3 **lanes** a player can take to their enemies territory:
+There are 3 **lanes** that lead to your enemies' territory:
 The **plains**, the **forest** and the **mountains**.
 Each lane is comprised of a number of **tiles**:
 - **Plains**: 4 tiles
@@ -34,7 +34,7 @@ The units stats are:
 - <img src="./../CardResources/CardLayoutElements/attack.png" width="50"> **Attack:** Damage that the unit does to enemies.
 
 When a unit card is played, the player chooses in which **lane** to place it (either **plains**, **forest** or **mountains**).
-Unit is then placed on the first square of that **lane**.
+Unit is then placed on the first square of that **lane** unless it says otherwise.
 
 # March
 
@@ -63,7 +63,7 @@ A type of card that has an effect when played.
 
 These can be added into the deck, but all players of all **tribes** will also have an **Active Skill** available for them each turn.
 
-Most tribes have the **CONSCRIPTION** skill as as an active skill, which summons a **MILITIA** unit in every lane.
+Most tribes may have the **CONSCRIPTION** skill as as an active skill, which summons a **MILITIA** unit in every lane.
 **Active Skills** can be used every turn (if the player can afford it), once per turn.
 Other skill cards can be added to a player's deck and used.
 
@@ -73,10 +73,9 @@ Other skill cards can be added to a player's deck and used.
 
 <img src="./../CardResources/CardImagesFull/3.png" width="150">
 
-Buildings are similar to units, as they are entities that appear in the board when their respective card is played.
-Buildings need to be **constructed** by a unit.
-For this purpose they contain a blueprint, which specifies in where it can be built.
-When a building's lane is chosen, it is built in the first available tile.
+Buildings are similar to units, as they are entities that are placed in a tile when their respective card is played.
+However, to play a building, it'll need to be **constructed** by a unit.
+Moreover, buildings contain contain a blueprint, which specifies in which tiles the building can be constructed.
 
 <img src="./../CardResources/CardBlueprintsFull/3.png" width="200"><img src="./../CardResources/CardImagesFull/3.png" width="150">
 
@@ -85,6 +84,7 @@ When a building's lane is chosen, it is built in the first available tile.
 - Units already in the tile when a building is **constructed** will NOT **enter** the building
 - When an enemy unit **enters** a building, it will damage the building by it's **attack** stat, but can continue their **march** as normal
 - To **construct** a building, an unit needs to be present on at least one of the **tiles** indicated in the blueprint
+- If multiple units are placed in a **tile**, the player can choose which unit will perform the **construction**
 - Only one building can be placed in a specific **tile**, a building can't be constructed if another building is present in the **tile**
 
 # Tribes

@@ -21,11 +21,13 @@ namespace CardGenerationHelper
             for (int i = 0; i < numberOfFlags; i++) // Add checkboxes one by one
             {
                 int flag = 1 << i;
-                CheckBox checkBox = new CheckBox();
-                checkBox.Text = Enum.GetName(theEnumType, flag);
-                checkBox.AutoSize = true;
-                checkBox.TextAlign = ContentAlignment.MiddleCenter;
-                checkBox.CheckAlign = ContentAlignment.BottomCenter; // Moves the checkbox below the text
+                CheckBox checkBox = new CheckBox
+                {
+                    Text = Enum.GetName(theEnumType, flag),
+                    AutoSize = true,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    CheckAlign = ContentAlignment.BottomCenter // Moves the checkbox below the text
+                };
                 CheckboxesPanel.Controls.Add(checkBox);
             }
         }

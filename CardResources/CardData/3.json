@@ -1,19 +1,14 @@
 {
-  "PlainsBp": [
-    0
-  ],
-  "ForestBp": [
-    0,
-    1
-  ],
-  "MountainBp": [
-    0,
-    1
-  ],
   "Name": "WORKSHOP",
   "Hp": 3,
   "EntityType": "BUILDING",
-  "TargetOptions": "ALL_LANES",
+  "TargetOptions": [
+    0,
+    4,
+    5,
+    10,
+    11
+  ],
   "Id": 3,
   "Cost": 3,
   "Interactions": {

@@ -66,10 +66,10 @@ namespace CardGenerationHelper
     }
     public static class DrawHelper
     {
-        public static Dictionary<string, FillHelper> _savedBrushes = new Dictionary<string, FillHelper>();
+        static readonly Dictionary<string, FillHelper> _savedBrushes = new Dictionary<string, FillHelper>();
         public static FillHelper GetImageBrushOrColor(Rectangle container, string path, Color imageColorTint, Color defaultColor, int blackLighten = 0)
         {
-            if (_savedBrushes.ContainsKey(path)) return _savedBrushes[path];
+            if (_savedBrushes.TryGetValue(path, out FillHelper value)) return value;
             FillHelper brush;
             if (Path.Exists(path)) // Check if image exists
             {
@@ -93,12 +93,13 @@ namespace CardGenerationHelper
         }
         public static void DrawRectangleFixedBorder(Graphics g, Rectangle bounds, Color borderColor, int border, FillHelper filler)
         {
-            int relevantSide = Math.Min(bounds.Width, bounds.Height);
             GraphicsPath path = new GraphicsPath();
             path.AddRectangle(bounds);
             g.FillPath(filler.GetBrush(), path);
-            Pen pen = new Pen(borderColor, border);
-            pen.Alignment = PenAlignment.Inset;
+            Pen pen = new Pen(borderColor, border)
+            {
+                Alignment = PenAlignment.Inset
+            };
             g.DrawPath(pen, path);
         }
         public static void DrawRoundedRectangle(Graphics g, Rectangle bounds, float radiusPercentage, Color borderColor, float borderWidthPercentage, FillHelper filler)
@@ -106,25 +107,23 @@ namespace CardGenerationHelper
             int relevantSide = Math.Min(bounds.Width, bounds.Height);
             int radius = (int)(relevantSide * radiusPercentage);
             int border = (int)(relevantSide * borderWidthPercentage);
-            using (GraphicsPath path = new GraphicsPath())
+            GraphicsPath path = new GraphicsPath();
+            // Create the rounded corners
+            path.AddArc(bounds.X, bounds.Y, radius, radius, 180, 90);
+            path.AddArc(bounds.Right - radius, bounds.Y, radius, radius, 270, 90);
+            path.AddArc(bounds.Right - radius, bounds.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+
+            // Fill the rectangle
+            g.FillPath(filler.GetBrush(), path);
+
+            // Draw the border
+            Pen pen = new Pen(borderColor, border)
             {
-                // Create the rounded corners
-                path.AddArc(bounds.X, bounds.Y, radius, radius, 180, 90);
-                path.AddArc(bounds.Right - radius, bounds.Y, radius, radius, 270, 90);
-                path.AddArc(bounds.Right - radius, bounds.Bottom - radius, radius, radius, 0, 90);
-                path.AddArc(bounds.X, bounds.Bottom - radius, radius, radius, 90, 90);
-                path.CloseFigure();
-
-                // Fill the rectangle
-                g.FillPath(filler.GetBrush(), path);
-
-                // Draw the border
-                using (Pen pen = new Pen(borderColor, border))
-                {
-                    pen.Alignment = PenAlignment.Inset;
-                    g.DrawPath(pen, path);
-                }
-            }
+                Alignment = PenAlignment.Inset
+            };
+            g.DrawPath(pen, path);
         }
         /// <summary>
         /// Like AutoFit but fixed text size and no weird line break thing
@@ -178,11 +177,11 @@ namespace CardGenerationHelper
             if (debug)
             {
                 // Draw textbox (debug)
-                using (Pen pen = new Pen(textColor, 5))
+                Pen pen = new Pen(textColor, 5)
                 {
-                    pen.Alignment = PenAlignment.Inset;
-                    g.DrawRectangle(pen, textBox);
-                }
+                    Alignment = PenAlignment.Inset
+                };
+                g.DrawRectangle(pen, textBox);
             }
         }
         /// <summary>
@@ -202,8 +201,8 @@ namespace CardGenerationHelper
         /// <exception cref="Exception"></exception>
         public static void DrawAutoFitText(Graphics g, string text, Rectangle textBox, Font font, Color textColor, Color borderColor, float borderWidth, StringAlignment hAlignment, StringAlignment vAlignment, int alignmentSpace = 0, bool debug = false)
         {
-            string[] textToPrint = [];
-            SizeF[] textSizes = [];
+            string[] textToPrint;
+            SizeF[] textSizes;
 
             Font autoFont = font;
             textToPrint = text.Split("\r\n"); // Get all lines
@@ -266,14 +265,14 @@ namespace CardGenerationHelper
             if (debug)
             {
                 // Draw textbox (debug)
-                using (Pen pen = new Pen(textColor, 5))
+                Pen pen = new Pen(textColor, 5)
                 {
-                    pen.Alignment = PenAlignment.Inset;
-                    for (int i = 0; i < textToPrint.Length; i++)
-                    {
-                        Rectangle bound = new Rectangle(textBox.X, textBox.Y + (i * textBox.Height / textToPrint.Length), textBox.Width, textBox.Height / textToPrint.Length);
-                        g.DrawRectangle(pen, bound);
-                    }
+                    Alignment = PenAlignment.Inset
+                };
+                for (int i = 0; i < textToPrint.Length; i++)
+                {
+                    Rectangle bound = new Rectangle(textBox.X, textBox.Y + (i * textBox.Height / textToPrint.Length), textBox.Width, textBox.Height / textToPrint.Length);
+                    g.DrawRectangle(pen, bound);
                 }
             }
         }
@@ -384,11 +383,11 @@ namespace CardGenerationHelper
             // Finally draw textbox (debug)
             if (debug)
             {
-                using (Pen pen = new Pen(textColor, 5))
+                Pen pen = new Pen(textColor, 5)
                 {
-                    pen.Alignment = PenAlignment.Inset;
-                    g.DrawRectangle(pen, bounds);
-                }
+                    Alignment = PenAlignment.Inset
+                };
+                g.DrawRectangle(pen, bounds);
             }
         }
         /// <summary>
@@ -551,7 +550,6 @@ namespace CardGenerationHelper
                 // Extras:
                 Rectangle extrasBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)extraAreaHeight);
                 float extraFontSize = extraAreaHeight;
-                Font extraFont = new Font("Georgia", extraFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
                 DrawAutoFitText(g, $"#{cardInfo.Id}", extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Far, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), debug);
                 string rarityString = new string('\u2605', cardInfo.Rarity);
                 DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Near, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), debug);
@@ -647,61 +645,33 @@ namespace CardGenerationHelper
                 Color plainsColor = Color.FromArgb(255, 247, 171);
                 Color forestColor = Color.FromArgb(171, 255, 172);
                 Color mountainColor = Color.FromArgb(255, 212, 171);
+                FillHelper plainsFill = new SolidFillHelper() { FillColor = plainsColor };
+                FillHelper forestFill = new SolidFillHelper() { FillColor = forestColor };
+                FillHelper mountainFill = new SolidFillHelper() { FillColor = mountainColor };
                 for (int i = 0; i < GameConstants.PLAINS_NUMBER_OF_TILES; i++)
                 {
+                    FillHelper fillHelper = (buildingInfo.TargetOptions != null && buildingInfo.TargetOptions.Contains(i)) ? plainsFill : transparentBrush;
                     Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(i, LaneID.PLAINS));
-                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, plainsColor, DrawConstants.tileBorder, transparentBrush);
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, plainsColor, DrawConstants.tileBorder, fillHelper);
                 }
                 for (int i = 0; i < GameConstants.FOREST_NUMBER_OF_TILES; i++)
                 {
+                    FillHelper fillHelper = (buildingInfo.TargetOptions != null && buildingInfo.TargetOptions.Contains(i + GameConstants.PLAINS_NUMBER_OF_TILES)) ? forestFill : transparentBrush;
                     Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(i, LaneID.FOREST));
-                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, forestColor, DrawConstants.tileBorder, transparentBrush);
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, forestColor, DrawConstants.tileBorder, fillHelper);
                 }
                 for (int i = 0; i < GameConstants.MOUNTAIN_NUMBER_OF_TILES; i++)
                 {
+                    FillHelper fillHelper = (buildingInfo.TargetOptions != null && buildingInfo.TargetOptions.Contains(i + GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES)) ? mountainFill : transparentBrush;
                     Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(i, LaneID.MOUNTAIN));
-                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, mountainColor, DrawConstants.tileBorder, transparentBrush);
+                    DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, mountainColor, DrawConstants.tileBorder, fillHelper);
                 }
-                // And now the actual BP
-                int[] bp = buildingInfo.PlainsBp;
-                if (bp != null)
-                {
-                    for (int i = 0; i < bp.Length; i++)
-                    {
-                        Rectangle rect = getCoordinateRectangle(0, getAdaptedColumn(bp[i], LaneID.PLAINS));
-                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, plainsColor, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = plainsColor });
-                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
-                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
-                        DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
-                    }
-                }
-                bp = buildingInfo.ForestBp;
-                if (bp != null)
-                {
-                    for (int i = 0; i < bp.Length; i++)
-                    {
-                        Rectangle rect = getCoordinateRectangle(1, getAdaptedColumn(bp[i], LaneID.FOREST));
-                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, forestColor, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = forestColor });
-                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
-                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
-                        DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
-                    }
-                }
-                bp = buildingInfo.MountainBp;
-                if (bp != null)
-                {
-                    for (int i = 0; i < bp.Length; i++)
-                    {
-                        Rectangle rect = getCoordinateRectangle(2, getAdaptedColumn(bp[i], LaneID.MOUNTAIN));
-                        DrawRoundedRectangle(g, rect, DrawConstants.tileRounded, mountainColor, DrawConstants.tileBorder, new SolidFillHelper() { FillColor = mountainColor });
-                        float bpFontSize = rect.Height / 1.333f; // Fixed size to fit BP tile in consistent way. 1.333 is empirical
-                        Font bpFont = new Font("Consolas", bpFontSize, FontStyle.Bold);
-                        DrawAutoFitText(g, (i + 1).ToString(), rect, bpFont, Color.FromArgb(69, 134, 202), Color.Black, 0, StringAlignment.Center, StringAlignment.Center, 0, debug);
-                    }
-                }
+
                 // Draw line now
-                Pen dashedPen = new Pen(Color.White, DrawConstants.dashedLineSize);
-                dashedPen.DashStyle = DashStyle.Dash;
+                Pen dashedPen = new Pen(Color.White, DrawConstants.dashedLineSize)
+                {
+                    DashStyle = DashStyle.Dash
+                };
                 g.DrawLine(dashedPen, new Point(xMap + (widthMap / 2), yMap), new Point(xMap + (widthMap / 2), yMap + heightMap));
             }
             return bitmap;

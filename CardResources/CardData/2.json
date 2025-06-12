@@ -5,5 +5,10 @@
   "Name": "MILITIA",
   "Hp": 2,
   "EntityType": "UNIT",
+  "TargetOptions": [
+    0,
+    4,
+    10
+  ],
   "Id": 2
 }

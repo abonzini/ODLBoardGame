@@ -35,8 +35,8 @@
             SavePictureButton = new Button();
             CardElementsPanel = new FlowLayoutPanel();
             PlayInfoBox = new GroupBox();
+            TargetLocationGrid = new LocationGrid();
             EntityTypeLabel = new Label();
-            TargetOptionsDropdown = new ComboBox();
             EntityTypeDropdown = new ComboBox();
             TargetOptionsLabel = new Label();
             PrintInfoBox = new GroupBox();
@@ -54,7 +54,6 @@
             ExpansionDropdown = new ComboBox();
             ClassDropdown = new ComboBox();
             label4 = new Label();
-            flagEnumCheckbox1 = new FlagEnumCheckbox();
             LivingEntityPanel = new Panel();
             HpUpDown = new NumericUpDown();
             label7 = new Label();
@@ -64,13 +63,11 @@
             AttackUpDown = new NumericUpDown();
             label9 = new Label();
             label8 = new Label();
-            BlueprintsPanel = new GroupBox();
-            label12 = new Label();
+            SkillInfoPanel = new Panel();
+            SkillOnwerFilterFlagCheckbox = new FlagEnumCheckbox();
             label11 = new Label();
+            TargetTypeComboBox = new ComboBox();
             label10 = new Label();
-            MountainBpTextBox = new TextBox();
-            ForestBpTextBox = new TextBox();
-            PlainsBpTextBox = new TextBox();
             PlayerPanel = new Panel();
             label14 = new Label();
             ActivePowerUpDown = new NumericUpDown();
@@ -98,7 +95,7 @@
             ((System.ComponentModel.ISupportInitialize)DenominatorUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)MovementUpdown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)AttackUpDown).BeginInit();
-            BlueprintsPanel.SuspendLayout();
+            SkillInfoPanel.SuspendLayout();
             PlayerPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ActivePowerUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StartingGoldUpdown).BeginInit();
@@ -171,17 +168,16 @@
             CardElementsPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             CardElementsPanel.Controls.Add(PlayInfoBox);
             CardElementsPanel.Controls.Add(PrintInfoBox);
-            CardElementsPanel.Controls.Add(flagEnumCheckbox1);
             CardElementsPanel.Controls.Add(LivingEntityPanel);
             CardElementsPanel.Controls.Add(UnitPanel);
-            CardElementsPanel.Controls.Add(BlueprintsPanel);
+            CardElementsPanel.Controls.Add(SkillInfoPanel);
             CardElementsPanel.Controls.Add(PlayerPanel);
             CardElementsPanel.Controls.Add(TriggerList);
             CardElementsPanel.Controls.Add(InteractionList);
             CardElementsPanel.FlowDirection = FlowDirection.TopDown;
             CardElementsPanel.Location = new Point(6, 52);
             CardElementsPanel.Name = "CardElementsPanel";
-            CardElementsPanel.Size = new Size(756, 799);
+            CardElementsPanel.Size = new Size(756, 752);
             CardElementsPanel.TabIndex = 2;
             CardElementsPanel.WrapContents = false;
             // 
@@ -189,16 +185,25 @@
             // 
             PlayInfoBox.AutoSize = true;
             PlayInfoBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            PlayInfoBox.Controls.Add(TargetLocationGrid);
             PlayInfoBox.Controls.Add(EntityTypeLabel);
-            PlayInfoBox.Controls.Add(TargetOptionsDropdown);
             PlayInfoBox.Controls.Add(EntityTypeDropdown);
             PlayInfoBox.Controls.Add(TargetOptionsLabel);
             PlayInfoBox.Location = new Point(3, 3);
             PlayInfoBox.Name = "PlayInfoBox";
-            PlayInfoBox.Size = new Size(297, 108);
+            PlayInfoBox.Size = new Size(343, 155);
             PlayInfoBox.TabIndex = 0;
             PlayInfoBox.TabStop = false;
             PlayInfoBox.Text = "PlayInfo";
+            // 
+            // TargetLocationGrid
+            // 
+            TargetLocationGrid.AutoSize = true;
+            TargetLocationGrid.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            TargetLocationGrid.Location = new Point(137, 54);
+            TargetLocationGrid.Name = "TargetLocationGrid";
+            TargetLocationGrid.Size = new Size(198, 75);
+            TargetLocationGrid.TabIndex = 4;
             // 
             // EntityTypeLabel
             // 
@@ -209,21 +214,12 @@
             EntityTypeLabel.TabIndex = 1;
             EntityTypeLabel.Text = "Card Type";
             // 
-            // TargetOptionsDropdown
-            // 
-            TargetOptionsDropdown.FormattingEnabled = true;
-            TargetOptionsDropdown.Location = new Point(137, 54);
-            TargetOptionsDropdown.Name = "TargetOptionsDropdown";
-            TargetOptionsDropdown.Size = new Size(154, 28);
-            TargetOptionsDropdown.TabIndex = 2;
-            TargetOptionsDropdown.SelectedIndexChanged += TargetOptionsDropdown_SelectedIndexChanged;
-            // 
             // EntityTypeDropdown
             // 
             EntityTypeDropdown.FormattingEnabled = true;
             EntityTypeDropdown.Location = new Point(137, 20);
             EntityTypeDropdown.Name = "EntityTypeDropdown";
-            EntityTypeDropdown.Size = new Size(154, 28);
+            EntityTypeDropdown.Size = new Size(200, 28);
             EntityTypeDropdown.TabIndex = 0;
             EntityTypeDropdown.SelectedIndexChanged += EntityTypeDropdown_SelectedIndexChanged;
             // 
@@ -254,7 +250,7 @@
             PrintInfoBox.Controls.Add(ExpansionDropdown);
             PrintInfoBox.Controls.Add(ClassDropdown);
             PrintInfoBox.Controls.Add(label4);
-            PrintInfoBox.Location = new Point(3, 117);
+            PrintInfoBox.Location = new Point(3, 164);
             PrintInfoBox.Name = "PrintInfoBox";
             PrintInfoBox.Size = new Size(750, 191);
             PrintInfoBox.TabIndex = 1;
@@ -388,22 +384,13 @@
             label4.TabIndex = 6;
             label4.Text = "Tribe";
             // 
-            // flagEnumCheckbox1
-            // 
-            flagEnumCheckbox1.AutoSize = true;
-            flagEnumCheckbox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            flagEnumCheckbox1.Location = new Point(3, 314);
-            flagEnumCheckbox1.Name = "flagEnumCheckbox1";
-            flagEnumCheckbox1.Size = new Size(6, 6);
-            flagEnumCheckbox1.TabIndex = 8;
-            // 
             // LivingEntityPanel
             // 
             LivingEntityPanel.AutoSize = true;
             LivingEntityPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             LivingEntityPanel.Controls.Add(HpUpDown);
             LivingEntityPanel.Controls.Add(label7);
-            LivingEntityPanel.Location = new Point(3, 326);
+            LivingEntityPanel.Location = new Point(3, 361);
             LivingEntityPanel.Name = "LivingEntityPanel";
             LivingEntityPanel.Size = new Size(111, 33);
             LivingEntityPanel.TabIndex = 2;
@@ -435,7 +422,7 @@
             UnitPanel.Controls.Add(AttackUpDown);
             UnitPanel.Controls.Add(label9);
             UnitPanel.Controls.Add(label8);
-            UnitPanel.Location = new Point(3, 365);
+            UnitPanel.Location = new Point(3, 400);
             UnitPanel.Name = "UnitPanel";
             UnitPanel.Size = new Size(166, 66);
             UnitPanel.TabIndex = 3;
@@ -487,73 +474,54 @@
             label8.TabIndex = 0;
             label8.Text = "Attack";
             // 
-            // BlueprintsPanel
+            // SkillInfoPanel
             // 
-            BlueprintsPanel.AutoSize = true;
-            BlueprintsPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            BlueprintsPanel.Controls.Add(label12);
-            BlueprintsPanel.Controls.Add(label11);
-            BlueprintsPanel.Controls.Add(label10);
-            BlueprintsPanel.Controls.Add(MountainBpTextBox);
-            BlueprintsPanel.Controls.Add(ForestBpTextBox);
-            BlueprintsPanel.Controls.Add(PlainsBpTextBox);
-            BlueprintsPanel.Location = new Point(3, 437);
-            BlueprintsPanel.Name = "BlueprintsPanel";
-            BlueprintsPanel.Size = new Size(545, 145);
-            BlueprintsPanel.TabIndex = 4;
-            BlueprintsPanel.TabStop = false;
-            BlueprintsPanel.Text = "Building Blueprints";
+            SkillInfoPanel.AutoSize = true;
+            SkillInfoPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            SkillInfoPanel.Controls.Add(SkillOnwerFilterFlagCheckbox);
+            SkillInfoPanel.Controls.Add(label11);
+            SkillInfoPanel.Controls.Add(TargetTypeComboBox);
+            SkillInfoPanel.Controls.Add(label10);
+            SkillInfoPanel.Location = new Point(3, 472);
+            SkillInfoPanel.Name = "SkillInfoPanel";
+            SkillInfoPanel.Size = new Size(244, 63);
+            SkillInfoPanel.TabIndex = 9;
             // 
-            // label12
+            // SkillOnwerFilterFlagCheckbox
             // 
-            label12.AutoSize = true;
-            label12.Location = new Point(9, 95);
-            label12.Name = "label12";
-            label12.Size = new Size(52, 20);
-            label12.TabIndex = 5;
-            label12.Text = "Mount";
+            SkillOnwerFilterFlagCheckbox.AutoSize = true;
+            SkillOnwerFilterFlagCheckbox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            SkillOnwerFilterFlagCheckbox.Location = new Point(137, 34);
+            SkillOnwerFilterFlagCheckbox.Name = "SkillOnwerFilterFlagCheckbox";
+            SkillOnwerFilterFlagCheckbox.Size = new Size(6, 6);
+            SkillOnwerFilterFlagCheckbox.TabIndex = 3;
             // 
             // label11
             // 
             label11.AutoSize = true;
-            label11.Location = new Point(9, 62);
+            label11.Location = new Point(6, 43);
             label11.Name = "label11";
-            label11.Size = new Size(49, 20);
-            label11.TabIndex = 4;
-            label11.Text = "Forest";
+            label11.Size = new Size(134, 20);
+            label11.TabIndex = 2;
+            label11.Text = "Target Owner Filter";
+            // 
+            // TargetTypeComboBox
+            // 
+            TargetTypeComboBox.FormattingEnabled = true;
+            TargetTypeComboBox.Location = new Point(90, 3);
+            TargetTypeComboBox.Name = "TargetTypeComboBox";
+            TargetTypeComboBox.Size = new Size(151, 28);
+            TargetTypeComboBox.TabIndex = 1;
+            TargetTypeComboBox.SelectedIndexChanged += TargetTypeComboBox_SelectedIndexChanged;
             // 
             // label10
             // 
             label10.AutoSize = true;
-            label10.Location = new Point(9, 29);
+            label10.Location = new Point(6, 6);
             label10.Name = "label10";
-            label10.Size = new Size(47, 20);
-            label10.TabIndex = 3;
-            label10.Text = "Plains";
-            // 
-            // MountainBpTextBox
-            // 
-            MountainBpTextBox.Location = new Point(59, 92);
-            MountainBpTextBox.Name = "MountainBpTextBox";
-            MountainBpTextBox.Size = new Size(480, 27);
-            MountainBpTextBox.TabIndex = 2;
-            MountainBpTextBox.TextChanged += MountainBpTextBox_TextChanged;
-            // 
-            // ForestBpTextBox
-            // 
-            ForestBpTextBox.Location = new Point(59, 59);
-            ForestBpTextBox.Name = "ForestBpTextBox";
-            ForestBpTextBox.Size = new Size(480, 27);
-            ForestBpTextBox.TabIndex = 1;
-            ForestBpTextBox.TextChanged += ForestBpTextBox_TextChanged;
-            // 
-            // PlainsBpTextBox
-            // 
-            PlainsBpTextBox.Location = new Point(59, 26);
-            PlainsBpTextBox.Name = "PlainsBpTextBox";
-            PlainsBpTextBox.Size = new Size(480, 27);
-            PlainsBpTextBox.TabIndex = 0;
-            PlainsBpTextBox.TextChanged += PlainsBpTextBox_TextChanged;
+            label10.Size = new Size(85, 20);
+            label10.TabIndex = 0;
+            label10.Text = "Target Type";
             // 
             // PlayerPanel
             // 
@@ -563,7 +531,7 @@
             PlayerPanel.Controls.Add(ActivePowerUpDown);
             PlayerPanel.Controls.Add(StartingGoldUpdown);
             PlayerPanel.Controls.Add(label13);
-            PlayerPanel.Location = new Point(3, 588);
+            PlayerPanel.Location = new Point(3, 541);
             PlayerPanel.Name = "PlayerPanel";
             PlayerPanel.Size = new Size(111, 66);
             PlayerPanel.TabIndex = 5;
@@ -611,7 +579,7 @@
             TriggerList.AutoSize = true;
             TriggerList.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             TriggerList.BorderStyle = BorderStyle.FixedSingle;
-            TriggerList.Location = new Point(3, 660);
+            TriggerList.Location = new Point(3, 613);
             TriggerList.Name = "TriggerList";
             TriggerList.Size = new Size(67, 65);
             TriggerList.TabIndex = 7;
@@ -621,7 +589,7 @@
             InteractionList.AutoSize = true;
             InteractionList.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             InteractionList.BorderStyle = BorderStyle.FixedSingle;
-            InteractionList.Location = new Point(3, 731);
+            InteractionList.Location = new Point(3, 684);
             InteractionList.Name = "InteractionList";
             InteractionList.Size = new Size(67, 65);
             InteractionList.TabIndex = 6;
@@ -730,8 +698,8 @@
             ((System.ComponentModel.ISupportInitialize)DenominatorUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)MovementUpdown).EndInit();
             ((System.ComponentModel.ISupportInitialize)AttackUpDown).EndInit();
-            BlueprintsPanel.ResumeLayout(false);
-            BlueprintsPanel.PerformLayout();
+            SkillInfoPanel.ResumeLayout(false);
+            SkillInfoPanel.PerformLayout();
             PlayerPanel.ResumeLayout(false);
             PlayerPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ActivePowerUpDown).EndInit();
@@ -752,7 +720,6 @@
         private ComboBox EntityTypeDropdown;
         private Label EntityTypeLabel;
         private Label TargetOptionsLabel;
-        private ComboBox TargetOptionsDropdown;
         private Label label1;
         private NumericUpDown CardIdUpdown;
         private TextBox CardNameBox;
@@ -778,13 +745,6 @@
         private Label label8;
         private NumericUpDown DenominatorUpDown;
         private NumericUpDown MovementUpdown;
-        private GroupBox BlueprintsPanel;
-        private Label label12;
-        private Label label11;
-        private Label label10;
-        private TextBox MountainBpTextBox;
-        private TextBox ForestBpTextBox;
-        private TextBox PlainsBpTextBox;
         private CheckBox BlueprintCheckBox;
         private Panel PlayerPanel;
         private NumericUpDown StartingGoldUpdown;
@@ -803,6 +763,11 @@
         private Panel LoadSaveButtonPanel;
         private Button SaveJsonButton;
         private Button LoadJsonButton;
-        private FlagEnumCheckbox flagEnumCheckbox1;
+        private LocationGrid TargetLocationGrid;
+        private Panel SkillInfoPanel;
+        private ComboBox TargetTypeComboBox;
+        private Label label10;
+        private Label label11;
+        private FlagEnumCheckbox SkillOnwerFilterFlagCheckbox;
     }
 }

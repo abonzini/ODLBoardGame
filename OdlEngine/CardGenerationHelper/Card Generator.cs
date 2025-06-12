@@ -47,6 +47,8 @@ namespace CardGenerationHelper
             TriggerList.SetTrigInterType(TrigOrInter.TRIGGER);
             InteractionList.SetTrigInterType(TrigOrInter.INTERACTION);
 
+            TargetLocationGrid.Updated += TargetLocationGrid_Updated;
+
             // Load last setting
             DebugCheckBox.Checked = _debug;
 
@@ -61,15 +63,21 @@ namespace CardGenerationHelper
         {
             EntityTypeDropdown.Items.AddRange(Enum.GetValues(typeof(EntityType)).Cast<object>().ToArray());
             EntityTypeDropdown.SelectedIndex = 0;
-            TargetOptionsDropdown.Items.AddRange(Enum.GetValues(typeof(PlayTargetLocation)).Cast<object>().ToArray());
-            TargetOptionsDropdown.SelectedIndex = 0;
+            TargetTypeComboBox.Items.AddRange(Enum.GetValues(typeof(CardTargetingType)).Cast<object>().ToArray());
             ExpansionDropdown.Items.AddRange(Enum.GetValues(typeof(ExpansionId)).Cast<object>().ToArray());
             ExpansionDropdown.SelectedIndex = 0;
             ClassDropdown.Items.AddRange(Enum.GetValues(typeof(PlayerTribe)).Cast<object>().ToArray());
             ClassDropdown.SelectedIndex = 0;
+            SkillOnwerFilterFlagCheckbox.Clear();
+            SkillOnwerFilterFlagCheckbox.SetEnum(typeof(EntityOwner));
             RedrawUi();
         }
         bool entityTypeAlreadyLoaded = false;
+        private void TargetLocationGrid_Updated(object sender, EventArgs e)
+        {
+            _currentEntity.TargetOptions = TargetLocationGrid.GetLocations();
+            RefreshDrawTimer();
+        }
         private void EntityTypeDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (entityTypeAlreadyLoaded)
@@ -117,14 +125,12 @@ namespace CardGenerationHelper
             }
             if (typeof(Building).IsAssignableFrom(_currentEntity.GetType()))
             {
-                BlueprintsPanel.Show();
                 BlueprintCheckBox.Show();
             }
             else
             {
                 BlueprintCheckBox.Checked = false;
                 BlueprintCheckBox.Hide();
-                BlueprintsPanel.Hide();
             }
             if (typeof(Player).IsAssignableFrom(_currentEntity.GetType()))
             {
@@ -134,11 +140,18 @@ namespace CardGenerationHelper
             {
                 PlayerPanel.Hide();
             }
-        }
-
-        private void TargetOptionsDropdown_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            _currentEntity.TargetOptions = (PlayTargetLocation)TargetOptionsDropdown.SelectedItem;
+            if (typeof(Skill).IsAssignableFrom(_currentEntity.GetType()))
+            {
+                TargetTypeComboBox.SelectedIndex = 0;
+                SkillOnwerFilterFlagCheckbox.Clear();
+                SkillInfoPanel.Show();
+                TargetLocationGrid.SetMode((CardTargetingType)TargetTypeComboBox.SelectedItem);
+            }
+            else
+            {
+                SkillInfoPanel.Hide();
+                TargetLocationGrid.SetMode(CardTargetingType.TILE); // So it shows all
+            }
         }
 
         private void CardIdUpdown_ValueChanged(object sender, EventArgs e)
@@ -253,63 +266,6 @@ namespace CardGenerationHelper
             _currentIllustrationInfo.Movement = MovString;
             RefreshDrawTimer();
         }
-        private void ChangeBlueprint(PlayTargetLocation lane, string bpText)
-        {
-            int[] bpElements;
-            if (bpText == "")
-            {
-                bpElements = null;
-            }
-            else
-            {
-                string[] choices = bpText.Split(','); // Get all inputs
-                int maxTiles = lane switch
-                {
-                    PlayTargetLocation.PLAINS => GameConstants.PLAINS_NUMBER_OF_TILES,
-                    PlayTargetLocation.FOREST => GameConstants.FOREST_NUMBER_OF_TILES,
-                    PlayTargetLocation.MOUNTAIN => GameConstants.MOUNTAIN_NUMBER_OF_TILES,
-                    _ => throw new Exception("Invalid lane BP")
-                };
-                bpElements = new int[Math.Min(choices.Length, maxTiles)]; // Bp limited by tile amount and also by how many fields
-                // Now i parse
-                for (int i = 0; i < bpElements.Length; i++)
-                {
-                    if (int.TryParse(choices[i], out int result))
-                    {
-                        bpElements[i] = result;
-                    }
-                }
-            }
-            // Finally load
-            Building bldg = (Building)_currentEntity;
-            switch (lane) // Load in the correct BP
-            {
-                case PlayTargetLocation.PLAINS:
-                    bldg.PlainsBp = bpElements; break;
-                case PlayTargetLocation.FOREST:
-                    bldg.ForestBp = bpElements; break;
-                case PlayTargetLocation.MOUNTAIN:
-                    bldg.MountainBp = bpElements; break;
-                default:
-                    throw new Exception("Invalid lane BP");
-            }
-            RefreshDrawTimer(); // May need to redraw
-        }
-        private void PlainsBpTextBox_TextChanged(object sender, EventArgs e)
-        {
-            ChangeBlueprint(PlayTargetLocation.PLAINS, PlainsBpTextBox.Text);
-        }
-
-        private void ForestBpTextBox_TextChanged(object sender, EventArgs e)
-        {
-            ChangeBlueprint(PlayTargetLocation.FOREST, ForestBpTextBox.Text);
-        }
-
-        private void MountainBpTextBox_TextChanged(object sender, EventArgs e)
-        {
-            ChangeBlueprint(PlayTargetLocation.MOUNTAIN, MountainBpTextBox.Text);
-        }
-
         private void BlueprintCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             RefreshDrawTimer(); // Will need to redraw anyway
@@ -333,6 +289,11 @@ namespace CardGenerationHelper
             if (typeof(LivingEntity).IsAssignableFrom(_currentEntity.GetType()))
             {
                 ((LivingEntity)_currentEntity).Triggers = TriggerList.GetTriggersDict();
+            }
+            // Also this because it didn't auto update in card
+            if (typeof(Skill).IsAssignableFrom(_currentEntity.GetType()))
+            {
+                ((Skill)_currentEntity).TargetOwner = (EntityOwner)SkillOnwerFilterFlagCheckbox.GetEnumValue();
             }
             // Card complete, now time to deserialize
             var settings = new JsonSerializerSettings
@@ -392,10 +353,10 @@ namespace CardGenerationHelper
             entityTypeAlreadyLoaded = true; // Notify the system not to reset the info
 
             EntityTypeDropdown.SelectedItem = _currentEntity.EntityType; // Todo -1 player doesnt have correct entity type
-            TargetOptionsDropdown.SelectedItem = _currentEntity.TargetOptions;
             CardIdUpdown.Value = _currentEntity.Id;
             RarityUpDown.Value = _currentIllustrationInfo.Rarity;
             CostUpDown.Value = _currentEntity.Cost;
+            TargetLocationGrid.SetLocations(_currentEntity.TargetOptions);
             CardNameBox.Text = _currentIllustrationInfo.Name;
             EffectDescriptionBox.Text = _currentIllustrationInfo.Text;
             ExpansionDropdown.SelectedItem = _currentIllustrationInfo.Expansion;
@@ -411,16 +372,15 @@ namespace CardGenerationHelper
                 MovementUpdown.Value = ((Unit)_currentEntity).Movement.BaseValue;
                 DenominatorUpDown.Value = ((Unit)_currentEntity).MovementDenominator.BaseValue;
             }
-            if (typeof(Building).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
-            {
-                if (((Building)_currentEntity).PlainsBp != null) PlainsBpTextBox.Text = string.Join(",", ((Building)_currentEntity).PlainsBp);
-                if (((Building)_currentEntity).ForestBp != null) ForestBpTextBox.Text = string.Join(",", ((Building)_currentEntity).ForestBp);
-                if (((Building)_currentEntity).MountainBp != null) MountainBpTextBox.Text = string.Join(",", ((Building)_currentEntity).MountainBp);
-            }
             if (typeof(Player).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
             {
                 StartingGoldUpdown.Value = ((Player)_currentEntity).CurrentGold;
                 ActivePowerUpDown.Value = ((Player)_currentEntity).ActivePowerId;
+            }
+            if (typeof(Skill).IsAssignableFrom(_currentEntity.GetType())) // Entities with HP
+            {
+                TargetTypeComboBox.SelectedItem = ((Skill)_currentEntity).TargetType;
+                SkillOnwerFilterFlagCheckbox.SetFlags((int)((Skill)_currentEntity).TargetOwner);
             }
             InteractionList.SetInteractionDict(_currentEntity.Interactions);
 
@@ -428,6 +388,12 @@ namespace CardGenerationHelper
             {
                 entityTypeAlreadyLoaded = false;
             }
+        }
+
+        private void TargetTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ((Skill)_currentEntity).TargetType = (CardTargetingType)TargetTypeComboBox.SelectedItem;
+            TargetLocationGrid.SetMode((CardTargetingType)TargetTypeComboBox.SelectedItem);
         }
     }
 }

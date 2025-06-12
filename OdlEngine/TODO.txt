@@ -1,9 +1,12 @@
 Ongoing tasks in order of priority:
-- Full retargeting:
-	- Fix UI
-	- Fix Deserializer
-	- Redo all cards and blueprints
-	- Finally rewrite rulebook
+- Effect refactoring:
+	- Select entity PLAY TARGET (when applicable)
+	- Operation to build board location(s), add to new list, search with this, no unit referenicng at all
+	- Add potential future effects such as BoardLocations operations and TileCalculations
+	- Remove tile by tile search, obsolete because of change of tagrte scheme but also if tile by tile is needed it will be performed literally by looking tile by tile
+	- May reduce the number and type of tests needed!
+	- Add test for input as "entity references count"
+	- Eddit readme accordingly
 - 6:
 	- Add card #6. gets actor enemy, asserts, and kills
 - 7

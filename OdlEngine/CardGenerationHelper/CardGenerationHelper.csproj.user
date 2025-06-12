@@ -10,6 +10,9 @@
     <Compile Update="FlagEnumCheckbox.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="LocationGrid.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="TriginterEffects.cs">
       <SubType>UserControl</SubType>
     </Compile>
