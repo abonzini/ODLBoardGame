@@ -8,20 +8,19 @@
   "Interactions": {
     "WHEN_PLAYED": [
       {
-        "EffectType": "SUMMON_UNIT",
-        "EffectLocation": "PLAINS",
-        "TargetPlayer": "OWNER",
-        "TempVariable": 1
+        "EffectType": "ADD_LOCATION_REFERENCE",
+        "EffectLocation": "PLAINS"
+      },
+      {
+        "EffectType": "ADD_LOCATION_REFERENCE",
+        "EffectLocation": "FOREST"
+      },
+      {
+        "EffectType": "ADD_LOCATION_REFERENCE",
+        "EffectLocation": "MOUNTAIN"
       },
       {
         "EffectType": "SUMMON_UNIT",
-        "EffectLocation": "FOREST",
-        "TargetPlayer": "OWNER",
-        "TempVariable": 1
-      },
-      {
-        "EffectType": "SUMMON_UNIT",
-        "EffectLocation": "MOUNTAIN",
         "TargetPlayer": "OWNER",
         "TempVariable": 1
       }

@@ -32,10 +32,13 @@ namespace ODLGameEngine
         ACTIVATE_TEST_TRIGGER_IN_LOCATION,
         SELECT_ENTITY,
         FIND_ENTITIES,
+        ADD_LOCATION_REFERENCE,
         SUMMON_UNIT,
         MODIFIER,
         ASSERT,
         KILL_ENTITIES
+        // TODO: Board element operations like shuffle, trim, crop, select
+        // TODO: Tile extension operations to overwrite search, do AOE and other stuff
     }
     /// <summary>
     /// When searchign for a target, which location is searched
@@ -62,7 +65,8 @@ namespace ODLGameEngine
         ALL,
         EFFECT_OWNING_ENTITY,
         ACTOR_ENTITY,
-        AFFECTED_ENTITY
+        AFFECTED_ENTITY,
+        PLAY_TARGET_ENTITY
     }
     /// <summary>
     /// Player who is target of a card effect
@@ -105,7 +109,7 @@ namespace ODLGameEngine
         PLAYERS_GOLD,
         MARCH_START_FLAG,
         MARCH_CURRENT_MOVEMENT
-        // Todo, damage, advancement, playability check, etc
+        // Todo, damage, playability check, etc
     }
     /// <summary>
     /// Register to use in an effect
@@ -224,6 +228,7 @@ namespace ODLGameEngine
     {
         public EffectContext CurrentSpecificContext = null;
         public List<int> ReferenceEntities;
+        public List<BoardElement> ReferenceLocations = [];
         public int TempValue = 0;
         public int Acc = 0;
     }

@@ -104,9 +104,11 @@ It is initialised with a value of 0 at the beginning of the effect chain
 
 For a list of posible ```Input```/```Output``` options, check below. 
 
-Finally, the CPU context is also able to hold a list of reference entities, obtained by specific search/select operations.
-This reference is important to track ownership, select targets, and other cool stuff.
-By default the effect's reference is the card with the ongoing effect, but the references can be changed by using search/select operations (as described below).
+Finally, the CPU context also has the following lists:
+    - Reference entities, obtained by specific search/select operations
+    - Reference locations obtained by assembling them during effect using specific operations
+These references are important to track ownership, select targets, and other cool stuff.
+By default the reference entity is the card with the ongoing effect, but some effects can change and override them.
 
 When an operation's ```Input``` depends on values in the Reference's List (e.g. ```"Input": "TARGET_ATTACK"``` of a series of units found after a search), then there may be multiple inputs, and extra Input processing is needed to provide a single Input value.
 For these options, check the possible values of ```MultiInputProcessing```.
@@ -128,28 +130,26 @@ Owner and target type filters can be used for slightly more complex effects, suc
 
 - ```FIND_ENTITIES``` Is a task that finds all valid entities to be targeted for an effect.
 All of these entities will become references for subsequent effects.
-For example, skills that deal damage to an unit, or to the enemy hero, or destroy all buildings, etc.
-These targets are found by using ```FIND_ENTITIES``` and setting a bunch  of search criteria.
-If you want to change the reference of the search, you may need to do a ```SELECT_ENTITY``` call first, for example in an effect like *"When a card is played, all of that player's Units receive 1 damage"*, where the reference is not necesarily the same in every trigger.
     
     Parameters:
-    - ```EffectLocation``` where to search for the entity in question
-    - ```TargetPlayer``` serves as a filter where you only get the entities of the player owner in question
+    - ```TargetPlayer``` serves as a filter where you only get the entities of the player owner in question (w.r.t. the card effect)
     - ```TargetType``` the type of entities that can be targeted 
     - ```SearchCriterion``` determines which target(s) can be found as valid targets. Some search criterions use a value $n$ as an input
     - The ```Input``` is used alongside some ```SearchCriterion``` cases as the value $n$. Negative values imply the search is done in reverse order
 
-    This may seem convoluted but it's a robust way to target arbitrary combination of target conditions.
     Keep in mind that, no matter the ```EffectLocation```, the order of valid targets will be: ***[PLAYER]->[LOCATION]->[PLAYER]*** where which player is first is determined by the sign of $n$.
-    When looking for entities on a lane, the system traverses the lane in order determined by $n$ sign.
     In case of multiple entities in the same position, the unit that was played first is targeted first.
 
-- ```SUMMON_UNIT``` Summons a unit in a desired lane or set of lanes. Multiple units may be summoned if there's multiple references.
-This allows crazy effects like *"When a unit dies, play a skeleton in the opponent's side"* or "Play a shadow demon for every unit the opponent has in the same lane".
+- ```ADD_LOCATION_REFERENCE``` Is a task that finds one or more target locations for future operations.
+These can be used in subsequent effects like "search units" or "summon units".
+    
+    Parameters:
+    - ```EffectLocation``` what location to add. Keep in mind some absolute locations (such as "Forest" or "Play Target") will add a single location, but locations relative to entities such as "Current Tile" will add one for each entity in the Reference Entities list.
+
+- ```SUMMON_UNIT``` Summons a unit in place(s) defined by the Location References. Multiple units may be summoned if there's multiple references.
 
     Parameters:
-    - ```TargetPlayer``` is the player who will own the unit (relative to reference entity)
-    - ```EffectLocation``` is the location where the card(s) will be summoned w.r.t. to each reference on the reference list
+    - ```TargetPlayer``` is the player who will own the unit (relative to card effect)
     - ```Input``` will contain the card number of the unit summoned
 
 - ```MODIFIER``` A mathematical operation, where an Output is changed, using the Input and an operation.
@@ -195,6 +195,7 @@ Useful for effect with complex conditions where a part of the effect is conditio
     - ```EFFECT_OWNING_ENTITY``` will target the entity that owns the effect
     - ```ACTOR_ENTITY``` will target the entity that "does something"
     - ```AFFECTED_ENTITY``` will targeted the entity that was affected by an interaction
+    - ```PLAY_TARGET_ENTITY``` for cards that target a Unit/Building (e.g. all buildings and many spells) when played, get it here 
 
 - ```TargetType```
     - ```NONE```

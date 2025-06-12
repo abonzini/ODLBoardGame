@@ -60,6 +60,7 @@
                                 SearchCriterion.EFFECT_OWNING_ENTITY => specificContext.ActivatedEntity,
                                 SearchCriterion.ACTOR_ENTITY => specificContext.Actor,
                                 SearchCriterion.AFFECTED_ENTITY => ((AffectingEffectContext)specificContext).Affected,
+                                SearchCriterion.PLAY_TARGET_ENTITY => DetailedState.EntityData[((PlayContext)specificContext).PlayedTarget],
                                 _ => throw new NotImplementedException("Invalid target for entity selection")
                             };
                             if (effect.TargetType.HasFlag(tgt.EntityType)) // The unit is of the valid type
@@ -77,28 +78,31 @@
                     case EffectType.FIND_ENTITIES:
                         // Searches for entities, reference being the selected reference (since there can be multiple references, a single one (the first) is used
                         {
-                            BoardElement[] searchLocations = GetTargetLocationsFromReference(effect.EffectLocation, cpu); // First, I'll find all the locations for searching
                             List<int> newList = new List<int>(); // Now I'll prepare the new list result
-                            for (int i = 0; i < cpu.ReferenceEntities.Count; i++) // Attach the whole sets of units found (this may duplicate findings! be careful!)
+                            foreach (BoardElement nextSearchLocation in cpu.ReferenceLocations) // Look spot by spot
                             {
-                                newList.AddRange(GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, searchLocations[i], inputValue, FetchEntity(cpu.ReferenceEntities[i]).Owner));
+                                newList.AddRange(GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, nextSearchLocation, inputValue, cpu.CurrentSpecificContext.ActivatedEntity.Owner));
                             }
                             cpu.ReferenceEntities = newList;
                         }
                         break;
+                    case EffectType.ADD_LOCATION_REFERENCE:
+                        // Adds one or more locations to list of reference locations
+                        cpu.ReferenceLocations.AddRange(GetTargetLocations(effect.EffectLocation, cpu));
+                        break;
                     case EffectType.SUMMON_UNIT:
                         {
-                            BoardElement[] targets = GetTargetLocationsFromReference(effect.EffectLocation, cpu); // Get the actual place where this is played, even if relative
-                            for (int i = 0; i < cpu.ReferenceEntities.Count; i++) // Summon sth for each entity found (!!)
+                            int referencePlayer = cpu.CurrentSpecificContext.ActivatedEntity.Owner;
+                            foreach (BoardElement nextSummonLocation in cpu.ReferenceLocations)
                             {
-                                IngameEntity entity = FetchEntity(cpu.ReferenceEntities[i]); // Got the next reference entity
+
                                 if (effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Will its owner or its opponent get the unit?
                                 {
-                                    SummonUnitToPlayer(entity.Owner, inputValue, targets[i]);
+                                    SummonUnitToPlayer(referencePlayer, inputValue, nextSummonLocation);
                                 }
                                 if (effect.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
                                 {
-                                    SummonUnitToPlayer(1 - entity.Owner, inputValue, targets[i]);
+                                    SummonUnitToPlayer(1 - referencePlayer, inputValue, nextSummonLocation);
                                 }
                             }
                         }
@@ -247,28 +251,41 @@
             return result;
         }
         /// <summary>
-        /// Will fetch, for each entity in the CPU entity list, the BoardElement location specified form a search location
-        /// Useful for targeted effects and similar
+        /// Return one or more reference locations for use in effects
         /// </summary>
         /// <param name="searchLocation">Place to search, can be absolute lanes, board, or even relative things</param>
         /// <param name="cpuContext">Context where I find the relevant info</param>
         /// <returns>One board element per entity</returns>
-        BoardElement[] GetTargetLocationsFromReference(EffectLocation searchLocation, CpuState cpuContext)
+        List<BoardElement> GetTargetLocations(EffectLocation searchLocation, CpuState cpuContext)
         {
-            int numberOfReferences = cpuContext.ReferenceEntities.Count;
-            BoardElement[] res = new BoardElement[numberOfReferences];
-            for (int i = 0; i < numberOfReferences; i++) // One target per reference!
+            List<BoardElement> res = new List<BoardElement>();
+            switch (searchLocation)
             {
-                res[i] = searchLocation switch
-                {
-                    EffectLocation.BOARD => DetailedState.BoardState,
-                    EffectLocation.PLAINS => DetailedState.BoardState.PlainsLane,
-                    EffectLocation.FOREST => DetailedState.BoardState.ForestLane,
-                    EffectLocation.MOUNTAIN => DetailedState.BoardState.MountainLane,
-                    EffectLocation.PLAY_TARGET => GetPlayTarget((PlayContext)cpuContext.CurrentSpecificContext),
-                    EffectLocation.CURRENT_TILE => DetailedState.BoardState.Tiles[((PlacedEntity)DetailedState.EntityData[cpuContext.ReferenceEntities[i]]).TileCoordinate], // Expects the entities here to have current tile coordinate
-                    _ => throw new Exception("Reference search location not implemented")
-                };
+                case EffectLocation.BOARD:
+                    res.Add(DetailedState.BoardState);
+                    break;
+                case EffectLocation.PLAINS:
+                    res.Add(DetailedState.BoardState.PlainsLane);
+                    break;
+                case EffectLocation.FOREST:
+                    res.Add(DetailedState.BoardState.ForestLane);
+                    break;
+                case EffectLocation.MOUNTAIN:
+                    res.Add(DetailedState.BoardState.MountainLane);
+                    break;
+                case EffectLocation.PLAY_TARGET:
+                    res.Add(GetPlayTarget((PlayContext)cpuContext.CurrentSpecificContext));
+                    break;
+                case EffectLocation.CURRENT_TILE:
+                    {
+                        foreach (int reference in cpuContext.ReferenceEntities)
+                        {
+                            res.Add(DetailedState.BoardState.Tiles[((PlacedEntity)DetailedState.EntityData[reference]).TileCoordinate]);
+                        }
+                    }
+                    break;
+                default:
+                    throw new Exception("Reference search location not implemented");
             }
             return res;
         }
@@ -321,17 +338,9 @@
             // Search variables
             bool reverseSearch = false; // Order of search
             int requiredTargets; // How many targets I'll extract maximum
-            bool tileSectioning = false; // When searching along a lane, check tile-by-tile or the whole body as is
             int referencePlayer; // Order reference depends on indexing
             int playerFilter = -1; // Filter of which player to search for (defautl is -1 both players)
             // Prepare settings/masks for this target search
-            if (searchLocation.ElementType == BoardElementType.LANE) // Since its a lane, it'll be lane search
-            {
-                if (searchCriterion != SearchCriterion.ALL) // If target is everything, no need to check tile by tile
-                {
-                    tileSectioning = true;
-                }
-            }
             if (n < 0) // Negative indexing implies reverse indexing
             {
                 n *= -1;
@@ -360,7 +369,6 @@
             // Search loop, continues until I get the number of targets I want or nothing else to look for
             TargetingStateMachine currentSearchState = TargetingStateMachine.BEGIN;
             SortedSet<int> entities = null; // Container of location's entities
-            int tileCounter = 0; // Aux counter to explore lane in order
             int localOrdinal = 0, totalOrdinal = 0;
             while (res.Count < requiredTargets && currentSearchState != TargetingStateMachine.END)
             {
@@ -386,24 +394,8 @@
                         currentSearchState = TargetingStateMachine.GET_ENTITIES_IN_REGION; // Once finished, go to next state (get elements to search for entities)
                         break;
                     case TargetingStateMachine.GET_ENTITIES_IN_REGION: // Gets the list of entities in the desired board element, also checks if need to subdivide lane
-                        if (tileSectioning) // Lane needs to be divided in tiles
-                        {
-                            if (tileCounter < ((Lane)searchLocation).Len) // Check if I still have ongoing lane available
-                            {
-                                entities = ((Lane)searchLocation).GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, tileCounter, referencePlayer).GetPlacedEntities(targetType, playerFilter); // Search for requested target for requested players
-                                tileCounter++;
-                                currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
-                            }
-                            else // Ran out of lane, finished region
-                            {
-                                currentSearchState = TargetingStateMachine.LAST_PLAYER;
-                            }
-                        }
-                        else // Otherwise just get units in the region
-                        {
-                            entities = searchLocation.GetPlacedEntities(targetType, playerFilter);
-                            currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
-                        }
+                        entities = searchLocation.GetPlacedEntities(targetType, playerFilter);
+                        currentSearchState = TargetingStateMachine.TARGETS_IN_REGION;
                         localOrdinal = 0;
                         break;
                     case TargetingStateMachine.TARGETS_IN_REGION: // This searches the region to add as many entities as it can find
@@ -414,14 +406,7 @@
                         }
                         else // Means I finished region
                         {
-                            if (tileSectioning) // May want to look for next tile (if available)
-                            {
-                                currentSearchState = TargetingStateMachine.GET_ENTITIES_IN_REGION;
-                            }
-                            else // Finished whole region, go to next part
-                            {
-                                currentSearchState = TargetingStateMachine.LAST_PLAYER;
-                            }
+                            currentSearchState = TargetingStateMachine.LAST_PLAYER;
                         }
                         break;
                     case TargetingStateMachine.LAST_PLAYER: // Identical to other player but reverse logic

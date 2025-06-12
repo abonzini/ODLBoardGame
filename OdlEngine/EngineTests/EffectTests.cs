@@ -20,13 +20,17 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing
                 Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                };
                 Effect summonEffect = new Effect()
                 {
                     EffectType = EffectType.SUMMON_UNIT, // Summons unit
                     TempVariable = 2, // Always card 2
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [summonEffect]); // Add interaction to card
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, summonEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Card 2: placeholder simple unit
                 cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, [], 1, 1, 1, 1));
@@ -56,7 +60,7 @@ namespace EngineTests
                             LaneID.MOUNTAIN => EffectLocation.MOUNTAIN,
                             _ => throw new Exception("Invalid location for test")
                         };
-                        summonEffect.EffectLocation = laneTarget;
+                        targetBoardEffect.EffectLocation = laneTarget;
                         summonEffect.TargetPlayer = playerTarget;
                         // Pre play tests
                         Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT).Count, 0);
@@ -174,6 +178,10 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
                 Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                };
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -183,7 +191,7 @@ namespace EngineTests
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
@@ -244,7 +252,7 @@ namespace EngineTests
                 List<EntityType> entityOptions = [EntityType.UNIT, EntityType.BUILDING, EntityType.PLAYER];
                 foreach (EffectLocation loc in targetLocations)
                 {
-                    searchEffect.EffectLocation = loc;
+                    targetBoardEffect.EffectLocation = loc;
                     foreach (int dir in directionOptions)
                     {
                         searchEffect.TempVariable = dir;
@@ -342,6 +350,10 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
                 Skill skill = TestCardGenerator.CreateSkill(1, 0, [0, 1, 2], CardTargetingType.LANE);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                };
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -351,7 +363,7 @@ namespace EngineTests
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
@@ -396,7 +408,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set targeting effects to see if the played lane is checked properly
                 searchEffect.SearchCriterion = SearchCriterion.ALL; // Search for all units in board, no weird lane situations yet
-                searchEffect.EffectLocation = EffectLocation.PLAY_TARGET; // Skill will search where played
+                targetBoardEffect.EffectLocation = EffectLocation.PLAY_TARGET; // Skill will search where played
                 searchEffect.TempVariable = 0; // Forward
                 searchEffect.TargetPlayer = EntityOwner.BOTH;
                 searchEffect.TargetType = EntityType.UNIT | EntityType.PLAYER | EntityType.BUILDING; // Search for all
@@ -449,109 +461,6 @@ namespace EngineTests
             }
         }
         [TestMethod]
-        public void TileByTileExploration()
-        {
-            Random _rng = new Random();
-            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
-            foreach (CurrentPlayer player in players)
-            {
-                int playerIndex = (int)player;
-                int opponentIndex = 1 - playerIndex;
-                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
-                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
-                state.PlayerStates[1].Hp.BaseValue = 30;
-                // Cards
-                CardFinder cardDb = new CardFinder();
-                // Card 1: Skill that does nothing but performs a search
-                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
-                Effect searchEffect = new Effect()
-                {
-                    EffectType = EffectType.FIND_ENTITIES, // Search
-                };
-                Effect debugEffect = new Effect()
-                {
-                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
-                };
-                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
-                cardDb.InjectCard(1, skill); // Add to cardDb
-                // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
-                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
-                LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
-                int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
-                int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
-                int secondPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
-                int secondOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, opponentIndex);
-                TestHelperFunctions.ManualInitEntity(state, secondPlayerTile, 2, playerIndex, new Unit()
-                {
-                    EntityType = EntityType.UNIT,
-                });
-                TestHelperFunctions.ManualInitEntity(state, secondOppTile, 3, opponentIndex, new Unit()
-                {
-                    EntityType = EntityType.UNIT,
-                });
-                TestHelperFunctions.ManualInitEntity(state, firstPlayerTile, 4, playerIndex, new Building()
-                {
-                    EntityType = EntityType.BUILDING,
-                });
-                TestHelperFunctions.ManualInitEntity(state, firstOppTile, 5, opponentIndex, new Building()
-                {
-                    EntityType = EntityType.BUILDING,
-                });
-                state.NextUniqueIndex = 6;
-                // Finally load the game
-                GameStateMachine sm = new GameStateMachine(cardDb);
-                sm.LoadGame(state); // Start from here
-                // Set of targeting tests
-                searchEffect.SearchCriterion = SearchCriterion.QUANTITY; // Search for first n elements (all ordered!)
-                searchEffect.EffectLocation = targetLocation switch
-                {
-                    LaneID.PLAINS => EffectLocation.PLAINS,
-                    LaneID.FOREST => EffectLocation.FOREST,
-                    LaneID.MOUNTAIN => EffectLocation.MOUNTAIN,
-                    _ => throw new Exception("Invalid for this test")
-                };
-                searchEffect.TargetPlayer = EntityOwner.BOTH;
-                searchEffect.TargetType = EntityType.UNIT | EntityType.BUILDING | EntityType.PLAYER;
-                List<int> directionOptions = [6, -6]; // Will try forward and in the reverse, get 6 max (all elems)
-                foreach (int dir in directionOptions)
-                {
-                    searchEffect.TempVariable = dir;
-                    // Pre-play prep
-                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                    int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
-                    // Play
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
-                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
-                    CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
-                    Assert.IsNotNull(cpu);
-                    // Check returned targets
-                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
-                    List<int> searchResultList = cpu.ReferenceEntities;
-                    Assert.AreEqual(6, searchResultList.Count);
-                    // Check correct results
-                    List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0, 4, 2, 3, 5, 1] : [0, 5, 3, 2, 4, 1]; // The 2 options of how board looks in absolute
-                    bool forwardOrder = true; // Is it a fw style response?
-                    if (player != CurrentPlayer.PLAYER_1) // Being p2 flips
-                        forwardOrder = !forwardOrder;
-                    if (dir < 0) // ...but being in reverse direction also flips
-                        forwardOrder = !forwardOrder;
-                    if (!forwardOrder) expectedResult.Reverse(); // If reversed order, just flip the list
-                    for (int k = 0; k < 6; k++)
-                    {
-                        Assert.AreEqual(searchResultList[k], expectedResult[k]);
-                    }
-                    // Revert and hash check
-                    sm.UndoPreviousStep();
-                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
-                }
-            }
-        }
-        [TestMethod]
         public void OrdinalTargeting()
         {
             Random _rng = new Random();
@@ -570,6 +479,10 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
                 Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                };
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -579,7 +492,7 @@ namespace EngineTests
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
@@ -610,7 +523,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set of targeting tests
                 searchEffect.SearchCriterion = SearchCriterion.ORDINAL; // Search for first n elements (all ordered!)
-                searchEffect.EffectLocation = targetLocation switch
+                targetBoardEffect.EffectLocation = targetLocation switch
                 {
                     LaneID.PLAINS => EffectLocation.PLAINS,
                     LaneID.FOREST => EffectLocation.FOREST,
@@ -636,16 +549,20 @@ namespace EngineTests
                     List<int> searchResultList = cpu.ReferenceEntities;
                     Assert.AreEqual(1, searchResultList.Count); // Ordinals return a single value regardless
                     // Check correct results
-                    List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0, 4, 2, 3, 5, 1] : [0, 5, 3, 2, 4, 1]; // The 2 options of how board looks in absolute
+                    List<int> expectedResult = [0, 2, 3, 4, 5, 1];
                     int idx = ord;
                     bool forwardOrder = true; // Is it a fw style response?
                     if (player != CurrentPlayer.PLAYER_1) // Being p2 flips
                         forwardOrder = !forwardOrder;
-                    if (ord < 0) // ...but being in reverse direction will flip index
+                    if (ord < 0) // ...but being in reverse direction will flip again
                     {
-                        idx += 6;
+                        forwardOrder = !forwardOrder;
+                        idx = -ord - 1;
                     }
-                    if (!forwardOrder) expectedResult.Reverse(); // If reversed order, just flip the list
+                    if (!forwardOrder)
+                    {
+                        (expectedResult[0], expectedResult[5]) = (expectedResult[5], expectedResult[0]); // If reversed order, just flip the players                                                                                                         // If reversed order, just flip the list
+                    }
                     Assert.AreEqual(searchResultList[0], expectedResult[idx]);
                     // Revert and hash check
                     sm.UndoPreviousStep();
@@ -672,6 +589,10 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Skill that does nothing but performs a search
                 Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                };
                 Effect searchEffect = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES, // Search
@@ -681,7 +602,7 @@ namespace EngineTests
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect]); // Add interaction to card
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
@@ -712,7 +633,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set of targeting tests
                 searchEffect.SearchCriterion = SearchCriterion.QUANTITY; // Search for first n elements (all ordered!)
-                searchEffect.EffectLocation = targetLocation switch
+                targetBoardEffect.EffectLocation = targetLocation switch
                 {
                     LaneID.PLAINS => EffectLocation.PLAINS,
                     LaneID.FOREST => EffectLocation.FOREST,
@@ -740,13 +661,16 @@ namespace EngineTests
                     // Check correct results
                     if (num != 0) // Nothing to assert if searching for 0
                     {
-                        List<int> expectedResult = (player == CurrentPlayer.PLAYER_1) ? [0, 4, 2, 3, 5, 1] : [0, 5, 3, 2, 4, 1]; // The 2 options of how board looks in absolute
+                        List<int> expectedResult = [0, 2, 3, 4, 5, 1];
                         bool forwardOrder = true; // Is it a fw style response?
                         if (player != CurrentPlayer.PLAYER_1) // Being p2 flips
                             forwardOrder = !forwardOrder;
                         if (num < 0) // ...but being in reverse direction will revert again
                             forwardOrder = !forwardOrder;
-                        if (!forwardOrder) expectedResult.Reverse(); // If reversed order, just flip the list
+                        if (!forwardOrder)
+                        {
+                            (expectedResult[0], expectedResult[5]) = (expectedResult[5], expectedResult[0]); // If reversed order, just flip the players
+                        }
                         for (int idx = 0; idx < Math.Abs(num); idx++) // Iterate
                         {
                             Assert.AreEqual(searchResultList[idx], expectedResult[idx]);
@@ -1006,6 +930,62 @@ namespace EngineTests
                 List<int> searchResultList = cpu.ReferenceEntities;
                 Assert.AreEqual(searchResultList.Count, 1);
                 Assert.AreEqual(searchResultList[0], sm.DetailedState.NextUniqueIndex - 1); // Unit shoudl've been initialized as id = 2
+                // Revert and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+            }
+        }
+        [TestMethod]
+        public void SelectPlayTarget()
+        {
+            // Will play a skill that targets a unit, retrieve it as target
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit with very basic stats
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
+                // Card 2: unit-targeting skill
+                Skill skill = TestCardGenerator.CreateSkill(2, 0, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], CardTargetingType.UNIT);
+                Effect selectEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.SELECT_ENTITY,
+                    SearchCriterion = SearchCriterion.PLAY_TARGET_ENTITY, // Selects actor entity, in this case, myself when played
+                    TargetPlayer = EntityOwner.OWNER,
+                    TargetType = EntityType.UNIT,
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [selectEffect, debugEffect]); // Add interaction to card
+                cardDb.InjectCard(2, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(2); // Add card
+                TestHelperFunctions.ManualInitEntity(state, 0, 2, playerIndex, (Unit)unit.Clone()); // Injects unit in board
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Do the selection
+                // Pre-play prep
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                // Play
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(2, 2); // Play search card, choose player as target
+                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.IsNotNull(cpu);
+                // Check returned targets
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                List<int> searchResultList = cpu.ReferenceEntities;
+                Assert.AreEqual(searchResultList.Count, 1);
+                Assert.AreEqual(searchResultList[0], 2); // Should be unit
                 // Revert and hash check
                 sm.UndoPreviousStep();
                 Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -1376,10 +1356,14 @@ namespace EngineTests
                 // Values
                 // Card 1: Calculator skill, first looks for all units, then will set the value of ACC depending on multi input, return as debug trigger
                 Skill skill = TestCardGenerator.CreateSkill(2, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
                 Effect searchEffect = new Effect()// Finds all units
                 {
                     EffectType = EffectType.FIND_ENTITIES,
-                    EffectLocation = EffectLocation.BOARD,
                     TargetPlayer = EntityOwner.BOTH,
                     TargetType = EntityType.UNIT,
                     SearchCriterion = SearchCriterion.ALL,
@@ -1396,7 +1380,7 @@ namespace EngineTests
                     EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, multiInputCalcEffect, debugEffect]); // Add interaction to card
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, multiInputCalcEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Finally load the game
@@ -1430,6 +1414,79 @@ namespace EngineTests
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
+            }
+        }
+        [TestMethod]
+        public void CountInputRegister()
+        {
+            Random _rng = new Random();
+            // Searches all units and verify I can use the count as an input variable
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
+                state.PlayerStates[1].Hp.BaseValue = 30;
+                // I create many units in the board, 4 units Attack 0,1,2,3
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "TEST", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1);
+                int nUnits = _rng.Next(4, 10); // 4-9 units
+                for (int i = 0; i < nUnits; i++)
+                {
+                    testUnit.Attack.BaseValue = i;
+                    // Clone unit and put in the right place. Indices 0,1, are already reserved
+                    TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, i + 2, playerIndex, (Unit)testUnit.Clone());
+                }
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Values
+                // Card 1: Calculator skill, first looks for all units, then will set the value of ACC depending on multi input, return as debug trigger
+                Skill skill = TestCardGenerator.CreateSkill(2, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
+                Effect searchEffect = new Effect()// Finds all units
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    TargetPlayer = EntityOwner.BOTH,
+                    TargetType = EntityType.UNIT,
+                    SearchCriterion = SearchCriterion.ALL,
+                };
+                Effect calcEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    ModifierOperation = ModifierOperation.SET,
+                    Input = Variable.TARGET_COUNT,
+                    Output = Variable.ACC, // Stores into ACC
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, calcEffect, debugEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Pre-play prep
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                // Play
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
+                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.IsNotNull(cpu);
+                // Check returned targets
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                Assert.AreEqual(cpu.Acc, nUnits); // Check if ACC loaded properly
+                // Revert and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
             }
         }
         [TestMethod]
@@ -1827,6 +1884,11 @@ namespace EngineTests
                 Unit unit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 3, 4, 9, 10, 17], 1, 0, 1, 1);
                 // Card 2: Kill skill
                 Skill skill = TestCardGenerator.CreateSkill(2, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
                 Effect searchAllUnits = new Effect()
                 {
                     EffectType = EffectType.FIND_ENTITIES,
@@ -1840,7 +1902,7 @@ namespace EngineTests
                     EffectType = EffectType.KILL_ENTITIES,
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchAllUnits, killAllUnits]);
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchAllUnits, killAllUnits]);
                 cardDb.InjectCard(2, skill);
                 // Setup
                 state.PlayerStates[playerIndex].Hand.InsertCard(2); // Add card to hand
