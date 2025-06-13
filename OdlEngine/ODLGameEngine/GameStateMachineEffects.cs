@@ -180,6 +180,14 @@
                             LIVINGENTITY_Kill(nextEntity);
                         }
                         break;
+                    case EffectType.EFFECT_DAMAGE:
+                        foreach (int entityTarget in cpu.ReferenceEntities)
+                        {
+                            LivingEntity nextEntity = (LivingEntity)FetchEntity(entityTarget);
+                            DamageContext resultingDamageContext = LIVINGENTITY_DamageStep(cpu.CurrentSpecificContext.ActivatedEntity, nextEntity, inputValue);
+                            // TODO: Process resulting damage context, kill
+                        }
+                        break;
                     default:
                         throw new NotImplementedException("Effect type not implemented yet");
                 }

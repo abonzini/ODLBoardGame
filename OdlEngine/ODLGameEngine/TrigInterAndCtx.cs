@@ -36,7 +36,8 @@ namespace ODLGameEngine
         SUMMON_UNIT,
         MODIFIER,
         ASSERT,
-        KILL_ENTITIES
+        KILL_ENTITIES,
+        EFFECT_DAMAGE
         // TODO: Board element operations like shuffle, trim, crop, select
         // TODO: Tile extension operations to overwrite search, do AOE and other stuff
     }

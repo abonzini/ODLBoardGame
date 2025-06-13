@@ -1062,7 +1062,6 @@ namespace EngineTests
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(target).GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex).GetPlacedEntities(EntityType.UNIT, otherPlayerIndex).Count, 1);
             }
         }
-
         [TestMethod]
         public void ExactDirectDamageKill()
         {

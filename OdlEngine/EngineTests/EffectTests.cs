@@ -1928,5 +1928,126 @@ namespace EngineTests
                 Assert.AreEqual(preKillHash, sm.DetailedState.GetHashCode());
             }
         }
+        [TestMethod]
+        public void EffectDamage()
+        {
+            // Skill that deals damage to enemy player
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int damage = _rng.Next(5, 10); // Damage between 5-9
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].Hp.BaseValue = GameConstants.STARTING_HP;
+                state.PlayerStates[otherPlayerIndex].Hp.BaseValue = damage * 2; // Opp will live
+                CardFinder cardDb = new CardFinder();
+                // CARD 1: A skill played from board that deals damage to opponent
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [], CardTargetingType.BOARD);
+                Effect chooseBoard = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
+                Effect targetEffect = new Effect() // Finds opponent hero
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    SearchCriterion = SearchCriterion.ALL,
+                    EffectLocation = EffectLocation.BOARD,
+                    TargetPlayer = EntityOwner.OPPONENT,
+                    TargetType = EntityType.PLAYER
+                };
+                Effect damageEffect = new Effect()
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    Input = Variable.TEMP_VARIABLE,
+                    TempVariable = damage
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, targetEffect, damageEffect]);
+                // Add card
+                cardDb.InjectCard(1, skill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                // Begin simulation
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Deal effect damage
+                int prePlayHash = sm.DetailedState.GetHashCode();
+                Assert.AreEqual(0, sm.DetailedState.PlayerStates[otherPlayerIndex].DamageTokens);
+                sm.PlayFromHand(1, 0); // Play card in board
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                Assert.AreEqual(States.ACTION_PHASE, sm.DetailedState.CurrentState); // Game hasn't ended, just damage was dealt
+                Assert.AreEqual(damage, sm.DetailedState.PlayerStates[otherPlayerIndex].DamageTokens); // Check all damage was dealt
+                // Finally, reversion
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                Assert.AreEqual(0, sm.DetailedState.PlayerStates[otherPlayerIndex].DamageTokens);
+            }
+        }
+        [TestMethod]
+        public void EffectDamageKill()
+        {
+            // Skill that deals damage to enemy player, kills it. Makes sure end of game is triggered properly from an effect chain
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int damage = _rng.Next(5, 10); // Damage between 5-9
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].Hp.BaseValue = GameConstants.STARTING_HP;
+                state.PlayerStates[otherPlayerIndex].Hp.BaseValue = damage; // Opp will live
+                CardFinder cardDb = new CardFinder();
+                // CARD 1: A skill played from board that deals damage to opponent
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [], CardTargetingType.BOARD);
+                Effect chooseBoard = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
+                Effect targetEffect = new Effect() // Finds opponent hero
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    SearchCriterion = SearchCriterion.ALL,
+                    EffectLocation = EffectLocation.BOARD,
+                    TargetPlayer = EntityOwner.OPPONENT,
+                    TargetType = EntityType.PLAYER
+                };
+                Effect damageEffect = new Effect()
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    Input = Variable.TEMP_VARIABLE,
+                    TempVariable = damage
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, targetEffect, damageEffect]);
+                // Add card
+                cardDb.InjectCard(1, skill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                // Begin simulation
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Deal effect damage
+                int prePlayHash = sm.DetailedState.GetHashCode();
+                Assert.AreEqual(0, sm.DetailedState.PlayerStates[otherPlayerIndex].DamageTokens);
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play card in board
+                Assert.AreEqual(PlayOutcome.OK, res.Item1.PlayOutcome); // Card was played properly even if EOG
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                Assert.AreEqual(States.EOG, sm.DetailedState.CurrentState);
+                Assert.AreEqual(damage, sm.DetailedState.PlayerStates[otherPlayerIndex].DamageTokens); // Check all damage was dealt
+                Assert.AreEqual(player, sm.DetailedState.CurrentPlayer); // Check It's EOG and Player won
+                // Finally, reversion
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                Assert.AreEqual(States.ACTION_PHASE, sm.DetailedState.CurrentState);
+                Assert.AreEqual(0, sm.DetailedState.PlayerStates[otherPlayerIndex].DamageTokens);
+            }
+        }
     }
 }

@@ -1,11 +1,7 @@
 Ongoing tasks in order of priority:
 - 6:
-	- Add card #6. gets actor enemy, asserts, and kills
 - 7
 - 8:
-	- Direct effect damage handler
-	- Tests, UI,
-	- Do #8
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it

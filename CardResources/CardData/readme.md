@@ -171,6 +171,11 @@ Useful for effect with complex conditions where a part of the effect is conditio
 
 - ```KILL_ENTITIES``` insta-kills (no damage step) each of the references on the current reference list
 
+- ```EFFECT_DAMAGE``` deals effect damage to the reference targets. Similar to combat output but processed on a different place. There's not Defender attack, even if damage is dealt by unit.
+
+    Parameters:
+    - ```Input``` contains the value of the damage
+
 ## Possible Parameter Values
 
 - ```EffectLocation```
