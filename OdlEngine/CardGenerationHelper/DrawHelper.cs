@@ -326,7 +326,7 @@ namespace CardGenerationHelper
                         }
                         if (currentBoldChar != null) // Theres a bold char, remove it
                         {
-                            auxWords[i] = auxWords[i].Remove(0, 1);
+                            auxWords[i] = auxWords[i][1..];
                         }
                     }
                     if (currentBoldChar != null)
@@ -549,7 +549,6 @@ namespace CardGenerationHelper
                 currentDrawPointerY += textAreaHeight; // Move down to the next part
                 // Extras:
                 Rectangle extrasBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)drawableWidth, (int)extraAreaHeight);
-                float extraFontSize = extraAreaHeight;
                 DrawAutoFitText(g, $"#{cardInfo.Id}", extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Far, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), debug);
                 string rarityString = new string('\u2605', cardInfo.Rarity);
                 DrawAutoFitText(g, rarityString, extrasBox, textFont, Color.Black, Color.White, DrawConstants.StatFontBorderPercentage, StringAlignment.Near, StringAlignment.Center, (int)(drawableWidth * DrawConstants.ExtraBoxMargins), debug);

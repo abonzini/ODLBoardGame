@@ -282,9 +282,9 @@ namespace EngineTests
                 {
                     int realLaneNumber = 0;
                     HashSet<int> targets = new HashSet<int>();
-                    if ((i & 0b0001) != 0) { targets.Add(0); realLaneNumber++; };
-                    if ((i & 0b0010) != 0) { targets.Add(1); realLaneNumber++; };
-                    if ((i & 0b0100) != 0) { targets.Add(2); realLaneNumber++; };
+                    if ((i & 0b0001) != 0) { targets.Add(0); realLaneNumber++; }
+                    if ((i & 0b0010) != 0) { targets.Add(1); realLaneNumber++; }
+                    if ((i & 0b0100) != 0) { targets.Add(2); realLaneNumber++; }
                     if ((i & 0b1000) != 0) targets.Add(3); // Non existing lane 3
                     boardTargetableSkill.TargetOptions = targets;
                     PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);

@@ -106,7 +106,6 @@ namespace EngineTests
         [TestMethod]
         public void SummonUnitEffectInTile()
         {
-            Random _rng = new Random();
             // Testing effect where unit is summoned in the same tile of the original unit
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
@@ -162,7 +161,6 @@ namespace EngineTests
         [TestMethod]
         public void TestTargetingFilters()
         {
-            Random _rng = new Random();
             // Checks the targeting
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
@@ -236,7 +234,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Set of targeting tests
                 searchEffect.SearchCriterion = SearchCriterion.ALL; // Search for all units in board, no weird lane situations yet
-                EffectLocation getFromLane(LaneID lane)
+                static EffectLocation getFromLane(LaneID lane)
                 {
                     return lane switch
                     {
@@ -334,7 +332,6 @@ namespace EngineTests
         [TestMethod]
         public void TargetInPlayedLane()
         {
-            Random _rng = new Random();
             // Target is now in the played lane of a card (i.e. targetting effect)
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
@@ -420,7 +417,7 @@ namespace EngineTests
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                     int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
                     // Play
-                    int getFromLane(LaneID lane)
+                    static int getFromLane(LaneID lane)
                     {
                         return lane switch
                         {
@@ -463,7 +460,6 @@ namespace EngineTests
         [TestMethod]
         public void OrdinalTargeting()
         {
-            Random _rng = new Random();
             // Testing effect where unit(s) is(are) summoned
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
@@ -574,7 +570,6 @@ namespace EngineTests
         [TestMethod]
         public void NumericalTargeting()
         {
-            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -1912,7 +1907,6 @@ namespace EngineTests
                 for (int i = 0; i < 5; i++)
                 {
                     int coord = _rng.Next(GameConstants.PLAINS_NUMBER_OF_TILES + GameConstants.FOREST_NUMBER_OF_TILES + GameConstants.MOUNTAIN_NUMBER_OF_TILES);
-                    Unit unitToSummon = (Unit)unit.Clone();
                     PlayContext context = new PlayContext()
                     {
                         PlayedTarget = coord,
@@ -1922,15 +1916,15 @@ namespace EngineTests
                 }
                 sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Finalize event stack cleanly
                 // Pre kill test
-                Assert.AreEqual(5, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count());
+                Assert.AreEqual(5, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count);
                 int preKillHash = sm.DetailedState.GetHashCode();
                 // Play card, kill
                 sm.PlayFromHand(2, 0);
-                Assert.AreEqual(0, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count()); // All units dead
+                Assert.AreEqual(0, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count); // All units dead
                 Assert.AreNotEqual(preKillHash, sm.DetailedState.GetHashCode());
                 // Revert
                 sm.UndoPreviousStep();
-                Assert.AreEqual(5, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count()); // All units dead
+                Assert.AreEqual(5, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count); // All units dead
                 Assert.AreEqual(preKillHash, sm.DetailedState.GetHashCode());
             }
         }

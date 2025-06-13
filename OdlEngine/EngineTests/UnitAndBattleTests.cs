@@ -119,7 +119,6 @@ namespace EngineTests
         public void SummonedUnitDiesIf0Hp()
         {
             // Summons dead unit and verifies that the unit properly died
-            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -197,7 +196,6 @@ namespace EngineTests
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
-                int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
                 state.CurrentState = States.DRAW_PHASE;
                 state.CurrentPlayer = player;
@@ -366,7 +364,6 @@ namespace EngineTests
                 HashSet<int> boardHashes = new HashSet<int>();
                 HashSet<int> unitHashes = new HashSet<int>();
                 int playerIndex = (int)player;
-                int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
                 state.CurrentState = States.DRAW_PHASE;
                 state.CurrentPlayer = player;
@@ -994,7 +991,6 @@ namespace EngineTests
         public void UnitBlockedFromDirectDamage()
         {
             // A unit advances, and will damage enemy
-            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {

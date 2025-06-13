@@ -338,7 +338,6 @@
             // Search variables
             bool reverseSearch = false; // Order of search
             int requiredTargets; // How many targets I'll extract maximum
-            int referencePlayer; // Order reference depends on indexing
             int playerFilter = -1; // Filter of which player to search for (defautl is -1 both players)
             // Prepare settings/masks for this target search
             if (n < 0) // Negative indexing implies reverse indexing
@@ -350,7 +349,6 @@
                 }
                 reverseSearch = true;
             }
-            referencePlayer = reverseSearch ? 1 - ownerPlayerPov : ownerPlayerPov;
             requiredTargets = searchCriterion switch
             {
                 SearchCriterion.ORDINAL => 1, // Only one target in position N

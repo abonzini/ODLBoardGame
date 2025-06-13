@@ -124,8 +124,8 @@
                 Affected = building
             };
             TRIGINTER_ProcessInteraction(InteractionType.UNIT_ENTERS_BUILDING, enterCtx);
-            // Also, when 
-            if (building.Owner == 1 - unit.Owner) // If building and unit have different owners, then the unit attacks
+            // Also, when building and unit have different owners, then the unit attacks
+            if (building.Owner == 1 - unit.Owner)
             {
                 UNIT_Combat(unit, building);
             }
