@@ -1,0 +1,30 @@
+{
+  "Hp": 5,
+  "EntityType": "BUILDING",
+  "TargetOptions": [
+    0,
+    4,
+    5,
+    10,
+    11
+  ],
+  "Id": 7,
+  "Cost": 3,
+  "Interactions": {
+    "UNIT_ENTERS_BUILDING": [
+      {
+        "EffectType": "SELECT_ENTITY",
+        "TargetPlayer": "OWNER",
+        "SearchCriterion": "ACTOR_ENTITY",
+        "TargetType": "UNIT"
+      },
+      {
+        "EffectType": "MODIFIER",
+        "ModifierOperation": "ADD",
+        "Input": "TARGET_ATTACK",
+        "Output": "TARGET_ATTACK",
+        "TempVariable": 2
+      }
+    ]
+  }
+}

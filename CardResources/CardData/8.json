@@ -1,0 +1,44 @@
+{
+  "Name": "TREBUCHET",
+  "Hp": 1,
+  "Triggers": {
+    "BOARD": {
+      "ON_END_OF_TURN": [
+        {
+          "EffectType": "SELECT_ENTITY",
+          "TargetPlayer": "OWNER",
+          "SearchCriterion": "ACTOR_ENTITY",
+          "TargetType": "PLAYER"
+        },
+        {
+          "EffectType": "ASSERT",
+          "Input": "TARGET_COUNT"
+        },
+        {
+          "EffectType": "ADD_LOCATION_REFERENCE"
+        },
+        {
+          "EffectType": "FIND_ENTITIES",
+          "TargetPlayer": "OPPONENT",
+          "SearchCriterion": "ALL",
+          "TargetType": "PLAYER"
+        },
+        {
+          "EffectType": "EFFECT_DAMAGE",
+          "TempVariable": 2
+        }
+      ]
+    }
+  },
+  "EntityType": "BUILDING",
+  "TargetOptions": [
+    3,
+    8,
+    9,
+    15,
+    16,
+    17
+  ],
+  "Id": 8,
+  "Cost": 3
+}

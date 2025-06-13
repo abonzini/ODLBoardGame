@@ -1,0 +1,10 @@
+{
+  "EntityType": "BUILDING",
+  "Id": 6,
+  "Name": "TRAPS",
+  "Text": "Destroy any enemy unit that *enters* this building.",
+  "Cost": "2",
+  "Hp": "1",
+  "Rarity": 2,
+  "Tribe": "BASE"
+}
