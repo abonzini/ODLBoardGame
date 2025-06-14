@@ -704,6 +704,11 @@ namespace EngineTests
                 } while (newValue == statValue); // Will set to a new but different value
                 // Card 1: Skill that performs a search and buffs the specific stat of a unit
                 Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
                 Effect searchEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.FIND_ENTITIES,
@@ -723,7 +728,7 @@ namespace EngineTests
                     ModifierOperation = ModifierOperation.SET
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect, buffEffect]); // Add interaction to card
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect, buffEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Add stuff to board. In a random lane, add a few units for player
@@ -757,10 +762,9 @@ namespace EngineTests
                     Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    List<int> searchResultList = cpu.ReferenceEntities;
-                    foreach (int entityId in searchResultList)
+                    for (int i = 2; i <= 3; i++) // Check both the units I wanted to check
                     { // Check if the buff did it's job
-                        Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
+                        Unit unitToCheck = (Unit)sm.DetailedState.EntityData[i];
                         Stat statToChech = modifierTarget switch
                         {
                             Variable.TARGET_HP => unitToCheck.Hp,
@@ -803,6 +807,11 @@ namespace EngineTests
                 } while (buffValue == statValue); // Will set to a new but different value
                 // Card 1: Skill that performs a search and buffs the specific stat of a unit
                 Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
                 Effect searchEffect = new Effect() // First, search for entities
                 {
                     EffectType = EffectType.FIND_ENTITIES,
@@ -822,7 +831,7 @@ namespace EngineTests
                     Output = Variable.TARGET_HP
                 };
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
-                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [searchEffect, debugEffect, buffEffect]); // Add interaction to card
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect, buffEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
                 // Add stuff to board. In a random lane, add a few units for player
@@ -864,10 +873,9 @@ namespace EngineTests
                     Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                    List<int> searchResultList = cpu.ReferenceEntities;
-                    foreach (int entityId in searchResultList)
+                    for (int i = 2; i <= 3; i++) // Check both the units I wanted to check
                     { // Check if the buff did it's job
-                        Unit unitToCheck = (Unit)sm.DetailedState.EntityData[entityId];
+                        Unit unitToCheck = (Unit)sm.DetailedState.EntityData[i];
                         Stat statToChech = unitToCheck.Hp;
                         Assert.AreEqual(statToChech.Total, desiredValue);
                     }
@@ -875,6 +883,80 @@ namespace EngineTests
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
                 }
+            }
+        }
+        [TestMethod]
+        public void BuffingInModeEach()
+        {
+            // Will square units attacks by using the MultiTarget.EACH operation
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Values
+                // Card 1: Skill that performs a search and squares units attacks
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
+                Effect searchEffect = new Effect() // First, search for entities
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    SearchCriterion = SearchCriterion.ALL, // All of them,
+                    EffectLocation = EffectLocation.BOARD, // Everywhere
+                    TargetPlayer = EntityOwner.OWNER, // Whoever played the card
+                    TargetType = EntityType.UNIT // Get unit (as this has all stats)
+                };
+                Effect buffEffect = new Effect() // Operation that'll multiply each stat by itself
+                {
+                    EffectType = EffectType.MODIFIER,
+                    ModifierOperation = ModifierOperation.MULTIPLY,
+                    MultiInputProcessing = MultiInputProcessing.EACH,
+                    Input = Variable.TARGET_ATTACK,
+                    Output = Variable.TARGET_ATTACK,
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, buffEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Add stuff to board. Will add 10 units
+                Unit theUnit = new Unit() // This is the unit that'll be created
+                {
+                    EntityType = EntityType.UNIT,
+                };
+                theUnit.Hp.BaseValue = 1;
+                theUnit.Movement.BaseValue = 1;
+                theUnit.MovementDenominator.BaseValue = 1;
+                for (int i = 0; i < 10; i++)
+                {
+                    theUnit.Attack.BaseValue = i;
+                    TestHelperFunctions.ManualInitEntity(state, 0, i + 2, playerIndex, (PlacedEntity)theUnit.Clone());
+                }
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Pre-play prep
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                // Play
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
+                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                // Check returned targets
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                for (int i = 0; i < 10; i++)
+                { // Check if the buff did it's job
+                    Unit unitToCheck = (Unit)sm.DetailedState.EntityData[2 + i];
+                    Assert.AreEqual(unitToCheck.Attack.Total, i * i);
+                }
+                // Revert and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
             }
         }
         [TestMethod]
