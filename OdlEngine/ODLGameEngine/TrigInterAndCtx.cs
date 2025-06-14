@@ -122,7 +122,8 @@ namespace ODLGameEngine
         SUM,
         AVERAGE,
         MAX,
-        MIN
+        MIN,
+        EACH,
     }
     /// <summary>
     /// Effect is described by a type and a series of modifiers that define the effect

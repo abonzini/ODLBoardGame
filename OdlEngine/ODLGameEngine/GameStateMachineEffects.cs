@@ -77,33 +77,29 @@
                         break;
                     case EffectType.FIND_ENTITIES:
                         // Searches for entities, reference being the selected reference (since there can be multiple references, a single one (the first) is used
+                        List<int> newList = new List<int>(); // Now I'll prepare the new list result
+                        foreach (BoardElement nextSearchLocation in cpu.ReferenceLocations) // Look spot by spot
                         {
-                            List<int> newList = new List<int>(); // Now I'll prepare the new list result
-                            foreach (BoardElement nextSearchLocation in cpu.ReferenceLocations) // Look spot by spot
-                            {
-                                newList.AddRange(GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, nextSearchLocation, inputValue, cpu.CurrentSpecificContext.ActivatedEntity.Owner));
-                            }
-                            cpu.ReferenceEntities = newList;
+                            newList.AddRange(GetTargets(effect.TargetPlayer, effect.TargetType, effect.SearchCriterion, nextSearchLocation, inputValue, cpu.CurrentSpecificContext.ActivatedEntity.Owner));
                         }
+                        cpu.ReferenceEntities = newList;
                         break;
                     case EffectType.ADD_LOCATION_REFERENCE:
                         // Adds one or more locations to list of reference locations
                         cpu.ReferenceLocations.AddRange(GetTargetLocations(effect.EffectLocation, cpu));
                         break;
                     case EffectType.SUMMON_UNIT:
+                        int referencePlayer = cpu.CurrentSpecificContext.ActivatedEntity.Owner;
+                        foreach (BoardElement nextSummonLocation in cpu.ReferenceLocations)
                         {
-                            int referencePlayer = cpu.CurrentSpecificContext.ActivatedEntity.Owner;
-                            foreach (BoardElement nextSummonLocation in cpu.ReferenceLocations)
-                            {
 
-                                if (effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Will its owner or its opponent get the unit?
-                                {
-                                    SummonUnitToPlayer(referencePlayer, inputValue, nextSummonLocation);
-                                }
-                                if (effect.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
-                                {
-                                    SummonUnitToPlayer(1 - referencePlayer, inputValue, nextSummonLocation);
-                                }
+                            if (effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Will its owner or its opponent get the unit?
+                            {
+                                SummonUnitToPlayer(referencePlayer, inputValue, nextSummonLocation);
+                            }
+                            if (effect.TargetPlayer.HasFlag(EntityOwner.OPPONENT))
+                            {
+                                SummonUnitToPlayer(1 - referencePlayer, inputValue, nextSummonLocation);
                             }
                         }
                         break;
@@ -126,9 +122,13 @@
                                         ModifierOperation.ABSOLUTE_SET => STATS_SetAbsoluteBaseStat,
                                         _ => throw new NotImplementedException("Modifier operation not supported for stats"),
                                     };
-                                    foreach (int entityTarget in cpu.ReferenceEntities)
+                                    for (int i = 0; i < cpu.ReferenceEntities.Count; i++)
                                     {
-                                        IngameEntity nextEntity = FetchEntity(entityTarget);
+                                        if (effect.MultiInputProcessing == MultiInputProcessing.EACH) // Actually multiple input values...
+                                        {
+                                            inputValue = GetInput(cpu, effect.Input, effect.MultiInputProcessing, i);
+                                        }
+                                        IngameEntity nextEntity = FetchEntity(cpu.ReferenceEntities[i]);
                                         Stat targetStat = effect.Output switch
                                         {
                                             Variable.TARGET_HP => ((LivingEntity)nextEntity).Hp,
@@ -143,9 +143,13 @@
                                 }
                                 break;
                             case Variable.PLAYERS_GOLD:
-                                foreach (int entityTarget in cpu.ReferenceEntities) // Modify gold for each entity found (!!)
+                                for (int i = 0; i < cpu.ReferenceEntities.Count; i++) // Modify gold for each entity found (!!)
                                 {
-                                    IngameEntity entity = FetchEntity(entityTarget); // Got the entity
+                                    if (effect.MultiInputProcessing == MultiInputProcessing.EACH) // Actually multiple input values...
+                                    {
+                                        inputValue = GetInput(cpu, effect.Input, effect.MultiInputProcessing, i);
+                                    }
+                                    IngameEntity entity = FetchEntity(cpu.ReferenceEntities[i]); // Got the entity
                                     if (effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Does owner of this entity get gold?
                                     {
                                         EFFECTS_ModifyPlayersGold(entity.Owner, inputValue, effect.ModifierOperation);
@@ -181,9 +185,13 @@
                         }
                         break;
                     case EffectType.EFFECT_DAMAGE:
-                        foreach (int entityTarget in cpu.ReferenceEntities)
+                        for (int i = 0; i < cpu.ReferenceEntities.Count; i++)
                         {
-                            LivingEntity nextEntity = (LivingEntity)FetchEntity(entityTarget);
+                            if (effect.MultiInputProcessing == MultiInputProcessing.EACH) // Actually multiple input values...
+                            {
+                                inputValue = GetInput(cpu, effect.Input, effect.MultiInputProcessing, i);
+                            }
+                            LivingEntity nextEntity = (LivingEntity)FetchEntity(cpu.ReferenceEntities[i]);
                             DamageContext resultingDamageContext = LIVINGENTITY_DamageStep(cpu.CurrentSpecificContext.ActivatedEntity, nextEntity, inputValue);
                             // TODO: Process resulting damage context, kill
                         }
@@ -205,11 +213,12 @@
         /// <summary>
         /// Gets the input value for the operations that need it
         /// </summary>
-        /// <param name="cpu">Cpu context</param>
-        /// <param name="input">Where to get the input from</param>
-        /// <param name="multiInputOperation">If multiple inputs, how are they processed into a number</param>
-        /// <returns>Value</returns>
-        private int GetInput(CpuState cpu, Variable input, MultiInputProcessing multiInputOperation)
+        /// <param name="cpu">Cpu context to find the values</param>
+        /// <param name="input">Input variable</param>
+        /// <param name="multiInputOperation">What to do if it is a value of a (potentially multiple) reference entity list</param>
+        /// <param name="ordinalN">If it is in ordinal mode, gets the next N value</param>
+        /// <returns></returns>
+        private int GetInput(CpuState cpu, Variable input, MultiInputProcessing multiInputOperation, int ordinalN = 0)
         {
             switch (input)
             {
@@ -227,8 +236,17 @@
                     break;
             }
             int result = 0; // This will require iteration...
-            foreach (int entityTarget in cpu.ReferenceEntities)
+            for (int i = 0; i < cpu.ReferenceEntities.Count; i++)
             {
+                int entityTarget;
+                if (multiInputOperation != MultiInputProcessing.EACH) // In this cases I need to iterate the whole array
+                {
+                    entityTarget = cpu.ReferenceEntities[i];
+                }
+                else // Otherwise get the right entity directly
+                {
+                    entityTarget = cpu.ReferenceEntities[ordinalN];
+                }
                 int auxInt = input switch
                 {
                     Variable.TARGET_HP => ((LivingEntity)FetchEntity(entityTarget)).Hp.Total,
@@ -238,7 +256,7 @@
                     Variable.PLAYERS_GOLD => DetailedState.PlayerStates[FetchEntity(entityTarget).Owner].CurrentGold,
                     _ => throw new Exception("This shouldn't have gotten here! Invalid input source!")
                 };
-                if (multiInputOperation == MultiInputProcessing.FIRST) // If I only needed the first value...
+                if (multiInputOperation == MultiInputProcessing.EACH || multiInputOperation == MultiInputProcessing.FIRST) // If I only needed the Nth value then I already have it
                 {
                     return auxInt;
                 }

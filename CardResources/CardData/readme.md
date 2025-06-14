@@ -226,7 +226,8 @@ Useful for effect with complex conditions where a part of the effect is conditio
     - ```MARCH_START_FLAG``` when on a marching context, this is a *readonly* flag that is $\neq 0$ if this is the first advancement of the current march, and $=0$ if not
     - ```MARCH_CURRENT_MOVEMENT``` when on a marching context, this is the number of remaining steps of the current march.
 - ```MultiInputProcessing``` for when an Input is an element present in a reference list with many items (e.g. after search)
-    - ```FIRST``` checks only the first element
+    - ```FIRST``` the input of the first entity
     - ```SUM``` the total sum of all inputs
     - ```AVERAGE``` the average value of all inputs
     - ```MAX```/```MIN``` the maximum/minimum value of all inputs
+    - ```EACH``` for some entity-related operations like buffing can use this to buff each entity individually calculating a separate input value each time
