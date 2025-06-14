@@ -174,5 +174,230 @@ namespace EngineTests
                 }
             }
         }
+        [TestMethod]
+        public void PostDamageInteractionCombatUnitVUnit()
+        {
+            // Checks if combat between 2 units causes a post-damage effect
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE; // Because they'll march
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that pushes debug effect when damaging something
+                Unit unit = TestCardGenerator.CreateUnit(1, "DAMAGE_TRIGGER_UNITS", 0, [0, 4, 10], 2, 1, 1, 1);
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE,
+                };
+                unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                unit.Interactions.Add(InteractionType.POST_DAMAGE, [debugEffect]);
+                // I'll load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Now add the units in the board
+                int tileCoord = 1; // Wherever
+                sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = unit, PlayedTarget = tileCoord }); // For p1
+                sm.UNIT_PlayUnit(opponentIndex, new PlayContext() { Actor = unit, PlayedTarget = tileCoord }); // For p2
+                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger debug event to safely close the step result
+                // Before the advance
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                StepResult res = sm.Step(); // Do my draw phase, trigger advance now
+                // Check if debug event is there
+                List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res);
+                Assert.AreEqual(2, cpus.Count);
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                // Want to make sure the entity activated order is speicfically first me and then the opp unit
+                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.ActivatedEntity.Owner);
+                Assert.AreEqual(opponentIndex, cpus[1].CurrentSpecificContext.ActivatedEntity.Owner);
+                // Revert EVERYTHING and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+            }
+        }
+        [TestMethod]
+        public void PostDamageInteractionCombatUnitVPlayer()
+        {
+            // Checks if combat between unit and player results in the proper damage step
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE; // Because they'll march
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that pushes debug effect when damaging something
+                Unit unit = TestCardGenerator.CreateUnit(1, "DAMAGE_TRIGGER_UNITS", 0, [0, 4, 10], 2, 1, 1, 1);
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE,
+                };
+                unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                unit.Interactions.Add(InteractionType.POST_DAMAGE, [debugEffect]);
+                // I'll load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Now add the units in the board
+                int tileCoord = sm.DetailedState.BoardState.PlainsLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex); // Get this player's end tile (wanna damage)
+                sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = unit, PlayedTarget = tileCoord }); // For p1
+                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger debug event to safely close the step result
+                // Before the advance
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                StepResult res = sm.Step(); // Do my draw phase, trigger advance now
+                // Check if debug event is there
+                List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res);
+                Assert.AreEqual(1, cpus.Count);
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                // Want to make sure the entity damaged specifically the opponent player
+                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.ActivatedEntity.Owner);
+                Assert.AreEqual(EntityType.PLAYER, ((DamageContext)cpus[0].CurrentSpecificContext).Affected.EntityType);
+                Assert.AreEqual(opponentIndex, ((DamageContext)cpus[0].CurrentSpecificContext).Affected.Owner);
+                // Revert EVERYTHING and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+            }
+        }
+        [TestMethod]
+        public void PostEffectDamageInteraction()
+        {
+            // Checks if a skill doing effect damage also triggers PostDamage step
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that deals 1 damage and then triggers itself POST damage to push debug
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [], CardTargetingType.BOARD);
+                Effect chooseBoard = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
+                Effect chooseEnemyPlayer = new Effect()
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    SearchCriterion = SearchCriterion.ALL, // All of them,
+                    TargetPlayer = EntityOwner.OPPONENT, // Enemy Player
+                    TargetType = EntityType.PLAYER,
+                };
+                Effect hitEnemy = new Effect()
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    TempVariable = 1,
+                    Input = Variable.TEMP_VARIABLE,
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE,
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, chooseEnemyPlayer, hitEnemy]);
+                skill.Interactions.Add(InteractionType.POST_DAMAGE, [debugEffect]);
+                cardDb.InjectCard(1, skill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                // I'll load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Before the advance
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0);
+                // Check if debug event is there
+                List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res.Item2);
+                Assert.AreEqual(1, cpus.Count);
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                // Want to make sure the entity damaged specifically the opponent player
+                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.ActivatedEntity.Owner);
+                Assert.AreEqual(EntityType.SKILL, cpus[0].CurrentSpecificContext.ActivatedEntity.EntityType);
+                Assert.AreEqual(EntityType.PLAYER, ((DamageContext)cpus[0].CurrentSpecificContext).Affected.EntityType);
+                Assert.AreEqual(opponentIndex, ((DamageContext)cpus[0].CurrentSpecificContext).Affected.Owner);
+                // Revert EVERYTHING and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+            }
+        }
+        [TestMethod]
+        public void PreDamageInteraction()
+        {
+            // A skill that is about to deal damage but interrupts itself and changes the damage last moment
+            // Proves pre-damage and also that it can modift a damage outcome
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that deals 1 damage and then triggers itself POST damage to push debug
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [], CardTargetingType.BOARD);
+                Effect chooseBoard = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
+                Effect chooseEnemyPlayer = new Effect()
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    SearchCriterion = SearchCriterion.ALL, // All of them,
+                    TargetPlayer = EntityOwner.OPPONENT, // Enemy Player
+                    TargetType = EntityType.PLAYER,
+                };
+                int damageAmountInitial = _rng.Next(2, GameConstants.STARTING_HP); // Will try to do a damage between 2-19
+                Effect hitEnemy = new Effect()
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    TempVariable = damageAmountInitial,
+                    Input = Variable.TEMP_VARIABLE,
+                };
+                Effect overrideDamage = new Effect() // Overrides damage to 1
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Input = Variable.TEMP_VARIABLE,
+                    Output = Variable.DAMAGE_AMOUNT,
+                    ModifierOperation = ModifierOperation.SET,
+                    TempVariable = 1
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE,
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, chooseEnemyPlayer, hitEnemy]);
+                skill.Interactions.Add(InteractionType.PRE_DAMAGE, [overrideDamage, debugEffect]);
+                cardDb.InjectCard(1, skill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                // I'll load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Before the advance
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0);
+                // Check if debug event is there
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.IsNotNull(cpu);
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                // Want to make sure the entity damaged has a single damage counter and not the initial damage in mind
+                Assert.AreEqual(1, sm.DetailedState.PlayerStates[opponentIndex].DamageTokens);
+                Assert.AreNotEqual(damageAmountInitial, sm.DetailedState.PlayerStates[opponentIndex].DamageTokens);
+                // Revert EVERYTHING and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+            }
+        }
     }
 }

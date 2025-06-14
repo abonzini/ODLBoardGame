@@ -185,6 +185,23 @@ namespace EngineTests
             return cpuState;
         }
         /// <summary>
+        /// Given a SM list of events, returns all of them found
+        /// </summary>
+        /// <param name="stepResult">Step result</param>
+        /// <returns>How many debug events were found</returns>
+        static public List<CpuState> FetchDebugEvents(StepResult stepResult)
+        {
+            List<CpuState> events = new List<CpuState>();
+            foreach (GameEngineEvent ev in stepResult.events)
+            {
+                if (ev.eventType == EventType.DEBUG_EVENT)
+                {
+                    events.Add(((EntityEvent<CpuState>)ev).entity);
+                }
+            }
+            return events;
+        }
+        /// <summary>
         /// Returns a random number from options
         /// </summary>
         /// <returns>One of these 3</returns>

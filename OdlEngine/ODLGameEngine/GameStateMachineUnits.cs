@@ -89,17 +89,42 @@
         /// <param name="defender">Defending unit</param>
         void UNIT_Combat(Unit attacker, LivingEntity defender)
         {
-            DamageContext attackerDmgCtx, defenderDmgCtx;
-
-            // Surely, unit will apply damage to the victim
-            attackerDmgCtx = LIVINGENTITY_DamageStep(attacker, defender, attacker.Attack.Total); // TODO: GetAttack fn to incorporate buffs and such
-            if (defender is Unit defendingUnit)
+            // Create damage contexts
+            DamageContext attackerDmgCtx = new DamageContext()
+            {
+                Actor = attacker,
+                Affected = defender,
+                DamageAmount = attacker.Attack.Total
+            };
+            bool defenseDamage = (defender.EntityType == EntityType.UNIT); // Whether there'll be a returned damage
+            DamageContext defenderDmgCtx = defenseDamage ? new DamageContext()
+            {
+                Actor = defender,
+                Affected = attacker,
+                DamageAmount = ((Unit)defender).Attack.Total
+            } : null; // Defender does damage or not, depending
+            // Pre damage step
+            attackerDmgCtx.ActivatedEntity = attacker;
+            TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, attackerDmgCtx);
+            if (defenseDamage)
+            {
+                defenderDmgCtx.ActivatedEntity = defender;
+                TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, defenderDmgCtx);
+            }
+            // Actual damage step
+            attackerDmgCtx = LIVINGENTITY_DamageStep(attackerDmgCtx);
+            if (defenseDamage)
             {
                 // If defender was also a unit, then the attacker also receives damage
-                defenderDmgCtx = LIVINGENTITY_DamageStep(defender, attacker, defendingUnit.Attack.Total);
+                defenderDmgCtx = LIVINGENTITY_DamageStep(defenderDmgCtx);
             }
-
-            // TODO: Contexts are checked here! even death and damage taking, to avoid Units doing stuff in this critical damage step
+            // Post damage interactions for both entities
+            TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, attackerDmgCtx);
+            if (defenseDamage)
+            {
+                TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, defenderDmgCtx);
+            }
+            // TODO: Trigger death interactions
         }
         /// <summary>
         /// The event that occurs when a unit steps on a building

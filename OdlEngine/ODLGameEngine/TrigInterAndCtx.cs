@@ -13,6 +13,8 @@ namespace ODLGameEngine
         NONE,
         WHEN_PLAYED,
         UNIT_ENTERS_BUILDING,
+        PRE_DAMAGE,
+        POST_DAMAGE
     }
     [JsonConverter(typeof(StringEnumConverter))]
     public enum TriggerType
@@ -109,8 +111,8 @@ namespace ODLGameEngine
         TARGET_MOVEMENT_DENOMINATOR,
         PLAYERS_GOLD,
         MARCH_START_FLAG,
-        MARCH_CURRENT_MOVEMENT
-        // Todo, damage, playability check, etc
+        MARCH_CURRENT_MOVEMENT,
+        DAMAGE_AMOUNT
     }
     /// <summary>
     /// Register to use in an effect

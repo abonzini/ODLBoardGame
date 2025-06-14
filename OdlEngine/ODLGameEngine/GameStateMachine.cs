@@ -251,7 +251,13 @@
             }
             else // Else there's a deck out event, player receives self inflicted deck-out damage
             {
-                LIVINGENTITY_DamageStep(player, player, GameConstants.DECKOUT_DAMAGE);
+                DamageContext deckoutDamageContext = new DamageContext()
+                {
+                    Actor = player,
+                    Affected = player,
+                    DamageAmount = GameConstants.DECKOUT_DAMAGE
+                };
+                LIVINGENTITY_DamageStep(deckoutDamageContext);
             }
             EFFECTS_ModifyPlayersGold(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED, ModifierOperation.ADD);
             ENGINE_ChangePlayerPowerAvailability(player, true); // Player can now use active power again

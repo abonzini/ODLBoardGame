@@ -1944,6 +1944,83 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void DamageRelatedVariables()
+        {
+            // Create a skill that does damage, and then checks how much damage it did, ACC will store the initial damage but the one in the CTX will be squared
+            // This tests read and write of damage
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            Random _rng = new Random();
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that deals 1 damage and then triggers itself POST damage to push debug
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [], CardTargetingType.BOARD);
+                int damageAmount = _rng.Next(2, GameConstants.STARTING_HP); // Random damage but won't kill
+                Effect chooseBoard = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
+                Effect chooseEnemyPlayer = new Effect()
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    SearchCriterion = SearchCriterion.ALL, // All of them,
+                    TargetPlayer = EntityOwner.OPPONENT, // Enemy Player
+                    TargetType = EntityType.PLAYER,
+                };
+                Effect hitEnemy = new Effect()
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    TempVariable = damageAmount,
+                    Input = Variable.TEMP_VARIABLE,
+                };
+                Effect storeEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Input = Variable.DAMAGE_AMOUNT,
+                    Output = Variable.ACC,
+                    ModifierOperation = ModifierOperation.SET,
+                };
+                Effect modifyEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Input = Variable.ACC,
+                    Output = Variable.DAMAGE_AMOUNT,
+                    ModifierOperation = ModifierOperation.MULTIPLY
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE,
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, chooseEnemyPlayer, hitEnemy]);
+                skill.Interactions.Add(InteractionType.POST_DAMAGE, [storeEffect, modifyEffect, debugEffect]);
+                cardDb.InjectCard(1, skill);
+                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                // I'll load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Before the advance
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0);
+                // Check if debug event is there
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                // Make sure it was stored in ACC and then multiplied
+                Assert.AreEqual(damageAmount, cpu.Acc);
+                DamageContext ctx = (DamageContext)cpu.CurrentSpecificContext;
+                Assert.AreEqual(damageAmount * damageAmount, ctx.DamageAmount);
+                // Revert EVERYTHING and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+            }
+        }
+        [TestMethod]
         public void KillEffect()
         {
             // Summons units and then kills them all

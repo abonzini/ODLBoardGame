@@ -166,6 +166,12 @@
                                     marchCtx.CurrentMovement = GetModifiedValue(marchCtx.CurrentMovement, inputValue, effect.ModifierOperation);
                                 }
                                 break;
+                            case Variable.DAMAGE_AMOUNT:
+                                {
+                                    DamageContext dmgCtx = (DamageContext)cpu.CurrentSpecificContext;
+                                    dmgCtx.DamageAmount = GetModifiedValue(dmgCtx.DamageAmount, inputValue, effect.ModifierOperation);
+                                }
+                                break;
                             default:
                                 throw new NotImplementedException("Variable is read only!");
                         }
@@ -192,8 +198,20 @@
                                 inputValue = GetInput(cpu, effect.Input, effect.MultiInputProcessing, i);
                             }
                             LivingEntity nextEntity = (LivingEntity)FetchEntity(cpu.ReferenceEntities[i]);
-                            DamageContext resultingDamageContext = LIVINGENTITY_DamageStep(cpu.CurrentSpecificContext.ActivatedEntity, nextEntity, inputValue);
-                            // TODO: Process resulting damage context, kill
+                            DamageContext effectDamageContext = new DamageContext
+                            {
+                                Actor = cpu.CurrentSpecificContext.ActivatedEntity,
+                                Affected = nextEntity,
+                                DamageAmount = inputValue,
+                                ActivatedEntity = cpu.CurrentSpecificContext.ActivatedEntity // The current activated entity will do the damage
+                            };
+                            // PRE DAMAGE
+                            TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, effectDamageContext);
+                            // Damage
+                            effectDamageContext = LIVINGENTITY_DamageStep(effectDamageContext);
+                            // POST DAMAGE
+                            TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, effectDamageContext); // Trigger damage event
+                            // TODO: Trigger death interactions
                         }
                         break;
                     default:
@@ -232,6 +250,8 @@
                     return ((MarchingContext)cpu.CurrentSpecificContext).FirstTileMarch ? 1 : 0;
                 case Variable.MARCH_CURRENT_MOVEMENT:
                     return ((MarchingContext)cpu.CurrentSpecificContext).CurrentMovement;
+                case Variable.DAMAGE_AMOUNT:
+                    return ((DamageContext)cpu.CurrentSpecificContext).DamageAmount;
                 default:
                     break;
             }

@@ -81,6 +81,10 @@ As you can see this is the more complex property of cards, so I really suggest t
 - ```WHEN_PLAYED``` Will be executed when the card is played (FROM HAND) for the first time. **Actor:** The card played
 - ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during march). This interaction happens only once, and the Unit/Building will need to each process the effect from their own POV.
 **Actor:** The unit entering, **Affected:** The building entered
+- ```PRE_DAMAGE``` Executed right before a damage step is applied.
+**Actor:** The entity about to cause the damage, **Affected:** The entity about to receive the damage
+- ```POST_DAMAGE``` Executed right after a damage step is applied.
+**Actor:** The entity that caused the damage, **Affected:** The entity that received the damage
 
 ## Trigger Types
 
@@ -225,6 +229,7 @@ Useful for effect with complex conditions where a part of the effect is conditio
     - ```PLAYERS_GOLD``` once target(s) have been found with the ```SELECT_ENTITY``` or ```FIND_ENTITIES``` operations, the owner's gold of those targets
     - ```MARCH_START_FLAG``` when on a marching context, this is a *readonly* flag that is $\neq 0$ if this is the first advancement of the current march, and $=0$ if not
     - ```MARCH_CURRENT_MOVEMENT``` when on a marching context, this is the number of remaining steps of the current march.
+    - ```DAMAGE_AMOUNT``` the value of damage that will be caused or has been caused in a ```POST_DAMAGE``` or ```PRE_DAMAGE``` step.
 - ```MultiInputProcessing``` for when an Input is an element present in a reference list with many items (e.g. after search)
     - ```FIRST``` the input of the first entity
     - ```SUM``` the total sum of all inputs

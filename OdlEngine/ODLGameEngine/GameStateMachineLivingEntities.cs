@@ -85,26 +85,20 @@
         }
         /// <summary>
         /// An attacker damages a defender, damage is dealt a fixed amount.
-        /// THIS FUNCTION SHOULD NEVER TRIGGER ANY INTERACTION OR TRIGGERS!!!!
+        /// THIS ONLY RESOLVES DAMAGE, INTERACTION WRAPPING SHOULD BE OUTSIDE OF THIS
         /// </summary>
-        /// <param name="attacker"></param>
-        /// <param name="defender"></param>
-        /// <param name="damage"></param>
-        /// <returns>Description of damage & outcome for processing</returns>
-        DamageContext LIVINGENTITY_DamageStep(IngameEntity attacker, LivingEntity defender, int damage)
+        /// <param name="damageContext">Context that contains all info about current combat</param>
+        /// <returns>The modified damage context (not a new instance!)</returns>
+        DamageContext LIVINGENTITY_DamageStep(DamageContext damageContext)
         {
-            DamageContext damageCtx = new DamageContext() // Create info of the result of this action
-            {
-                Actor = attacker,
-                Affected = defender,
-                DamageAmount = damage
-            };
+            LivingEntity defender = damageContext.Affected;
+            int damage = damageContext.DamageAmount;
 
             int remainingHp = defender.Hp.Total - defender.DamageTokens;
             if (damage > remainingHp)
             {
-                damageCtx.OverflowDamage = damage - remainingHp;
-                damageCtx.DamageAmount -= damageCtx.OverflowDamage;
+                damageContext.OverflowDamage = damage - remainingHp;
+                damageContext.DamageAmount -= damageContext.OverflowDamage;
                 remainingHp = 0;
             }
             else
@@ -113,8 +107,8 @@
             }
 
             ENGINE_ChangeEntityDamageTokens(defender, defender.Hp.Total - remainingHp);
-            damageCtx.TargetDead = !LIVINGENTITY_CheckIfUnitAlive(defender);
-            return damageCtx;
+            damageContext.TargetDead = !LIVINGENTITY_CheckIfUnitAlive(defender);
+            return damageContext;
         }
     }
 }
