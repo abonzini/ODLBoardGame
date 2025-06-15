@@ -2,7 +2,7 @@
   "EntityType": "BUILDING",
   "Id": 8,
   "Name": "TREBUCHET",
-  "Text": "At the end of your turn, deal 2 damage to the opponent player.",
+  "Text": "At the end of your turn, deal 1 damage to the opponent player.",
   "Cost": "3",
   "Hp": "1",
   "Rarity": 3,

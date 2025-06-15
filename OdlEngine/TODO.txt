@@ -1,5 +1,6 @@
 Ongoing tasks in order of priority:
-- Multi-target input is ok but also may want to keep each target for many buffs, design and implement
+- Card draw. Isolate the drawing of cards and fix so it returns of number of cards actually drawn in order to implement deckout properly and also to add as a triginter effect.
+- March as effect 
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it

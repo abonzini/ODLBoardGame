@@ -25,7 +25,7 @@
         },
         {
           "EffectType": "EFFECT_DAMAGE",
-          "TempVariable": 2
+          "TempVariable": 1
         }
       ]
     }
