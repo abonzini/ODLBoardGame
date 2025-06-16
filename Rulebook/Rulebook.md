@@ -82,7 +82,7 @@ Moreover, buildings contain contain a blueprint, which specifies in which tiles 
 - Once built, the building remains in that **tile** until destroyed
 - Units will **enter** the building when they arrive to the tile where the building is located
 - Units already in the tile when a building is **constructed** will NOT **enter** the building
-- When an enemy unit **enters** a building, it will damage the building by it's **attack** stat, but can continue their **march** as normal
+- When an enemy unit **enters** a building, it will do 1 point of damage to the building, but then can continue their **march** as normal
 - To **construct** a building, an unit needs to be present on at least one of the **tiles** indicated in the blueprint
 - If multiple units are placed in a **tile**, the player can choose which unit will perform the **construction**
 - Only one building can be placed in a specific **tile**, a building can't be constructed if another building is present in the **tile**

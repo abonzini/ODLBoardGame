@@ -1308,11 +1308,9 @@ namespace EngineTests
         public void BuildingDamagedOnSummon()
         {
             // Unit summoned on top of building, damages building
-            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
-                int attack = _rng.Next(1, 9); // Attack between 1-8
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
@@ -1330,10 +1328,10 @@ namespace EngineTests
                     state.PlayerStates[otherPlayerIndex].Hand.InsertCard(1); // Add unit too
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 2, 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 2, 1);
                 CardFinder cardDb = new CardFinder(); // Card holder
                 cardDb.InjectCard(1, testUnit); // Add to cardDb
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], attack + 1);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], 2);
                 testBldg.Owner = otherPlayerIndex;
                 // Initialize building in first tile
                 int firstTileCoord = state.BoardState.GetLane(target).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
@@ -1352,7 +1350,7 @@ namespace EngineTests
                 Assert.AreNotEqual(hash, sm.DetailedState.GetHashCode()); // Hash changed
                 Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1); // Now unit
                 Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.BUILDING, otherPlayerIndex).Count, 1); // Now building
-                Assert.AreEqual(testBldg.DamageTokens, attack); // Bldg has now damage tokens
+                Assert.AreEqual(testBldg.DamageTokens, 1); // Bldg has now damage tokens
                 // Revert
                 sm.UndoPreviousStep();
                 Assert.AreEqual(hash, sm.DetailedState.GetHashCode()); // Hash reverted
@@ -1365,11 +1363,9 @@ namespace EngineTests
         public void BuildingDamagedOnAdvance()
         {
             // A unit advances, damages building
-            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
-                int attack = _rng.Next(1, 9); // Attack between 1-8
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
@@ -1385,8 +1381,8 @@ namespace EngineTests
                     state.PlayerStates[otherPlayerIndex].Hand.InsertCard(0);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 2, 1);
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], attack + 1);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 2, 1);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], 2);
                 Lane lane = state.BoardState.GetLane(target);
                 int firstTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int secondTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);
@@ -1407,7 +1403,7 @@ namespace EngineTests
                 Assert.AreNotEqual(hash, sm.DetailedState.GetHashCode()); // Hash changed
                 Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.UNIT, playerIndex).Count, 1);
                 Assert.AreEqual(state.BoardState.GetPlacedEntities(EntityType.BUILDING, otherPlayerIndex).Count, 1);
-                Assert.AreEqual(testBldg.DamageTokens, attack); // Bldg has now damage tokens
+                Assert.AreEqual(testBldg.DamageTokens, 1); // Bldg has now damage tokens
                 Assert.AreEqual(state.BoardState.GetLane(target).GetPlacedEntities(EntityType.BUILDING, otherPlayerIndex).Count, 1);
                 Assert.AreEqual(state.BoardState.GetLane(target).GetTileFromCoordinate(LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex).GetPlacedEntities(EntityType.BUILDING).First(), testBldg.UniqueId);
                 // Revert
@@ -1424,11 +1420,9 @@ namespace EngineTests
         public void BuildingKilledOnAdvance()
         {
             // A unit advances, destorys building
-            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
-                int attack = _rng.Next(1, 10); // Attack between 1-9
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
@@ -1444,8 +1438,8 @@ namespace EngineTests
                     state.PlayerStates[otherPlayerIndex].Hand.InsertCard(0);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
-                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, attack, 2, 1);
-                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], attack);
+                Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 2, 1);
+                Building testBldg = TestCardGenerator.CreateBuilding(2, "BUILDING", 0, [0, 4, 10], 1);
                 Lane lane = state.BoardState.GetLane(target);
                 int firstTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int secondTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 1, playerIndex);

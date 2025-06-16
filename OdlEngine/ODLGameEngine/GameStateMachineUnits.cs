@@ -149,10 +149,22 @@
                 Affected = building
             };
             TRIGINTER_ProcessInteraction(InteractionType.UNIT_ENTERS_BUILDING, enterCtx);
-            // Also, when building and unit have different owners, then the unit attacks
+            // Also, when building and unit have different owners, then the unit attacks the building
             if (building.Owner == 1 - unit.Owner)
             {
-                UNIT_Combat(unit, building);
+                // Create damage context
+                DamageContext damageCtx = new DamageContext
+                {
+                    Actor = unit,
+                    Affected = building,
+                    DamageAmount = 1,
+                    ActivatedEntity = unit
+                };
+                TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, damageCtx);
+                // Actual damage step
+                damageCtx = LIVINGENTITY_DamageStep(damageCtx);
+                // Post damage interactions for both entities
+                TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, damageCtx);
             }
         }
     }
