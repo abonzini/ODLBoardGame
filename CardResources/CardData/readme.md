@@ -79,8 +79,10 @@ As you can see this is the more complex property of cards, so I really suggest t
 ## Interaction Types
 
 - ```WHEN_PLAYED``` Will be executed when the card is played (FROM HAND) for the first time. **Actor:** The card played
-- ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during march). This interaction happens only once, and the Unit/Building will need to each process the effect from their own POV.
+- ```UNIT_ENTERS_BUILDING``` Is executed when a unit enters a building (either when summoned on top or passing during march). This interaction happens twice from both POVs.
 **Actor:** The unit entering, **Affected:** The building entered
+- ```UNIT_CONSTRUCTS_BUILDING``` Is executed when a unit constructs a building. This interaction happens This interaction happens twice from both POVs.
+**Actor:** The unit constructing, **Affected:** The building constructed
 - ```PRE_DAMAGE``` Executed right before a damage step is applied.
 **Actor:** The entity about to cause the damage, **Affected:** The entity about to receive the damage
 - ```POST_DAMAGE``` Executed right after a damage step is applied.

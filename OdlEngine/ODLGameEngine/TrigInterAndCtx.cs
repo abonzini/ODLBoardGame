@@ -13,6 +13,7 @@ namespace ODLGameEngine
         NONE,
         WHEN_PLAYED,
         UNIT_ENTERS_BUILDING,
+        UNIT_CONSTRUCTS_BUILDING,
         PRE_DAMAGE,
         POST_DAMAGE
     }

@@ -12,11 +12,16 @@
         {
             // Clone building
             Building newSpawnedBuilding = (Building)constructionContext.Affected.Clone();
+            constructionContext.Affected = newSpawnedBuilding; // Refresh affected
             newSpawnedBuilding.Owner = player; // Building owner
-            // Add to board
+            // Add to board and into coordinate
             LIVINGENTITY_InitializeEntity(newSpawnedBuilding);
-            // Places building in new coordinate
             LIVINGENTITY_InsertInTile(newSpawnedBuilding, constructionContext.AbsoluteConstructionTile);
+            // At this point, building has been constructed and placed, so now notify the "construction" interaction from both POVs
+            constructionContext.ActivatedEntity = constructionContext.Actor;
+            TRIGINTER_ProcessInteraction(InteractionType.UNIT_CONSTRUCTS_BUILDING, constructionContext);
+            constructionContext.ActivatedEntity = constructionContext.Affected;
+            TRIGINTER_ProcessInteraction(InteractionType.UNIT_CONSTRUCTS_BUILDING, constructionContext);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
             LIVINGENTITY_CheckIfUnitAlive(newSpawnedBuilding);
             // TODO: Construction events

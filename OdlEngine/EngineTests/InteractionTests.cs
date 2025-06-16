@@ -399,5 +399,79 @@ namespace EngineTests
                 Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
             }
         }
+        [TestMethod]
+        public void BuildingConstructionInteraction()
+        {
+            Random _rng = new Random();
+            // Interaction when a unit constructs a building
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit with very basic stats (movt 9)
+                Unit unit = TestCardGenerator.CreateUnit(1, "TESTUNIT", 0, [], 1, 0, 1, 1);
+                // Card 2, Building, can be built anywhere at all
+                Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 1);
+                // Now add unit anywhere in the board
+                int tileCoord = _rng.Next(GameConstants.BOARD_NUMBER_OF_TILES);
+                TestHelperFunctions.ManualInitEntity(state, tileCoord, 2, playerIndex, unit); // Now building is in place
+                state.NextUniqueIndex = 3;
+                // Create the "on step" effect
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
+                };
+                Dictionary<InteractionType, List<Effect>> constructInteraction = new Dictionary<InteractionType, List<Effect>>();
+                constructInteraction.Add(InteractionType.UNIT_CONSTRUCTS_BUILDING, [debugEffect]); // Add interaction
+                // Will add building to card to be buildable
+                cardDb.InjectCard(2, building); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(2); // Add card
+                // I'll load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                unit = (Unit)sm.DetailedState.EntityData[2]; // Retureve the actual unit
+                for (int i = 0; i < 4; i++) // Will test all combinations, unit and/or building
+                {
+                    int expectedInteractions = 0;
+                    if ((i & 0b01) != 0)
+                    {
+                        expectedInteractions++;
+                        unit.Interactions = constructInteraction;
+                    }
+                    else
+                    {
+                        unit.Interactions = null;
+                    }
+                    if ((i & 0b10) != 0)
+                    {
+                        expectedInteractions++;
+                        building.Interactions = constructInteraction;
+                    }
+                    else
+                    {
+                        building.Interactions = null;
+                    }
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                    PlayContext ctxOptions = sm.GetPlayabilityOptions(2, PlayType.PLAY_FROM_HAND);
+                    Assert.IsTrue(ctxOptions.ValidTargets.Contains(2)); // Can play on unit 2
+                    // Play
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(2, 2); // Play building, built by unit 2
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    // Check if debug event(s) is(are) there
+                    List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res.Item2);
+                    Assert.AreEqual(expectedInteractions, cpus.Count); // Triggered as many times as it had to
+                    // Revert and hash check
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                }
+            }
+        }
     }
 }
