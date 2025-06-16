@@ -1,5 +1,4 @@
 Ongoing tasks in order of priority:
-- March as effect 
 - Change in building damage, adjust buildings HP
 - Implement rest of rulebook
 	- Procedure:

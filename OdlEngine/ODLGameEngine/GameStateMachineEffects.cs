@@ -238,6 +238,15 @@
                             }
                         }
                         break;
+                    case EffectType.MARCH_ENTITIES:
+                        foreach (int unitId in cpu.ReferenceEntities)
+                        {
+                            if (DetailedState.EntityData.TryGetValue(unitId, out LivingEntity unit)) // Check if unit is still alive, if not, no need to march
+                            {
+                                UNIT_UnitMarch((Unit)unit); // Then the unit marches
+                            }
+                        }
+                        break;
                     default:
                         throw new NotImplementedException("Effect type not implemented yet");
                 }

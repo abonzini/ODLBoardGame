@@ -88,6 +88,8 @@ namespace CardGenerationHelper
                 EffectType.ASSERT => [InputBox, InputLabel, MultiVariableLabel, MultiVariableBox, ModifierOperationLabel, ModifierOperationBox],
                 EffectType.KILL_ENTITIES => [],
                 EffectType.EFFECT_DAMAGE => [InputBox, InputLabel, MultiVariableLabel, MultiVariableBox],
+                EffectType.CARD_DRAW => [InputBox, InputLabel, MultiVariableLabel, MultiVariableBox, TargetPlayerLabel, TargetPlayerEnumBox],
+                EffectType.MARCH_ENTITIES => [],
                 _ => throw new NotImplementedException("Unhandled effect type"),
             };
             foreach (Control control in relevant)

@@ -186,6 +186,8 @@ Useful for effect with complex conditions where a part of the effect is conditio
     - ```Input``` how many cards will be drawn
     - ```TargetPlayer``` whether the owner of reference entity and/or its opponent will get the card
 
+- ```MARCH_ENTITIES``` forces all Reference Entities to march.
+
 ## Possible Parameter Values
 
 - ```EffectLocation```

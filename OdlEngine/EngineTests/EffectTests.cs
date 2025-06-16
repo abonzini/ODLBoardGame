@@ -2289,5 +2289,76 @@ namespace EngineTests
                 }
             }
         }
+        [TestMethod]
+        public void MarchEffectTest()
+        {
+            Random _rng = new Random();
+            // Summons units in each side, forces them to march
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that forces every entity to march
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect targetBoardEffect = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD
+                };
+                Effect searchEffect = new Effect() // Effect that finds all units on board
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    TargetPlayer = EntityOwner.BOTH,
+                    TargetType = EntityType.UNIT,
+                    SearchCriterion = SearchCriterion.ALL
+                };
+                Effect marchEffect = new Effect()
+                {
+                    EffectType = EffectType.MARCH_ENTITIES,
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, marchEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                // Add stuff to board. place one unit in forest, one in mountain and movements that don't overflow
+                int movement1 = _rng.Next(1, GameConstants.FOREST_NUMBER_OF_TILES);
+                int movement2 = _rng.Next(1, GameConstants.MOUNTAIN_NUMBER_OF_TILES);
+                int firstPlayerFirstTile = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
+                int firstPlayerLastTile = state.BoardState.GetLane(LaneID.FOREST).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, movement1, playerIndex);
+                int secondPlayerFirstTile = state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
+                int secondPlayerLastTile = state.BoardState.GetLane(LaneID.MOUNTAIN).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, movement2, opponentIndex);
+                Unit unitToAdd1 = TestCardGenerator.CreateUnit(2, "MARCH_TEST_1", 0, [], 1, 0, movement1, 1);
+                Unit unitToAdd2 = TestCardGenerator.CreateUnit(2, "MARCH_TEST_2", 0, [], 1, 0, movement2, 1);
+                TestHelperFunctions.ManualInitEntity(state, firstPlayerFirstTile, 2, playerIndex, (Unit)unitToAdd1.Clone());
+                TestHelperFunctions.ManualInitEntity(state, secondPlayerFirstTile, 3, opponentIndex, (Unit)unitToAdd2.Clone());
+                state.NextUniqueIndex = 4;
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Pre march
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                Unit playerUnit = (Unit)sm.DetailedState.EntityData[2];
+                Unit opponentUnit = (Unit)sm.DetailedState.EntityData[3];
+                Assert.AreEqual(firstPlayerFirstTile, playerUnit.TileCoordinate);
+                Assert.AreEqual(secondPlayerFirstTile, opponentUnit.TileCoordinate);
+                // Play
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play march card
+                Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                Assert.AreEqual(firstPlayerLastTile, playerUnit.TileCoordinate);
+                Assert.AreEqual(secondPlayerLastTile, opponentUnit.TileCoordinate);
+                // Revert and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(firstPlayerFirstTile, playerUnit.TileCoordinate);
+                Assert.AreEqual(secondPlayerFirstTile, opponentUnit.TileCoordinate);
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+            }
+        }
     }
 }

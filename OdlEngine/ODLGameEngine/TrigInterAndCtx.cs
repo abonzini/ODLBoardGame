@@ -40,7 +40,8 @@ namespace ODLGameEngine
         ASSERT,
         KILL_ENTITIES,
         EFFECT_DAMAGE,
-        CARD_DRAW
+        CARD_DRAW,
+        MARCH_ENTITIES
         // TODO: Board element operations like shuffle, trim, crop, select
         // TODO: Tile extension operations to overwrite search, do AOE and other stuff
     }
