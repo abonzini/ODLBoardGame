@@ -61,13 +61,13 @@
                         );
                     break;
                 case EventType.REMOVE_TOPDECK:
-                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    ((EntityValueEvent<int, int>)e).value = DetailedState.PlayerStates[auxInt1].Deck.PopCard(); // Pop last card from deck
+                    auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
+                    ((EntityValueEvent<Player, int>)e).value = auxPlayerState.Deck.PopCard(); // Pop last card from deck
                     break;
                 case EventType.ADD_CARD_TO_HAND:
-                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    auxInt2 = ((EntityValueEvent<int, int>)e).value;
-                    DetailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2);
+                    auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
+                    auxInt1 = ((EntityValueEvent<Player, int>)e).value;
+                    auxPlayerState.Hand.InsertCard(auxInt1);
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
@@ -179,15 +179,15 @@
                         );
                     break;
                 case EventType.REMOVE_TOPDECK:
-                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    auxInt2 = ((EntityValueEvent<int, int>)e).value;
-                    DetailedState.PlayerStates[auxInt1].Deck.InsertCard(auxInt2);
+                    auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
+                    auxInt1 = ((EntityValueEvent<Player, int>)e).value;
+                    auxPlayerState.Deck.InsertCard(auxInt1);
                     // Return to deck
                     break;
                 case EventType.ADD_CARD_TO_HAND:
-                    auxInt1 = ((EntityValueEvent<int, int>)e).entity;
-                    auxInt2 = ((EntityValueEvent<int, int>)e).value;
-                    DetailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2);
+                    auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
+                    auxInt1 = ((EntityValueEvent<Player, int>)e).value;
+                    auxPlayerState.Hand.RemoveCard(auxInt1);
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
@@ -393,10 +393,10 @@
         /// Draws a single card for a player
         /// </summary>
         /// <param name="player">Player</param>
-        void ENGINE_DeckDrawSingle(int player)
+        void ENGINE_DeckDrawSingle(Player player)
         {
             ENGINE_ExecuteEvent(
-                new EntityValueEvent<int, int>() // Will store also the card if need to reverse
+                new EntityValueEvent<Player, int>() // Will store also the card if need to reverse
                 {
                     eventType = EventType.REMOVE_TOPDECK,
                     entity = player
@@ -407,10 +407,10 @@
         /// </summary>
         /// <param name="player">Which player</param>
         /// <param name="card">Which card</param>
-        void ENGINE_AddCardToHand(int player, int card)
+        void ENGINE_AddCardToHand(Player player, int card)
         {
             ENGINE_ExecuteEvent(
-                new EntityValueEvent<int, int>() // Will store also the card if need to reverse
+                new EntityValueEvent<Player, int>() // Will store also the card if need to reverse
                 {
                     eventType = EventType.ADD_CARD_TO_HAND,
                     value = card,

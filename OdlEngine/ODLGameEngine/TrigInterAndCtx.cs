@@ -39,7 +39,8 @@ namespace ODLGameEngine
         MODIFIER,
         ASSERT,
         KILL_ENTITIES,
-        EFFECT_DAMAGE
+        EFFECT_DAMAGE,
+        CARD_DRAW
         // TODO: Board element operations like shuffle, trim, crop, select
         // TODO: Tile extension operations to overwrite search, do AOE and other stuff
     }
@@ -202,6 +203,14 @@ namespace ODLGameEngine
         public int DamageAmount = 0;
         public int OverflowDamage = 0;
         public bool TargetDead = false;
+    }
+    /// <summary>
+    /// Input and output of actions that involve drawing a card from the deck
+    /// </summary>
+    public class DrawContext : EffectContext
+    {
+        public int DrawAmount = 0;
+        public int MissedDraws = 0;
     }
     /// <summary>
     /// When unit is advancing

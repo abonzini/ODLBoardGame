@@ -222,7 +222,12 @@
         void STATE_InitializePlayer(int player)
         {
             STATE_ShufflePlayerDeck(player);
-            STATE_DeckDrawMultiple(player, GameConstants.STARTING_CARDS);
+            DrawContext drawContext = new DrawContext()
+            {
+                Actor = DetailedState.PlayerStates[player],
+                DrawAmount = GameConstants.STARTING_CARDS
+            };
+            STATE_DeckDrawMultiple(drawContext);
             ENGINE_NewRngSeed(_rng.Next(int.MinValue, int.MaxValue));
         }
         /// <summary>
@@ -245,11 +250,13 @@
                     }
                 }
             }
-            if (player.Deck.DeckSize > 0) // If current player still has cards in deck, draw phase
+            DrawContext drawContext = new DrawContext()
             {
-                STATE_DeckDrawMultiple(playerId, GameConstants.DRAW_PHASE_CARDS_DRAWN);
-            }
-            else // Else there's a deck out event, player receives self inflicted deck-out damage
+                Actor = player,
+                DrawAmount = GameConstants.DRAW_PHASE_CARDS_DRAWN
+            };
+            drawContext = STATE_DeckDrawMultiple(drawContext);
+            if (drawContext.MissedDraws > 0) // If couldn't draw the required cards, means there's a deckout event
             {
                 DamageContext deckoutDamageContext = new DamageContext()
                 {
@@ -275,19 +282,29 @@
             }
         }
         /// <summary>
-        /// Player draws n cards
+        /// Performs draw from deck operation
         /// </summary>
-        /// <param name="player">Player</param>
-        /// <param name="n">Cards to draw</param>
-        void STATE_DeckDrawMultiple(int player, int n)
+        /// <param name="drawCtx">Contains the player and number of cards to draw</param>
+        /// <returns>The possibly modified draw context (same as input)</returns>
+        DrawContext STATE_DeckDrawMultiple(DrawContext drawCtx)
         {
-            for (int i = 0; i < n; i++)
+            Player player = (Player)drawCtx.Actor;
+            int cardsToDraw = drawCtx.DrawAmount;
+            int cardsDrawn = 0;
+            for (int i = 0; i < cardsToDraw; i++)
             {
-                int card = DetailedState.PlayerStates[player].Deck.PeepAt(); // Found card in deck
-                ENGINE_DeckDrawSingle(player); // Removes from deck
-                // Nothing happens for now "when drawn"
-                ENGINE_AddCardToHand(player, card); // Therefore adds to hand
+                if (player.Deck.DeckSize > 0)
+                {
+                    int card = player.Deck.PeepAt(); // Found card in deck
+                    ENGINE_DeckDrawSingle(player); // Removes from deck
+                    // Nothing happens for now "when drawn"
+                    ENGINE_AddCardToHand(player, card); // Therefore adds to hand
+                    cardsDrawn++;
+                }
             }
+            drawCtx.DrawAmount = cardsDrawn; // Calculate how much was actually drawn
+            drawCtx.MissedDraws = cardsToDraw - cardsDrawn;
+            return drawCtx;
         }
         /// <summary>
         /// Goes back to beggining of previous step (i.e. undoes the last thing that happened)

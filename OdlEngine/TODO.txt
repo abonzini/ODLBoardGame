@@ -1,5 +1,4 @@
 Ongoing tasks in order of priority:
-- Card draw. Isolate the drawing of cards and fix so it returns of number of cards actually drawn in order to implement deckout properly and also to add as a triginter effect.
 - March as effect 
 - Implement rest of rulebook
 	- Procedure:

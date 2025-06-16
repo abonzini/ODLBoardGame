@@ -148,7 +148,7 @@ All of these entities will become references for subsequent effects.
 These can be used in subsequent effects like "search units" or "summon units".
     
     Parameters:
-    - ```EffectLocation``` what location to add. Keep in mind some absolute locations (such as "Forest" or "Play Target") will add a single location, but locations relative to entities such as "Current Tile" will add one for each entity in the Reference Entities list.
+    - ```EffectLocation``` what location to add. Keep in mind some absolute locations (such as "Forest" or "Play Target") will add a single location, but locations relative to entities such as "Current Tile" will add one for each entity in the Reference Entities list
 
 - ```SUMMON_UNIT``` Summons a unit in place(s) defined by the Location References. Multiple units may be summoned if there's multiple references.
 
@@ -164,14 +164,14 @@ For example, if stats need to be buffed/debuffed, or a specific player gets gold
     - ```ModifierOperation``` how the modifier's value is applied (i.e. whether it's a multiplaction, addition, etc)
     - ```Input``` contains the value $n$ of the modifier, needed for some (most?) operations
     - ```Output``` defines *what* is modified, if a stat, a damage value, etc
-    - ```TargetPlayer``` in some cases where you want to modify a player's value (e.g. gold), this field is used to choose whether it's a card's owner or the opponents, whose value can be modified. This allows effects such as *"Destroy a card and refund the owner"*.
+    - ```TargetPlayer``` in some cases where you want to modify a player's value (e.g. gold), this field is used to choose whether it's a card's owner or the opponents, whose value can be modified
 
 - ```ASSERT``` is a mathematical operation that checks if the desired input value $\neq 0$. If the assert succeeds, nothing happens, but if it fails, the effect loop ends right there, and the following effects won't be executed.
 Useful for effect with complex conditions where a part of the effect is conditional on something happening.
 
     Parameters:
     - ```Input``` contains the value $n$ to assert
-    - ```ModifierOperation``` can be used but it only checks the ```NOT``` operation, in which case the asser asserts $\neq 0$. Other options just assert $=0$.
+    - ```ModifierOperation``` can be used but it only checks the ```NOT``` operation, in which case the asser asserts $\neq 0$. Other options just assert $=0$
 
 - ```KILL_ENTITIES``` insta-kills (no damage step) each of the references on the current reference list
 
@@ -179,6 +179,12 @@ Useful for effect with complex conditions where a part of the effect is conditio
 
     Parameters:
     - ```Input``` contains the value of the damage
+
+- ```CARD_DRAW``` Makes players draw cards. Uses the Reference Entities to draw a number of cards for each one, works similarly to the "gold gaining" effect in ```MODIFIER```.
+
+    Parameters:
+    - ```Input``` how many cards will be drawn
+    - ```TargetPlayer``` whether the owner of reference entity and/or its opponent will get the card
 
 ## Possible Parameter Values
 

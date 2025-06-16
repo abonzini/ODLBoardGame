@@ -214,6 +214,30 @@
                             // TODO: Trigger death interactions
                         }
                         break;
+                    case EffectType.CARD_DRAW:
+                        for (int i = 0; i < cpu.ReferenceEntities.Count; i++) // Will draw a number of cards for each reference (!!)
+                        {
+                            if (effect.MultiInputProcessing == MultiInputProcessing.EACH) // Actually multiple input values...
+                            {
+                                inputValue = GetInput(cpu, effect.Input, effect.MultiInputProcessing, i);
+                            }
+                            IngameEntity entity = FetchEntity(cpu.ReferenceEntities[i]); // Got the entity
+                            DrawContext nextDrawContext = new DrawContext()
+                            {
+                                DrawAmount = inputValue
+                            };
+                            if (effect.TargetPlayer.HasFlag(EntityOwner.OWNER)) // Does owner of this entity draw?
+                            {
+                                nextDrawContext.Actor = DetailedState.PlayerStates[entity.Owner];
+                                STATE_DeckDrawMultiple(nextDrawContext);
+                            }
+                            if (effect.TargetPlayer.HasFlag(EntityOwner.OPPONENT)) // Does opp owner of this entity draw?
+                            {
+                                nextDrawContext.Actor = DetailedState.PlayerStates[1 - entity.Owner];
+                                STATE_DeckDrawMultiple(nextDrawContext);
+                            }
+                        }
+                        break;
                     default:
                         throw new NotImplementedException("Effect type not implemented yet");
                 }

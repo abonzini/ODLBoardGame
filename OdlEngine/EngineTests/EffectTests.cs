@@ -2208,5 +2208,86 @@ namespace EngineTests
                 Assert.AreEqual(0, sm.DetailedState.PlayerStates[otherPlayerIndex].DamageTokens);
             }
         }
+        [TestMethod]
+        public void CardDrawEffect()
+        {
+            Random _rng = new Random();
+            // Play a spell that will draw cards, given all possible operations and targets
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that draws cards to the players
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect drawEffect = new Effect()
+                {
+                    EffectType = EffectType.CARD_DRAW,
+                    Input = Variable.TEMP_VARIABLE,
+                };
+                // Add when played inter
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [drawEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.InsertCard(1); // Add card
+                for (int i = 0; i < 10; i++) // Also add 10 junk cards to both players
+                {
+                    state.PlayerStates[playerIndex].Deck.InsertCard(0);
+                    state.PlayerStates[opponentIndex].Deck.InsertCard(0);
+                }
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                List<EntityOwner> ownersToCheck = [EntityOwner.OWNER, EntityOwner.OPPONENT, EntityOwner.BOTH];
+                foreach (EntityOwner owner in ownersToCheck)
+                {
+                    drawEffect.TargetPlayer = owner;
+                    int cardsToDraw = _rng.Next(1, 10); // Draw between 1-9 cards
+                    drawEffect.TempVariable = cardsToDraw;
+                    // Pre-play prep
+                    int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                    Assert.AreEqual(10, state.PlayerStates[playerIndex].Deck.DeckSize); // Ensure both players start with 10 cards
+                    Assert.AreEqual(10, state.PlayerStates[opponentIndex].Deck.DeckSize);
+                    Assert.AreEqual(1, state.PlayerStates[playerIndex].Hand.CardCount); // Player has skill, other one an empty hand
+                    Assert.AreEqual(0, state.PlayerStates[opponentIndex].Hand.CardCount);
+                    // Play
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play the skill
+                    Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+                    // Check cards then
+                    if (owner.HasFlag(EntityOwner.OWNER)) // Check if this player has drawn
+                    {
+                        Assert.AreEqual(10 - cardsToDraw, state.PlayerStates[playerIndex].Deck.DeckSize);
+                        Assert.AreEqual(cardsToDraw, state.PlayerStates[playerIndex].Hand.CardCount);
+                    }
+                    else
+                    {
+                        Assert.AreEqual(10, state.PlayerStates[playerIndex].Deck.DeckSize);
+                        Assert.AreEqual(0, state.PlayerStates[playerIndex].Hand.CardCount);
+                    }
+                    if (owner.HasFlag(EntityOwner.OPPONENT)) // Check if this player has drawn
+                    {
+                        Assert.AreEqual(10 - cardsToDraw, state.PlayerStates[opponentIndex].Deck.DeckSize);
+                        Assert.AreEqual(cardsToDraw, state.PlayerStates[opponentIndex].Hand.CardCount);
+                    }
+                    else
+                    {
+                        Assert.AreEqual(10, state.PlayerStates[opponentIndex].Deck.DeckSize);
+                        Assert.AreEqual(0, state.PlayerStates[opponentIndex].Hand.CardCount);
+                    }
+                    // Revert and hash check
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+                    Assert.AreEqual(10, state.PlayerStates[playerIndex].Deck.DeckSize); // Ensure both players start with 10 cards
+                    Assert.AreEqual(10, state.PlayerStates[opponentIndex].Deck.DeckSize);
+                    Assert.AreEqual(1, state.PlayerStates[playerIndex].Hand.CardCount); // Player has skill, other one an empty hand
+                    Assert.AreEqual(0, state.PlayerStates[opponentIndex].Hand.CardCount);
+                }
+            }
+        }
     }
 }
