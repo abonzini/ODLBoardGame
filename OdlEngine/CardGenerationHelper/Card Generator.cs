@@ -323,6 +323,7 @@ namespace CardGenerationHelper
                 string file = fileDialog.FileName;
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(file))
                 {
+                    if (Path.GetExtension(file) != ".json") return; // Ensure only json openable
                     // Json file found. Now, will try to deserialize
                     if (file.Contains("-illustration.json")) // Illustration file
                     {

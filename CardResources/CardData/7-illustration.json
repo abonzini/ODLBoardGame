@@ -4,7 +4,7 @@
   "Name": "BARRACKS",
   "Text": "When a friendly unit *enters* this building, it gains +2 *attack.*",
   "Cost": "3",
-  "Hp": "5",
+  "Hp": "4",
   "Rarity": 2,
   "Tribe": "BASE"
 }

@@ -1,6 +1,6 @@
 {
   "Name": "STONE ROAD",
-  "Hp": 3,
+  "Hp": 2,
   "Triggers": {
     "CURRENT_TILE": {
       "ON_MARCH": [
@@ -45,5 +45,5 @@
     17
   ],
   "Id": 5,
-  "Cost": 2
+  "Cost": 1
 }

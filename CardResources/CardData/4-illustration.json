@@ -4,7 +4,7 @@
   "Name": "MUDDY ROADS",
   "Text": "Enemy units *marching* through this building are stopped immediately.",
   "Cost": "1",
-  "Hp": "5",
+  "Hp": "4",
   "Rarity": 1,
   "Tribe": "BASE"
 }

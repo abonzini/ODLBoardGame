@@ -1,6 +1,6 @@
 {
   "Name": "BARRACKS",
-  "Hp": 5,
+  "Hp": 4,
   "EntityType": "BUILDING",
   "TargetOptions": [
     0,

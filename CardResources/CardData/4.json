@@ -1,6 +1,6 @@
 {
   "Name": "MUDDY ROADS",
-  "Hp": 5,
+  "Hp": 4,
   "Triggers": {
     "CURRENT_TILE": {
       "ON_MARCH": [
