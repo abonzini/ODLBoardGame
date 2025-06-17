@@ -1,0 +1,31 @@
+{
+  "Movement": 1,
+  "MovementDenominator": 1,
+  "Attack": 1,
+  "Name": "ARCHITECT",
+  "Hp": 2,
+  "EntityType": "UNIT",
+  "TargetOptions": [
+    0,
+    4,
+    10
+  ],
+  "Id": 14,
+  "Cost": 3,
+  "Interactions": {
+    "UNIT_CONSTRUCTS_BUILDING": [
+      {
+        "EffectType": "MODIFIER",
+        "TargetPlayer": "OWNER",
+        "ModifierOperation": "ADD",
+        "Output": "PLAYERS_GOLD",
+        "TempVariable": 1
+      },
+      {
+        "EffectType": "CARD_DRAW",
+        "TargetPlayer": "OWNER",
+        "TempVariable": 1
+      }
+    ]
+  }
+}

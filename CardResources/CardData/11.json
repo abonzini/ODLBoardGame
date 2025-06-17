@@ -1,0 +1,15 @@
+{
+  "Movement": 2,
+  "MovementDenominator": 1,
+  "Attack": 2,
+  "Name": "WAR HOUNDS",
+  "Hp": 1,
+  "EntityType": "UNIT",
+  "TargetOptions": [
+    0,
+    4,
+    10
+  ],
+  "Id": 11,
+  "Cost": 1
+}

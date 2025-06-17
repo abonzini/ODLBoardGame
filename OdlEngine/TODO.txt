@@ -1,5 +1,4 @@
 Ongoing tasks in order of priority:
-- Change in building damage, adjust buildings HP
 - Implement rest of rulebook
 	- Procedure:
 		- Propose card, way to code it

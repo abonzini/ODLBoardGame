@@ -1,10 +1,10 @@
 <img src="./../../../CardResources/CardImagesFull/2.png" width="150">
 
-![](./../../BaseSet/9.png)
-![](./../../BaseSet/10.png)
-![](./../../BaseSet/11.png)
+<img src="./../../../CardResources/CardImagesFull/9.png" width="150">
+<img src="./../../../CardResources/CardImagesFull/10.png" width="150">
+<img src="./../../../CardResources/CardImagesFull/11.png" width="150">
 
-![](./../../BaseSet/12.png)
-![](./../../BaseSet/13.png)
+<img src="./../../../CardResources/CardImagesFull/12.png" width="150">
+<img src="./../../../CardResources/CardImagesFull/13.png" width="150">
 
-![](./../../BaseSet/14.png)
+<img src="./../../../CardResources/CardImagesFull/14.png" width="150">

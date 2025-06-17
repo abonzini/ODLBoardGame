@@ -1,0 +1,15 @@
+{
+  "Movement": 0,
+  "MovementDenominator": 1,
+  "Attack": 4,
+  "Name": "CASTLE GUARDS",
+  "Hp": 5,
+  "EntityType": "UNIT",
+  "TargetOptions": [
+    0,
+    4,
+    10
+  ],
+  "Id": 10,
+  "Cost": 4
+}

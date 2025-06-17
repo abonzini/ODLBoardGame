@@ -4,6 +4,7 @@ namespace CardGenerationHelper
 {
     public partial class LocationGrid : UserControl
     {
+        CardTargetingType currentType = CardTargetingType.TILE;
         public event EventHandler Updated;
         readonly List<CheckBox> CheckBoxes = new List<CheckBox>();
         HashSet<int> CurrentTargets = new HashSet<int>();
@@ -28,6 +29,7 @@ namespace CardGenerationHelper
         }
         public void SetMode(CardTargetingType type)
         {
+            if (type == currentType) return;
             switch (type)
             {
                 case CardTargetingType.BOARD:
@@ -60,6 +62,7 @@ namespace CardGenerationHelper
                     }
                     break;
             }
+            currentType = type;
         }
         void CheckboxChanged(object sender, EventArgs e)
         {

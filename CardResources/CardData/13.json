@@ -1,0 +1,15 @@
+{
+  "Movement": 2,
+  "MovementDenominator": 2,
+  "Attack": 7,
+  "Name": "BRUTE",
+  "Hp": 6,
+  "EntityType": "UNIT",
+  "TargetOptions": [
+    0,
+    4,
+    10
+  ],
+  "Id": 13,
+  "Cost": 5
+}

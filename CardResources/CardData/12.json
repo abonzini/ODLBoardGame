@@ -1,0 +1,35 @@
+{
+  "Movement": 3,
+  "MovementDenominator": 1,
+  "Attack": 2,
+  "Name": "BATTERING RAM",
+  "Hp": 1,
+  "EntityType": "UNIT",
+  "TargetOptions": [
+    0,
+    4,
+    10
+  ],
+  "Id": 12,
+  "Cost": 2,
+  "Interactions": {
+    "PRE_DAMAGE": [
+      {
+        "EffectType": "SELECT_ENTITY",
+        "TargetPlayer": "OPPONENT",
+        "SearchCriterion": "AFFECTED_ENTITY",
+        "TargetType": "PLAYER"
+      },
+      {
+        "EffectType": "ASSERT",
+        "Input": "TARGET_COUNT"
+      },
+      {
+        "EffectType": "MODIFIER",
+        "ModifierOperation": "MULTIPLY",
+        "Output": "DAMAGE_AMOUNT",
+        "TempVariable": 2
+      }
+    ]
+  }
+}

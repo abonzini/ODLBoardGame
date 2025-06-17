@@ -1,0 +1,30 @@
+{
+  "Movement": 1,
+  "MovementDenominator": 1,
+  "Attack": 2,
+  "Name": "THIEF",
+  "Hp": 2,
+  "EntityType": "UNIT",
+  "TargetOptions": [
+    0,
+    4,
+    10
+  ],
+  "Id": 9,
+  "Cost": 2,
+  "Interactions": {
+    "POST_DAMAGE": [
+      {
+        "EffectType": "ASSERT",
+        "Input": "DAMAGE_AMOUNT"
+      },
+      {
+        "EffectType": "MODIFIER",
+        "TargetPlayer": "OWNER",
+        "ModifierOperation": "ADD",
+        "Output": "PLAYERS_GOLD",
+        "TempVariable": 1
+      }
+    ]
+  }
+}

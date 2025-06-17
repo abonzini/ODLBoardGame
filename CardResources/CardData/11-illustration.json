@@ -1,0 +1,11 @@
+{
+  "EntityType": "UNIT",
+  "Id": 11,
+  "Name": "WAR HOUNDS",
+  "Cost": "1",
+  "Hp": "1",
+  "Movement": "2",
+  "Attack": "2",
+  "Rarity": 1,
+  "Tribe": "BASE"
+}

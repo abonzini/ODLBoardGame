@@ -1,0 +1,11 @@
+{
+  "EntityType": "UNIT",
+  "Id": 13,
+  "Name": "BRUTE",
+  "Cost": "5",
+  "Hp": "6",
+  "Movement": "2/2",
+  "Attack": "7",
+  "Rarity": 2,
+  "Tribe": "BASE"
+}

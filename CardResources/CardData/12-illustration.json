@@ -1,0 +1,12 @@
+{
+  "EntityType": "UNIT",
+  "Id": 12,
+  "Name": "BATTERING RAM",
+  "Text": "When this unit attacks the enemy player, it deals double damage.",
+  "Cost": "2",
+  "Hp": "1",
+  "Movement": "3",
+  "Attack": "2",
+  "Rarity": 2,
+  "Tribe": "BASE"
+}
