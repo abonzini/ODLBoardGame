@@ -1,0 +1,9 @@
+{
+  "EntityType": "SKILL",
+  "Id": 17,
+  "Name": "FLAMING VOLLEY",
+  "Text": "Deal 2 damage to an enemy building.",
+  "Cost": "2",
+  "Rarity": 1,
+  "Tribe": "BASE"
+}

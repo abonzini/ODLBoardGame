@@ -1,0 +1,9 @@
+{
+  "EntityType": "SKILL",
+  "Id": 20,
+  "Name": "HEROIC CHARGE",
+  "Text": "All your units *march.*",
+  "Cost": "4",
+  "Rarity": 3,
+  "Tribe": "BASE"
+}

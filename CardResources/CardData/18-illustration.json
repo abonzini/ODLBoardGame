@@ -1,0 +1,9 @@
+{
+  "EntityType": "SKILL",
+  "Id": 18,
+  "Name": "WAR PLANS",
+  "Text": "Draw 2 cards.",
+  "Cost": "3",
+  "Rarity": 2,
+  "Tribe": "BASE"
+}

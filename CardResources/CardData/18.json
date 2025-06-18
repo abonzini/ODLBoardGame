@@ -1,0 +1,17 @@
+{
+  "EntityType": "SKILL",
+  "TargetOptions": [
+    0
+  ],
+  "Id": 18,
+  "Cost": 3,
+  "Interactions": {
+    "WHEN_PLAYED": [
+      {
+        "EffectType": "CARD_DRAW",
+        "TargetPlayer": "OWNER",
+        "TempVariable": 2
+      }
+    ]
+  }
+}

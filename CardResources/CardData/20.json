@@ -1,0 +1,24 @@
+{
+  "EntityType": "SKILL",
+  "TargetOptions": [
+    0
+  ],
+  "Id": 20,
+  "Cost": 4,
+  "Interactions": {
+    "WHEN_PLAYED": [
+      {
+        "EffectType": "ADD_LOCATION_REFERENCE"
+      },
+      {
+        "EffectType": "FIND_ENTITIES",
+        "TargetPlayer": "OWNER",
+        "SearchCriterion": "ALL",
+        "TargetType": "UNIT"
+      },
+      {
+        "EffectType": "MARCH_ENTITIES"
+      }
+    ]
+  }
+}

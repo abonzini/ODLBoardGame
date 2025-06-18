@@ -1,0 +1,9 @@
+{
+  "EntityType": "SKILL",
+  "Id": 16,
+  "Name": "ARROW VOLLEY",
+  "Text": "Deal 2 damage to an enemy unit.",
+  "Cost": "2",
+  "Rarity": 1,
+  "Tribe": "BASE"
+}

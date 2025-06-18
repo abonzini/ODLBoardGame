@@ -1,0 +1,9 @@
+{
+  "EntityType": "SKILL",
+  "Id": 15,
+  "Name": "WAR RESERVES",
+  "Text": "Gain 2 *gold.*",
+  "Cost": "0",
+  "Rarity": 1,
+  "Tribe": "BASE"
+}

@@ -1,0 +1,18 @@
+{
+  "EntityType": "SKILL",
+  "TargetOptions": [
+    0
+  ],
+  "Id": 15,
+  "Interactions": {
+    "WHEN_PLAYED": [
+      {
+        "EffectType": "MODIFIER",
+        "TargetPlayer": "OWNER",
+        "ModifierOperation": "ADD",
+        "Output": "PLAYERS_GOLD",
+        "TempVariable": 2
+      }
+    ]
+  }
+}

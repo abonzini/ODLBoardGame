@@ -1,0 +1,41 @@
+{
+  "TargetType": "UNIT",
+  "TargetOwner": "OPPONENT",
+  "EntityType": "SKILL",
+  "TargetOptions": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "Id": 16,
+  "Cost": 2,
+  "Interactions": {
+    "WHEN_PLAYED": [
+      {
+        "EffectType": "SELECT_ENTITY",
+        "TargetPlayer": "OPPONENT",
+        "SearchCriterion": "PLAY_TARGET_ENTITY",
+        "TargetType": "UNIT"
+      },
+      {
+        "EffectType": "EFFECT_DAMAGE",
+        "TempVariable": 2
+      }
+    ]
+  }
+}
