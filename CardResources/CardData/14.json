@@ -11,7 +11,7 @@
     10
   ],
   "Id": 14,
-  "Cost": 3,
+  "Cost": 2,
   "Interactions": {
     "UNIT_CONSTRUCTS_BUILDING": [
       {

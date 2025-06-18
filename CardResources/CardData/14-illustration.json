@@ -3,7 +3,7 @@
   "Id": 14,
   "Name": "ARCHITECT",
   "Text": "When this unit *constructs* a building, gain 1 *gold* and draw a card.",
-  "Cost": "3",
+  "Cost": "2",
   "Hp": "2",
   "Movement": "1",
   "Attack": "1",
