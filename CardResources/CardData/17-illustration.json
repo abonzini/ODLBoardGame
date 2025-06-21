@@ -2,8 +2,8 @@
   "EntityType": "SKILL",
   "Id": 17,
   "Name": "FLAMING VOLLEY",
-  "Text": "Deal 2 damage to an enemy building.",
-  "Cost": "2",
+  "Text": "Destroy an enemy building.",
+  "Cost": "3",
   "Rarity": 1,
   "Tribe": "BASE"
 }

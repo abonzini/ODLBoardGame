@@ -2,7 +2,7 @@
   "EntityType": "SKILL",
   "Id": 19,
   "Name": "PHALANX",
-  "Text": "Give a unit +1 *attack,* +2 *HP,* and +1 *Movement Delay.*",
+  "Text": "Give a unit +1 *attack,* +2 *HP,* and +0/+1 *Movement.*",
   "Cost": "3",
   "Rarity": 2,
   "Tribe": "BASE"

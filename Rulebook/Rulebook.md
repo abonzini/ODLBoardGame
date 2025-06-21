@@ -122,9 +122,9 @@ Game continues until one player loses
 A unit can have its **movement** expressed in a fraction (e.g. X/Y).
 This means that the unit will advance X spaces every Y turns (i.e. waits a number of turns until it can move again).
 This creates slow units.
-The stat that represents Y is also known as **movement delay**.
 
-<img src="./../Pictures/BaseSet/13.png" width="150">
+<img src="./../CardResources/CardImagesFull/13.png" width="150">
+<img src="./../CardResources/CardImagesFull/19.png" width="150">
 
 # Keyword Glossary
 
@@ -141,7 +141,6 @@ The stat that represents Y is also known as **movement delay**.
 - **March**, action that units do, where they advance a specific number of **tiles**, **combat** may be initiated, and the unit may **enter** buildings in a lane
 - **Mountains**, a **lane** 8 **tiles** long
 - **Movement**, a stat. Determines how many tiles will a unit addvance when **marching** <img src="./../CardResources/CardLayoutElements/movement.png" width="20">
-- **Movement Delay**, a stat. Shown as the denominator in the movement fraction when this value is not 1. Determines how often (i.e. every how many turns) a unit addvances when **marching** <img src="./../CardResources/CardLayoutElements/movement.png" width="20">
 - **Passive Skill**, an ongoing effect that may change/add game mechanics. Some tribes *may* have **passive skills**
 - **Plains**, a **lane** 4 **tiles** long
 - **Rarity** a property of a card. Is measured in number of stars ★ and affects how many copies of this card can be put in a deck
