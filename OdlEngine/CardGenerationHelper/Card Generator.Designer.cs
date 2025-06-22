@@ -436,7 +436,7 @@
             DenominatorUpDown.Size = new Size(49, 27);
             DenominatorUpDown.TabIndex = 5;
             DenominatorUpDown.Value = new decimal(new int[] { 1, 0, 0, 0 });
-            DenominatorUpDown.ValueChanged += MovementOrDenominatorUpdown_ValueChanged;
+            DenominatorUpDown.ValueChanged += DenominatorUpdown_ValueChanged;
             // 
             // MovementUpdown
             // 
@@ -445,7 +445,7 @@
             MovementUpdown.Name = "MovementUpdown";
             MovementUpdown.Size = new Size(49, 27);
             MovementUpdown.TabIndex = 4;
-            MovementUpdown.ValueChanged += MovementOrDenominatorUpdown_ValueChanged;
+            MovementUpdown.ValueChanged += MovementUpdown_ValueChanged;
             // 
             // AttackUpDown
             // 

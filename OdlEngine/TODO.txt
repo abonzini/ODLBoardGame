@@ -1,6 +1,0 @@
-Ongoing tasks in order of priority:
-- Implement rest of rulebook
-	- Procedure:
-		- Propose card, way to code it
-		- Add triginters if not there already
-		- No individual card testing! Game must be mechanically robust even if cards are completely revamped

@@ -288,10 +288,18 @@ namespace EngineTests
                     if ((i & 0b1000) != 0) targets.Add(3); // Non existing lane 3
                     boardTargetableSkill.TargetOptions = targets;
                     PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
-                    if (realLaneNumber == 0) // Should be no valid lanes
+                    if (realLaneNumber == 0) // Empty hash set which funnily enough means "all lanes" unless there was only invalids in which case it's not!
                     {
-                        Assert.AreEqual(0, res.ValidTargets.Count);
-                        Assert.AreEqual(PlayOutcome.NO_TARGET_AVAILABLE, res.PlayOutcome);
+                        if (targets.Count == 0)
+                        {
+                            Assert.AreEqual(3, res.ValidTargets.Count);
+                            Assert.AreEqual(PlayOutcome.OK, res.PlayOutcome);
+                        }
+                        else
+                        {
+                            Assert.AreEqual(0, res.ValidTargets.Count);
+                            Assert.AreEqual(PlayOutcome.NO_TARGET_AVAILABLE, res.PlayOutcome);
+                        }
                     }
                     else // Should be some valid lanes and playable, but filters out the invalid
                     {
@@ -414,13 +422,16 @@ namespace EngineTests
                 Assert.AreEqual(PlayOutcome.OK, res.PlayOutcome);
                 foreach (int tile in allTiles)
                 {
+                    Lane lane = state.BoardState.GetLaneContainingTile(tile);
+                    int relTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, tile);
+                    relTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, relTile, playerIndex);
                     if (validTiles.Contains(tile))
                     {
-                        Assert.IsTrue(res.ValidTargets.Contains(tile));
+                        Assert.IsTrue(res.ValidTargets.Contains(relTile));
                     }
                     else
                     {
-                        Assert.IsFalse(res.ValidTargets.Contains(tile));
+                        Assert.IsFalse(res.ValidTargets.Contains(relTile));
                     }
                 }
             }
@@ -469,17 +480,22 @@ namespace EngineTests
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
-                foreach (int tile in allTiles) // Check all tiles
+                foreach (int absoluteTile in allTiles) // Check all tiles
                 {
+                    // Adjust tile relative to player
+                    Lane lane = state.BoardState.GetLaneContainingTile(absoluteTile);
+                    int playTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, absoluteTile);
+                    playTile = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, playTile, playerIndex);
+                    // About to play
                     int prePlayHash = sm.DetailedState.GetHashCode();
-                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, tile); // Play in this target
-                    if (validTiles.Contains(tile)) // This was a valid target, ensure played correctly
+                    Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, playTile); // Play in this target
+                    if (validTiles.Contains(absoluteTile)) // This was a valid target, ensure played correctly
                     {
                         CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2); // See if I got debug event
                         // Asserts
                         Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode());
                         Assert.IsNotNull(cpu);
-                        Assert.AreEqual(tile, res.Item1.PlayedTarget);
+                        Assert.AreEqual(playTile, res.Item1.PlayedTarget);
                         Assert.AreEqual(PlayOutcome.OK, res.Item1.PlayOutcome);
                         // Reversion
                         sm.UndoPreviousStep();
@@ -533,7 +549,7 @@ namespace EngineTests
                 HashSet<int> allTiles = [.. validTiles, .. invalidTiles];
                 // Rest of init
                 CardFinder cardDb = new CardFinder();
-                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE_RELATIVE);
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE);
                 cardDb.InjectCard(1, boardTargetableSkill);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -595,7 +611,7 @@ namespace EngineTests
                 HashSet<int> allTiles = [.. validTiles, .. invalidTiles];
                 // Rest of init
                 CardFinder cardDb = new CardFinder();
-                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE_RELATIVE);
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE);
                 Effect debugEvent = new Effect() { EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE };
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
@@ -664,6 +680,9 @@ namespace EngineTests
                 for (int i = 0; i < evenUnits; i++)
                 {
                     int nextCoord = _rng.Next(9) * 2;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Unit)theUnit.Clone());
                     validUnits.Add(nextUniqueId);
                     nextUniqueId++;
@@ -671,6 +690,9 @@ namespace EngineTests
                 for (int i = 0; i < oddUnits; i++)
                 {
                     int nextCoord = (_rng.Next(9) * 2) + 1;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Unit)theUnit.Clone());
                     invalidUnits.Add(nextUniqueId);
                     nextUniqueId++;
@@ -728,6 +750,9 @@ namespace EngineTests
                 for (int i = 0; i < evenUnits; i++)
                 {
                     int nextCoord = _rng.Next(9) * 2;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Unit)theUnit.Clone());
                     validUnits.Add(nextUniqueId);
                     nextUniqueId++;
@@ -735,6 +760,9 @@ namespace EngineTests
                 for (int i = 0; i < oddUnits; i++)
                 {
                     int nextCoord = (_rng.Next(9) * 2) + 1;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Unit)theUnit.Clone());
                     invalidUnits.Add(nextUniqueId);
                     nextUniqueId++;
@@ -804,6 +832,9 @@ namespace EngineTests
                 for (int i = 0; i < evenUnits; i++)
                 {
                     int nextCoord = _rng.Next(9) * 2;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, otherPlayerIndex, (Unit)theUnit.Clone());
                     validUnits.Add(nextUniqueId);
                     nextUniqueId++;
@@ -811,6 +842,9 @@ namespace EngineTests
                 for (int i = 0; i < oddUnits; i++)
                 {
                     int nextCoord = (_rng.Next(9) * 2) + 1;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, otherPlayerIndex, (Unit)theUnit.Clone());
                     invalidUnits.Add(nextUniqueId);
                     nextUniqueId++;
@@ -870,6 +904,9 @@ namespace EngineTests
                 for (int i = 0; i < evenUnits; i++)
                 {
                     int nextCoord = _rng.Next(9) * 2;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, otherPlayerIndex, (Unit)theUnit.Clone());
                     validUnits.Add(nextUniqueId);
                     nextUniqueId++;
@@ -877,6 +914,9 @@ namespace EngineTests
                 for (int i = 0; i < oddUnits; i++)
                 {
                     int nextCoord = (_rng.Next(9) * 2) + 1;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, otherPlayerIndex, (Unit)theUnit.Clone());
                     invalidUnits.Add(nextUniqueId);
                     nextUniqueId++;
@@ -968,7 +1008,7 @@ namespace EngineTests
                 }
                 // Rest of init
                 CardFinder cardDb = new CardFinder();
-                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT_RELATIVE);
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT);
                 cardDb.InjectCard(1, boardTargetableSkill);
                 state.PlayerStates[playerIndex].Hand.InsertCard(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -1036,7 +1076,7 @@ namespace EngineTests
                 }
                 // Rest of init
                 CardFinder cardDb = new CardFinder();
-                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT_RELATIVE);
+                Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT);
                 Effect debugEvent = new Effect() { EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE };
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
@@ -1100,6 +1140,9 @@ namespace EngineTests
                 for (int i = 0; i < evenBuildings; i++)
                 {
                     int nextCoord = _rng.Next(9) * 2;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Building)theBuilding.Clone());
                     validBuildings.Add(nextUniqueId);
                     nextUniqueId++;
@@ -1107,6 +1150,9 @@ namespace EngineTests
                 for (int i = 0; i < oddBuildings; i++)
                 {
                     int nextCoord = (_rng.Next(9) * 2) + 1;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Building)theBuilding.Clone());
                     invalidBuildings.Add(nextUniqueId);
                     nextUniqueId++;
@@ -1164,6 +1210,9 @@ namespace EngineTests
                 for (int i = 0; i < evenBuildings; i++)
                 {
                     int nextCoord = _rng.Next(9) * 2;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Building)theBuilding.Clone());
                     validBuildings.Add(nextUniqueId);
                     nextUniqueId++;
@@ -1171,6 +1220,9 @@ namespace EngineTests
                 for (int i = 0; i < oddBuildings; i++)
                 {
                     int nextCoord = (_rng.Next(9) * 2) + 1;
+                    Lane lane = state.BoardState.GetLaneContainingTile(nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, nextCoord);
+                    nextCoord = lane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, nextCoord, playerIndex);
                     TestHelperFunctions.ManualInitEntity(state, nextCoord, nextUniqueId, playerIndex, (Building)theBuilding.Clone());
                     invalidBuildings.Add(nextUniqueId);
                     nextUniqueId++;

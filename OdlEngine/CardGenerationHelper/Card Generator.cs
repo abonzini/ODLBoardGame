@@ -254,9 +254,19 @@ namespace CardGenerationHelper
             ((Unit)_currentEntity).Attack.BaseValue = Convert.ToInt32(AttackUpDown.Value);
             RefreshDrawTimer();
         }
-        private void MovementOrDenominatorUpdown_ValueChanged(object sender, EventArgs e)
+        private void MovementUpdown_ValueChanged(object sender, EventArgs e)
         {
             ((Unit)_currentEntity).Movement.BaseValue = Convert.ToInt32(MovementUpdown.Value);
+            string MovString = MovementUpdown.Value.ToString();
+            if (DenominatorUpDown.Value != 1)
+            {
+                MovString += "/" + DenominatorUpDown.Value.ToString();
+            }
+            _currentIllustrationInfo.Movement = MovString;
+            RefreshDrawTimer();
+        }
+        private void DenominatorUpdown_ValueChanged(object sender, EventArgs e)
+        {
             ((Unit)_currentEntity).MovementDenominator.BaseValue = Convert.ToInt32(DenominatorUpDown.Value);
             string MovString = MovementUpdown.Value.ToString();
             if (DenominatorUpDown.Value != 1)

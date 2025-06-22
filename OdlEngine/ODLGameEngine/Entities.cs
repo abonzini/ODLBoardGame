@@ -34,10 +34,9 @@ namespace ODLGameEngine
         BOARD,
         LANE,
         TILE,
-        TILE_RELATIVE,
         UNIT,
-        UNIT_RELATIVE,
-        BUILDING
+        BUILDING,
+        UNIT_AND_BUILDING
     }
     /// <summary>
     /// Will define how a card looks and works before it creates an instance in the board

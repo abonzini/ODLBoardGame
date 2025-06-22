@@ -19,7 +19,8 @@
         // --------------------------------------------------------------------------------------
         // ------------------------------  PLAY INFO REQUESTS -----------------------------------
         // --------------------------------------------------------------------------------------
-
+        static readonly HashSet<int> allPlayableLanes = new HashSet<int>(Enumerable.Range(0, GameConstants.BOARD_NUMBER_OF_LANES));
+        static readonly HashSet<int> allPlayableTiles = new HashSet<int>(Enumerable.Range(0, GameConstants.BOARD_NUMBER_OF_TILES));
         // Public (access points)
         /// <summary>
         /// Checks wether a card is playable and the valid targets if it is. Also used to verify before playing
@@ -84,8 +85,8 @@
             // Otherwise I can def afford, and in principle playable somewhere
             CardTargetingType targetType = cardData.EntityType switch
             {
-                EntityType.UNIT => CardTargetingType.TILE_RELATIVE,
-                EntityType.BUILDING => CardTargetingType.UNIT_RELATIVE,
+                EntityType.UNIT => CardTargetingType.TILE,
+                EntityType.BUILDING => CardTargetingType.UNIT,
                 EntityType.PLAYER => CardTargetingType.BOARD, // ? We'll need to see
                 EntityType.SKILL => ((Skill)cardData).TargetType,
                 _ => throw new Exception("Invalid card type, no play data")
@@ -105,8 +106,25 @@
                     {
                         // Check lane by lane
                         HashSet<int> optionsToCheck = null;
-                        if (onlyRelevantTarget == -1) optionsToCheck = cardData.TargetOptions;
-                        else if (cardData.TargetOptions.Contains(onlyRelevantTarget)) optionsToCheck = [onlyRelevantTarget];
+                        if (onlyRelevantTarget == -1)
+                        {
+                            if (cardData.TargetOptions.Count == 0) // All lanes targeted?
+                            {
+                                optionsToCheck = allPlayableLanes;
+                            }
+                            else
+                            {
+                                optionsToCheck = cardData.TargetOptions;
+                            }
+                        }
+                        else if (cardData.TargetOptions.Contains(onlyRelevantTarget))
+                        {
+                            optionsToCheck = [onlyRelevantTarget];
+                        }
+                        else
+                        {
+                            // Keep null
+                        }
                         foreach (int possibleTarget in optionsToCheck ?? []) // Check all options
                         {
                             if (possibleTarget >= 0 && possibleTarget < GameConstants.BOARD_NUMBER_OF_LANES)
@@ -117,15 +135,17 @@
                         }
                     }
                     break;
-                case CardTargetingType.TILE:
-                case CardTargetingType.TILE_RELATIVE:
+                case CardTargetingType.TILE: // POSSIBLE OPTIMIZATION ONLY DO FLIP CHECK ON P2
                     {
                         // Check tile by tile
-                        HashSet<int> optionsToCheck;
-                        // Check if I need to convert tiles to relative first
-                        if (targetType == CardTargetingType.TILE_RELATIVE)
+                        HashSet<int> optionsToCheck = new HashSet<int>();
+                        if (cardData.TargetOptions.Count == 0) // This means every option is valid
                         {
-                            optionsToCheck = new HashSet<int>();
+                            optionsToCheck = allPlayableTiles;
+                        }
+                        else
+                        {
+                            // Otherwise there needs to be some sort of reflection
                             foreach (int targetOption in cardData.TargetOptions)
                             {
                                 // target option is an absolute but it flips depending on player
@@ -134,10 +154,6 @@
                                 int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerChecking); // Obtain the equivalent for the player who's checking
                                 optionsToCheck.Add(absoluteCoord);
                             }
-                        }
-                        else
-                        {
-                            optionsToCheck = cardData.TargetOptions;
                         }
                         // Now, check if I need to provide all tiles or just match a tile
                         if (onlyRelevantTarget != -1) // In this case I need to extra filter to only the thing I'm looking for
@@ -163,13 +179,14 @@
                     break;
                 case CardTargetingType.BUILDING:
                 case CardTargetingType.UNIT:
-                case CardTargetingType.UNIT_RELATIVE:
+                case CardTargetingType.UNIT_AND_BUILDING:
                     {
                         // What am I looking for?
                         EntityType typeToLookFor = targetType switch
                         {
-                            CardTargetingType.UNIT or CardTargetingType.UNIT_RELATIVE => EntityType.UNIT,
+                            CardTargetingType.UNIT => EntityType.UNIT,
                             CardTargetingType.BUILDING => EntityType.BUILDING,
+                            CardTargetingType.UNIT_AND_BUILDING => (EntityType.UNIT | EntityType.BUILDING),
                             _ => throw new NotImplementedException("Can never get here")
                         };
                         // Owner of the stuff I'm looking for
@@ -184,8 +201,12 @@
                             _ => playerChecking,
                         };
                         HashSet<int> tilesToCheck;
-                        // Check if I need to convert tiles to relative first
-                        if (targetType == CardTargetingType.UNIT_RELATIVE)
+                        // Check for "all" targeting
+                        if (cardData.TargetOptions.Count == 0) // This means every option is valid
+                        {
+                            tilesToCheck = allPlayableTiles;
+                        }
+                        else // Otherwise need to make relative to player
                         {
                             tilesToCheck = new HashSet<int>();
                             foreach (int targetOption in cardData.TargetOptions)
@@ -195,10 +216,6 @@
                                 int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerChecking); // Obtain the equivalent for the player who's checking
                                 tilesToCheck.Add(absoluteCoord);
                             }
-                        }
-                        else
-                        {
-                            tilesToCheck = cardData.TargetOptions;
                         }
                         // This one is kinda tricky, will go tile by tile, but look for entities instead so...
                         if (onlyRelevantTarget == -1) // Get all valid entities in this case
@@ -228,22 +245,25 @@
                         {
                             if (entityOwnerCheck == -1 || entityOwnerCheck == foundEntity.Owner) // Check to make sure it's the same ownership I'm looking for
                             {
-                                int tileCandidate = ((PlacedEntity)foundEntity).TileCoordinate;
-                                if (tilesToCheck.Contains(tileCandidate)) // Check if unit in a valid tile
+                                if (typeToLookFor.HasFlag(foundEntity.EntityType)) // If the entity typer is also a match!
                                 {
-                                    bool buildingCheckPassed = true;
-                                    if (cardData.EntityType == EntityType.BUILDING)
+                                    int tileCandidate = ((PlacedEntity)foundEntity).TileCoordinate;
+                                    if (tilesToCheck.Contains(tileCandidate)) // Check if unit in a valid tile
                                     {
-                                        // Specifically for building construction, need to ensure there's no building already here...
-                                        if (DetailedState.BoardState.Tiles[tileCandidate].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
+                                        bool buildingCheckPassed = true;
+                                        if (cardData.EntityType == EntityType.BUILDING)
                                         {
-                                            buildingCheckPassed = false; // So if there's a building already, skip this tile asap
+                                            // Specifically for building construction, need to ensure there's no building already here...
+                                            if (DetailedState.BoardState.Tiles[tileCandidate].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
+                                            {
+                                                buildingCheckPassed = false; // So if there's a building already, skip this tile asap
+                                            }
                                         }
-                                    }
-                                    if (buildingCheckPassed)
-                                    {
-                                        // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
-                                        resultingPlayContext.ValidTargets.Add(onlyRelevantTarget);
+                                        if (buildingCheckPassed)
+                                        {
+                                            // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
+                                            resultingPlayContext.ValidTargets.Add(onlyRelevantTarget);
+                                        }
                                     }
                                 }
                             }
@@ -380,8 +400,8 @@
             // Since it's a placed entity, target was either on a tile (unit) or on a unit (building), the result is always going to be on a tile then
             int registerTile = playCtx.TargetingType switch
             {
-                CardTargetingType.TILE or CardTargetingType.TILE_RELATIVE => playCtx.PlayedTarget,
-                CardTargetingType.UNIT or CardTargetingType.UNIT_RELATIVE or CardTargetingType.BUILDING => ((PlacedEntity)DetailedState.EntityData[playCtx.PlayedTarget]).TileCoordinate,
+                CardTargetingType.TILE => playCtx.PlayedTarget,
+                CardTargetingType.UNIT or CardTargetingType.BUILDING or CardTargetingType.UNIT_AND_BUILDING => ((PlacedEntity)DetailedState.EntityData[playCtx.PlayedTarget]).TileCoordinate,
                 _ => throw new NotImplementedException("How was the play target in the other locations?")
             };
             BoardElement finalPlayTargetPlace = DetailedState.BoardState.Tiles[registerTile];
