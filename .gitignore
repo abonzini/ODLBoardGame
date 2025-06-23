@@ -3,3 +3,5 @@
 *.vs
 *\obj
 *\TestResults
+/web-client/node_modules
+/web-client/dist
