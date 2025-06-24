@@ -323,6 +323,29 @@ namespace CardGenerationHelper
                 File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id + ".json"), cardJson);
                 File.WriteAllText(Path.Combine(folderPath, _currentIllustrationInfo.Id + "-illustration.json"), cardPrintJson);
             }
+            string indexFile = Path.Combine(folderPath, "index.csv");
+            if (File.Exists(indexFile))
+            {
+                string[] indices = File.ReadAllLines(indexFile)[0].Split(',');
+                int min, max;
+                min = int.Parse(indices[0]);
+                max = int.Parse(indices[1]);
+                bool indexUpdateNeeded = false;
+                if (_currentEntity.Id < min)
+                {
+                    indexUpdateNeeded = true;
+                    min = _currentEntity.Id;
+                }
+                if (_currentEntity.Id > max)
+                {
+                    indexUpdateNeeded = true;
+                    max = _currentEntity.Id;
+                }
+                if (indexUpdateNeeded)
+                {
+                    File.WriteAllText(indexFile, $"{min},{max}");
+                }
+            }
         }
         private void LoadJsonButton_Click(object sender, EventArgs e)
         {

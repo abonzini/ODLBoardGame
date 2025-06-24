@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CardImageGeneration\CardImageGeneration.csproj" />
     <ProjectReference Include="..\ODLGameEngine\ODLGameEngine.csproj" />
   </ItemGroup>
 
@@ -26,5 +27,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;$(TargetDir)*.*&quot; &quot;$(SolutionDir)..\Generated\Executables\CardGenerator\&quot; /Y /E /I" />
+  </Target>
 
 </Project>

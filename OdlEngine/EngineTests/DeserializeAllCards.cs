@@ -5,9 +5,8 @@ namespace EngineTests
     [TestClass]
     public class DeserializeAllCards
     {
-        public static bool IsJsonValid(int cardId)
+        public static bool IsJsonValid(int cardId, CardFinder cardFinderToTest)
         {
-            CardFinder cardFinderToTest = new CardFinder(".\\..\\..\\..\\..\\..\\CardResources\\CardData");
             bool valid;
             try
             {
@@ -23,12 +22,18 @@ namespace EngineTests
         [TestMethod]
         public void DeserializeAllCreatedCards()
         {
-            const int MIN_INDEX = -1; // Need to edit as I load cards
-            const int MAX_INDEX = 3;
-            for (int i = MIN_INDEX; i <= MAX_INDEX; i++)
+            string cardDataPath = ".\\..\\..\\..\\..\\..\\CardResources\\CardData";
+            CardFinder cardFinderToTest = new CardFinder(cardDataPath);
+            string cardIndexFile = Path.Combine(cardDataPath, "index.csv");
+            Assert.IsTrue(File.Exists(cardIndexFile));
+            string[] indices = File.ReadAllLines(cardIndexFile)[0].Split(',');
+            int min, max;
+            min = int.Parse(indices[0]);
+            max = int.Parse(indices[1]);
+            for (int i = min; i <= max; i++)
             {
                 if (i == 0) continue; // No 0 card
-                Assert.IsTrue(IsJsonValid(i));
+                Assert.IsTrue(IsJsonValid(i, cardFinderToTest));
             }
         }
     }
