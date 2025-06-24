@@ -49,16 +49,24 @@ namespace CardImageGeneration
             CardFinder cardFinder = new CardFinder(cardDataPath);
             for (int i = min; i <= max; i++)
             {
+                string cardPath = Path.Combine(cardsPath, $"{i}.png");
+                string bpPath = Path.Combine(blueprintsPath, $"{i}.png");
                 if (i == 0) continue; // Skip 0
                 string illustrationJson = Path.Combine(cardDataPath, $"{i}-illustration.json");
                 CardIllustrationInfo illustrationInfo = JsonConvert.DeserializeObject<CardIllustrationInfo>(File.ReadAllText(illustrationJson));
                 EntityBase entity = cardFinder.GetCard(i);
-                Bitmap theCard = DrawHelper.DrawCard(illustrationInfo, resourcesPath);
-                theCard.Save(Path.Combine(cardsPath, $"{i}.png"), System.Drawing.Imaging.ImageFormat.Png);
+                if (!File.Exists(cardPath))
+                {
+                    Bitmap theCard = DrawHelper.DrawCard(illustrationInfo, resourcesPath);
+                    theCard.Save(cardPath, System.Drawing.Imaging.ImageFormat.Png);
+                }
                 if (entity.EntityType == EntityType.BUILDING)
                 {
-                    Bitmap theBp = DrawHelper.DrawBlueprint(illustrationInfo, (Building)entity, resourcesPath);
-                    theBp.Save(Path.Combine(blueprintsPath, $"{i}.png"), System.Drawing.Imaging.ImageFormat.Png);
+                    if (!File.Exists(bpPath))
+                    {
+                        Bitmap theBp = DrawHelper.DrawBlueprint(illustrationInfo, (Building)entity, resourcesPath);
+                        theBp.Save(bpPath, System.Drawing.Imaging.ImageFormat.Png);
+                    }
                 }
             }
         }

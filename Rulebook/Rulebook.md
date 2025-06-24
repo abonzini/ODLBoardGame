@@ -26,7 +26,7 @@ In their turn, players can choose to:
 
 # Units
 
-<img src="./../CardResources/CardImagesFull/2.png" width="150">
+<img src="https://i.imgur.com/wZaJaok.jpeg" width="150">
 
 The units stats are:
 - <img src="./../CardResources/CardLayoutElements/hp.png" width="50"> **HP:** Damage that the unit can take. When it reaches 0, unit dies.
@@ -67,17 +67,17 @@ Most tribes may have the **CONSCRIPTION** skill as as an active skill, which sum
 **Active Skills** can be used every turn (if the player can afford it), once per turn.
 Other skill cards can be added to a player's deck and used.
 
-<img src="./../CardResources/CardImagesFull/1.png" width="150"><img src="./../CardResources/CardImagesFull/2.png" width="110">
+<img src="https://i.imgur.com/L0iw7DN.jpeg" width="150"><img src="https://i.imgur.com/wZaJaok.jpeg" width="110">
 
 # Buildings
 
-<img src="./../CardResources/CardImagesFull/3.png" width="150">
+<img src="https://i.imgur.com/HL7kXzS.png" width="150">
 
 Buildings are similar to units, as they are entities that are placed in a tile when their respective card is played.
 However, to play a building, it'll need to be **constructed** by a unit.
 Moreover, buildings contain contain a blueprint, which specifies in which tiles the building can be constructed.
 
-<img src="./../CardResources/CardBlueprintsFull/3.png" width="200"><img src="./../CardResources/CardImagesFull/3.png" width="150">
+<img src="https://i.imgur.com/5nB7m7x.png" width="200"><img src="https://i.imgur.com/HL7kXzS.png" width="150">
 
 - Once built, the building remains in that **tile** until destroyed
 - Units will **enter** the building when they arrive to the tile where the building is located
@@ -123,8 +123,8 @@ A unit can have its **movement** expressed in a fraction (e.g. X/Y).
 This means that the unit will advance X spaces every Y turns (i.e. waits a number of turns until it can move again).
 This creates slow units.
 
-<img src="./../CardResources/CardImagesFull/13.png" width="150">
-<img src="./../CardResources/CardImagesFull/19.png" width="150">
+<img src="https://i.imgur.com/7WIhzqV.jpeg" width="150">
+<img src="https://i.imgur.com/NVvkVRR.jpeg" width="150">
 
 # Keyword Glossary
 

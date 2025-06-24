@@ -1,5 +1,0 @@
-<img src="./../../../CardResources/CardBlueprintsFull/3.png" width="180"><img src="./../../../CardResources/CardImagesFull/3.png" width="150"><img src="./../../../CardResources/CardBlueprintsFull/4.png" width="180"><img src="./../../../CardResources/CardImagesFull/4.png" width="150"><img src="./../../../CardResources/CardBlueprintsFull/5.png" width="180"><img src="./../../../CardResources/CardImagesFull/5.png" width="150">
-
-<img src="./../../../CardResources/CardBlueprintsFull/6.png" width="180"><img src="./../../../CardResources/CardImagesFull/6.png" width="150"><img src="./../../../CardResources/CardBlueprintsFull/7.png" width="180"><img src="./../../../CardResources/CardImagesFull/7.png" width="150">
-
-<img src="./../../../CardResources/CardBlueprintsFull/8.png" width="180"><img src="./../../../CardResources/CardImagesFull/8.png" width="150">
