@@ -29,9 +29,9 @@ namespace EngineTests
                 // Basic unit
                 Unit unit = TestCardGenerator.CreateUnit(2, "UNIT", 0, allTiles, 1, 1, 1, 1);
                 // Insert 3 buildings
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 LaneID laneTarget = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
@@ -90,9 +90,9 @@ namespace EngineTests
                 // Basic unit
                 Unit unit = TestCardGenerator.CreateUnit(2, "UNIT", 0, allTiles, 1, 1, 1, 1);
                 // Insert 3 buildings
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 LaneID laneTarget = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target

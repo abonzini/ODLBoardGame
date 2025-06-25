@@ -22,14 +22,14 @@ function PlayerHandBar() {
           <CardListContainer 
             activePowerId={player1?.activePowerId || 1}
             activePowerAvailable={player1?.powerAvailable || false}
-            assortedCardCollection={player1?.hand || { cards: new Map() }}
+            assortedCardCollection={player1?.hand || { _cardHistogram: new Map() }}
           />
         </div>
         <div className="player-hand-right">
           <CardListContainer 
             activePowerId={player2?.activePowerId || 1}
             activePowerAvailable={player2?.powerAvailable || false}
-            assortedCardCollection={player2?.hand || { cards: new Map() }}
+            assortedCardCollection={player2?.hand || { _cardHistogram: new Map() }}
           />
         </div>
       </div>
@@ -56,7 +56,7 @@ function PlayerHandBar() {
           <CardListContainer 
             activePowerId={currentPlayer?.activePowerId || 1}
             activePowerAvailable={currentPlayer?.powerAvailable || false}
-            assortedCardCollection={currentPlayer?.hand || { cards: new Map() }}
+            assortedCardCollection={currentPlayer?.hand || { _cardHistogram: new Map() }}
           />
         </div>
         <div style={{ width: '20%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

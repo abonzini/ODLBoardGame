@@ -19,26 +19,13 @@ export const States = {
 // AssortedCardCollection class matching C# structure
 export class AssortedCardCollection {
   constructor(data = {}) {
-    this._cards = data._cards || new Map(); // SortedList<int, int> equivalent - cardId -> count
+    this._cardHistogram = data._cardHistogram || new Map(); // SortedList<int, int> equivalent - cardId -> count
     this._size = data._size || 0;
-  }
-
-  // Helper methods to match C# functionality
-  getCardCount() {
-    return this._size;
-  }
-
-  hasCard(cardId) {
-    return this._cards.has(cardId);
-  }
-
-  checkAmount(cardId) {
-    return this._cards.get(cardId) || 0;
   }
 
   // Get all cards as array of {cardId, count} for easy iteration
   getCards() {
-    return Array.from(this._cards.entries()).map(([cardId, count]) => ({
+    return Array.from(this._cardHistogram.entries()).map(([cardId, count]) => ({
       cardId,
       count
     }));
@@ -51,14 +38,41 @@ export class AssortedCardCollection {
     const collection = new AssortedCardCollection();
     // Convert string keys back to numbers for the Map
     const cardsMap = new Map();
-    if (json._cards) {
-      Object.entries(json._cards).forEach(([cardIdStr, count]) => {
+    if (json._cardHistogram) {
+      Object.entries(json._cardHistogram).forEach(([cardIdStr, count]) => {
         cardsMap.set(parseInt(cardIdStr), count);
       });
     }
-    collection._cards = cardsMap;
+    collection._cardHistogram = cardsMap;
     collection._size = json._size || 0;
     return collection;
+  }
+}
+
+// Deck class matching C# structure
+export class Deck extends AssortedCardCollection {
+  constructor(data = {}) {
+    super(data);
+    this._orderedCards = data._orderedCards || [];
+  }
+
+  // Helper method to create from JSON (when received from server)
+  static fromJson(json) {
+    if (!json) return new Deck();
+    
+    const deck = new Deck();
+    // Convert string keys back to numbers for the Map
+    const cardsMap = new Map();
+    if (json._cardHistogram) {
+      Object.entries(json._cardHistogram).forEach(([cardIdStr, count]) => {
+        cardsMap.set(parseInt(cardIdStr), count);
+      });
+    }
+    deck._cardHistogram = cardsMap;
+    deck._size = json._size || 0;
+    deck._orderedCards = json._orderedCards || [];
+    
+    return deck;
   }
 }
 
@@ -75,7 +89,7 @@ export class Player {
     this.currentGold = data.currentGold || 5;
     this.powerAvailable = data.powerAvailable !== undefined ? data.powerAvailable : true;
     this.hand = data.hand || new AssortedCardCollection();
-    this.deck = data.deck || null; // Will implement Deck class later
+    this.deck = data.deck || new Deck();
     this.discardPile = data.discardPile || new AssortedCardCollection();
     this.activePowerId = data.activePowerId || 1;
   }
@@ -95,7 +109,7 @@ export class Player {
     player.currentGold = json.currentGold || 5;
     player.powerAvailable = json.powerAvailable !== undefined ? json.powerAvailable : true;
     player.hand = json.hand ? AssortedCardCollection.fromJson(json.hand) : new AssortedCardCollection();
-    player.deck = json.deck || null;
+    player.deck = json.deck ? Deck.fromJson(json.deck) : new Deck();
     player.discardPile = json.discardPile ? AssortedCardCollection.fromJson(json.discardPile) : new AssortedCardCollection();
     player.activePowerId = json.activePowerId || 1;
     

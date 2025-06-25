@@ -20,7 +20,7 @@ namespace EngineTests
                 {
                     // Cards 0-9: test skills with various costs
                     cardDb.InjectCard(i, TestCardGenerator.CreateSkill(i, i, [], CardTargetingType.BOARD));
-                    state.PlayerStates[playerIndex].Hand.InsertCard(i); // Insert test cards (brick) in hand costs 0-9
+                    state.PlayerStates[playerIndex].Hand.InsertToCollection(i); // Insert test cards (brick) in hand costs 0-9
                 }
                 state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -52,7 +52,7 @@ namespace EngineTests
                     GameStateStruct state = TestHelperFunctions.GetBlankGameState();
                     state.CurrentState = st;
                     state.CurrentPlayer = player;
-                    state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert only one card, I don't care
+                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Insert only one card, I don't care
                     GameStateMachine sm = new GameStateMachine();
                     sm.LoadGame(state); // Start from here
                     if (st != States.ACTION_PHASE) // Only check invalid states as valid state is used elsewhere during tests. Card itself shouldnt be checked
@@ -78,7 +78,7 @@ namespace EngineTests
 
                 for (int i = 0; i < 5; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertCard(1); // Insert test card (brick) in hand all targets 5 times
+                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Insert test card (brick) in hand all targets 5 times
                 }
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -107,7 +107,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, null, CardTargetingType.BOARD);
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
@@ -132,7 +132,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 state.PlayerStates[playerIndex].CurrentGold = 5; // Player has 5 gold
                 // Play
                 for (int cost = 0; cost < 10; cost++)
@@ -185,7 +185,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, [], CardTargetingType.BOARD);
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
@@ -212,7 +212,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 // Play
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -246,7 +246,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 // Play
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -275,7 +275,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, [], CardTargetingType.LANE);
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < 16; i++) // All combinations of valid lanes and one invalid
@@ -338,7 +338,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 for (int i = 0; i < 8; i++) // All combinations of valid lanes and one invalid
@@ -414,7 +414,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE);
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
@@ -477,7 +477,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 foreach (int absoluteTile in allTiles) // Check all tiles
@@ -551,7 +551,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.TILE);
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
@@ -616,7 +616,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 foreach (int tile in allTiles) // Check all tiles
@@ -702,7 +702,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT);
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
@@ -775,7 +775,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 foreach (int unit in allUnits) // Check all units
@@ -855,7 +855,7 @@ namespace EngineTests
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT);
                 boardTargetableSkill.TargetOwner = EntityOwner.OPPONENT;
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
@@ -930,7 +930,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 foreach (int unit in allUnits) // Check all units
@@ -1010,7 +1010,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.UNIT);
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
@@ -1081,7 +1081,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 foreach (int unit in allUnits) // Check all units
@@ -1162,7 +1162,7 @@ namespace EngineTests
                 CardFinder cardDb = new CardFinder();
                 Skill boardTargetableSkill = TestCardGenerator.CreateSkill(1, 0, validTiles, CardTargetingType.BUILDING);
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 PlayContext res = sm.GetPlayabilityOptions(1, PlayType.PLAY_FROM_HAND);
@@ -1235,7 +1235,7 @@ namespace EngineTests
                 boardTargetableSkill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 boardTargetableSkill.Interactions[InteractionType.WHEN_PLAYED] = [debugEvent];
                 cardDb.InjectCard(1, boardTargetableSkill);
-                state.PlayerStates[playerIndex].Hand.InsertCard(1);
+                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 foreach (int building in allBuildings) // Check all buildings

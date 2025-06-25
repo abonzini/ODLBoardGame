@@ -1,0 +1,33 @@
+.player-bar {
+  width: 50vw;
+  height: 20vh;
+  border: 4px solid #A86B30;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.15);
+  position: absolute;
+}
+
+.player-bar-left {
+  top: 0;
+  left: 0;
+  border-right: 2px solid #A86B30;
+}
+
+.player-bar-right {
+  top: 0;
+  right: 0;
+  border-left: 2px solid #A86B30;
+}
+
+.player-name-label {
+  position: absolute;
+  top: 0px;
+  left: 5px;
+  font-family: Georgia, serif;
+  color: white;
+  text-shadow: 1px 1px 0px black, -1px -1px 0px black,
+               1px -1px 0px black, -1px 1px 0px black;
+  font-size: 4vh;
+  height: 4vh;
+  line-height: 4vh;
+} 

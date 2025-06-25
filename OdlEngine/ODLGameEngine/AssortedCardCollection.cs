@@ -6,10 +6,8 @@ namespace ODLGameEngine
     [JsonObject(MemberSerialization.OptIn)]
     public class AssortedCardCollection : ICloneable
     {
-        private int _hash;
-        private bool _dirtyHash = true;
         [JsonProperty]
-        private readonly SortedList<int, int> _cards = new SortedList<int, int>();
+        private SortedList<int, int> _cardHistogram = new SortedList<int, int>();
         [JsonProperty]
         private int _size = 0;
         public int CardCount { get { return _size; } }
@@ -17,68 +15,78 @@ namespace ODLGameEngine
         /// Adds card to hand
         /// </summary>
         /// <param name="card">Which card to add</param>
-        public void InsertCard(int card)
+        public void InsertToCollection(int card)
         {
-            if (_cards.TryGetValue(card, out int value))
+            if (_cardHistogram.TryGetValue(card, out int value))
             {
-                _cards[card] = ++value;
+                _cardHistogram[card] = ++value;
             }
             else
             {
-                _cards.Add(card, 1);
+                _cardHistogram.Add(card, 1);
             }
             _size++;
-            _dirtyHash = true;
+        }
+        /// <summary>
+        /// Returns how manny cards here
+        /// </summary>
+        /// <returns>The number of cards</returns>
+        public int GetSize()
+        {
+            return _size;
+        }
+        /// <summary>
+        /// Resets the card histogram
+        /// </summary>
+        protected void ResetHistogram()
+        {
+            _cardHistogram.Clear();
         }
         /// <summary>
         /// Removes card from hand
         /// </summary>
         /// <param name="card">Card to remove</param>
-        public void RemoveCard(int card)
+        public void RemoveFromCollection(int card)
         {
-            _cards[card]--;
+            _cardHistogram[card]--;
             _size--;
-            if (_cards[card] == 0)
+            if (_cardHistogram[card] == 0)
             {
-                _cards.Remove(card);
+                _cardHistogram.Remove(card);
             }
-            _dirtyHash = true;
         }
         /// <summary>
         /// Checks if hand contains a specific card
         /// </summary>
         /// <param name="card"></param>
         /// <returns>If contained</returns>
-        public bool HasCard(int card)
+        public bool HasCardInCollection(int card)
         {
-            return _cards.ContainsKey(card);
+            return _cardHistogram.ContainsKey(card);
         }
         /// <summary>
         /// Returns how many copies of a card here
         /// </summary>
         /// <param name="card"></param>
         /// <returns>Amount</returns>
-        public int CheckAmount(int card)
+        public int CheckAmountInCollection(int card)
         {
-            return _cards[card];
+            if(!_cardHistogram.TryGetValue(card, out int amount))
+            {
+                amount = 0;
+            }
+            return amount;
         }
         public override int GetHashCode()
         {
-            if (_dirtyHash) // Recalculates only when dirty
+            HashCode hash = new HashCode();
+            foreach (KeyValuePair<int, int> kvp in _cardHistogram)
             {
-                HashCode hash = new HashCode();
-                foreach (KeyValuePair<int, int> kvp in _cards)
-                {
-                    hash.Add(kvp.Key);
-                    hash.Add(kvp.Value);
-                } // HandSize not needed as it is just the sum of kpv.value anyway
-                _hash = hash.ToHashCode();
-                _dirtyHash = false; // Currently updated hash
+                hash.Add(kvp.Key);
+                hash.Add(kvp.Value);
             }
-            return _hash;
+            return hash.ToHashCode();
         }
-        public bool IsHashDirty()
-        { return _dirtyHash; }
         public override string ToString()
         {
             string retString;
@@ -86,18 +94,16 @@ namespace ODLGameEngine
             {
                 WriteIndented = true
             };
-            retString = System.Text.Json.JsonSerializer.Serialize(_cards, options);
+            retString = System.Text.Json.JsonSerializer.Serialize(_cardHistogram, options);
             return retString;
         }
-        public object Clone()
+        public virtual object Clone()
         {
-            AssortedCardCollection newCollection = new AssortedCardCollection
+            AssortedCardCollection newCollection = (AssortedCardCollection)MemberwiseClone();
+            newCollection._cardHistogram = new SortedList<int, int>();
+            foreach (KeyValuePair<int, int> kvp in _cardHistogram)
             {
-                _size = _size
-            };
-            foreach (KeyValuePair<int, int> kvp in _cards)
-            {
-                newCollection._cards[kvp.Key] = kvp.Value;
+                newCollection._cardHistogram[kvp.Key] = kvp.Value;
             }
             return newCollection;
         }

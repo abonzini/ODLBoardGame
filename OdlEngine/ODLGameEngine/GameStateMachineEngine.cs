@@ -67,13 +67,13 @@
                 case EventType.ADD_CARD_TO_HAND:
                     auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
                     auxInt1 = ((EntityValueEvent<Player, int>)e).value;
-                    auxPlayerState.Hand.InsertCard(auxInt1);
+                    auxPlayerState.Hand.InsertToCollection(auxInt1);
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value; // Card now popped from hand
-                    DetailedState.PlayerStates[auxInt1].Hand.RemoveCard(auxInt2); // Remove from hand...
-                    DetailedState.PlayerStates[auxInt1].DiscardPile.InsertCard(auxInt2); // And add to discard pile
+                    DetailedState.PlayerStates[auxInt1].Hand.RemoveFromCollection(auxInt2); // Remove from hand...
+                    DetailedState.PlayerStates[auxInt1].DiscardPile.InsertToCollection(auxInt2); // And add to discard pile
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
@@ -187,13 +187,13 @@
                 case EventType.ADD_CARD_TO_HAND:
                     auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
                     auxInt1 = ((EntityValueEvent<Player, int>)e).value;
-                    auxPlayerState.Hand.RemoveCard(auxInt1);
+                    auxPlayerState.Hand.RemoveFromCollection(auxInt1);
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value;
-                    DetailedState.PlayerStates[auxInt1].DiscardPile.RemoveCard(auxInt2); // Pop from discard pile
-                    DetailedState.PlayerStates[auxInt1].Hand.InsertCard(auxInt2); // Reinsert in hand
+                    DetailedState.PlayerStates[auxInt1].DiscardPile.RemoveFromCollection(auxInt2); // Pop from discard pile
+                    DetailedState.PlayerStates[auxInt1].Hand.InsertToCollection(auxInt2); // Reinsert in hand
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;

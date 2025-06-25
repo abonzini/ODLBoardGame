@@ -18,7 +18,7 @@ namespace EngineTests
             newDeck.InitializeDeck("1,2,3,4,5"); // Adds cards 1 2 3 4 
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {
-                Assert.AreEqual(newDeck.CheckAmount(i), 1); // Verify 1 of each
+                Assert.AreEqual(newDeck.CheckAmountInCollection(i), 1); // Verify 1 of each
             }
         }
         [TestMethod]
@@ -61,13 +61,13 @@ namespace EngineTests
             newDeck.InitializeDeck("1,2,3,4,5"); // Adds cards 1 2 3 4 5
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {
-                Assert.AreEqual(newDeck.CheckAmount(i), 1); // Verify 1 of each
+                Assert.AreEqual(newDeck.CheckAmountInCollection(i), 1); // Verify 1 of each
                 newDeck.InsertCard(i, 0); // But also sneakily add another one
             }
             // Check again
             for (int i = 1; i <= 5; i++) // Check existance of each card
             {
-                Assert.AreEqual(newDeck.CheckAmount(i), 2); // Verify 2 of each
+                Assert.AreEqual(newDeck.CheckAmountInCollection(i), 2); // Verify 2 of each
             }
         }
         [TestMethod]

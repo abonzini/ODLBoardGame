@@ -46,6 +46,12 @@ html, body, #root {
   /* Add any background or border as needed */
 }
 
+.player-bar-container {
+  height: 20vh;
+  position: relative;
+  width: 100%;
+}
+
 .player-hand-bar {
   width: 100%;
   height: 20vh;

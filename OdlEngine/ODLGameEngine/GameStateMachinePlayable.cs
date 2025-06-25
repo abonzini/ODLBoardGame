@@ -47,7 +47,7 @@
             if (playType == PlayType.PLAY_FROM_HAND)
             {
                 AssortedCardCollection hand = DetailedState.PlayerStates[playerChecking].Hand;
-                if (!hand.HasCard(card)) // Card not in hand!
+                if (!hand.HasCardInCollection(card)) // Card not in hand!
                 {
                     resultingPlayContext.PlayOutcome = PlayOutcome.INVALID_CARD;
                     return resultingPlayContext;
