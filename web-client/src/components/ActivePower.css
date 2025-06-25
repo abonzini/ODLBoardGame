@@ -1,0 +1,14 @@
+.active-power {
+  position: relative;
+  display: inline-block;
+  height: 100%;
+}
+
+.active-power img {
+  height: 100%;
+  width: auto;
+}
+
+.active-power.unavailable img {
+  filter: grayscale(100%) brightness(0.5);
+} 

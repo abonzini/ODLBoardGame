@@ -1,7 +1,17 @@
-function CardListContainer({ children }) {
+import React from 'react';
+import ActivePower from './ActivePower';
+import Card from './Card';
+import './CardListContainer.css';
+
+function CardListContainer({ activePowerId, activePowerAvailable, assortedCardCollection }) {
   return (
     <div className="card-list-container">
-      {children}
+      <ActivePower cardId={activePowerId} available={activePowerAvailable} />
+      {assortedCardCollection && assortedCardCollection.getCards && 
+        assortedCardCollection.getCards().map(({ cardId, count }) => (
+          <Card key={cardId} cardId={cardId} count={count} />
+        ))
+      }
     </div>
   );
 }

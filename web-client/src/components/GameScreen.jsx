@@ -6,6 +6,7 @@ function GameScreen() {
   return (
     <GameContextProvider>
       <div className="game-screen">
+        <div className="game-screen-wood"></div>
         <GameBoard />
         <PlayerHandBar />
       </div>

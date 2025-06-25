@@ -16,11 +16,90 @@ export const States = {
   EOG: 'EOG',
 };
 
+// AssortedCardCollection class matching C# structure
+export class AssortedCardCollection {
+  constructor(data = {}) {
+    this._cards = data._cards || new Map(); // SortedList<int, int> equivalent - cardId -> count
+    this._size = data._size || 0;
+  }
+
+  // Helper methods to match C# functionality
+  getCardCount() {
+    return this._size;
+  }
+
+  hasCard(cardId) {
+    return this._cards.has(cardId);
+  }
+
+  checkAmount(cardId) {
+    return this._cards.get(cardId) || 0;
+  }
+
+  // Get all cards as array of {cardId, count} for easy iteration
+  getCards() {
+    return Array.from(this._cards.entries()).map(([cardId, count]) => ({
+      cardId,
+      count
+    }));
+  }
+
+  // Helper method to create from JSON (when received from server)
+  static fromJson(json) {
+    if (!json) return new AssortedCardCollection();
+    
+    const collection = new AssortedCardCollection();
+    // Convert string keys back to numbers for the Map
+    const cardsMap = new Map();
+    if (json._cards) {
+      Object.entries(json._cards).forEach(([cardIdStr, count]) => {
+        cardsMap.set(parseInt(cardIdStr), count);
+      });
+    }
+    collection._cards = cardsMap;
+    collection._size = json._size || 0;
+    return collection;
+  }
+}
+
 // Basic classes matching the C# structures
 export class Player {
   constructor(data = {}) {
-    // Add player properties as needed
-    Object.assign(this, data);
+    // LivingEntity properties
+    this.hp = data.hp || 20;
+    this.name = data.name || '';
+    this.owner = data.owner || null;
+    this.uniqueId = data.uniqueId || null;
+    
+    // Player-specific properties
+    this.currentGold = data.currentGold || 5;
+    this.powerAvailable = data.powerAvailable !== undefined ? data.powerAvailable : true;
+    this.hand = data.hand || new AssortedCardCollection();
+    this.deck = data.deck || null; // Will implement Deck class later
+    this.discardPile = data.discardPile || new AssortedCardCollection();
+    this.activePowerId = data.activePowerId || 1;
+  }
+
+  // Helper method to create from JSON (when received from server)
+  static fromJson(json) {
+    if (!json) return new Player();
+    
+    const player = new Player();
+    // LivingEntity properties
+    player.hp = json.hp || 20;
+    player.name = json.name || '';
+    player.owner = json.owner || null;
+    player.uniqueId = json.uniqueId || null;
+    
+    // Player-specific properties
+    player.currentGold = json.currentGold || 5;
+    player.powerAvailable = json.powerAvailable !== undefined ? json.powerAvailable : true;
+    player.hand = json.hand ? AssortedCardCollection.fromJson(json.hand) : new AssortedCardCollection();
+    player.deck = json.deck || null;
+    player.discardPile = json.discardPile ? AssortedCardCollection.fromJson(json.discardPile) : new AssortedCardCollection();
+    player.activePowerId = json.activePowerId || 1;
+    
+    return player;
   }
 }
 
@@ -51,6 +130,16 @@ export class GameStateStruct {
 
   // Helper method to create from JSON (when received from server)
   static fromJson(json) {
-    return new GameStateStruct(json);
+    if (!json) return new GameStateStruct();
+    
+    const gameState = new GameStateStruct();
+    gameState.currentState = json.currentState || States.START;
+    gameState.stateHash = json.stateHash || 0;
+    gameState.currentPlayer = json.currentPlayer || CurrentPlayer.OMNISCIENT;
+    gameState.playerStates = (json.playerStates || []).map(playerData => Player.fromJson(playerData));
+    gameState.boardState = new Board(json.boardState || {});
+    gameState.entityData = json.entityData || {};
+    
+    return gameState;
   }
 } 

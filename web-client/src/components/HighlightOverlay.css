@@ -1,0 +1,28 @@
+.highlight-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: auto;
+}
+
+.overlay-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.highlighted-component {
+  position: absolute;
+  /* Will be positioned based on the highlighted component */
+}
+
+.overlay-content {
+  position: absolute;
+  /* Will be positioned based on the overlay content */
+} 
