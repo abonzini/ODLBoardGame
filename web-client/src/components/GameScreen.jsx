@@ -1,13 +1,12 @@
 import { GameContextProvider } from '../context/GameContext';
+import GameBoard from './GameBoard';
 import PlayerHandBar from './PlayerHandBar';
 
 function GameScreen() {
   return (
     <GameContextProvider>
       <div className="game-screen">
-        <div className="board-area">
-          {/* Main game area goes here */}
-        </div>
+        <GameBoard />
         <PlayerHandBar />
       </div>
     </GameContextProvider>

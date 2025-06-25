@@ -1,10 +1,17 @@
 import { useGameContext } from '../context/GameContext';
+import useSound from 'use-sound';
 import { CurrentPlayer } from '../models/GameState';
 import CardListContainer from './CardListContainer';
 
 function PlayerHandBar() {
   const { viewerIdentity, gameState } = useGameContext();
   
+  // Use use-sound for button click audio
+  const [playClick] = useSound('/sounds/button-click.wav', {
+    volume: 1.0,
+    interrupt: true // Allow interrupting previous plays
+  });
+
   // Don't render anything for spectators
   if (viewerIdentity === CurrentPlayer.SPECTATOR) {
     return null;
@@ -35,6 +42,7 @@ function PlayerHandBar() {
         <div style={{ width: '20%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <button 
             disabled={!isViewerTurn}
+            onClick={playClick}
             style={{ 
               width: '60%',
               height: '60%',
