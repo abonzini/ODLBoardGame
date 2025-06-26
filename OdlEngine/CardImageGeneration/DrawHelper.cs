@@ -67,7 +67,7 @@ namespace CardGenerationHelper
     public static class DrawHelper
     {
         static readonly Dictionary<string, FillHelper> _savedBrushes = new Dictionary<string, FillHelper>();
-        public static FillHelper GetImageBrushOrColor(Rectangle container, string path, Color imageColorTint, Color defaultColor, int blackLighten = 0)
+        public static FillHelper GetImageBrushOrColor(Rectangle container, string path, Color defaultColor)
         {
             if (_savedBrushes.TryGetValue(path, out FillHelper value)) return value;
             FillHelper brush;
@@ -79,9 +79,7 @@ namespace CardGenerationHelper
                     Height = container.Height,
                     Width = container.Width,
                     StartX = container.X,
-                    StartY = container.Y,
-                    WhiteTint = imageColorTint,
-                    BlackLighten = blackLighten
+                    StartY = container.Y
                 };
                 _savedBrushes.Add(path, brush);
             }
@@ -487,7 +485,7 @@ namespace CardGenerationHelper
                 FillHelper brush;
                 string imagePath = Path.Combine(resourcesPath, "CardImagesRaw", cardInfo.Id.ToString() + ".png");
                 Rectangle imageBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)imageBoxSize, (int)imageBoxSize);
-                brush = GetImageBrushOrColor(imageBox, imagePath, Color.White, Color.White);
+                brush = GetImageBrushOrColor(imageBox, imagePath, Color.White);
                 DrawRoundedRectangle(g, imageBox, DrawConstants.BoxRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
                 // Now Draw all Stats
                 // Gold
@@ -495,7 +493,7 @@ namespace CardGenerationHelper
                 float statYpointer = currentDrawPointerY;
                 Rectangle statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
                 imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "gold.png");
-                brush = GetImageBrushOrColor(statBox, imagePath, Color.Gold, Color.Gold, 85);
+                brush = GetImageBrushOrColor(statBox, imagePath, Color.Gold);
                 DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
                 float statFontSize = statWidth / 1.333f; // Fixed size to fit stat box in consistent way. 1.333 is empirical
                 Font statFont = new Font("Coolvetica Heavy Comp", statFontSize, FontStyle.Bold);
@@ -507,7 +505,7 @@ namespace CardGenerationHelper
                     // Then, HP
                     statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
                     imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "hp.png");
-                    brush = GetImageBrushOrColor(statBox, imagePath, Color.Red, Color.Red, 85);
+                    brush = GetImageBrushOrColor(statBox, imagePath, Color.Red);
                     DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
                     DrawFixedText(g, cardInfo.Hp, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, debug);
                     statYpointer += statWidth + verticalMargin;
@@ -515,13 +513,13 @@ namespace CardGenerationHelper
                     {
                         statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
                         imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "attack.png");
-                        brush = GetImageBrushOrColor(statBox, imagePath, Color.Silver, Color.Silver, 85);
+                        brush = GetImageBrushOrColor(statBox, imagePath, Color.Silver);
                         DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
                         DrawFixedText(g, cardInfo.Attack, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, debug);
                         statYpointer += statWidth + verticalMargin;
                         statBox = new Rectangle((int)statXpointer, (int)statYpointer, (int)statWidth, (int)statWidth);
                         imagePath = Path.Combine(resourcesPath, "CardLayoutElements", "movement.png");
-                        brush = GetImageBrushOrColor(statBox, imagePath, Color.BurlyWood, Color.BurlyWood, 85);
+                        brush = GetImageBrushOrColor(statBox, imagePath, Color.BurlyWood);
                         DrawRoundedRectangle(g, statBox, DrawConstants.StatRoundedPercentage, Color.Black, DrawConstants.ImageBorder, brush);
                         DrawFixedText(g, cardInfo.Movement, statBox, statFont, Color.White, Color.Black, DrawConstants.StatFontBorderPercentage, StringAlignment.Center, StringAlignment.Center, 0, debug);
                     }
