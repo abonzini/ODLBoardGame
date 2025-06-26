@@ -5,25 +5,24 @@ import CounterCircle from './CounterCircle';
 import './Card.css';
 
 function Card({ cardId, count }) {
-  const { setIsOverlayActive, setHighlightedComponent } = useUIContext();
+  const { isOverlayActive, pushOverlay } = useUIContext();
 
   const handleRightClick = (e) => {
     e.preventDefault();
-    setIsOverlayActive(true);
-    setHighlightedComponent({ type: 'card', cardId });
+    e.stopPropagation();
+    pushOverlay({ type: 'card', cardId });
   };
 
   return (
     <div className="card" onContextMenu={handleRightClick}>
       <img src={getCardImagePath(cardId)} alt={`Card ${cardId}`} />
-      {count > 1 && (
-        <CounterCircle 
-          count={count}
-          height="30%"
-          top="75%"
-          left="75%"
-        />
-      )}
+      <CounterCircle 
+        count={count}
+        height="30%"
+        top="75%"
+        left="75%"
+        showIfOne={false}
+      />
     </div>
   );
 }

@@ -4,19 +4,40 @@ import React, { createContext, useContext, useState } from 'react';
 const UIContext = createContext();
 
 export function UIContextProvider({ children }) {
-  // State for overlay management
-  const [isOverlayActive, setIsOverlayActive] = useState(false);
-  const [highlightedComponent, setHighlightedComponent] = useState(null);
-  const [overlayContent, setOverlayContent] = useState(null);
+  // State for overlay stack management
+  const [overlayStack, setOverlayStack] = useState([]);
+
+  // Helper functions for overlay stack
+  const pushOverlay = (component) => {
+    setOverlayStack(prev => [...prev, component]);
+  };
+
+  const popOverlay = () => {
+    setOverlayStack(prev => prev.slice(0, -1));
+  };
+
+  const closeOverlay = () => {
+    setOverlayStack([]);
+  };
+
+  // Computed values for backward compatibility
+  const isOverlayActive = overlayStack.length > 0;
+  const highlightedComponent = overlayStack.length > 0 ? overlayStack[overlayStack.length - 1] : null;
 
   return (
     <UIContext.Provider value={{ 
       isOverlayActive, 
-      setIsOverlayActive, 
+      setIsOverlayActive: (active) => {
+        if (!active) {
+          closeOverlay();
+        }
+      },
       highlightedComponent, 
-      setHighlightedComponent,
-      overlayContent,
-      setOverlayContent
+      setHighlightedComponent: pushOverlay,
+      pushOverlay,
+      popOverlay,
+      closeOverlay,
+      overlayStack
     }}>
       {children}
     </UIContext.Provider>

@@ -6,7 +6,9 @@ import './CardListContainer.css';
 function CardListContainer({ activePowerId, activePowerAvailable, assortedCardCollection }) {
   return (
     <div className="card-list-container">
-      <ActivePower cardId={activePowerId} available={activePowerAvailable} />
+      {activePowerId && (
+        <ActivePower cardId={activePowerId} available={activePowerAvailable} />
+      )}
       {assortedCardCollection && assortedCardCollection.getCards && 
         assortedCardCollection.getCards().map(({ cardId, count }) => (
           <Card key={cardId} cardId={cardId} count={count} />

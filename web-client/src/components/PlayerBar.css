@@ -5,6 +5,11 @@
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.15);
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 10px;
+  gap: 10px;
 }
 
 .player-bar-left {
@@ -30,4 +35,16 @@
   font-size: 4vh;
   height: 4vh;
   line-height: 4vh;
+}
+
+.deck-pile {
+  height: 80%;
+  width: auto;
+  order: 1;
+}
+
+.discard-pile {
+  height: 80%;
+  width: auto;
+  order: 2;
 } 
