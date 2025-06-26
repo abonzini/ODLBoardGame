@@ -16,6 +16,33 @@ export const States = {
   EOG: 'EOG',
 };
 
+// Stat class matching C# structure
+export class Stat {
+  constructor(data = {}) {
+    this.baseValue = data.baseValue || 0;
+    this.modifier = data.modifier || 0;
+  }
+
+  get total() {
+    return this.baseValue + this.modifier;
+  }
+
+  // Helper method to create from JSON (when received from server)
+  static fromJson(json) {
+    if (!json) return new Stat();
+    
+    // Handle both single integer and full object formats
+    if (typeof json === 'number') {
+      return new Stat({ baseValue: json, modifier: 0 });
+    }
+    
+    return new Stat({
+      baseValue: json.BaseValue || 0,
+      modifier: json.Modifier || 0
+    });
+  }
+}
+
 // AssortedCardCollection class matching C# structure
 export class AssortedCardCollection {
   constructor(data = {}) {
@@ -80,10 +107,11 @@ export class Deck extends AssortedCardCollection {
 export class Player {
   constructor(data = {}) {
     // LivingEntity properties
-    this.hp = data.hp || 20;
+    this.hp = data.hp || new Stat();
     this.name = data.name || '';
     this.owner = data.owner || null;
     this.uniqueId = data.uniqueId || null;
+    this.damageTokens = data.damageTokens || 0;
     
     // Player-specific properties
     this.currentGold = data.currentGold || 5;
@@ -100,18 +128,19 @@ export class Player {
     
     const player = new Player();
     // LivingEntity properties
-    player.hp = json.hp || 20;
-    player.name = json.name || '';
-    player.owner = json.owner || null;
-    player.uniqueId = json.uniqueId || null;
+    player.hp = json.Hp ? Stat.fromJson(json.Hp) : new Stat();
+    player.name = json.Name || '';
+    player.owner = json.Owner || null;
+    player.uniqueId = json.UniqueId || null;
+    player.damageTokens = json.DamageTokens || 0;
     
     // Player-specific properties
-    player.currentGold = json.currentGold || 5;
-    player.powerAvailable = json.powerAvailable !== undefined ? json.powerAvailable : true;
-    player.hand = json.hand ? AssortedCardCollection.fromJson(json.hand) : new AssortedCardCollection();
-    player.deck = json.deck ? Deck.fromJson(json.deck) : new Deck();
-    player.discardPile = json.discardPile ? AssortedCardCollection.fromJson(json.discardPile) : new AssortedCardCollection();
-    player.activePowerId = json.activePowerId || 1;
+    player.currentGold = json.CurrentGold || 5;
+    player.powerAvailable = json.PowerAvailable !== undefined ? json.PowerAvailable : true;
+    player.hand = json.Hand ? AssortedCardCollection.fromJson(json.Hand) : new AssortedCardCollection();
+    player.deck = json.Deck ? Deck.fromJson(json.Deck) : new Deck();
+    player.discardPile = json.DiscardPile ? AssortedCardCollection.fromJson(json.DiscardPile) : new AssortedCardCollection();
+    player.activePowerId = json.ActivePowerId || 1;
     
     return player;
   }
@@ -147,12 +176,12 @@ export class GameStateStruct {
     if (!json) return new GameStateStruct();
     
     const gameState = new GameStateStruct();
-    gameState.currentState = json.currentState || States.START;
-    gameState.stateHash = json.stateHash || 0;
-    gameState.currentPlayer = json.currentPlayer || CurrentPlayer.OMNISCIENT;
-    gameState.playerStates = (json.playerStates || []).map(playerData => Player.fromJson(playerData));
-    gameState.boardState = new Board(json.boardState || {});
-    gameState.entityData = json.entityData || {};
+    gameState.currentState = json.CurrentState || States.START;
+    gameState.stateHash = json.StateHash || 0;
+    gameState.currentPlayer = json.CurrentPlayer || CurrentPlayer.OMNISCIENT;
+    gameState.playerStates = (json.PlayerStates || []).map(playerData => Player.fromJson(playerData));
+    gameState.boardState = new Board(json.BoardState || {});
+    gameState.entityData = json.EntityData || {};
     
     return gameState;
   }

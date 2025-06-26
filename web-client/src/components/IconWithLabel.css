@@ -1,0 +1,27 @@
+.icon-with-label {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.icon {
+  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 10%;
+  border: 2px solid black;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.label {
+  font-family: coolvetica, serif;
+  text-shadow: 1px 1px 0px black, -1px -1px 0px black,
+               1px -1px 0px black, -1px 1px 0px black;
+  white-space: nowrap;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+} 

@@ -1,3 +1,5 @@
+@import './constants/colors.css';
+
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -55,7 +57,7 @@ html, body, #root {
 .player-hand-bar {
   width: 100%;
   height: 20vh;
-  border: 4px solid #A86B30;
+  border: 4px solid var(--border-brown);
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.15);
   display: flex;
@@ -65,7 +67,7 @@ html, body, #root {
 .player-hand-left {
   width: 50%;
   height: 100%;
-  border-right: 4px solid #A86B30;
+  border-right: 4px solid var(--border-brown);
   box-sizing: border-box;
 }
 
