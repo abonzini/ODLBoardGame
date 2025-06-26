@@ -1,13 +1,30 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useUIContext } from '../context/UIContext';
-import { getCardImagePath } from '../utils/imagePaths';
+import { getCardImagePath, getBlueprintImagePath } from '../utils/imagePaths';
 import CardListContainer from './CardListContainer';
 import Button3D from './Button3D';
 import './HighlightOverlay.css';
 
 function HighlightOverlay() {
   const { isOverlayActive, highlightedComponent, popOverlay, closeOverlay, overlayStack } = useUIContext();
+  const [blueprintExists, setBlueprintExists] = useState(false);
   
+  // Check if blueprint image exists
+  const checkBlueprintExists = useCallback((cardId) => {
+    const img = new Image();
+    img.onload = () => setBlueprintExists(true);
+    img.onerror = () => setBlueprintExists(false);
+    img.src = getBlueprintImagePath(cardId);
+  }, []);
+
+  // Reset blueprint state when highlighted component changes
+  useEffect(() => {
+    if (highlightedComponent?.type === 'card' && highlightedComponent?.cardId) {
+      setBlueprintExists(false);
+      checkBlueprintExists(highlightedComponent.cardId);
+    }
+  }, [highlightedComponent, checkBlueprintExists]);
+
   const handleClose = useCallback(() => {
     closeOverlay();
   }, [closeOverlay]);
@@ -64,6 +81,22 @@ function HighlightOverlay() {
           height: '50vh',
           width: 'auto'
         }}>
+          {blueprintExists && (
+            <img 
+              src={getBlueprintImagePath(highlightedComponent.cardId)} 
+              alt={`Blueprint ${highlightedComponent.cardId}`} 
+              style={{ 
+                position: 'absolute',
+                right: '100%',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                height: 'auto', 
+                width: '25vw',
+                maxHeight: '50vh',
+                marginRight: '20px'
+              }}
+            />
+          )}
           <img 
             src={getCardImagePath(highlightedComponent.cardId)} 
             alt={`Card ${highlightedComponent.cardId}`} 
