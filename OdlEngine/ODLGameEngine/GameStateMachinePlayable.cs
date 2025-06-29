@@ -200,73 +200,62 @@
                             },
                             _ => playerChecking,
                         };
-                        HashSet<int> tilesToCheck;
+                        HashSet<int> possibleEntityTargets = new HashSet<int>();
                         // Check for "all" targeting
                         if (cardData.TargetOptions.Count == 0) // This means every option is valid
                         {
-                            tilesToCheck = allPlayableTiles;
-                        }
-                        else // Otherwise need to make relative to player
-                        {
-                            tilesToCheck = new HashSet<int>();
-                            foreach (int targetOption in cardData.TargetOptions)
+                            foreach (int entity in DetailedState.BoardState.GetPlacedEntities(typeToLookFor, entityOwnerCheck))
                             {
-                                Lane refLane = DetailedState.BoardState.GetLaneContainingTile(targetOption);
-                                int coordRelativeToLane = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, targetOption); // Get relative to lane
-                                int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerChecking); // Obtain the equivalent for the player who's checking
-                                tilesToCheck.Add(absoluteCoord);
+                                if (cardData.EntityType == EntityType.BUILDING) // For building, ensure the tile is available for building
+                                {
+                                    Unit constructingUnit = (Unit)DetailedState.EntityData[entity];
+                                    // Specifically for building construction, need to ensure there's no building already here...
+                                    if (DetailedState.BoardState.Tiles[constructingUnit.TileCoordinate].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
+                                    {
+                                        continue; // So if there's a building already, skip this tile asap
+                                    }
+                                }
+                                // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
+                                possibleEntityTargets.Add(entity);
                             }
                         }
-                        // This one is kinda tricky, will go tile by tile, but look for entities instead so...
-                        if (onlyRelevantTarget == -1) // Get all valid entities in this case
+                        else // Otherwise need to find all entities tile by tile
                         {
-                            foreach (int possibleTarget in tilesToCheck)
+                            foreach (int targetOption in cardData.TargetOptions) // These are tiles
                             {
-                                if (possibleTarget >= 0 && possibleTarget < GameConstants.BOARD_NUMBER_OF_TILES) // Check if valid tile
+                                if (targetOption >= 0 && targetOption < GameConstants.BOARD_NUMBER_OF_TILES) // Make sure tile is valid!
                                 {
-                                    // Check all of the units in a tile
-                                    foreach (int entity in DetailedState.BoardState.Tiles[possibleTarget].GetPlacedEntities(typeToLookFor, entityOwnerCheck))
+                                    Lane refLane = DetailedState.BoardState.GetLaneContainingTile(targetOption);
+                                    int coordRelativeToLane = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_LANE, LaneRelativeIndexType.ABSOLUTE, targetOption); // Get relative to lane
+                                    int absoluteCoord = refLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, coordRelativeToLane, playerChecking); // Obtain the equivalent for the player who's checking
+                                    // Got the coord, get the entities here
+                                    if (cardData.EntityType == EntityType.BUILDING) // For building, ensure the tile is available for building
                                     {
-                                        if (cardData.EntityType == EntityType.BUILDING)
+                                        // Specifically for building construction, need to ensure there's no building already here...
+                                        if (DetailedState.BoardState.Tiles[absoluteCoord].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
                                         {
-                                            // Specifically for building construction, need to ensure there's no building already here...
-                                            if (DetailedState.BoardState.Tiles[possibleTarget].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
-                                            {
-                                                continue; // So if there's a building already, skip this tile asap
-                                            }
+                                            continue; // So if there's a building already, skip this tile
                                         }
+                                    }
+                                    foreach (int entity in DetailedState.BoardState.Tiles[absoluteCoord].GetPlacedEntities(typeToLookFor, entityOwnerCheck))
+                                    {
                                         // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
-                                        resultingPlayContext.ValidTargets.Add(entity);
+                                        possibleEntityTargets.Add(entity);
                                     }
                                 }
                             }
                         }
-                        else if (DetailedState.EntityData.TryGetValue(onlyRelevantTarget, out LivingEntity foundEntity)) // Check if unit truly exists
+                        // Got possible target entities, if user chose one already, will need to ensure it's here
+                        if (onlyRelevantTarget != -1) // Specific entity in mind
                         {
-                            if (entityOwnerCheck == -1 || entityOwnerCheck == foundEntity.Owner) // Check to make sure it's the same ownership I'm looking for
+                            if(possibleEntityTargets.Contains(onlyRelevantTarget))
                             {
-                                if (typeToLookFor.HasFlag(foundEntity.EntityType)) // If the entity typer is also a match!
-                                {
-                                    int tileCandidate = ((PlacedEntity)foundEntity).TileCoordinate;
-                                    if (tilesToCheck.Contains(tileCandidate)) // Check if unit in a valid tile
-                                    {
-                                        bool buildingCheckPassed = true;
-                                        if (cardData.EntityType == EntityType.BUILDING)
-                                        {
-                                            // Specifically for building construction, need to ensure there's no building already here...
-                                            if (DetailedState.BoardState.Tiles[tileCandidate].GetPlacedEntities(EntityType.BUILDING, -1).Count > 0)
-                                            {
-                                                buildingCheckPassed = false; // So if there's a building already, skip this tile asap
-                                            }
-                                        }
-                                        if (buildingCheckPassed)
-                                        {
-                                            // TODO: Here we'd raise an extra playability context and ask the card if has any extra conditions for unit checking
-                                            resultingPlayContext.ValidTargets.Add(onlyRelevantTarget);
-                                        }
-                                    }
-                                }
+                                resultingPlayContext.ValidTargets = [onlyRelevantTarget]; // Ok got what I was looking for
                             }
+                        }
+                        else // Otherwise I return the valid targets
+                        {
+                            resultingPlayContext.ValidTargets = possibleEntityTargets;
                         }
                     }
                     break;
