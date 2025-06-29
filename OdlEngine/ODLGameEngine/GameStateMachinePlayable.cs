@@ -248,7 +248,7 @@
                         // Got possible target entities, if user chose one already, will need to ensure it's here
                         if (onlyRelevantTarget != -1) // Specific entity in mind
                         {
-                            if(possibleEntityTargets.Contains(onlyRelevantTarget))
+                            if (possibleEntityTargets.Contains(onlyRelevantTarget))
                             {
                                 resultingPlayContext.ValidTargets = [onlyRelevantTarget]; // Ok got what I was looking for
                             }

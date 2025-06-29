@@ -20,11 +20,11 @@ namespace CardImageGeneration
             string generatedPath = Path.Combine(destinationPath, "Generated");
             string cardsPath = Path.Combine(generatedPath, "CardImages");
             string blueprintsPath = Path.Combine(generatedPath, "BlueprintImages");
-            if(!Directory.Exists(cardsPath))
+            if (!Directory.Exists(cardsPath))
             {
                 Directory.CreateDirectory(cardsPath);
             }
-            if(!Directory.Exists(blueprintsPath))
+            if (!Directory.Exists(blueprintsPath))
             {
                 Directory.CreateDirectory(blueprintsPath);
             }

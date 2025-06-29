@@ -71,7 +71,7 @@ namespace ODLGameEngine
         /// <returns>Amount</returns>
         public int CheckAmountInCollection(int card)
         {
-            if(!_cardHistogram.TryGetValue(card, out int amount))
+            if (!_cardHistogram.TryGetValue(card, out int amount))
             {
                 amount = 0;
             }
