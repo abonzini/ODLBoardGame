@@ -1,0 +1,7 @@
+{
+  "Name": "Lane",
+  "Description": "Locations on the board. There's three lanes, the Forest, Mountains and Plains.",
+  "HasImage": false,
+  "Synonyms": [],
+  "Related": []
+}

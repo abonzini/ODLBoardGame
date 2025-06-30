@@ -129,9 +129,9 @@ This creates slow units.
 # Keyword Glossary
 
 - **Active Skill**, a skill card that is always available to be played by any player once per turn. Different tribes *may* have different **active skills**
-- **Attack**, the attack stat of a unit, affects how much damage it will deal to other units in **combat** <img src="./../CardResources/CardLayoutElements/attack.png" width="20">
+- **Attack**, the attack stat of a unit, affects how much damage it will deal to other units and the enemy player during **combat** <img src="./../CardResources/CardLayoutElements/attack.png" width="20">
 - **Base Tribe Set** a basic set of medieval-themed cards available to any **Tribe** to put in their deck
-- **Combat**, happens between units. Each unit deals **HP** damage to the other unit equal to their **attack**. Combat happens simultaneously
+- **Combat**, happens when a unit attacks another unit or player. Each unit deals **HP** damage to the other unit equal to their **attack**. Combat happens simultaneously
 - **Construction**, when a unit builds a building
 - **Enter**, an action that a unit does when it arrives to a tile when a building is located. The unit will **enter** the building. Enemy units will also deal damage to the building
 - **Forest**, a **lane** 6 **tiles** long

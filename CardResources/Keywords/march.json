@@ -1,0 +1,7 @@
+{
+  "Name": "March",
+  "Description": "Unit advances a specific number of tiles, combat may be initiated, and the unit may enter buildings in a lane.",
+  "HasImage": false,
+  "Synonyms": ["marching", "marches", "marched"],
+  "Related": []
+}

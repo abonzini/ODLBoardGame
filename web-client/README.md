@@ -8,7 +8,15 @@ This is the web client and development server for the ODL Board Game. Built with
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 
-## TODO: Image Setup
+## INSTRUCTIONS
+
+Need to first generate all resources if not existing (i.e. when you just clone this)
+Steps:
+- Open **OdlEngine** VS project, build all, ensure all tests pass
+- Generated executables should've been created
+- Run **MassImageGenerator** and **TooltipGenerator** to generate card images and tooltips to be used in the UI
+
+- (For now, but working on a way to auto copy these...)
 
 When regenerating card images or other assets, remember to copy the following folders from the parent directory into `public/images/`:
 
@@ -16,5 +24,8 @@ When regenerating card images or other assets, remember to copy the following fo
 - `card-images/` - Generated card images  
 - `card-images-raw/` - Raw card image files
 - `card-layout-elements/` - Card layout element images
+
+And into `public/tooltips/`:
+- `card-tooltips/` - Generated tooltips
 
 These copied images are used by the web client and are excluded from git via `.gitignore`.

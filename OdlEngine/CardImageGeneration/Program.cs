@@ -8,12 +8,12 @@ namespace CardImageGeneration
     {
         static void Main(string[] args)
         {
-            string? destinationPath = args.Length > 0 ? args[0] : "";
-            string? resourcesPath = args.Length > 1 ? args[1] : "";
+            string destinationPath = args.Length > 0 ? args[0] : "";
+            string resourcesPath = args.Length > 1 ? args[1] : "";
 
             if (string.IsNullOrWhiteSpace(destinationPath))
             {
-                Console.Write("Enter the destination path: ");
+                Console.Write("Enter the destination path (Parent of Generated): ");
                 destinationPath = Console.ReadLine();
             }
             // Ensure output directories exist

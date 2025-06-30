@@ -1,0 +1,7 @@
+{
+  "Name": "Construction",
+  "Description": "When a unit builds a building.",
+  "HasImage": false,
+  "Synonyms": ["constructs"],
+  "Related": []
+}

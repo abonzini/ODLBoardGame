@@ -1,0 +1,7 @@
+{
+  "Name": "Attack",
+  "Description": "Affects how much damage it will deal to other units and the enemy player during combat.",
+  "HasImage": true,
+  "Synonyms": [],
+  "Related": []
+}

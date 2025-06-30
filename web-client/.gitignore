@@ -25,3 +25,4 @@ dist-ssr
 
 # Generated image copies
 public/images/
+public/tooltips/

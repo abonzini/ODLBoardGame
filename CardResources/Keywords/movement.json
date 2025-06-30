@@ -1,0 +1,7 @@
+{
+  "Name": "Movement",
+  "Description": "Determines how many tiles will a unit addvance when marching. If it has a denominator N, it means the unit will move every N marches.",
+  "HasImage": true,
+  "Synonyms": [],
+  "Related": []
+}

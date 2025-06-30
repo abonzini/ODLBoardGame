@@ -1,0 +1,7 @@
+{
+  "Name": "HP",
+  "Description": "Health Points of a Unit, Building, or Player.",
+  "HasImage": true,
+  "Synonyms": ["health"],
+  "Related": []
+}
