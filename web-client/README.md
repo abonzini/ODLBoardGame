@@ -16,16 +16,6 @@ Steps:
 - Generated executables should've been created
 - Run **MassImageGenerator** and **TooltipGenerator** to generate card images and tooltips to be used in the UI
 
-- (For now, but working on a way to auto copy these...)
-
-When regenerating card images or other assets, remember to copy the following folders from the parent directory into `public/images/`:
-
-- `blueprint-images/` - Blueprint card images
-- `card-images/` - Generated card images  
-- `card-images-raw/` - Raw card image files
-- `card-layout-elements/` - Card layout element images
-
-And into `public/tooltips/`:
-- `card-tooltips/` - Generated tooltips
+- After this, any `npm run dev` should copy them where it corresponds
 
 These copied images are used by the web client and are excluded from git via `.gitignore`.
