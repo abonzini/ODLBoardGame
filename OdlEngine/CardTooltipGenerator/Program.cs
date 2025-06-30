@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using ODLGameEngine;
 
 namespace CardTooltipGenerator
@@ -36,7 +35,7 @@ namespace CardTooltipGenerator
             }
             // Get all possible keywords first
             List<Keyword> keywords = new List<Keyword>();
-            foreach(string keywordFile in Directory.GetFiles(keywordsPath))
+            foreach (string keywordFile in Directory.GetFiles(keywordsPath))
             {
                 string jsonText = File.ReadAllText(keywordFile);
                 keywords.Add(JsonConvert.DeserializeObject<Keyword>(jsonText));
@@ -69,11 +68,11 @@ namespace CardTooltipGenerator
             {
                 List<int> thisCardReferences = new List<int>();
                 string[] references = kvp.Value.Text.Split("#"); // Mentions are split by #
-                for(int i  = 0; i < references.Length; i++)
+                for (int i = 0; i < references.Length; i++)
                 {
                     if (i % 2 == 0) continue; // Need the odd numbers (values between #s)
                     string reference = references[i].ToLower();
-                    if(reference != kvp.Value.Name.ToLower()) // Can't reference itself!
+                    if (reference != kvp.Value.Name.ToLower()) // Can't reference itself!
                     {
                         thisCardReferences.Add(allCardsByName[reference].Id);
                     }
@@ -91,7 +90,7 @@ namespace CardTooltipGenerator
                     if (i % 2 == 0) continue; // Need the odd numbers (values between #s)
                     string keyword = potentialKeywords[i].ToLower();
                     keyword = keyword.Trim();
-                    switch(keyword.Last()) // Some trailing chars need to be dealt with
+                    switch (keyword.Last()) // Some trailing chars need to be dealt with
                     {
                         case '.':
                         case ',':
@@ -102,12 +101,12 @@ namespace CardTooltipGenerator
                         default:
                             break;
                     }
-                    foreach(Keyword kword in keywords) // Find the corresponding keyword
+                    foreach (Keyword kword in keywords) // Find the corresponding keyword
                     {
-                        if(kword.Name.ToLower() == keyword || kword.Synonyms.Contains(keyword))
+                        if (kword.Name.ToLower() == keyword || kword.Synonyms.Contains(keyword))
                         {
                             // Found it! Add if not there before
-                            if(!thisCardKeywords.Contains(kword.Name.ToLower()))
+                            if (!thisCardKeywords.Contains(kword.Name.ToLower()))
                             {
                                 thisCardKeywords.Add(kword.Name.ToLower());
                             }
@@ -124,11 +123,11 @@ namespace CardTooltipGenerator
                 tooltip.HasBlueprint = (kvp.Value.EntityType == EntityType.BUILDING);
                 // Find cards
                 tooltip.RelatedCards = [.. interCardReferences[kvp.Key]]; // Start by copying list
-                for(int i = 0; i < tooltip.RelatedCards.Count;i++) // Iterate through these to find recursively (foundRefs.Count may increase!)
+                for (int i = 0; i < tooltip.RelatedCards.Count; i++) // Iterate through these to find recursively (foundRefs.Count may increase!)
                 {
-                    foreach(int extraRef in interCardReferences[tooltip.RelatedCards[i]]) // Get references of next ref
+                    foreach (int extraRef in interCardReferences[tooltip.RelatedCards[i]]) // Get references of next ref
                     {
-                        if ((kvp.Key!= extraRef) && !tooltip.RelatedCards.Contains(extraRef))
+                        if ((kvp.Key != extraRef) && !tooltip.RelatedCards.Contains(extraRef))
                         {
                             tooltip.RelatedCards.Add(extraRef); // Add to end only if not already there and it's not myself!
                         }
@@ -136,11 +135,11 @@ namespace CardTooltipGenerator
                 }
                 // Finally, find keywords
                 tooltip.Keywords = [.. keywordReference[kvp.Key]]; // Copy this card's keywords
-                foreach(int card in tooltip.RelatedCards) // Also the keywords for related ones
+                foreach (int card in tooltip.RelatedCards) // Also the keywords for related ones
                 {
-                    foreach(string keyword in keywordReference[card])
+                    foreach (string keyword in keywordReference[card])
                     {
-                        if(!tooltip.Keywords.Contains(keyword))
+                        if (!tooltip.Keywords.Contains(keyword))
                         {
                             tooltip.Keywords.Add(keyword);
                         }
