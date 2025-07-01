@@ -17,13 +17,11 @@ namespace EngineTests
             {
                 Name = "TestPlayer1",
                 PlayerClass = PlayerTribe.BASE,
-                InitialDecklist = [],
             };
             PlayerInitialData playerInit2 = new PlayerInitialData()
             {
                 Name = "TestPlayer2",
                 PlayerClass = PlayerTribe.BASE,
-                InitialDecklist = [],
             };
             sm.StartNewGame(playerInit1, playerInit2);
             return sm.DetailedState;

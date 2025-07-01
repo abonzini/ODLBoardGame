@@ -43,6 +43,24 @@ namespace ODLGameEngine
             }
         }
         /// <summary>
+        /// Copies contents in deck from an iteration of a card collection
+        /// </summary>
+        /// <param name="cardCollection">The assorted collection to copy</param>
+        public void InitializeDeck(AssortedCardCollection cardCollection)
+        {
+            _orderedCards.Clear();
+            ResetHistogram();
+            // Now I add string to the deck
+            foreach (KeyValuePair<int, int> cardCount in cardCollection.GetCards())
+            {
+                for (int i = 0; i < cardCount.Value; i++) // Add N cards
+                {
+                    _orderedCards.Add(cardCount.Key);
+                    InsertToCollection(cardCount.Key);
+                }
+            }
+        }
+        /// <summary>
         /// Removes card in specific location of deck (default last)
         /// </summary>
         /// <param name="position">Posiiton to remove (default last)</param>
@@ -112,10 +130,11 @@ namespace ODLGameEngine
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
+            hash.Add(GetSize()); // Note: Although size is included in the next part, we need to serialize deck size for hypotetical scenarios where deck shrinks but not actually drawing cards (adds wildcards to hand for the minmax)
             foreach (int card in _orderedCards)
             {
                 hash.Add(card);
-            } // No need to calculate histogram, it's correlated
+            }
             return hash.ToHashCode();
         }
         public override string ToString()

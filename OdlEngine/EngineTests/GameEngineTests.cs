@@ -486,7 +486,7 @@ namespace EngineTests
             };
             for (int i = 1; i <= GameConstants.DECK_SIZE; i++)
             {
-                ret.InitialDecklist.Add(i);
+                ret.InitialDecklist.InsertToCollection(i);
             }
             return ret;
         }

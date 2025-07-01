@@ -31,18 +31,19 @@
         }
         readonly List<StepResult> _stepHistory = new List<StepResult>();
         StepResult _currentStep = null;
-
         /// <summary>
-        /// Initializes an empty game state, and will create a random seed unless overwritten later
+        /// Initializes a game state, can define a pre-existing cardDb and rng seed if needed
         /// </summary>
-        public GameStateMachine()
+        /// <param name="cardDb"></param>
+        /// <param name="seed"></param>
+        public GameStateMachine(CardFinder cardDb = null, int seed = 0)
         {
-            STATE_InitInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
-        }
-        public GameStateMachine(CardFinder cardDb)
-        {
+            if (seed == 0)
+            {
+                seed = (int)DateTime.Now.Ticks;
+            }
             _cardDb = cardDb;
-            STATE_InitInternal(new GameStateStruct(), (int)DateTime.Now.Ticks);
+            STATE_InitInternal(new GameStateStruct(), seed);
         }
         /// <summary>
         /// Initializes internal stuff
@@ -204,7 +205,7 @@
         void STATE_LoadInitialPlayerData(int player, PlayerInitialData playerData)
         {
             // Get all the player's card info
-            Player playerInstance = (Player)_cardDb.GetCard((int)playerData.PlayerClass);
+            Player playerInstance = (Player)CardDb.GetCard((int)playerData.PlayerClass);
             playerInstance = (Player)playerInstance.Clone();
             // Fill remaining
             playerInstance.Name = playerData.Name;

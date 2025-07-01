@@ -16,6 +16,6 @@
         /// <summary>
         /// The decks the player is starting with
         /// </summary>
-        public List<int> InitialDecklist { get; set; } = new List<int>();
+        public AssortedCardCollection InitialDecklist { get; set; } = new AssortedCardCollection();
     }
 }

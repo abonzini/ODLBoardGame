@@ -19,8 +19,8 @@
         // --------------------------------------------------------------------------------------
         // ------------------------------  PLAY INFO REQUESTS -----------------------------------
         // --------------------------------------------------------------------------------------
-        static readonly HashSet<int> allPlayableLanes = new HashSet<int>(Enumerable.Range(0, GameConstants.BOARD_NUMBER_OF_LANES));
-        static readonly HashSet<int> allPlayableTiles = new HashSet<int>(Enumerable.Range(0, GameConstants.BOARD_NUMBER_OF_TILES));
+        static readonly HashSet<int> allPlayableLanes = [.. Enumerable.Range(0, GameConstants.BOARD_NUMBER_OF_LANES)];
+        static readonly HashSet<int> allPlayableTiles = [.. Enumerable.Range(0, GameConstants.BOARD_NUMBER_OF_TILES)];
         // Public (access points)
         /// <summary>
         /// Checks wether a card is playable and the valid targets if it is. Also used to verify before playing

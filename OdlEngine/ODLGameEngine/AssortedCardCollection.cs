@@ -77,6 +77,17 @@ namespace ODLGameEngine
             }
             return amount;
         }
+        /// <summary>
+        /// Yield returns elements in the histogram one by one, i.e. exposes the histogram but only for checking
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<KeyValuePair<int, int>> GetCards()
+        {
+            foreach (KeyValuePair<int, int> nextCard in _cardHistogram)
+            {
+                yield return nextCard;
+            }
+        }
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
