@@ -457,7 +457,9 @@ namespace CardGenerationHelper
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             g.PageUnit = GraphicsUnit.Pixel;
             Rectangle bounds = new Rectangle(0, 0, width, height);
-            DrawRoundedRectangle(g, bounds, DrawConstants.CardRoundedPercentage, Color.Black, DrawConstants.CardBorder, new SolidFillHelper() { FillColor = Color.LightGray });
+            string cardBackgroundPath = Path.Combine(resourcesPath, "CardLayoutElements", cardInfo.Tribe.ToString().ToLower() + ".png");
+            FillHelper brush = GetImageBrushOrColor(bounds, cardBackgroundPath, Color.LightGray);
+            DrawRoundedRectangle(g, bounds, DrawConstants.CardRoundedPercentage, Color.Black, DrawConstants.CardBorder, brush);
 
             // Then, all non-invalid cards have picture, cost, name, textbox, rarity, etc
             if (cardInfo.EntityType != EntityType.NONE)
@@ -482,7 +484,6 @@ namespace CardGenerationHelper
                 int n = DrawConstants.NumberOfStats;
                 float statWidth = (dataBoxWidth - ((n - 1) * verticalMargin)) / (n + 1);
                 float imageBoxSize = dataBoxWidth - statWidth;
-                FillHelper brush;
                 string imagePath = Path.Combine(resourcesPath, "CardImagesRaw", cardInfo.Id.ToString() + ".png");
                 Rectangle imageBox = new Rectangle((int)currentDrawPointerX, (int)currentDrawPointerY, (int)imageBoxSize, (int)imageBoxSize);
                 brush = GetImageBrushOrColor(imageBox, imagePath, Color.White);
