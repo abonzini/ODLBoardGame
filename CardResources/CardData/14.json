@@ -12,6 +12,7 @@
   ],
   "Id": 14,
   "Cost": 2,
+  "Rarity": 3,
   "Interactions": {
     "UNIT_CONSTRUCTS_BUILDING": [
       {

@@ -12,6 +12,7 @@
   ],
   "Id": 12,
   "Cost": 2,
+  "Rarity": 2,
   "Interactions": {
     "PRE_DAMAGE": [
       {

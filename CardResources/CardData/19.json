@@ -5,6 +5,7 @@
   "TargetOptions": [],
   "Id": 19,
   "Cost": 3,
+  "Rarity": 2,
   "Interactions": {
     "WHEN_PLAYED": [
       {

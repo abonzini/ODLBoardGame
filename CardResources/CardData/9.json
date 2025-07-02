@@ -12,6 +12,7 @@
   ],
   "Id": 9,
   "Cost": 2,
+  "Rarity": 1,
   "Interactions": {
     "POST_DAMAGE": [
       {

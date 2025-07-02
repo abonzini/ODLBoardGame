@@ -79,6 +79,8 @@ namespace ODLGameEngine
         [JsonProperty]
         public int Cost { get; set; } = 0;
         [JsonProperty]
+        public int Rarity { get; set; } = 0;
+        [JsonProperty]
         public Dictionary<InteractionType, List<Effect>> Interactions { get; set; } = null; // Non hashed, also when cloned, it links to the same reference and doesn't duplicate this
 
         public virtual object Clone()

@@ -15,6 +15,7 @@
   ],
   "Id": 6,
   "Cost": 2,
+  "Rarity": 2,
   "Interactions": {
     "UNIT_ENTERS_BUILDING": [
       {

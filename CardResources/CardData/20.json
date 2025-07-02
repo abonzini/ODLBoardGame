@@ -5,6 +5,7 @@
   ],
   "Id": 20,
   "Cost": 4,
+  "Rarity": 3,
   "Interactions": {
     "WHEN_PLAYED": [
       {

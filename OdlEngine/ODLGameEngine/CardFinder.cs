@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Concurrent;
 
 namespace ODLGameEngine
 {
@@ -8,7 +9,7 @@ namespace ODLGameEngine
     /// </summary>
     public class CardFinder
     {
-        protected Dictionary<int, EntityBase> cardData = new Dictionary<int, EntityBase>();
+        protected ConcurrentDictionary<int, EntityBase> cardData = new ConcurrentDictionary<int, EntityBase>();
         protected readonly string _baseDir;
         public CardFinder()
         {
@@ -20,14 +21,15 @@ namespace ODLGameEngine
         }
         public void InjectCard(int id, EntityBase entity)
         {
-            cardData[id] = entity;
+            cardData.TryAdd(id, entity);
         }
         public EntityBase GetCard(int id)
         {
-            if (cardData.TryGetValue(id, out EntityBase cardEntity)) // Need to only parse data I yet didn't parse
-            {
-                return cardEntity;
-            }
+            return cardData.GetOrAdd(id, FindCard);
+        }
+        private EntityBase FindCard(int id)
+        {
+            EntityBase cardEntity;
             // Otherwise fetch the card, assuming I'm in the correct folder
             string cardJsonFile = Path.Combine(_baseDir, $"{id}.json");
             if (Path.Exists(cardJsonFile))

@@ -205,6 +205,7 @@ namespace CardGenerationHelper
         private void RarityUpDown_ValueChanged(object sender, EventArgs e)
         {
             _currentIllustrationInfo.Rarity = Convert.ToInt32(RarityUpDown.Value);
+            _currentEntity.Rarity = Convert.ToInt32(RarityUpDown.Value);
             RefreshDrawTimer();
         }
 
