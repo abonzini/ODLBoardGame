@@ -19,7 +19,10 @@
 
 .highlighted-component {
   position: absolute;
-  /* Will be positioned based on the highlighted component */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 .overlay-content {

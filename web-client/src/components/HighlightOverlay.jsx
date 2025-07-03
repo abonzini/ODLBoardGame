@@ -1,29 +1,16 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { useUIContext } from '../context/UIContext';
 import { getCardImagePath, getBlueprintImagePath } from '../utils/imagePaths';
+import { getCachedCardTooltip } from '../utils/cardDataCache.js';
 import CardListContainer from './CardListContainer';
 import Button3D from './Button3D';
+import KeywordList from './KeywordList';
 import './HighlightOverlay.css';
 
 function HighlightOverlay() {
   const { isOverlayActive, highlightedComponent, popOverlay, closeOverlay, overlayStack } = useUIContext();
-  const [blueprintExists, setBlueprintExists] = useState(false);
   
-  // Check if blueprint image exists
-  const checkBlueprintExists = useCallback((cardId) => {
-    const img = new Image();
-    img.onload = () => setBlueprintExists(true);
-    img.onerror = () => setBlueprintExists(false);
-    img.src = getBlueprintImagePath(cardId);
-  }, []);
-
-  // Reset blueprint state when highlighted component changes
-  useEffect(() => {
-    if (highlightedComponent?.type === 'card' && highlightedComponent?.cardId) {
-      setBlueprintExists(false);
-      checkBlueprintExists(highlightedComponent.cardId);
-    }
-  }, [highlightedComponent, checkBlueprintExists]);
+  const [cardTooltip, setCardTooltip] = useState(null);
 
   const handleClose = useCallback(() => {
     closeOverlay();
@@ -49,6 +36,15 @@ function HighlightOverlay() {
     }
   }, [isOverlayActive, handleBack]);
   
+  // Fetch card tooltip when in card mode and cardId changes
+  useEffect(() => {
+    if (highlightedComponent?.type === 'card' && highlightedComponent?.cardId) {
+      getCachedCardTooltip(highlightedComponent.cardId).then(setCardTooltip);
+    } else {
+      setCardTooltip(null);
+    }
+  }, [highlightedComponent]);
+  
   if (!isOverlayActive) {
     return null;
   }
@@ -73,54 +69,97 @@ function HighlightOverlay() {
     }
 
     if (highlightedComponent.type === 'card') {
+      // Prepare related cards for CardListContainer
+      const relatedCards = cardTooltip?.relatedCards?.map(cardId => ({ cardId, count: 1 })) || [];
+      const assortedCardCollection = {
+        getCards: () => relatedCards
+      };
       return (
-        <div className="highlighted-component" style={{ 
-          top: '50%', 
-          left: '50%', 
-          transform: 'translate(-50%, -50%)',
-          height: '50vh',
-          width: 'auto'
-        }}>
-          {blueprintExists && (
-            <img 
-              src={getBlueprintImagePath(highlightedComponent.cardId)} 
-              alt={`Blueprint ${highlightedComponent.cardId}`} 
-              style={{ 
+        <div className="highlighted-component">
+          {cardTooltip?.hasBlueprint && (
+            <img
+              src={getBlueprintImagePath(highlightedComponent.cardId)}
+              alt={`Blueprint ${highlightedComponent.cardId}`}
+              style={{
                 position: 'absolute',
-                right: '100%',
                 top: '50%',
-                transform: 'translateY(-50%)',
-                height: 'auto', 
-                width: '25vw',
-                maxHeight: '50vh',
-                marginRight: '20px'
+                left: '25%',
+                transform: 'translate(-50%, -50%)',
+                height: '40vh',
+                width: 'auto',
+                pointerEvents: 'none'
               }}
             />
           )}
-          <img 
-            src={getCardImagePath(highlightedComponent.cardId)} 
-            alt={`Card ${highlightedComponent.cardId}`} 
-            style={{ height: '100%', width: 'auto' }}
-          />
+          {cardTooltip?.keywords && cardTooltip.keywords.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: '75%',
+              transform: 'translate(-50%, 0)',
+              height: '75vh',
+              width: '25vw',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'flex-start'
+            }}>
+              <KeywordList keywordNames={cardTooltip.keywords} />
+            </div>
+          )}
+          <div style={{ 
+            position: 'absolute',
+            top: '50%', 
+            left: '50%', 
+            transform: 'translate(-50%, -50%)',
+            height: '50vh',
+            width: 'auto'
+          }}>
+            <img 
+              src={getCardImagePath(highlightedComponent.cardId)} 
+              alt={`Card ${highlightedComponent.cardId}`} 
+              style={{ height: '100%', width: 'auto' }}
+            />
+          </div>
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '25vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'none'
+          }}>
+            <CardListContainer
+              activePowerId={null}
+              activePowerAvailable={false}
+              assortedCardCollection={assortedCardCollection}
+              centered={true}
+            />
+          </div>
         </div>
       );
     }
 
     if (highlightedComponent.type === 'cardList') {
       return (
-        <div className="highlighted-component" style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100vw',
-          height: '50vh'
-        }}>
-          <CardListContainer 
-            activePowerId={null}
-            activePowerAvailable={false}
-            assortedCardCollection={highlightedComponent.assortedCardCollection}
-          />
+        <div className="highlighted-component">
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '100vw',
+            height: '50vh'
+          }}>
+            <CardListContainer 
+              activePowerId={null}
+              activePowerAvailable={false}
+              assortedCardCollection={highlightedComponent.assortedCardCollection}
+              centered={true}
+            />
+          </div>
         </div>
       );
     }
@@ -131,6 +170,7 @@ function HighlightOverlay() {
   return (
     <div className="highlight-overlay" onContextMenu={handleRightClick}>
       <div className="overlay-background"></div>
+      {renderHighlightedComponent()}
       <div className="close-button">
         <Button3D 
           text={buttonText}
@@ -141,7 +181,6 @@ function HighlightOverlay() {
           fontSize="24px"
         />
       </div>
-      {renderHighlightedComponent()}
     </div>
   );
 }

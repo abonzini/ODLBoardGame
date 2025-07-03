@@ -3,9 +3,9 @@ import ActivePower from './ActivePower';
 import Card from './Card';
 import './CardListContainer.css';
 
-function CardListContainer({ activePowerId, activePowerAvailable, assortedCardCollection }) {
+function CardListContainer({ activePowerId, activePowerAvailable, assortedCardCollection, centered = false }) {
   return (
-    <div className="card-list-container">
+    <div className={`card-list-container${centered ? ' centered' : ''}`}>
       {activePowerId && (
         <ActivePower cardId={activePowerId} available={activePowerAvailable} />
       )}

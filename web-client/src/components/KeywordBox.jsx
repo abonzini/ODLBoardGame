@@ -2,7 +2,7 @@ import React from 'react';
 import { getLayoutElementPath } from '../utils/imagePaths.js';
 import './KeywordBox.css';
 
-const KeywordBox = ({ keyword, style }) => {
+const KeywordBox = ({ keyword, style, imageHeight = 40 }) => {
   if (!keyword) {
     return null;
   }
@@ -14,6 +14,7 @@ const KeywordBox = ({ keyword, style }) => {
           src={getLayoutElementPath(keyword.name.toLowerCase())}
           alt={keyword.name}
           className="keyword-image"
+          style={{ height: imageHeight }}
         />
       )}
       <div className="keyword-content">
