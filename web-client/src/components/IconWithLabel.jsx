@@ -9,7 +9,7 @@ function IconWithLabel({ elementName, label, fontSize, textColor = 'white' }) {
         className="icon"
         style={{ backgroundImage: elementName ? `url(${getLayoutElementPath(elementName)})` : 'none' }}
       >
-        {label && (
+        {label != null && (
           <div 
             className="label"
             style={{ 

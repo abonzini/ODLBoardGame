@@ -10,6 +10,8 @@ export const defaultGameState = new GameStateStruct({
       currentGold: 8,
       hp: new Stat({ baseValue: 20, modifier: 0 }),
       damageTokens: 0,
+      owner: 0,
+      uniqueId: 0,
       hand: new AssortedCardCollection({
         _cardHistogram: new Map([[2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10], [11, 11]]), // 2 copies of card 1, 1 copy of card 3, 3 copies of card 5
         _size: 6
@@ -30,6 +32,8 @@ export const defaultGameState = new GameStateStruct({
       currentGold: 5,
       hp: new Stat({ baseValue: 20 }),
       damageTokens: 0,
+      owner: 1,
+      uniqueId: 1,
       hand: new AssortedCardCollection({
         _cardHistogram: new Map([[2, 1], [4, 2]]), // 1 copy of card 2, 2 copies of card 4
         _size: 3

@@ -20,14 +20,14 @@ function PlayerHandBar() {
       <div className="player-hand-bar">
         <div className="player-hand-left">
           <CardListContainer 
-            activePowerId={player1?.activePowerId || 1}
+            activePowerId={player1?.activePowerId ?? 1}
             activePowerAvailable={player1?.powerAvailable || false}
             assortedCardCollection={player1?.hand || { _cardHistogram: new Map() }}
           />
         </div>
         <div className="player-hand-right">
           <CardListContainer 
-            activePowerId={player2?.activePowerId || 1}
+            activePowerId={player2?.activePowerId ?? 1}
             activePowerAvailable={player2?.powerAvailable || false}
             assortedCardCollection={player2?.hand || { _cardHistogram: new Map() }}
           />
@@ -45,16 +45,11 @@ function PlayerHandBar() {
     const playerIndex = viewerIdentity === CurrentPlayer.PLAYER_1 ? 0 : 1;
     const currentPlayer = gameState?.playerStates?.[playerIndex];
     
-    console.log('PlayerHandBar - currentPlayer:', currentPlayer);
-    console.log('PlayerHandBar - currentPlayer?.hand:', currentPlayer?.hand);
-    console.log('PlayerHandBar - hand type:', typeof currentPlayer?.hand);
-    console.log('PlayerHandBar - hand getCards:', currentPlayer?.hand?.getCards);
-    
     return (
       <div className="player-hand-bar">
         <div className="player-hand-left-regular">
           <CardListContainer 
-            activePowerId={currentPlayer?.activePowerId || 1}
+            activePowerId={currentPlayer?.activePowerId ?? 1}
             activePowerAvailable={currentPlayer?.powerAvailable || false}
             assortedCardCollection={currentPlayer?.hand || { _cardHistogram: new Map() }}
           />
@@ -64,7 +59,6 @@ function PlayerHandBar() {
             text="End Turn"
             onClick={() => {
               // End turn logic will go here
-              console.log('End turn clicked');
             }}
             color={isViewerTurn ? '#119C00' : '#666'}
             width="60%"

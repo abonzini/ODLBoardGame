@@ -8,7 +8,7 @@ function PileOfCards({ assortedCardCollection, show = false }) {
   const { pushOverlay } = useUIContext();
   
   // Calculate collection size
-  const collectionSize = assortedCardCollection?._size || 0;
+  const collectionSize = assortedCardCollection?._size ?? 0;
   
   // Get the first card ID from the map for the image
   const getFirstCardId = () => {
@@ -77,7 +77,7 @@ function PileOfCards({ assortedCardCollection, show = false }) {
           className="cardtop" 
           style={getCardtopStyle()}
         >
-          {show && firstCardId && (
+          {show && firstCardId != null && (
             <img 
               src={getCardImagePath(firstCardId)} 
               alt={`Card ${firstCardId}`}

@@ -6,7 +6,7 @@ import './CardListContainer.css';
 function CardListContainer({ activePowerId, activePowerAvailable, assortedCardCollection, centered = false }) {
   return (
     <div className={`card-list-container${centered ? ' centered' : ''}`}>
-      {activePowerId && (
+      {activePowerId != null && (
         <ActivePower cardId={activePowerId} available={activePowerAvailable} />
       )}
       {assortedCardCollection && assortedCardCollection.getCards && 

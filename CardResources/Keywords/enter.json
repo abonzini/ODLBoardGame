@@ -1,7 +1,7 @@
 {
-  "Name": "Entering",
+  "Name": "Enter",
   "Description": "Units enter a building when they enter the tile containing the building.",
   "HasImage": false,
-  "Synonyms": ["enters", "enter", "entered"],
+  "Synonyms": ["enters", "entering", "entered"],
   "Related": []
 }
