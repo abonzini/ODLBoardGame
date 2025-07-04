@@ -15,15 +15,17 @@ namespace ODLGameEngine
         /// Adds card to hand
         /// </summary>
         /// <param name="card">Which card to add</param>
-        public void InsertToCollection(int card)
+        /// <param name="howMany">Optional parameter, how many will be added</param>
+        public void InsertToCollection(int card, int howMany = 1)
         {
+            if (howMany <= 0) return;
             if (_cardHistogram.TryGetValue(card, out int value))
             {
-                _cardHistogram[card] = ++value;
+                _cardHistogram[card] += howMany;
             }
             else
             {
-                _cardHistogram.Add(card, 1);
+                _cardHistogram.Add(card, howMany);
             }
             _size++;
         }
@@ -87,6 +89,16 @@ namespace ODLGameEngine
             {
                 yield return nextCard;
             }
+        }
+        /// <summary>
+        /// VERY DANGEROUS! This alters the deck size without actually changing the real contents of the deck
+        /// Only to be used when no cards whatsoever will be drawn from deck
+        /// Otherwise there may be a big disaster
+        /// </summary>
+        /// <param name="amount">How much to change the deck size by (i.e. +- 1 to add/remove cards)</param>
+        public void HYPOTHETICAL_ChangeCount(int amount)
+        {
+            _size += amount;
         }
         public override int GetHashCode()
         {

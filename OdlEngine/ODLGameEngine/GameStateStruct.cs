@@ -36,10 +36,6 @@ namespace ODLGameEngine
         /// </summary>
         ACTION_PHASE,
         /// <summary>
-        /// End of turn activities
-        /// </summary>
-        EOT,
-        /// <summary>
         /// If end of game is triggered
         /// </summary>
         EOG

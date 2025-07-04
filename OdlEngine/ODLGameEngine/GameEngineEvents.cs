@@ -9,7 +9,11 @@
         /// <summary>
         /// First state, can't rewind
         /// </summary>
-        FIRST_STATE
+        FIRST_STATE,
+        /// <summary>
+        /// Hypothetical state, also can't rewind, changes some behaviours
+        /// </summary>
+        HYPOTHETICAL
     }
     public class StepResult
     {
@@ -59,7 +63,9 @@
         STAT_BASE_TRANSITION,
         STAT_MODIFIER_TRANSITION,
         TRIGGER_SUBSCRIBE,
-        TRIGGER_UNSUBSCRIBE
+        TRIGGER_UNSUBSCRIBE,
+        HYPOTHETICAL_DECK_CHANGE_AMOUNT,
+        HYPOTHETICAL_REVEAL_WILDCARD
     }
 
     public class GameEngineEvent

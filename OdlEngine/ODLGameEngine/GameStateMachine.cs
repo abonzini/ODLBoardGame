@@ -296,10 +296,19 @@
             {
                 if (player.Deck.DeckSize > 0)
                 {
-                    int card = player.Deck.PeepAt(); // Found card in deck
-                    ENGINE_DeckDrawSingle(player); // Removes from deck
+                    int cardDrawn;
+                    if (_hypotheticalMode)
+                    {
+                        cardDrawn = 0; // Adds wildcard instead
+                        ENGINE_HYPOTHETICAL_AlterDeckAmount(player, -1); // "Removes" one card from deck
+                    }
+                    else
+                    {
+                        cardDrawn = player.Deck.PeepAt(); // Found card in deck
+                        ENGINE_DeckDrawSingle(player); // Removes from deck
+                    }
                     // Nothing happens for now "when drawn"
-                    ENGINE_AddCardToHand(player, card); // Therefore adds to hand
+                    ENGINE_AddCardToHand(player, cardDrawn); // Therefore adds to hand
                     cardsDrawn++;
                 }
             }
@@ -312,7 +321,7 @@
         /// </summary>
         public void UndoPreviousStep()
         {
-            if (_currentStep == null || _currentStep.tag == Tag.FIRST_STATE) { return; } // Nothing to do here
+            if (_currentStep == null || _currentStep.tag != Tag.NO_TAG) { return; } // Nothing to do here
             if (_currentStep.events.Count != 0) { throw new Exception("Standing in a non-empty current event!"); } // This should never happen
 
             _currentStep = _stepHistory.Last();

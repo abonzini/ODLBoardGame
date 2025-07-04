@@ -133,6 +133,17 @@
                         UnsubscribeTrigger(auxTriggerEvent.entity, auxTriggerEvent.value);
                     }
                     break;
+                case EventType.HYPOTHETICAL_DECK_CHANGE_AMOUNT:
+                    auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
+                    auxInt1 = ((EntityValueEvent<Player, int>)e).value;
+                    auxPlayerState.Deck.HYPOTHETICAL_ChangeCount(auxInt1);
+                    break;
+                case EventType.HYPOTHETICAL_REVEAL_WILDCARD:
+                    auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
+                    auxInt1 = ((EntityValueEvent<Player, int>)e).value;
+                    auxPlayerState.Hand.RemoveFromCollection(0);
+                    auxPlayerState.Hand.InsertToCollection(auxInt1);
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -246,6 +257,17 @@
                         EntityValueEvent<BoardElement, TrigInfoHelper> auxTriggerEvent = (EntityValueEvent<BoardElement, TrigInfoHelper>)e;
                         SubscribeTrigger(auxTriggerEvent.entity, auxTriggerEvent.value);
                     }
+                    break;
+                case EventType.HYPOTHETICAL_DECK_CHANGE_AMOUNT:
+                    auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
+                    auxInt1 = ((EntityValueEvent<Player, int>)e).value;
+                    auxPlayerState.Deck.HYPOTHETICAL_ChangeCount(-auxInt1);
+                    break;
+                case EventType.HYPOTHETICAL_REVEAL_WILDCARD:
+                    auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
+                    auxInt1 = ((EntityValueEvent<Player, int>)e).value;
+                    auxPlayerState.Hand.RemoveFromCollection(auxInt1);
+                    auxPlayerState.Hand.InsertToCollection(0);
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -623,6 +645,36 @@
                     eventType = EventType.TRIGGER_UNSUBSCRIBE,
                     entity = boardElement,
                     value = trigInfoHelper
+                });
+        }
+        /// <summary>
+        /// Alters the player's deck count by a specific amount
+        /// </summary>
+        /// <param name="player">Deck owner</param>
+        /// <param name="delta">How much to change deck by</param>
+        void ENGINE_HYPOTHETICAL_AlterDeckAmount(Player player, int delta)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityValueEvent<Player, int>()
+                {
+                    eventType = EventType.HYPOTHETICAL_DECK_CHANGE_AMOUNT,
+                    entity = player,
+                    value = delta
+                });
+        }
+        /// <summary>
+        /// A player reveals a wildcard
+        /// </summary>
+        /// <param name="player">Player to reveal wildcard</param>
+        /// <param name="card">Card to reveal</param>
+        void ENGINE_HYPOTHETICAL_RevealWildcard(Player player, int card)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityValueEvent<Player, int>()
+                {
+                    eventType = EventType.HYPOTHETICAL_REVEAL_WILDCARD,
+                    entity = player,
+                    value = card
                 });
         }
     }

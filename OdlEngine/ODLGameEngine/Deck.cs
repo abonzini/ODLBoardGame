@@ -130,7 +130,7 @@ namespace ODLGameEngine
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
-            hash.Add(GetSize()); // Note: Although size is included in the next part, we need to serialize deck size for hypotetical scenarios where deck shrinks but not actually drawing cards (adds wildcards to hand for the minmax)
+            hash.Add(GetSize()); // Note: Although size is included in the next part, we need to serialize deck size for hypothetical scenarios where deck shrinks but not actually drawing cards (adds wildcards to hand for the minmax)
             foreach (int card in _orderedCards)
             {
                 hash.Add(card);
