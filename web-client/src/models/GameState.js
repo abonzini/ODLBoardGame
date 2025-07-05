@@ -153,13 +153,6 @@ export class Board {
   }
 }
 
-export class LivingEntity {
-  constructor(data = {}) {
-    // Add entity properties as needed
-    Object.assign(this, data);
-  }
-}
-
 export class PlacedEntity {
   constructor(data = {}) {
     // LivingEntity properties

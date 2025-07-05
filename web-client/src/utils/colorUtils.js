@@ -13,4 +13,15 @@ export const getHpTextColor = (entity) => {
     return 'var(--text-buff)';
   }
   return 'var(--text-white)';
+};
+
+export const getStatColor = (stat) => {
+  if (stat?.modifier === 0) {
+    return 'var(--text-white)';
+  } else if (stat?.modifier > 0) {
+    return 'var(--text-buff)';
+  } else if (stat?.modifier < 0) {
+    return 'var(--text-damage)';
+  }
+  return 'var(--text-white)';
 }; 

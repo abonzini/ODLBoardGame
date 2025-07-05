@@ -2,7 +2,7 @@
 
 .living-entity .right {
   width: 100%; /* Takes full width of parent */
-  height: auto; /* Auto height */
+  height: 100%; /* Takes full height of parent */
   aspect-ratio: 4/3; /* 4 wide, 3 high */
   display: grid;
   grid-template-areas: 
@@ -15,7 +15,7 @@
 
 .living-entity .left {
   width: 100%; /* Takes full width of parent */
-  height: auto; /* Auto height */
+  height: 100%; /* Takes full height of parent */
   aspect-ratio: 4/3; /* 4 wide, 3 high */
   display: grid;
   grid-template-areas: 
@@ -27,8 +27,8 @@
 }
 
 .living-entity .bottom {
+    width: 100%; /* Takes full width of parent */
     height: 100%; /* Takes full height of parent */
-    width: auto; /* Auto width */
     aspect-ratio: 3/4; /* 3 wide, 4 high */
     display: grid;
     grid-template-areas: 
@@ -46,7 +46,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2px;
 }
 
 .attack-area {
@@ -54,7 +53,9 @@
   min-height: 0;
   overflow: hidden;
   grid-area: attack;
-  border: 1px solid #F00;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .movement-area {
@@ -62,7 +63,9 @@
   min-height: 0;
   overflow: hidden;
   grid-area: movement;
-  border: 1px solid #F00;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .mainbox-area {
@@ -70,5 +73,10 @@
   min-height: 0;
   overflow: hidden;
   grid-area: mainbox;
-  border: 1px solid #F00;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid black;
+  border-radius: 15%;
 }
