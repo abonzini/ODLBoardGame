@@ -2,7 +2,7 @@ import React from 'react';
 import { getLayoutElementPath } from '../utils/imagePaths';
 import './IconWithLabel.css';
 
-function IconWithLabel({ elementName, label, fontSize, textColor = 'white' }) {
+function IconWithLabel({ elementName, label, textColor = 'white' }) {
   return (
     <div className="icon-with-label">
       <div 
@@ -12,8 +12,7 @@ function IconWithLabel({ elementName, label, fontSize, textColor = 'white' }) {
         {label != null && (
           <div 
             className="label"
-            style={{ 
-              fontSize: fontSize,
+            style={{
               color: textColor
             }}
           >

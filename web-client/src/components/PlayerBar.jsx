@@ -1,47 +1,29 @@
 import React from 'react';
 import PileOfCards from './PileOfCards';
 import IconWithLabel from './IconWithLabel';
+import { getBorderColor, getHpTextColor } from '../utils/colorUtils';
 import './PlayerBar.css';
 
 function PlayerBar({ position, player }) {
-  // Determine HP label text color based on conditions
-  const getHpTextColor = () => {
-    if (player?.damageTokens > 0) {
-      return 'var(--text-damage)';
-    } else if (player?.hp?.modifier > 0) {
-      return 'var(--text-buff)';
-    }
-    return 'var(--text-white)';
-  };
-
-  // Determine border color based on player owner
-  const getBorderColor = () => {
-    if (player?.owner == 0) {
-      return 'var(--player-red)';
-    } else {
-      return 'var(--player-blue)';
-    }
-  };
 
   return (
     <div 
       className={`player-bar player-bar-${position}`}
-      style={{ borderColor: getBorderColor() }}
+      style={{ borderColor: getBorderColor(player) }}
     >
       <div className="player-name-label">{player?.name || 'Player'}</div>
       <div className="player-hp">
         <IconWithLabel 
           elementName="hp" 
           label={(player?.hp?.total ?? 0) - (player?.damageTokens ?? 0)} 
-          fontSize="12vh" 
-          textColor={getHpTextColor()}
+          textColor={getHpTextColor(player)}
         />
       </div>
       <div className="gold-icon">
-        <IconWithLabel elementName="gold" label={player?.currentGold ?? 0} fontSize="12vh" />
+        <IconWithLabel elementName="gold" label={player?.currentGold ?? 0} />
       </div>
       <div className="player-hand">
-        <IconWithLabel elementName="hand" label={player?.hand?._size ?? 0} fontSize="12vh" />
+        <IconWithLabel elementName="hand" label={player?.hand?._size ?? 0} />
       </div>
       <div className="deck-pile">
         <PileOfCards 

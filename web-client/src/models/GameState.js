@@ -160,6 +160,44 @@ export class LivingEntity {
   }
 }
 
+export class PlacedEntity {
+  constructor(data = {}) {
+    // LivingEntity properties
+    this.hp = data.hp || new Stat();
+    this.name = data.name || '';
+    this.owner = data.owner ?? null;
+    this.uniqueId = data.uniqueId ?? null;
+    this.id = data.id ?? 0;
+    this.damageTokens = data.damageTokens ?? 0;
+    
+    // PlacedEntity-specific properties
+    this.tileCoordinate = data.tileCoordinate ?? -1;
+    this.movement = data.movement || null;
+    this.attack = data.attack || null;
+  }
+
+  // Helper method to create from JSON (when received from server)
+  static fromJson(json) {
+    if (!json) return new PlacedEntity();
+    
+    const placedEntity = new PlacedEntity();
+    // LivingEntity properties
+    placedEntity.hp = json.Hp ? Stat.fromJson(json.Hp) : new Stat();
+    placedEntity.name = json.Name || '';
+    placedEntity.owner = json.Owner ?? null;
+    placedEntity.uniqueId = json.UniqueId ?? null;
+    placedEntity.id = json.Id ?? 0;
+    placedEntity.damageTokens = json.DamageTokens ?? 0;
+    
+    // PlacedEntity-specific properties
+    placedEntity.tileCoordinate = json.TileCoordinate ?? -1;
+    placedEntity.movement = json.Movement ? Stat.fromJson(json.Movement) : null;
+    placedEntity.attack = json.Attack ? Stat.fromJson(json.Attack) : null;
+    
+    return placedEntity;
+  }
+}
+
 // Main GameStateStruct class
 export class GameStateStruct {
   constructor(data = {}) {
@@ -168,7 +206,7 @@ export class GameStateStruct {
     this.currentPlayer = data.currentPlayer || CurrentPlayer.OMNISCIENT;
     this.playerStates = data.playerStates || [new Player(), new Player()];
     this.boardState = data.boardState || new Board();
-    this.entityData = data.entityData || {};
+    this.entityData = data.entityData || new Map();
   }
 
   // Helper method to create from JSON (when received from server)
@@ -181,7 +219,17 @@ export class GameStateStruct {
     gameState.currentPlayer = json.CurrentPlayer || CurrentPlayer.OMNISCIENT;
     gameState.playerStates = (json.PlayerStates || []).map(playerData => Player.fromJson(playerData));
     gameState.boardState = new Board(json.BoardState || {});
-    gameState.entityData = json.EntityData || {};
+    
+    // Convert EntityData from object to Map
+    const entityDataMap = new Map();
+    if (json.EntityData) {
+      Object.entries(json.EntityData).forEach(([uniqueIdStr, entityJson]) => {
+        const uniqueId = parseInt(uniqueIdStr);
+        const entity = PlacedEntity.fromJson(entityJson);
+        entityDataMap.set(uniqueId, entity);
+      });
+    }
+    gameState.entityData = entityDataMap;
     
     return gameState;
   }

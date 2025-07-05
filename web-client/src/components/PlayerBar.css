@@ -1,17 +1,20 @@
 @import '../constants/colors.css';
 
 .player-bar {
-  width: 50vw;
-  height: 20vh;
+  width: 100%;
+  height: 100%;
   border: 4px solid var(--border-brown);
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.15);
-  position: absolute;
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
   padding: 0 10px;
   gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  container-type: size;
 }
 
 .player-bar-left {
@@ -28,43 +31,43 @@
 
 .player-name-label {
   position: absolute;
-  top: 0px;
-  left: 5px;
+  top: 0%;
+  left: 1%;
   font-family: Georgia, serif;
   color: white;
   text-shadow: 1px 1px 0px black, -1px -1px 0px black,
                1px -1px 0px black, -1px 1px 0px black;
-  font-size: 4vh;
-  height: 4vh;
-  line-height: 4vh;
+  font-size: 25cqh;
+  height: 25cqh;
+  line-height: 25cqh;
 }
 
 .deck-pile {
   height: 80%;
   width: auto;
-  margin-bottom: 2vh;
+  margin-bottom: 2%;
 }
 
 .discard-pile {
   height: 80%;
   width: auto;
-  margin-bottom: 2vh;
+  margin-bottom: 2%;
 }
 
 .gold-icon {
   height: 65%;
   width: auto;
-  margin-bottom: 2vh;
+  margin-bottom: 2%;
 }
 
 .player-hand {
   height: 65%;
   width: auto;
-  margin-bottom: 2vh;
+  margin-bottom: 2%;
 }
 
 .player-hp {
   height: 65%;
   width: auto;
-  margin-bottom: 2vh;
+  margin-bottom: 2%;
 } 

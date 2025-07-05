@@ -1,4 +1,4 @@
-import { GameStateStruct, States, CurrentPlayer, Player, Board, AssortedCardCollection, Stat } from '../models/GameState';
+import { GameStateStruct, States, CurrentPlayer, Player, Board, AssortedCardCollection, Stat, PlacedEntity } from '../models/GameState';
 
 // Default game state for testing
 export const defaultGameState = new GameStateStruct({
@@ -51,5 +51,17 @@ export const defaultGameState = new GameStateStruct({
     })
   ],
   boardState: new Board(),
-  entityData: {}
+  entityData: new Map([
+    [2, new PlacedEntity({
+      name: 'Test Unit',
+      hp: new Stat({ baseValue: 2, modifier: 0 }),
+      owner: 0,
+      uniqueId: 2,
+      id: 1,
+      damageTokens: 0,
+      tileCoordinate: 5,
+      movement: new Stat({ baseValue: 1, modifier: 0 }),
+      attack: new Stat({ baseValue: 2, modifier: 0 })
+    })]
+  ])
 });

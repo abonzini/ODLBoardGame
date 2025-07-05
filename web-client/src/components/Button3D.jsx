@@ -7,7 +7,7 @@ function Button3D({
   color = '#119C00', 
   width = '60%', 
   height = '60%', 
-  fontSize = '4vh',
+  fontSize = '20px',
   position = 'relative',
   top = 'auto',
   left = 'auto',
@@ -127,6 +127,7 @@ function Button3D({
         position,
         top,
         left,
+        containerType: 'size',
         ...style
       }}
     >

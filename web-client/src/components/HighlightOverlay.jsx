@@ -85,7 +85,7 @@ function HighlightOverlay() {
                 top: '50%',
                 left: '25%',
                 transform: 'translate(-50%, -50%)',
-                height: '40vh',
+                height: '40%',
                 width: 'auto',
                 pointerEvents: 'none'
               }}
@@ -97,8 +97,8 @@ function HighlightOverlay() {
               top: 0,
               left: '75%',
               transform: 'translate(-50%, 0)',
-              height: '75vh',
-              width: '25vw',
+              height: '75%',
+              width: '25%',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'flex-start'
@@ -111,7 +111,7 @@ function HighlightOverlay() {
             top: '50%', 
             left: '50%', 
             transform: 'translate(-50%, -50%)',
-            height: '50vh',
+            height: '50%',
             width: 'auto'
           }}>
             <img 
@@ -124,8 +124,8 @@ function HighlightOverlay() {
             position: 'absolute',
             left: 0,
             bottom: 0,
-            width: '100vw',
-            height: '25vh',
+            width: '100%',
+            height: '25%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -150,8 +150,8 @@ function HighlightOverlay() {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: '100vw',
-            height: '50vh'
+            width: '100%',
+            height: '50%'
           }}>
             <CardListContainer 
               activePowerId={null}

@@ -16,10 +16,11 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  container-type: size;
 }
 
 .pile-label {
-  font-size: 10vh;
+  font-size: 80cqh;
   font-weight: bold;
   font-family: Georgia, serif;
   color: black;

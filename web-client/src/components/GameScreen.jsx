@@ -4,6 +4,7 @@ import { CurrentPlayer } from '../models/GameState';
 import GameBoard from './GameBoard';
 import PlayerHandBar from './PlayerHandBar';
 import PlayerBar from './PlayerBar';
+import './GameScreen.css';
 
 function GameScreenContent() {
   const { viewerIdentity, gameState } = useGameContext();
@@ -27,12 +28,18 @@ function GameScreenContent() {
   return (
     <div className="game-screen">
       <div className="game-screen-wood"></div>
-      <div className="player-bar-container">
+      <div className="leftplayerbar">
         <PlayerBar position="left" player={leftPlayer} />
+      </div>
+      <div className="rightplayerbar">
         <PlayerBar position="right" player={rightPlayer} />
       </div>
-      <GameBoard />
-      <PlayerHandBar />
+      <div className="playerhandbar">
+        <PlayerHandBar />
+      </div>
+      <div className="gameboard">
+        <GameBoard />
+      </div>
     </div>
   );
 }

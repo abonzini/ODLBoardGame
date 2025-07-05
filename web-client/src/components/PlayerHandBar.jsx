@@ -2,13 +2,14 @@ import { useGameContext } from '../context/GameContext';
 import { CurrentPlayer } from '../models/GameState';
 import CardListContainer from './CardListContainer';
 import Button3D from './Button3D';
+import './PlayerHandBar.css';
 
 function PlayerHandBar() {
   const { viewerIdentity, gameState } = useGameContext();
   
   // Don't render anything for spectators
   if (viewerIdentity === CurrentPlayer.SPECTATOR) {
-    return null;
+    return <div className="player-hand-bar"></div>;
   }
   
   // For OMNISCIENT, show both players' hands side by side
@@ -63,7 +64,7 @@ function PlayerHandBar() {
             color={isViewerTurn ? '#119C00' : '#666'}
             width="60%"
             height="60%"
-            fontSize="4vh"
+            fontSize="5cqh"
             disabled={!isViewerTurn}
           />
         </div>

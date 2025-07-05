@@ -7,11 +7,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 100%;
+  container-type: size;
 }
 
 .counter-label {
-  font-size: 100%;
+  font-size: 70cqh;
   font-weight: bold;
   font-family: coolvetica, serif;
   color: white;
