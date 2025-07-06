@@ -2,9 +2,8 @@
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  border: 4px solid #000;
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} 
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+}

@@ -1,6 +1,8 @@
 import { GameContextProvider } from '../context/GameContext';
 import { HighlightedCardsProvider } from '../context/HighlightedCardsContext';
 import { HighlightedEntitiesProvider } from '../context/HighlightedEntitiesContext';
+import { HighlightedLaneProvider } from '../context/HighlightedLaneContext';
+import { HighlightedTileProvider } from '../context/HighlightedTileContext';
 import { useGameContext } from '../context/GameContext';
 import { CurrentPlayer } from '../models/GameState';
 import GameBoard from './GameBoard';
@@ -51,7 +53,11 @@ function GameScreen() {
     <GameContextProvider>
       <HighlightedCardsProvider>
         <HighlightedEntitiesProvider>
-          <GameScreenContent />
+          <HighlightedLaneProvider>
+            <HighlightedTileProvider>
+              <GameScreenContent />
+            </HighlightedTileProvider>
+          </HighlightedLaneProvider>
         </HighlightedEntitiesProvider>
       </HighlightedCardsProvider>
     </GameContextProvider>
