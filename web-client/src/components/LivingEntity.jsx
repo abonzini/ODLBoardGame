@@ -2,11 +2,26 @@ import React from 'react';
 import IconWithLabel from './IconWithLabel';
 import { getHpTextColor, getStatColor, getBorderColor } from '../utils/colorUtils';
 import { getRawCardImagePath } from '../utils/imagePaths';
+import { useUIContext } from '../context/UIContext';
+import { useHighlightedEntities } from '../context/HighlightedEntitiesContext';
 import './LivingEntity.css';
 
 function LivingEntity({ entity, visualMode }) {
+  const { pushOverlay } = useUIContext();
+  const { highlightedEntityIds } = useHighlightedEntities();
+
+  const handleRightClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (entity?.id) {
+      pushOverlay({ type: 'card', cardId: entity.id });
+    }
+  };
+
+  const isHighlighted = entity?.uniqueId && highlightedEntityIds.includes(entity.uniqueId);
+
   return (
-    <div className="living-entity">
+    <div className="living-entity" onContextMenu={handleRightClick}>
       <div className={visualMode}>
         {entity && (
           <div className="hp-area">
@@ -45,7 +60,8 @@ function LivingEntity({ entity, visualMode }) {
             backgroundImage: entity?.id ? `url(${getRawCardImagePath(entity.id)})` : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
+            boxShadow: isHighlighted ? '0 0 10px 5px var(--highlighted-color)' : undefined
           }}
         />
       </div>

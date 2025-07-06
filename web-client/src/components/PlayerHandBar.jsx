@@ -1,4 +1,5 @@
 import { useGameContext } from '../context/GameContext';
+import { useHighlightedCards } from '../context/HighlightedCardsContext';
 import { CurrentPlayer } from '../models/GameState';
 import CardListContainer from './CardListContainer';
 import Button3D from './Button3D';
@@ -6,6 +7,7 @@ import './PlayerHandBar.css';
 
 function PlayerHandBar() {
   const { viewerIdentity, gameState } = useGameContext();
+  const { highlightedCardIds } = useHighlightedCards();
   
   // Don't render anything for spectators
   if (viewerIdentity === CurrentPlayer.SPECTATOR) {
@@ -46,6 +48,9 @@ function PlayerHandBar() {
     const playerIndex = viewerIdentity === CurrentPlayer.PLAYER_1 ? 0 : 1;
     const currentPlayer = gameState?.playerStates?.[playerIndex];
     
+    // Check if no cards are highlighted
+    const shouldHighlightButton = highlightedCardIds.length === 0 && isViewerTurn;
+    
     return (
       <div className="player-hand-bar">
         <div className="player-hand-left-regular">
@@ -66,6 +71,9 @@ function PlayerHandBar() {
             height="60%"
             fontSize="5cqh"
             disabled={!isViewerTurn}
+            style={{
+              boxShadow: shouldHighlightButton ? '0 0 10px 5px var(--highlighted-color)' : undefined
+            }}
           />
         </div>
       </div>

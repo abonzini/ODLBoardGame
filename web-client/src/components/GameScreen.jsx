@@ -1,4 +1,6 @@
 import { GameContextProvider } from '../context/GameContext';
+import { HighlightedCardsProvider } from '../context/HighlightedCardsContext';
+import { HighlightedEntitiesProvider } from '../context/HighlightedEntitiesContext';
 import { useGameContext } from '../context/GameContext';
 import { CurrentPlayer } from '../models/GameState';
 import GameBoard from './GameBoard';
@@ -47,7 +49,11 @@ function GameScreenContent() {
 function GameScreen() {
   return (
     <GameContextProvider>
-      <GameScreenContent />
+      <HighlightedCardsProvider>
+        <HighlightedEntitiesProvider>
+          <GameScreenContent />
+        </HighlightedEntitiesProvider>
+      </HighlightedCardsProvider>
     </GameContextProvider>
   );
 }

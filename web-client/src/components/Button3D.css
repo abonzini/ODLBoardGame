@@ -1,0 +1,67 @@
+.button3d {
+  font-family: Georgia;
+  color: white;
+  text-shadow: 1px 1px 0px black, -1px -1px 0px black, 1px -1px 0px black, -1px 1px 0px black;
+  
+  /* Classic 3D button styling */
+  border: 3px solid;
+  border-top-color: rgba(255, 255, 255, 0.3);
+  border-left-color: rgba(255, 255, 255, 0.3);
+  border-right-color: rgba(0, 0, 0, 0.3);
+  border-bottom-color: rgba(0, 0, 0, 0.3);
+  
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Add some padding to account for the 3D effect */
+  padding: 2px;
+  
+  /* Box shadow for additional depth */
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  
+  /* Smooth transitions for hover and active states */
+  transition: all 0.1s ease;
+  
+  /* Remove default button styling */
+  outline: none;
+}
+
+.button3d:hover {
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+  border-top-color: rgba(255, 255, 255, 0.5);
+  border-left-color: rgba(255, 255, 255, 0.5);
+  border-right-color: rgba(0, 0, 0, 0.4);
+  border-bottom-color: rgba(0, 0, 0, 0.4);
+}
+
+.button3d:active {
+  transform: translateY(2px);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.3);
+  border-top-color: rgba(0, 0, 0, 0.3);
+  border-left-color: rgba(0, 0, 0, 0.3);
+  border-right-color: rgba(255, 255, 255, 0.3);
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.button3d.disabled {
+  background-color: #666 !important;
+  cursor: not-allowed;
+  border-top-color: #888;
+  border-left-color: #888;
+  border-right-color: #444;
+  border-bottom-color: #444;
+  box-shadow: none;
+}
+
+.button3d.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.button3d.disabled:active {
+  transform: none;
+  box-shadow: none;
+} 
