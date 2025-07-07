@@ -21,13 +21,13 @@ namespace ODLGameEngine
             if (howMany <= 0) return;
             if (_cardHistogram.TryGetValue(card, out int value))
             {
-                _cardHistogram[card] += howMany;
+                _cardHistogram[card] = value + howMany;
             }
             else
             {
                 _cardHistogram.Add(card, howMany);
             }
-            _size++;
+            _size += howMany;
         }
         /// <summary>
         /// Returns how manny cards here
@@ -48,11 +48,19 @@ namespace ODLGameEngine
         /// Removes card from hand
         /// </summary>
         /// <param name="card">Card to remove</param>
-        public void RemoveFromCollection(int card)
+        /// <param name="howMany">Optional parameter, how many will be removed</param>
+        public void RemoveFromCollection(int card, int howMany = 1)
         {
-            _cardHistogram[card]--;
-            _size--;
-            if (_cardHistogram[card] == 0)
+            if (howMany <= 0) return;
+            int nRemovedCards = 0;
+            if (_cardHistogram.TryGetValue(card, out int nCards))
+            {
+                nRemovedCards = Math.Min(nCards, howMany); // Remove only as many as I could
+                _cardHistogram[card] = nCards - nRemovedCards;
+            }
+            // After the dust settles, calculate what/how much remains in collection
+            _size -= nRemovedCards;
+            if (nRemovedCards >= nCards)
             {
                 _cardHistogram.Remove(card);
             }
