@@ -1,5 +1,5 @@
 To Keep in mind:
     - If there's "add cards to deck" or "add cards to hand" function, there'll need to be a parallel "discard pile".
-    This "knowledge pile" may be seen by opp when looking at deck, but also most importantly, used by the bot to determine chances on wildcard discovery.
+    This "knowledge pile" exists for both hand and deck, in order to also deal with tutors. In UI, they may be seen by opp when looking at deck/hand icons, but also most importantly, used by the bot to determine chances on wildcard discovery (or certainties).
     Deck discovery is statistics-based as usual and the remaining deck is cloned & altered by knowledge pile and discard pile.
-    Only needs to be done when cards are added or removed from deck/hand and not before.
+    Only needs to be done when cards are added or removed from deck/hand and not before. Cards that are shuffled into deck move all the hand knowledge into the deck knowledge pile (flush operation).
