@@ -56,8 +56,8 @@ namespace ODLGameEngine
                 for (int i = 0; i < cardCount.Value; i++) // Add N cards
                 {
                     _orderedCards.Add(cardCount.Key);
-                    InsertToCollection(cardCount.Key);
                 }
+                InsertToCollection(cardCount.Key, cardCount.Value);
             }
         }
         /// <summary>
@@ -143,11 +143,12 @@ namespace ODLGameEngine
         }
         public override object Clone()
         {
-            Deck newDeck = (Deck)base.Clone();
+            Deck newDeck = new Deck();
             newDeck._orderedCards = new List<int>();
             foreach (int card in _orderedCards)
             {
                 newDeck._orderedCards.Add(card);
+                newDeck.InsertToCollection(card);
             }
             return newDeck;
         }

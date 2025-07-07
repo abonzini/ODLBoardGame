@@ -6,10 +6,16 @@ namespace ODLGameEngine
     [JsonObject(MemberSerialization.OptIn)]
     public class AssortedCardCollection : ICloneable
     {
+        // Aux comparer to sort in descending order
+        static readonly Comparer<int> descendingComparer = Comparer<int>.Create((x, y) => y.CompareTo(x));
         [JsonProperty]
-        private SortedList<int, int> _cardHistogram = new SortedList<int, int>();
+        private readonly SortedList<int, int> _cardHistogram = new SortedList<int, int>();
         [JsonProperty]
         private int _size = 0;
+        // Bit of a weird one, this holds the number of counts in every card (in descending order), made it public because I didn't want to deal with it.
+        // Contains all cards sorted by count kind of like an inverse histogram. Useful for wildcard discovery calculations
+        public SortedDictionary<int, HashSet<int>> CountHistogram = new SortedDictionary<int, HashSet<int>>(descendingComparer);
+        // Methods and stuff
         public int CardCount { get { return _size; } }
         /// <summary>
         /// Adds card to hand
@@ -18,15 +24,19 @@ namespace ODLGameEngine
         /// <param name="howMany">Optional parameter, how many will be added</param>
         public void InsertToCollection(int card, int howMany = 1)
         {
+            int newAmount;
             if (howMany <= 0) return;
             if (_cardHistogram.TryGetValue(card, out int value))
             {
-                _cardHistogram[card] = value + howMany;
+                newAmount = value + howMany;
+                _cardHistogram[card] = newAmount;
             }
             else
             {
+                newAmount = howMany;
                 _cardHistogram.Add(card, howMany);
             }
+            ModifyCardCount(card, value, newAmount);
             _size += howMany;
         }
         /// <summary>
@@ -52,17 +62,17 @@ namespace ODLGameEngine
         public void RemoveFromCollection(int card, int howMany = 1)
         {
             if (howMany <= 0) return;
-            int nRemovedCards = 0;
-            if (_cardHistogram.TryGetValue(card, out int nCards))
+            if (_cardHistogram.TryGetValue(card, out int nCards)) // Check if the card is even present in this collection
             {
-                nRemovedCards = Math.Min(nCards, howMany); // Remove only as many as I could
+                int nRemovedCards = Math.Min(nCards, howMany); // Remove only as many as I could
+                int newAmount = nCards - nRemovedCards;
                 _cardHistogram[card] = nCards - nRemovedCards;
-            }
-            // After the dust settles, calculate what/how much remains in collection
-            _size -= nRemovedCards;
-            if (nRemovedCards >= nCards)
-            {
-                _cardHistogram.Remove(card);
+                _size -= nRemovedCards;
+                if (newAmount == 0)
+                {
+                    _cardHistogram.Remove(card);
+                }
+                ModifyCardCount(card, nCards, newAmount);
             }
         }
         /// <summary>
@@ -108,6 +118,35 @@ namespace ODLGameEngine
         {
             _size += amount;
         }
+        /// <summary>
+        /// For the CountHistogram, given a card, a rudimentary "remove from old, add to new"
+        /// </summary>
+        /// <param name="card">The card whose count changed</param>
+        /// <param name="oldCount">Old count</param>
+        /// <param name="newCount">New count</param>
+        private void ModifyCardCount(int card, int oldCount, int newCount)
+        {
+            if (oldCount > 0) // For the old number
+            {
+                HashSet<int> cards = CountHistogram[oldCount];
+                cards.Remove(card); // Remove card from here
+                if (cards.Count == 0) // Remove count if it was the last card with this quantity
+                {
+                    CountHistogram.Remove(oldCount);
+                }
+            }
+            if (newCount > 0)
+            {
+                if (!CountHistogram.TryGetValue(newCount, out HashSet<int> value))
+                {
+                    CountHistogram[newCount] = new HashSet<int>([card]);
+                }
+                else
+                {
+                    value.Add(card);
+                }
+            }
+        }
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
@@ -130,11 +169,10 @@ namespace ODLGameEngine
         }
         public virtual object Clone()
         {
-            AssortedCardCollection newCollection = (AssortedCardCollection)MemberwiseClone();
-            newCollection._cardHistogram = new SortedList<int, int>();
+            AssortedCardCollection newCollection = new AssortedCardCollection();
             foreach (KeyValuePair<int, int> kvp in _cardHistogram)
             {
-                newCollection._cardHistogram[kvp.Key] = kvp.Value;
+                newCollection.InsertToCollection(kvp.Key, kvp.Value);
             }
             return newCollection;
         }
