@@ -67,13 +67,13 @@
                 case EventType.ADD_CARD_TO_HAND:
                     auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
                     auxInt1 = ((EntityValueEvent<Player, int>)e).value;
-                    auxPlayerState.Hand.InsertToCollection(auxInt1);
+                    auxPlayerState.Hand.AddToCollection(auxInt1);
                     break;
                 case EventType.DISCARD_FROM_HAND:
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value; // Card now popped from hand
                     DetailedState.PlayerStates[auxInt1].Hand.RemoveFromCollection(auxInt2); // Remove from hand...
-                    DetailedState.PlayerStates[auxInt1].DiscardPile.InsertToCollection(auxInt2); // And add to discard pile
+                    DetailedState.PlayerStates[auxInt1].DiscardPile.AddToCollection(auxInt2); // And add to discard pile
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
@@ -142,7 +142,8 @@
                     auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
                     auxInt1 = ((EntityValueEvent<Player, int>)e).value;
                     auxPlayerState.Hand.RemoveFromCollection(0);
-                    auxPlayerState.Hand.InsertToCollection(auxInt1);
+                    auxPlayerState.Hand.AddToCollection(auxInt1);
+                    _hypotheticalOpponentsDeck.RemoveFromCollection(auxInt1); // One less card in hypothetical deck too
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -204,7 +205,7 @@
                     auxInt1 = ((EntityValueEvent<int, int>)e).entity;
                     auxInt2 = ((EntityValueEvent<int, int>)e).value;
                     DetailedState.PlayerStates[auxInt1].DiscardPile.RemoveFromCollection(auxInt2); // Pop from discard pile
-                    DetailedState.PlayerStates[auxInt1].Hand.InsertToCollection(auxInt2); // Reinsert in hand
+                    DetailedState.PlayerStates[auxInt1].Hand.AddToCollection(auxInt2); // Reinsert in hand
                     break;
                 case EventType.INIT_ENTITY:
                     auxPlacedEntity = ((EntityEvent<PlacedEntity>)e).entity;
@@ -267,7 +268,8 @@
                     auxPlayerState = ((EntityValueEvent<Player, int>)e).entity;
                     auxInt1 = ((EntityValueEvent<Player, int>)e).value;
                     auxPlayerState.Hand.RemoveFromCollection(auxInt1);
-                    auxPlayerState.Hand.InsertToCollection(0);
+                    auxPlayerState.Hand.AddToCollection(0);
+                    _hypotheticalOpponentsDeck.AddToCollection(auxInt1); // One less card in hypothetical deck too
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");

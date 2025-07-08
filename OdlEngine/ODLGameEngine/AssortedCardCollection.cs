@@ -22,7 +22,7 @@ namespace ODLGameEngine
         /// </summary>
         /// <param name="card">Which card to add</param>
         /// <param name="howMany">Optional parameter, how many will be added</param>
-        public void InsertToCollection(int card, int howMany = 1)
+        public void AddToCollection(int card, int howMany = 1)
         {
             int newAmount;
             if (howMany <= 0) return;
@@ -172,7 +172,7 @@ namespace ODLGameEngine
             AssortedCardCollection newCollection = new AssortedCardCollection();
             foreach (KeyValuePair<int, int> kvp in _cardHistogram)
             {
-                newCollection.InsertToCollection(kvp.Key, kvp.Value);
+                newCollection.AddToCollection(kvp.Key, kvp.Value);
             }
             return newCollection;
         }

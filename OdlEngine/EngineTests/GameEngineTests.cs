@@ -414,7 +414,7 @@ namespace EngineTests
             CardFinder cardDb = new CardFinder();
             // Card 1: basic unit
             cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 1, 1, 1));
-            state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Insert token card
+            state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Insert token card
             state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
             GameStateMachine sm = new GameStateMachine(cardDb);
             sm.LoadGame(state); // Start from here
@@ -486,7 +486,7 @@ namespace EngineTests
             };
             for (int i = 1; i <= GameConstants.DECK_SIZE; i++)
             {
-                ret.InitialDecklist.InsertToCollection(i);
+                ret.InitialDecklist.AddToCollection(i);
             }
             return ret;
         }

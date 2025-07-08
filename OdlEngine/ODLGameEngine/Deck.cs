@@ -24,7 +24,7 @@ namespace ODLGameEngine
             {
                 int cardId = int.Parse(card);
                 _orderedCards.Add(cardId);
-                InsertToCollection(cardId);
+                AddToCollection(cardId);
             }
         }
         /// <summary>
@@ -39,7 +39,7 @@ namespace ODLGameEngine
             foreach (int card in cardsList)
             {
                 _orderedCards.Add(card);
-                InsertToCollection(card);
+                AddToCollection(card);
             }
         }
         /// <summary>
@@ -57,7 +57,7 @@ namespace ODLGameEngine
                 {
                     _orderedCards.Add(cardCount.Key);
                 }
-                InsertToCollection(cardCount.Key, cardCount.Value);
+                AddToCollection(cardCount.Key, cardCount.Value);
             }
         }
         /// <summary>
@@ -93,7 +93,7 @@ namespace ODLGameEngine
                 position = DeckSize;
             }
             _orderedCards.Insert(position, card);
-            InsertToCollection(card);
+            AddToCollection(card);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace ODLGameEngine
             foreach (int card in _orderedCards)
             {
                 newDeck._orderedCards.Add(card);
-                newDeck.InsertToCollection(card);
+                newDeck.AddToCollection(card);
             }
             return newDeck;
         }

@@ -24,7 +24,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 Tuple<PlayContext, StepResult> playRes = sm.PlayFromHand(1, 0); // Play the card
@@ -67,7 +67,7 @@ namespace EngineTests
                 Dictionary<InteractionType, List<Effect>> stepInteraction = new Dictionary<InteractionType, List<Effect>>();
                 stepInteraction.Add(InteractionType.UNIT_ENTERS_BUILDING, [debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 List<EntityType> effectEntities = [EntityType.UNIT, EntityType.BUILDING]; // Who I want to test
                 foreach (EntityType entityType in effectEntities)
                 {
@@ -138,7 +138,7 @@ namespace EngineTests
                 Dictionary<InteractionType, List<Effect>> stepInteraction = new Dictionary<InteractionType, List<Effect>>();
                 stepInteraction.Add(InteractionType.UNIT_ENTERS_BUILDING, [debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 List<EntityType> effectEntities = [EntityType.UNIT, EntityType.BUILDING]; // Who I want to test
                 foreach (EntityType entityType in effectEntities)
                 {
@@ -306,7 +306,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, chooseEnemyPlayer, hitEnemy]);
                 skill.Interactions.Add(InteractionType.POST_DAMAGE, [debugEffect]);
                 cardDb.InjectCard(1, skill);
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                 // I'll load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -380,7 +380,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, chooseEnemyPlayer, hitEnemy]);
                 skill.Interactions.Add(InteractionType.PRE_DAMAGE, [overrideDamage, debugEffect]);
                 cardDb.InjectCard(1, skill);
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                 // I'll load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -430,7 +430,7 @@ namespace EngineTests
                 constructInteraction.Add(InteractionType.UNIT_CONSTRUCTS_BUILDING, [debugEffect]); // Add interaction
                 // Will add building to card to be buildable
                 cardDb.InjectCard(2, building); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(2); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(2); // Add card
                 // I'll load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here

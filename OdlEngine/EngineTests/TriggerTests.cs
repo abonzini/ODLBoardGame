@@ -28,7 +28,7 @@ namespace EngineTests
                 triggerEffect.Add(TriggerType.ON_DEBUG_TRIGGERED, [debugEffect]); // Means that when triggered, it'll push the debug effect
                 // Setup
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test loop, iterate 0b0000-0b1111 to register triggers in up to 32 combinations
@@ -103,7 +103,7 @@ namespace EngineTests
                 unit.Triggers.Add(EffectLocation.PLAY_TARGET, triggerEffect); // Adds trigger specifically where the unit was played
                 // Setup
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test loop plays unit in different locations
@@ -177,7 +177,7 @@ namespace EngineTests
                 unit.Triggers.Add(EffectLocation.BOARD, triggerEffect); // Adds to board (location also not important)
                 // Setup
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test
@@ -231,8 +231,8 @@ namespace EngineTests
                 unit.Triggers.Add(EffectLocation.BOARD, triggerEffect); // Adds to board (location also not important)
                 // Setup
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add cards to hand
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add cards to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test
@@ -291,8 +291,8 @@ namespace EngineTests
                 // Setup
                 cardDb.InjectCard(1, unit); // Add to cardDb
                 cardDb.InjectCard(2, deadUnit);
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add cards to hand
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(2);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add cards to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(2);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test
@@ -347,7 +347,7 @@ namespace EngineTests
                 unit.Triggers.Add(EffectLocation.CURRENT_TILE, triggerEffect); // Adds trigger specifically where the unit is currently located
                 // Setup
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test loop will play the unit in original tile or move elsewhere
@@ -439,8 +439,8 @@ namespace EngineTests
                 unit.Triggers.Add(EffectLocation.CURRENT_TILE, triggerEffect); // Adds trigger specifically where the unit is currently located
                 // Setup
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add 2 of these cards to hand
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add 2 of these cards to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test
@@ -598,7 +598,7 @@ namespace EngineTests
                 eotSensor.Triggers = new Dictionary<EffectLocation, Dictionary<TriggerType, List<Effect>>>();
                 eotSensor.Triggers.Add(EffectLocation.BOARD, triggerEffect); // Adds trigger specifically where building is currently located
                 cardDb.InjectCard(1, eotSensor); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card to hand
                 // Setup
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here

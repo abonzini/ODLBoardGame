@@ -22,10 +22,10 @@ namespace EngineTests
                 int numberOfCardsInHandAndDeck = _rng.Next(5, 20);
                 for (int i = 1; i <= numberOfCardsInHandAndDeck; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(i);
-                    state.PlayerStates[playerIndex].Deck.InsertToCollection(i);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(i);
-                    state.PlayerStates[otherPlayerIndex].Deck.InsertToCollection(i);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(i);
+                    state.PlayerStates[playerIndex].Deck.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Deck.AddToCollection(i);
                 }
                 // Start now...
                 GameStateMachine sm = new GameStateMachine();
@@ -44,7 +44,7 @@ namespace EngineTests
                         Assert.AreNotEqual(0, state.PlayerStates[otherPlayerIndex].Deck.CheckAmountInCollection(i));
                     }
                     // Start Hypothetical mode
-                    sm.StartHypotheticalMode(whichPlayer); // Starts hypothetical with a specific POV
+                    sm.StartHypotheticalMode(whichPlayer, new AssortedCardCollection()); // Starts hypothetical with a specific POV, no hypothetical deck
                     Assert.AreNotEqual(startHash, sm.DetailedState.GetHashCode()); // Hash changed because one hand changed
                     for (int i = 1; i <= numberOfCardsInHandAndDeck; i++) // Verify all's there
                     {
@@ -86,8 +86,8 @@ namespace EngineTests
                 int numberOfCardsInDeck = _rng.Next(10, 20);
                 for (int i = 1; i <= numberOfCardsInDeck; i++)
                 {
-                    state.PlayerStates[playerIndex].Deck.InsertToCollection(i);
-                    state.PlayerStates[otherPlayerIndex].Deck.InsertToCollection(i);
+                    state.PlayerStates[playerIndex].Deck.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Deck.AddToCollection(i);
                 }
                 // Card 1: Skill that draws cards to both players
                 int cardsToDraw = _rng.Next(1, 10);
@@ -103,12 +103,12 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [drawEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Start now...
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Ok now will go to hypothetical mode (init of hypothetical in other tests)
-                sm.StartHypotheticalMode(playerIndex);
+                sm.StartHypotheticalMode(playerIndex, new AssortedCardCollection()); // No hypothetical deck
                 int prePlayHash = sm.DetailedState.GetHashCode();
                 int prePlayDeckHash0 = sm.DetailedState.PlayerStates[playerIndex].Deck.GetHashCode();
                 int prePlayDeckHash1 = sm.DetailedState.PlayerStates[otherPlayerIndex].Deck.GetHashCode();
@@ -156,10 +156,10 @@ namespace EngineTests
                 // Fill hands and decks with BS, don't care about the actual card as won't be played, for easy validation and checking, cards from 1-N
                 for (int i = 1; i <= 30; i++) // Add 30 just for funsies
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(i);
-                    state.PlayerStates[playerIndex].Deck.InsertToCollection(i);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(i);
-                    state.PlayerStates[otherPlayerIndex].Deck.InsertToCollection(i);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(i);
+                    state.PlayerStates[playerIndex].Deck.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Deck.AddToCollection(i);
                 }
                 // Start now...
                 GameStateMachine sm = new GameStateMachine();
@@ -171,7 +171,7 @@ namespace EngineTests
                     int startHash = sm.DetailedState.GetHashCode();
                     int turnsToSkip = _rng.Next(3, 10); // Just skip a bunch of turns nothing crazy
                     // Start Hypothetical mode
-                    sm.StartHypotheticalMode(whichPlayer); // Starts hypothetical with a specific POV
+                    sm.StartHypotheticalMode(whichPlayer, new AssortedCardCollection()); // Starts hypothetical with a specific POV, no hypothetical deck
                     Assert.AreNotEqual(startHash, sm.DetailedState.GetHashCode()); // Hash changed because one hand changed
                     // Skip lot of turns
                     for (int i = 0; i < turnsToSkip; i++)
@@ -203,16 +203,16 @@ namespace EngineTests
                 int numberOfCardsInHandAndDeck = _rng.Next(5, 20);
                 for (int i = 1; i <= numberOfCardsInHandAndDeck; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(i);
-                    state.PlayerStates[playerIndex].Deck.InsertToCollection(i);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(i);
-                    state.PlayerStates[otherPlayerIndex].Deck.InsertToCollection(i);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(i);
+                    state.PlayerStates[playerIndex].Deck.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Deck.AddToCollection(i);
                 }
                 // Start now...
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
                 int[] bothPlayers = [playerIndex, otherPlayerIndex];
-                sm.StartHypotheticalMode(playerIndex); // Starts hypothetical for current player
+                sm.StartHypotheticalMode(playerIndex, new AssortedCardCollection()); // Starts hypothetical for current player, no hypothetical deck
                 sm.Step(); // Implements draw phase (that way both players will have atleast one wildcard
                 int hypothethicalStateHash = sm.DetailedState.GetHashCode();
                 foreach (int whichPlayer in bothPlayers)
@@ -235,6 +235,86 @@ namespace EngineTests
                     Assert.AreEqual(numberOfWildcards, sm.DetailedState.PlayerStates[whichPlayer].Hand.CheckAmountInCollection(0));
                     Assert.AreEqual(hypothethicalStateHash, sm.DetailedState.GetHashCode());
                 }
+            }
+        }
+        [TestMethod]
+        public void WildcardDiscoveryAltersOpponentsHypDeck()
+        {
+            // When a player has wildcards, can discover the wildcard and the model of the deck is updated
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentPlayer = player;
+                // Add a wildcard to opponent's hand
+                state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1); // Will become wildcard
+                // Start now...
+                GameStateMachine sm = new GameStateMachine();
+                sm.LoadGame(state); // Start from here
+                // Set the hypothetical deck, has 2 copies of cards 1,2,3
+                AssortedCardCollection hypDeck = new AssortedCardCollection();
+                hypDeck.AddToCollection(1, 2);
+                hypDeck.AddToCollection(2, 2);
+                hypDeck.AddToCollection(3, 2);
+                sm.StartHypotheticalMode(playerIndex, hypDeck); // Starts hypothetical for current player, no hypothetical deck
+                int hypothethicalStateHash = sm.DetailedState.GetHashCode();
+                for (int i = 1; i <= 3; i++) // Test each card
+                {
+                    // 2 of each cards
+                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(1));
+                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(2));
+                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(3));
+                    // Discovery and checks
+                    sm.DiscoverHypotheticalWildcard(otherPlayerIndex, i); // Player now has a wildcard replaced by the desired
+                    Assert.AreEqual((1 == i) ? 1 : 2, hypDeck.CheckAmountInCollection(1)); // Deck should've shrunk accordingly
+                    Assert.AreEqual((2 == i) ? 1 : 2, hypDeck.CheckAmountInCollection(2));
+                    Assert.AreEqual((3 == i) ? 1 : 2, hypDeck.CheckAmountInCollection(3));
+                    Assert.AreNotEqual(hypothethicalStateHash, sm.DetailedState.GetHashCode()); // Hash changed because hand contents also changed
+                    // Reversion of discovery
+                    sm.UndoPreviousStep();
+                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(1)); // Goes back to normal
+                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(2));
+                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(3));
+                    Assert.AreEqual(hypothethicalStateHash, sm.DetailedState.GetHashCode());
+                }
+            }
+        }
+        [TestMethod]
+        public void DiscardPileAltersOpponentsHypDeck()
+        {
+            // When a player has stuff in discard pile, the model of the deck is updated on HYP init
+            Random _rng = new Random();
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentPlayer = player;
+                // Add a bunch of cards to discard pile, some won't be in the assumed deck anyway
+                state.PlayerStates[otherPlayerIndex].DiscardPile.AddToCollection(1, 1);
+                state.PlayerStates[otherPlayerIndex].DiscardPile.AddToCollection(2, 1);
+                state.PlayerStates[otherPlayerIndex].DiscardPile.AddToCollection(3, 1);
+                state.PlayerStates[otherPlayerIndex].DiscardPile.AddToCollection(4, 1);
+                // Start now...
+                GameStateMachine sm = new GameStateMachine();
+                sm.LoadGame(state); // Start from here
+                // Set the hypothetical deck, has 2 copies of cards 1,2,3
+                AssortedCardCollection hypDeck = new AssortedCardCollection();
+                hypDeck.AddToCollection(1, 1);
+                hypDeck.AddToCollection(2, 2);
+                hypDeck.AddToCollection(3, 3);
+                sm.StartHypotheticalMode(playerIndex, hypDeck); // Starts hypothetical for current player, no hypothetical deck
+                // Hyp deck should've been quite reduced, only having a single copy of 1 remaining
+                Assert.AreEqual(0, hypDeck.CheckAmountInCollection(1));
+                Assert.AreEqual(1, hypDeck.CheckAmountInCollection(2));
+                Assert.AreEqual(2, hypDeck.CheckAmountInCollection(3));
+                Assert.AreEqual(3, hypDeck.CardCount);
             }
         }
     }

@@ -16,12 +16,12 @@ namespace EngineTests
         {
             AssortedCardCollection col = new AssortedCardCollection();
             // Add 6 cards, 1, 2, 2, 3, 3, 3
-            col.InsertToCollection(1);
-            col.InsertToCollection(2);
-            col.InsertToCollection(2);
-            col.InsertToCollection(3);
-            col.InsertToCollection(3);
-            col.InsertToCollection(3);
+            col.AddToCollection(1);
+            col.AddToCollection(2);
+            col.AddToCollection(2);
+            col.AddToCollection(3);
+            col.AddToCollection(3);
+            col.AddToCollection(3);
             Assert.AreEqual(col.CardCount, 6); // Verify correct number
             for (int i = 1; i <= 3; i++)
             {
@@ -34,12 +34,12 @@ namespace EngineTests
         {
             AssortedCardCollection col = new AssortedCardCollection();
             // Add 6 cards as before
-            col.InsertToCollection(1);
-            col.InsertToCollection(2);
-            col.InsertToCollection(2);
-            col.InsertToCollection(3);
-            col.InsertToCollection(3);
-            col.InsertToCollection(3);
+            col.AddToCollection(1);
+            col.AddToCollection(2);
+            col.AddToCollection(2);
+            col.AddToCollection(3);
+            col.AddToCollection(3);
+            col.AddToCollection(3);
             for (int i = 1; i <= 3; i++)
             {
                 Assert.IsTrue(col.HasCardInCollection(i));
@@ -63,13 +63,13 @@ namespace EngineTests
             for (int i = 0; i < 10; i++) // Add 10 random hands between 0-99
             {
                 int rn = _rng.Next(100);
-                col1.InsertToCollection(rn);
-                col2.InsertToCollection(rn);
+                col1.AddToCollection(rn);
+                col2.AddToCollection(rn);
             }
             Assert.AreEqual(col1.GetHashCode(), col2.GetHashCode());
             // Now add an extra random card
             int rCard = _rng.Next(100);
-            col2.InsertToCollection(rCard);
+            col2.AddToCollection(rCard);
             Assert.AreNotEqual(col1.GetHashCode(), col2.GetHashCode());
             // Revert this, should be back to equal
             col2.RemoveFromCollection(rCard);
@@ -82,8 +82,8 @@ namespace EngineTests
             AssortedCardCollection col2 = new AssortedCardCollection();
             for (int i = 0; i < 10; i++) // Add cards 0-9 but in different insertion order
             {
-                col1.InsertToCollection(i);
-                col2.InsertToCollection(9 - i);
+                col1.AddToCollection(i);
+                col2.AddToCollection(9 - i);
             }
             Assert.AreEqual(col1.GetHashCode(), col2.GetHashCode()); // Still should have same hash
         }
@@ -92,9 +92,9 @@ namespace EngineTests
         {
             AssortedCardCollection col = new AssortedCardCollection();
             // Add 6 cards, 1, 2, 2, 3, 3, 3
-            col.InsertToCollection(1);
-            col.InsertToCollection(2, 2);
-            col.InsertToCollection(3, 3);
+            col.AddToCollection(1);
+            col.AddToCollection(2, 2);
+            col.AddToCollection(3, 3);
             Assert.AreEqual(col.CardCount, 6); // Verify correct number
             for (int i = 1; i <= 3; i++)
             {
@@ -106,7 +106,7 @@ namespace EngineTests
         public void RemoveMany()
         {
             AssortedCardCollection col = new AssortedCardCollection();
-            col.InsertToCollection(1, 10);
+            col.AddToCollection(1, 10);
             Assert.AreEqual(col.CardCount, 10); // Verify correct number
             Assert.AreEqual(col.CheckAmountInCollection(1), 10); // Verify correct card ammount
             Random _rng = new Random();
@@ -126,7 +126,7 @@ namespace EngineTests
             {
                 int amount = _rng.Next(1, 4); // Between 1-3
                 counts[amount - 1]++;
-                col.InsertToCollection(i, amount);
+                col.AddToCollection(i, amount);
             }
             // Now I check
             for (int i = 0; i < 3; i++)
@@ -149,7 +149,7 @@ namespace EngineTests
             AssortedCardCollection col = new AssortedCardCollection();
             for (int i = 1; i <= 10; i++) // Add cards 1-10, 3 copies each
             {
-                col.InsertToCollection(i, 3);
+                col.AddToCollection(i, 3);
             }
             int[] counts = [0, 0, 10];
             for (int i = 1; i <= 10; i++) // Remove randomly
@@ -177,7 +177,7 @@ namespace EngineTests
         {
             // Remove from collection and see if amounts histogram remains ok
             AssortedCardCollection col = new AssortedCardCollection();
-            col.InsertToCollection(1, 2);
+            col.AddToCollection(1, 2);
             // Check everyhting about card and count histogram is ok
             Assert.AreEqual(2, col.CardCount);
             Assert.AreEqual(2, col.CheckAmountInCollection(1));

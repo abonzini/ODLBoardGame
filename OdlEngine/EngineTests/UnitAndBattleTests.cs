@@ -28,7 +28,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, allTiles, 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Insert token cards, 1 in all stats, summonable in any lane 
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Insert token cards, 1 in all stats, summonable in any lane 
                 }
                 state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -73,7 +73,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Insert token cards, 1 in all stats, summonable in any lane 
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Insert token cards, 1 in all stats, summonable in any lane 
                 }
                 state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -131,7 +131,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 0, 1, 1, 1));
                 for (int i = 0; i < 10; i++)
                 {
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Insert token cards, 1 in all stats but 0 HP, summonable in any lane 
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Insert token cards, 1 in all stats but 0 HP, summonable in any lane 
                 }
                 state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -1013,9 +1013,9 @@ namespace EngineTests
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                     state.PlayerStates[playerIndex].Deck.InsertCard(1);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(1);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(1);
                 }
                 //Begin sim
@@ -1088,9 +1088,9 @@ namespace EngineTests
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                     state.PlayerStates[playerIndex].Deck.InsertCard(1);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(1);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(1);
                 }
                 // Begin simulation
@@ -1161,9 +1161,9 @@ namespace EngineTests
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                     state.PlayerStates[playerIndex].Deck.InsertCard(1);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(1);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(1);
                 }
                 // Begin sim
@@ -1238,9 +1238,9 @@ namespace EngineTests
                     for (int i = 0; i < 5; i++)
                     {
                         // Insert to both players hands and decks. Both have attack but they can't kill themselves
-                        state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                        state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                         state.PlayerStates[playerIndex].Deck.InsertCard(1);
-                        state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(1);
+                        state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1);
                         state.PlayerStates[otherPlayerIndex].Deck.InsertCard(1);
                     }
                     // Begin sim
@@ -1321,11 +1321,11 @@ namespace EngineTests
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(0);
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add unit too
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(0);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add unit too
                     state.PlayerStates[playerIndex].Deck.InsertCard(0);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(0);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(1); // Add unit too
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(0);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1); // Add unit too
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
                 Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 2, 1);
@@ -1376,9 +1376,9 @@ namespace EngineTests
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(0);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(0);
                     state.PlayerStates[playerIndex].Deck.InsertCard(0);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(0);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(0);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
                 Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 2, 1);
@@ -1433,9 +1433,9 @@ namespace EngineTests
                 for (int i = 0; i < 5; i++)
                 {
                     // Insert to both players hands and decks. Both have attack but they can't kill themselves
-                    state.PlayerStates[playerIndex].Hand.InsertToCollection(0);
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(0);
                     state.PlayerStates[playerIndex].Deck.InsertCard(0);
-                    state.PlayerStates[otherPlayerIndex].Hand.InsertToCollection(0);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(0);
                     state.PlayerStates[otherPlayerIndex].Deck.InsertCard(0);
                 }
                 Unit testUnit = TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 0, 2, 1);

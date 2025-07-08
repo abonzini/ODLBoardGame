@@ -34,7 +34,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Card 2: placeholder simple unit
                 cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, [], 1, 1, 1, 1));
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Beginning of test loop:
@@ -130,7 +130,7 @@ namespace EngineTests
                 cardDb.InjectCard(1, summonerUnit); // Add to cardDb
                 // Card 2: placeholder simple unit
                 cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT", 0, [0, 3, 4, 9, 10, 17], 1, 1, 1, 1));
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add summoner card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add summoner card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Test begins
@@ -192,7 +192,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 LaneID otherLane1 = targetLocation switch
                 {
@@ -363,7 +363,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 LaneID otherLane1 = targetLocation switch
                 {
@@ -491,7 +491,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
@@ -600,7 +600,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 // Add stuff to board. In a random lane, add a unit for each player (1 and 2), in relative tiles 1, and building in relative tile 0
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 int firstPlayerTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, playerIndex);
                 int firstOppTile = state.BoardState.GetLane(targetLocation).GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, 0, opponentIndex);
@@ -730,7 +730,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect, buffEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Add stuff to board. In a random lane, add a few units for player
                 LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 Unit theUnit = new Unit() // This is the unit that'll be created
@@ -833,7 +833,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, debugEffect, buffEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Add stuff to board. In a random lane, add a few units for player
                 LaneID targetLocation = TestHelperFunctions.GetRandomChoice([LaneID.PLAINS, LaneID.FOREST, LaneID.MOUNTAIN]); // Random lane target
                 Unit theUnit = new Unit() // This is the unit that'll be created
@@ -925,7 +925,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, buffEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Add stuff to board. Will add 10 units
                 Unit theUnit = new Unit() // This is the unit that'll be created
                 {
@@ -990,7 +990,7 @@ namespace EngineTests
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.WHEN_PLAYED, [selectEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1045,7 +1045,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [selectEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(2, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(2); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(2); // Add card
                 TestHelperFunctions.ManualInitEntity(state, 0, 2, playerIndex, (Unit)unit.Clone()); // Injects unit in board
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
@@ -1099,7 +1099,7 @@ namespace EngineTests
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Now I init a building in first tile
                 Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, [0, 3, 4, 9, 10, 17], 1);
                 TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
@@ -1157,7 +1157,7 @@ namespace EngineTests
                 unit.Triggers.Add(EffectLocation.BOARD, BoardTriggers);
                 BoardTriggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [selectEffect, debugEffect]);
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Pre play assert ( specific state and no triggers )
@@ -1212,7 +1212,7 @@ namespace EngineTests
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Now I init a building in first tile
                 Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, [0, 3, 4, 9, 10, 17], 1);
                 TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
@@ -1287,7 +1287,7 @@ namespace EngineTests
                 unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 unit.Interactions.Add(InteractionType.UNIT_ENTERS_BUILDING, [selectEffect, debugEffect]); // Add interaction to card, will obtain the bldg i step into
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Now I init a building in first tile
                 Building building = TestCardGenerator.CreateBuilding(2, "TESTBLDG", 0, [0, 3, 4, 9, 10, 17], 1);
                 TestHelperFunctions.ManualInitEntity(state, (playerIndex == 0) ? 0 : 3, 2, playerIndex, building); // Now building is in place
@@ -1373,7 +1373,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [setFirstValueEffect, operationEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1459,7 +1459,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, multiInputCalcEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1547,7 +1547,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, calcEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1621,7 +1621,7 @@ namespace EngineTests
                 BoardTriggers.Add(TriggerType.ON_DEBUG_TRIGGERED, [secondOperationEffect]);
                 // Rest of test
                 cardDb.InjectCard(1, unit); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1699,8 +1699,8 @@ namespace EngineTests
                 // Rest of test
                 cardDb.InjectCard(1, skill); // Add to cardDb
                 cardDb.InjectCard(2, unit);
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(2);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(2);
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1759,7 +1759,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [goldModifyEffect]); // Add interaction to card
                 // Rest of test
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -1829,7 +1829,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [assertEffect, debugEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Finally load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -2001,7 +2001,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, chooseEnemyPlayer, hitEnemy]);
                 skill.Interactions.Add(InteractionType.POST_DAMAGE, [storeEffect, modifyEffect, debugEffect]);
                 cardDb.InjectCard(1, skill);
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                 // I'll load the game
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -2059,7 +2059,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchAllUnits, killAllUnits]);
                 cardDb.InjectCard(2, skill);
                 // Setup
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(2); // Add card to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(2); // Add card to hand
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
                 // Put a bunch of units (5) in random places
@@ -2129,7 +2129,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, targetEffect, damageEffect]);
                 // Add card
                 cardDb.InjectCard(1, skill);
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                 // Begin simulation
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -2188,7 +2188,7 @@ namespace EngineTests
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [chooseBoard, targetEffect, damageEffect]);
                 // Add card
                 cardDb.InjectCard(1, skill);
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1);
                 // Begin simulation
                 GameStateMachine sm = new GameStateMachine(cardDb);
                 sm.LoadGame(state); // Start from here
@@ -2234,7 +2234,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [drawEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 for (int i = 0; i < 10; i++) // Also add 10 junk cards to both players
                 {
                     state.PlayerStates[playerIndex].Deck.InsertCard(0);
@@ -2325,7 +2325,7 @@ namespace EngineTests
                 skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
                 skill.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, searchEffect, marchEffect]); // Add interaction to card
                 cardDb.InjectCard(1, skill); // Add to cardDb
-                state.PlayerStates[playerIndex].Hand.InsertToCollection(1); // Add card
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
                 // Add stuff to board. place one unit in forest, one in mountain and movements that don't overflow
                 int movement1 = _rng.Next(1, GameConstants.FOREST_NUMBER_OF_TILES);
                 int movement2 = _rng.Next(1, GameConstants.MOUNTAIN_NUMBER_OF_TILES);
