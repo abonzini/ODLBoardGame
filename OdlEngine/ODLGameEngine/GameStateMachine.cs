@@ -11,7 +11,6 @@
             PlayerWhoWon = playerWhoWon;
         }
     }
-
     public partial class GameStateMachine
     {
         Random _rng;
@@ -301,6 +300,7 @@
                     {
                         cardDrawn = 0; // Adds wildcard instead
                         ENGINE_HYPOTHETICAL_AlterDeckAmount(player, -1); // "Removes" one card from deck
+                        ENGINE_HYPOTHETICAL_SetWildcardRelevance(player.Owner, true); // This new wildcard will be relevant at least at the beginning
                     }
                     else
                     {

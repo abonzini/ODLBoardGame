@@ -145,6 +145,11 @@
                     auxPlayerState.Hand.AddToCollection(auxInt1);
                     _hypotheticalOpponentsDeck.RemoveFromCollection(auxInt1); // One less card in hypothetical deck too
                     break;
+                case EventType.HYPOTHETICAL_SET_WILDCARD_RELEVANCE:
+                    auxInt1 = ((EntityTransitionEvent<int, bool>)e).entity;
+                    ((EntityTransitionEvent<int, bool>)e).oldValue = _hasRelevantWildcards[auxInt1];
+                    _hasRelevantWildcards[auxInt1] = ((EntityTransitionEvent<int, bool>)e).newValue;
+                    break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
             }
@@ -270,6 +275,10 @@
                     auxPlayerState.Hand.RemoveFromCollection(auxInt1);
                     auxPlayerState.Hand.AddToCollection(0);
                     _hypotheticalOpponentsDeck.AddToCollection(auxInt1); // One less card in hypothetical deck too
+                    break;
+                case EventType.HYPOTHETICAL_SET_WILDCARD_RELEVANCE:
+                    auxInt1 = ((EntityTransitionEvent<int, bool>)e).entity;
+                    _hasRelevantWildcards[auxInt1] = ((EntityTransitionEvent<int, bool>)e).oldValue;
                     break;
                 default:
                     throw new NotImplementedException("Not a handled state rn");
@@ -677,6 +686,21 @@
                     eventType = EventType.HYPOTHETICAL_REVEAL_WILDCARD,
                     entity = player,
                     value = card
+                });
+        }
+        /// <summary>
+        /// Sets whether a player's wildcards are relevant
+        /// </summary>
+        /// <param name="player">Which player</param>
+        /// <param name="relevance">Whether relevant or not</param>
+        void ENGINE_HYPOTHETICAL_SetWildcardRelevance(int player, bool relevance)
+        {
+            ENGINE_ExecuteEvent(
+                new EntityTransitionEvent<int, bool>()
+                {
+                    eventType = EventType.HYPOTHETICAL_SET_WILDCARD_RELEVANCE,
+                    entity = player,
+                    newValue = relevance
                 });
         }
     }

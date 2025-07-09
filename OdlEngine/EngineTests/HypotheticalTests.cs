@@ -241,7 +241,6 @@ namespace EngineTests
         public void WildcardDiscoveryAltersOpponentsHypDeck()
         {
             // When a player has wildcards, can discover the wildcard and the model of the deck is updated
-            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -287,7 +286,6 @@ namespace EngineTests
         public void DiscardPileAltersOpponentsHypDeck()
         {
             // When a player has stuff in discard pile, the model of the deck is updated on HYP init
-            Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
@@ -315,6 +313,137 @@ namespace EngineTests
                 Assert.AreEqual(1, hypDeck.CheckAmountInCollection(2));
                 Assert.AreEqual(2, hypDeck.CheckAmountInCollection(3));
                 Assert.AreEqual(3, hypDeck.CardCount);
+            }
+        }
+        [TestMethod]
+        public void WildcardRelevanceAfterStart()
+        {
+            // Start in hypothetical mode, player doesn't have wildcards, while opponent will only have wildcards (relevant) if hand is not empty
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                // Fill hands and decks with anything, or 0 cards
+                int[] numberOfCardsInHandAndDeck = [0, 3];
+                foreach (int nCards in numberOfCardsInHandAndDeck)
+                {
+                    GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                    state.CurrentState = States.ACTION_PHASE;
+                    state.CurrentPlayer = player;
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1, nCards); // Add N cards to hand
+                    // Start now...
+                    GameStateMachine sm = new GameStateMachine();
+                    sm.LoadGame(state); // Start from here
+                    sm.StartHypotheticalMode(playerIndex, new AssortedCardCollection()); // Starts hypothetical with a specific POV, no hypothetical deck
+                    Assert.AreEqual(nCards, sm.DetailedState.PlayerStates[otherPlayerIndex].Hand.CheckAmountInCollection(0)); // Verify number of wildcards
+                    Assert.AreEqual(nCards > 0, sm.PlayerHasRelevantWildcards(otherPlayerIndex));
+                }
+            }
+        }
+        [TestMethod]
+        public void WildcardRelevanceAfterDraw()
+        {
+            // Players wihtout cards draw, wildcards become relevant again
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                // Fill hands and decks with BS, don't care about the actual card as won't be played, for easy validation and checking, cards from 1-N
+                int numberOfCardsInDeck = 10;
+                for (int i = 1; i <= numberOfCardsInDeck; i++)
+                {
+                    state.PlayerStates[playerIndex].Deck.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Deck.AddToCollection(i);
+                }
+                // Card 1: Skill that draws 2 cards to both players
+                CardFinder cardDb = new CardFinder();
+                Skill skill = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                Effect drawEffect = new Effect()
+                {
+                    EffectType = EffectType.CARD_DRAW,
+                    Input = Variable.TEMP_VARIABLE,
+                    TargetPlayer = EntityOwner.BOTH,
+                    TempVariable = 2
+                };
+                skill.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill.Interactions.Add(InteractionType.WHEN_PLAYED, [drawEffect]); // Add interaction to card
+                cardDb.InjectCard(1, skill); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add card
+                // Start now...
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Ok now will go to hypothetical mode (init of hypothetical in other tests)
+                sm.StartHypotheticalMode(playerIndex, new AssortedCardCollection()); // No hypothetical deck
+                // Init wildcards in "uninteresting" mode, as if minmax didn't care at the moment
+                sm.SetPlayerHasRelevantWildcards(playerIndex, false);
+                sm.SetPlayerHasRelevantWildcards(otherPlayerIndex, false);
+                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Finalize event stack cleanly
+                Assert.IsFalse(sm.PlayerHasRelevantWildcards(playerIndex));
+                Assert.IsFalse(sm.PlayerHasRelevantWildcards(otherPlayerIndex));
+                // Ok now players will draw, and now both players should have relevant wildcards
+                sm.PlayFromHand(1, 0);
+                Assert.IsTrue(sm.PlayerHasRelevantWildcards(playerIndex));
+                Assert.IsTrue(sm.PlayerHasRelevantWildcards(otherPlayerIndex));
+                // Revert the play
+                sm.UndoPreviousStep();
+                Assert.IsFalse(sm.PlayerHasRelevantWildcards(playerIndex));
+                Assert.IsFalse(sm.PlayerHasRelevantWildcards(otherPlayerIndex));
+                // End hypothetical mode
+                sm.EndHypotheticalMode();
+            }
+        }
+        [TestMethod]
+        public void WildcardRelevanceAfterDiscovery()
+        {
+            // Players discover a wildcard, rest of wildcards become relevant again
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int otherPlayerIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentPlayer = player;
+                // Fill hands and decks with BS, don't care about the actual card as won't be played, for easy validation and checking, cards from 1-N
+                int numberOfCardsInHandAndDeck = 5;
+                for (int i = 1; i <= numberOfCardsInHandAndDeck; i++)
+                {
+                    state.PlayerStates[playerIndex].Hand.AddToCollection(i);
+                    state.PlayerStates[playerIndex].Deck.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(i);
+                    state.PlayerStates[otherPlayerIndex].Deck.AddToCollection(i);
+                }
+                // Start now...
+                GameStateMachine sm = new GameStateMachine();
+                sm.LoadGame(state); // Start from here
+                int[] bothPlayers = [playerIndex, otherPlayerIndex];
+                sm.StartHypotheticalMode(playerIndex, new AssortedCardCollection()); // Starts hypothetical for current player, no hypothetical deck
+                sm.SetPlayerHasRelevantWildcards(playerIndex, false);
+                sm.SetPlayerHasRelevantWildcards(otherPlayerIndex, false);
+                Assert.IsFalse(sm.PlayerHasRelevantWildcards(playerIndex));
+                Assert.IsFalse(sm.PlayerHasRelevantWildcards(otherPlayerIndex));
+                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Finalize event stack cleanly
+                sm.Step(); // Implements draw phase (that way both players will have atleast one wildcard
+                int hypothethicalStateHash = sm.DetailedState.GetHashCode();
+                foreach (int whichPlayer in bothPlayers)
+                {
+                    int discoveredCard = 1; // Number doesn't matter
+                    Assert.IsTrue(sm.PlayerHasRelevantWildcards(playerIndex)); // Just drawn, so it became interesting
+                    Assert.IsFalse(sm.PlayerHasRelevantWildcards(otherPlayerIndex)); // Nothign changed, should remain uninteresting
+                    // Discovery and checks
+                    sm.DiscoverHypotheticalWildcard(whichPlayer, discoveredCard); // Player now has a wildcard replaced by the desired
+                    Assert.AreEqual(whichPlayer != playerIndex, sm.PlayerHasRelevantWildcards(playerIndex)); // Will not be interesting if player discovers, because player only had a single wildcard!
+                    Assert.AreEqual(whichPlayer == otherPlayerIndex, sm.PlayerHasRelevantWildcards(otherPlayerIndex)); // P2 will regain interesting wildcards
+                    // Reversion of discovery
+                    sm.UndoPreviousStep();
+                    Assert.IsTrue(sm.PlayerHasRelevantWildcards(playerIndex));
+                    Assert.IsFalse(sm.PlayerHasRelevantWildcards(otherPlayerIndex));
+                }
             }
         }
     }

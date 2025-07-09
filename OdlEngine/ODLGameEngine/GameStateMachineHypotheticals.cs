@@ -6,6 +6,7 @@
         AssortedCardCollection _hypotheticalStoredOpponentHand = null;
         AssortedCardCollection _hypotheticalOpponentsDeck = null;
         int _hypotheticalPlayer;
+        readonly bool[] _hasRelevantWildcards = [false, false];
         /// <summary>
         /// Begins hypothetical mode, by setting the opp hand to wildcards, will override draws, and some other stuff
         /// </summary>
@@ -15,9 +16,17 @@
         {
             _hypotheticalPlayer = player;
             int opposingPlayer = 1 - player; // This is the opposing player
+            // Players hands start uninteresting
+            _hasRelevantWildcards[player] = false;
+            _hasRelevantWildcards[opposingPlayer] = false;
             _hypotheticalStoredOpponentHand = DetailedState.PlayerStates[opposingPlayer].Hand; // Need to save their hand because I'm about to do some wild shit
+            // Check opponent's hypothetical new hand
             AssortedCardCollection newOpponentHand = new AssortedCardCollection();
-            newOpponentHand.AddToCollection(0, _hypotheticalStoredOpponentHand.CardCount); // Replaces opponen'ts whole hand with wildcards
+            if (_hypotheticalStoredOpponentHand.CardCount > 0)
+            {
+                newOpponentHand.AddToCollection(0, _hypotheticalStoredOpponentHand.CardCount); // Replaces opponen'ts whole hand with wildcards
+                _hasRelevantWildcards[opposingPlayer] = true;
+            }
             DetailedState.PlayerStates[opposingPlayer].Hand = newOpponentHand; // Changes opp hand
             _hypotheticalOpponentsDeck = hypotheticalOpponentsDeck;
             HYPOTHETICAL_InitializeOpponentsDeck();
@@ -63,8 +72,31 @@
             // This one requires going through game engine
             Player cardOwner = DetailedState.PlayerStates[player];
             ENGINE_HYPOTHETICAL_RevealWildcard(cardOwner, card);
-            ENGINE_ChangeState(DetailedState.CurrentState); // Repeat current state to flush event queue
+            // If player still has wildcards at hand, they will be relevant as hand (and probably deck) just changed
+            bool wildcardIsStillRelevant = cardOwner.Hand.HasCardInCollection(0);
+            ENGINE_HYPOTHETICAL_SetWildcardRelevance(cardOwner.Owner, wildcardIsStillRelevant);
+            // Repeat current state to flush event queue and make it undoable
+            ENGINE_ChangeState(DetailedState.CurrentState);
             return _stepHistory.Last(); // Returns everything that happened in this triggering, unneeded but needed to be able to reverse these stuffs
+        }
+        /// <summary>
+        /// Returns whether a player has relevant wildcards in hand
+        /// </summary>
+        /// <param name="player">Which players</param>
+        /// <returns>Whether it's of interest to analyze a player's wildcards</returns>
+        public bool PlayerHasRelevantWildcards(int player)
+        {
+            return _hasRelevantWildcards[player];
+        }
+        /// <summary>
+        /// Sets whether a player has relevant wildcards in hand, used after analysis of deck contents
+        /// WARNING: If called, can't SM.Undo until another command first.
+        /// </summary>
+        /// <param name="player">Which players</param>
+        /// <returns>Whether it's of interest to analyze a player's wildcards</returns>
+        public void SetPlayerHasRelevantWildcards(int player, bool isRelevant)
+        {
+            ENGINE_HYPOTHETICAL_SetWildcardRelevance(player, isRelevant);
         }
     }
 }
