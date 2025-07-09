@@ -96,6 +96,7 @@ namespace EngineTests
             int preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
             int preGold = testState.PlayerStates[(int)testState.CurrentPlayer].CurrentGold;
             int preDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
+            int turnCounter = testState.TurnCounter;
             // Player hashes init for first time, also hands and decks, also state!
             HashSetVerification(testState.PlayerStates[0], hashes, false);
             HashSetVerification(testState.PlayerStates[1], hashes, false);
@@ -114,6 +115,7 @@ namespace EngineTests
             Assert.AreEqual(postCards - preCards, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player draw exact amount of cards
             Assert.AreEqual(postGold - preGold, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Did player gain exact amount of gold
             Assert.AreEqual(postDeck - preDeck, -GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player deck shrink the exact amount
+            Assert.AreEqual(turnCounter + 1, testState.TurnCounter);
             // Only one player should've changed, the current one, so that one should have brand new hashes, state is obviosuly always new
             HashSetVerification(testState.PlayerStates[0], hashes, testState.CurrentPlayer != CurrentPlayer.PLAYER_1);
             HashSetVerification(testState.PlayerStates[1], hashes, testState.CurrentPlayer != CurrentPlayer.PLAYER_2);
@@ -132,6 +134,7 @@ namespace EngineTests
             Assert.AreEqual(postCards - preCards, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player restore cards
             Assert.AreEqual(postGold - preGold, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Did player restore gold
             Assert.AreEqual(postDeck - preDeck, -GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player deck recover the card
+            Assert.AreEqual(turnCounter, testState.TurnCounter);
             // All hashes should be present still
             HashSetVerification(testState.PlayerStates[0], hashes, true);
             HashSetVerification(testState.PlayerStates[1], hashes, true);

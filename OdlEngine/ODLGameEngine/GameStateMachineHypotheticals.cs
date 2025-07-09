@@ -90,13 +90,15 @@
         }
         /// <summary>
         /// Sets whether a player has relevant wildcards in hand, used after analysis of deck contents
-        /// WARNING: If called, can't SM.Undo until another command first.
+        /// WARNING: This function doesn't go through game engine so that it doesn't need to create a new step result and doesn't duplicate states.
+        /// However, this is a danger because this function isn't automatically "undone", and therefore can't guarantee Undo() states are consistent.
+        /// Rule of thumb is to only use this function as the first thing you do in a state after checking whether you need to check relevant wildcards.
         /// </summary>
         /// <param name="player">Which players</param>
         /// <returns>Whether it's of interest to analyze a player's wildcards</returns>
         public void SetPlayerHasRelevantWildcards(int player, bool isRelevant)
         {
-            ENGINE_HYPOTHETICAL_SetWildcardRelevance(player, isRelevant);
+            _hasRelevantWildcards[player] = isRelevant;
         }
     }
 }

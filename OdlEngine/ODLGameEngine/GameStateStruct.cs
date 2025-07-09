@@ -53,6 +53,8 @@ namespace ODLGameEngine
     public class GameStateStruct
     {
         [JsonProperty]
+        public int TurnCounter { get; set; } = 0; // Non hashed as Turn number doesnt change two states being different (transpositions). It is stored however for other effects and MinMax depth
+        [JsonProperty]
         public States CurrentState { get; set; } = States.START;
         [JsonProperty]
         public int StateHash { get { return GetHashCode(); } }

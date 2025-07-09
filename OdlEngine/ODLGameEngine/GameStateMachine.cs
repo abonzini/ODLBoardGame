@@ -237,6 +237,8 @@
         {
             int playerId = (int)DetailedState.CurrentPlayer;
             Player player = DetailedState.PlayerStates[playerId];
+            // New turn, increment turn counter
+            ENGINE_IncrementTurnCounter();
             // Advance all units of that player
             List<int> playerUnitsIds = DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT, playerId).ToList(); // (Clone)
             if (playerUnitsIds.Count > 0) // Only advance if player has units

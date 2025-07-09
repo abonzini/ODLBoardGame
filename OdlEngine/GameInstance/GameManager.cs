@@ -11,7 +11,8 @@ namespace GameInstance
         GET_TARGETS,
         PLAY_CARD,
         END_TURN,
-        STEP
+        STEP,
+        DISCOVER_WILDCARD
     }
     /// <summary>
     /// Describes a game action, needs a class since a few actions have a few params

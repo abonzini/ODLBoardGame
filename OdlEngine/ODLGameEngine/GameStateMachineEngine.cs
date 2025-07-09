@@ -83,6 +83,9 @@
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     DetailedState.NextUniqueIndex++;
                     break;
+                case EventType.INCREMENT_TURN_COUNTER:
+                    DetailedState.TurnCounter++;
+                    break;
                 case EventType.ENTITY_COORD_TRANSITION:
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, int>)e).entity;
                     ((EntityTransitionEvent<PlacedEntity, int>)e).oldValue = auxPlacedEntity.TileCoordinate; // Store old value first
@@ -219,6 +222,9 @@
                     break;
                 case EventType.INCREMENT_PLACEABLE_COUNTER:
                     DetailedState.NextUniqueIndex--;
+                    break;
+                case EventType.INCREMENT_TURN_COUNTER:
+                    DetailedState.TurnCounter--;
                     break;
                 case EventType.ENTITY_COORD_TRANSITION:
                     auxPlacedEntity = ((EntityTransitionEvent<PlacedEntity, int>)e).entity;
@@ -488,6 +494,17 @@
                 new GameEngineEvent()
                 {
                     eventType = EventType.INCREMENT_PLACEABLE_COUNTER
+                });
+        }
+        /// <summary>
+        /// System increments placeable counter to keep track of time passing (alarms and depth)
+        /// </summary>
+        void ENGINE_IncrementTurnCounter()
+        {
+            ENGINE_ExecuteEvent(
+                new GameEngineEvent()
+                {
+                    eventType = EventType.INCREMENT_TURN_COUNTER,
                 });
         }
         /// <summary>
