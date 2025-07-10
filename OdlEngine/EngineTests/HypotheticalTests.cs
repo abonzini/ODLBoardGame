@@ -177,7 +177,6 @@ namespace EngineTests
                     for (int i = 0; i < turnsToSkip; i++)
                     {
                         sm.EndTurn(); // EOT
-                        sm.Step(); // Skip BOT
                     }
                     Assert.AreNotEqual(startHash, sm.DetailedState.GetHashCode());
                     // End hypothetical mode and ensure complete restoration of game state
@@ -197,8 +196,8 @@ namespace EngineTests
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE;
-                state.CurrentPlayer = player;
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex; // Other player ends turn
                 // Fill hands and decks with BS, don't care about the actual card as won't be played, for easy validation and checking, cards from 1-N
                 int numberOfCardsInHandAndDeck = _rng.Next(5, 20);
                 for (int i = 1; i <= numberOfCardsInHandAndDeck; i++)
@@ -213,7 +212,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 int[] bothPlayers = [playerIndex, otherPlayerIndex];
                 sm.StartHypotheticalMode(playerIndex, new AssortedCardCollection()); // Starts hypothetical for current player, no hypothetical deck
-                sm.Step(); // Implements draw phase (that way both players will have atleast one wildcard
+                sm.EndTurn(); // Implements new player draw phase (that way both players will have atleast one wildcard
                 int hypothethicalStateHash = sm.DetailedState.GetHashCode();
                 foreach (int whichPlayer in bothPlayers)
                 {
@@ -247,7 +246,7 @@ namespace EngineTests
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 // Add a wildcard to opponent's hand
                 state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1); // Will become wildcard
@@ -292,7 +291,7 @@ namespace EngineTests
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE;
+                state.CurrentState = States.ACTION_PHASE;
                 state.CurrentPlayer = player;
                 // Add a bunch of cards to discard pile, some won't be in the assumed deck anyway
                 state.PlayerStates[otherPlayerIndex].DiscardPile.AddToCollection(1, 1);
@@ -407,8 +406,8 @@ namespace EngineTests
                 int playerIndex = (int)player;
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE;
-                state.CurrentPlayer = player;
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = (CurrentPlayer)otherPlayerIndex; // Other player ends turn
                 // Fill hands and decks with BS, don't care about the actual card as won't be played, for easy validation and checking, cards from 1-N
                 int numberOfCardsInHandAndDeck = 5;
                 for (int i = 1; i <= numberOfCardsInHandAndDeck; i++)
@@ -428,7 +427,7 @@ namespace EngineTests
                 Assert.IsFalse(sm.PlayerHasRelevantWildcards(playerIndex));
                 Assert.IsFalse(sm.PlayerHasRelevantWildcards(otherPlayerIndex));
                 sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Finalize event stack cleanly
-                sm.Step(); // Implements draw phase (that way both players will have atleast one wildcard
+                sm.EndTurn(); // Implements draw phase (that way both players will have atleast one wildcard
                 int hypothethicalStateHash = sm.DetailedState.GetHashCode();
                 foreach (int whichPlayer in bothPlayers)
                 {

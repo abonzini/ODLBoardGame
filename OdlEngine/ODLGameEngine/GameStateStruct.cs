@@ -15,29 +15,8 @@ namespace ODLGameEngine
     /// </summary>
     public enum States
     {
-        /// <summary>
-        /// State machine just created, reccomended to setup before continuing
-        /// </summary>
         START,
-        /// <summary>
-        /// Initialization for Player 1
-        /// </summary>
-        P1_INIT,
-        /// <summary>
-        /// Initialization for Player 2
-        /// </summary>
-        P2_INIT,
-        /// <summary>
-        /// Start of a brand new game, shuffling and such needed
-        /// </summary>
-        DRAW_PHASE,
-        /// <summary>
-        /// Action phase, players select their actions
-        /// </summary>
         ACTION_PHASE,
-        /// <summary>
-        /// If end of game is triggered
-        /// </summary>
         EOG
     }
 
@@ -53,7 +32,7 @@ namespace ODLGameEngine
     public class GameStateStruct
     {
         [JsonProperty]
-        public int TurnCounter { get; set; } = 0; // Non hashed as Turn number doesnt change two states being different (transpositions). It is stored however for other effects and MinMax depth
+        public int TurnCounter { get; set; } = 1; // Non hashed as Turn number doesnt change two states being different (transpositions). It is stored however for other effects and MinMax depth. Begins at turn 1
         [JsonProperty]
         public States CurrentState { get; set; } = States.START;
         [JsonProperty]

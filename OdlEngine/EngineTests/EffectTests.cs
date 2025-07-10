@@ -1876,8 +1876,8 @@ namespace EngineTests
                 Random _rng = new Random();
                 int playerIndex = (int)player;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE; // Prepare for march
-                state.CurrentPlayer = player;
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = 1 - player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that just moves

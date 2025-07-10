@@ -101,16 +101,13 @@ However, all tribes can also also cards from the **Base Tribe Set**, which are c
 # Game Structure
 
 When the game begins:
-- Each player starts with 4 cards in their hand, and 5 **gold**
-
-Each turn there's the following phases:
-- Beggining of turn:
+- Each player starts with 5 cards in their hand, and 5 **gold**
+- Player 1 starts the game, plays card(s) and power until they end their turn.
+- Players then alternate depending on whose turn it is.
+- At the beggining of a turn:
     - First, all of the player's units **march**, in order that they were played
     - Player then draws a card
     - Also, the player player gets 2 **gold**
-- Play phase: Player can use their resources to play cards or the **Active Skill** (only once per turn)
-- End of turn: Player ends their turn
-- Beginning of turn for the next player
 
 Game continues until one player loses
 

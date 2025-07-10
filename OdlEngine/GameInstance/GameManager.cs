@@ -11,7 +11,6 @@ namespace GameInstance
         GET_TARGETS,
         PLAY_CARD,
         END_TURN,
-        STEP,
         DISCOVER_WILDCARD
     }
     /// <summary>

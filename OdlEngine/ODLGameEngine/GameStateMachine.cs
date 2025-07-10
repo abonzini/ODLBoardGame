@@ -58,47 +58,10 @@
         // --------------------------------------------------------------------------------------
 
         /// <summary>
-        /// Performs a step of the state, moves the game state forward. Does nothing if machine is awaiting actions instead
-        /// </summary>
-        /// <returns>The new state action, null if nothing happened</returns>
-        public StepResult Step()
-        {
-            try // Something here may make the game end so I need to catch!
-            {
-                switch (DetailedState.CurrentState)
-                {
-                    case States.START:
-                    case States.ACTION_PHASE:
-                    case States.EOG:
-                        return null;
-                    case States.P1_INIT:
-                        STATE_InitializePlayer(0);
-                        ENGINE_ChangeState(States.P2_INIT);
-                        break;
-                    case States.P2_INIT:
-                        STATE_InitializePlayer(1);
-                        ENGINE_SetNextPlayer(GetNextPlayer()); // Init finished, now begin game w P1 active
-                        ENGINE_ChangeState(States.DRAW_PHASE);
-                        break;
-                    case States.DRAW_PHASE:
-                        STATE_DrawPhase();
-                        ENGINE_ChangeState(States.ACTION_PHASE);
-                        break;
-                    default:
-                        throw new NotImplementedException("State not yet implemented");
-                }
-            }
-            catch (EndOfGameException e)
-            {
-                STATE_TriggerEndOfGame(e.PlayerWhoWon);
-            }
-            return _stepHistory.Last();
-        }
-        /// <summary>
         /// Returns the next player that'd play (by default toggles between 1-2 but may get more complex)
         /// </summary>
         /// <returns>Next active player</returns>
-        private CurrentPlayer GetNextPlayer()
+        private CurrentPlayer STATE_GetNextPlayer()
         {
             return DetailedState.CurrentPlayer switch // Player is always 1 unless it goes from 1 -> 2
             {
@@ -123,9 +86,15 @@
         /// <param name="p2">Initial data for player 2</param>
         public void StartNewGame(PlayerInitialData p1, PlayerInitialData p2)
         {
+            if (DetailedState.CurrentState != States.START) return; // Only works first thing
+            // Loads player data and initialises
             STATE_LoadInitialPlayerData(0, p1);
+            STATE_InitializePlayer(0);
             STATE_LoadInitialPlayerData(1, p2);
-            ENGINE_ChangeState(States.P1_INIT); // Switches to first actual state
+            STATE_InitializePlayer(1);
+            // Set first player
+            ENGINE_SetNextPlayer(STATE_GetNextPlayer()); // Make first player the first
+            ENGINE_ChangeState(States.ACTION_PHASE); // Switches to first actual state
         }
         /// <summary>
         /// Ends turn of current player, will potentially call EOT effects, then switch to draw phase of next player (e.g. toggles player and transitions to DP)
@@ -133,22 +102,15 @@
         /// <returns>Actions occurring during EOT</returns>
         public StepResult EndTurn()
         {
+            if (DetailedState.CurrentState != States.ACTION_PHASE) // Need to be in action phase!
+            {
+                return null;
+            }
             try
             {
-                if (DetailedState.CurrentState != States.ACTION_PHASE) // Need to be in action phase!
-                {
-                    return null;
-                }
-                // EOT effects
-                LivingEntity currentPlayer = DetailedState.EntityData[(int)DetailedState.CurrentPlayer];
-                EndOfTurnContext eotCtx = new EndOfTurnContext()
-                {
-                    Actor = currentPlayer
-                };
-                TRIGINTER_ProcessTrigger(TriggerType.ON_END_OF_TURN, DetailedState.BoardState, eotCtx); // Trigger EOT event
-                // Transition proper
-                ENGINE_SetNextPlayer(GetNextPlayer()); // Swap player
-                ENGINE_ChangeState(States.DRAW_PHASE); // Next is draw phase
+                STATE_ProcessEot();
+                STATE_ProcessBot();
+                ENGINE_ChangeState(States.ACTION_PHASE); // Next action phase of other player unless someone died
             }
             catch (EndOfGameException e)
             {
@@ -233,7 +195,7 @@
         /// <summary>
         /// Executes draw phase
         /// </summary>
-        void STATE_DrawPhase()
+        void STATE_ProcessBot()
         {
             int playerId = (int)DetailedState.CurrentPlayer;
             Player player = DetailedState.PlayerStates[playerId];
@@ -270,6 +232,21 @@
             }
             EFFECTS_ModifyPlayersGold(playerId, GameConstants.DRAW_PHASE_GOLD_OBTAINED, ModifierOperation.ADD);
             ENGINE_ChangePlayerPowerAvailability(player, true); // Player can now use active power again
+        }
+        /// <summary>
+        /// Executes end-phase
+        /// </summary>
+        void STATE_ProcessEot()
+        {
+            // EOT effects
+            LivingEntity currentPlayer = DetailedState.EntityData[(int)DetailedState.CurrentPlayer];
+            EndOfTurnContext eotCtx = new EndOfTurnContext()
+            {
+                Actor = currentPlayer
+            };
+            TRIGINTER_ProcessTrigger(TriggerType.ON_END_OF_TURN, DetailedState.BoardState, eotCtx); // Trigger EOT event
+            // Transition proper
+            ENGINE_SetNextPlayer(STATE_GetNextPlayer()); // Swap player
         }
         /// <summary>
         /// Shuffles a player deck

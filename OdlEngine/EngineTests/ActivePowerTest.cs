@@ -89,9 +89,8 @@ namespace EngineTests
                 state.CurrentPlayer = 1 - player;
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                sm.EndTurn(); // End opposing player's turn
                 Assert.AreEqual(sm.DetailedState.PlayerStates[(int)player].PowerAvailable, false); // Ensure I couldn't use
-                sm.Step();
+                sm.EndTurn(); // End opposing player's turn
                 Assert.AreEqual(sm.DetailedState.PlayerStates[(int)player].PowerAvailable, true); // But now ensure I can
                 sm.UndoPreviousStep();
                 Assert.AreEqual(sm.DetailedState.PlayerStates[(int)player].PowerAvailable, false); // Ensure reverted properly

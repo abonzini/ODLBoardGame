@@ -480,8 +480,8 @@ namespace EngineTests
             {
                 int playerIndex = (int)player;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE; // Prepare for march
-                state.CurrentPlayer = player;
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = 1 - player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that just moves
@@ -514,7 +514,7 @@ namespace EngineTests
                     sm.BUILDING_ConstructBuilding(playerIndex, new ConstructionContext() { AbsoluteConstructionTile = buildingCoord, Actor = marchingUnit, Affected = marchDetectingBuilding }); // Manually insert building
                     sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger useless debug event to properly terminate event stack
                     int preMarchHash = sm.DetailedState.GetHashCode();
-                    StepResult res = sm.Step(); // This should trigger marching of units and such
+                    StepResult res = sm.EndTurn(); // This should trigger marching of units and such
                     int postMarchHash = sm.DetailedState.GetHashCode();
                     Assert.AreNotEqual(postMarchHash, preMarchHash);
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
@@ -536,14 +536,14 @@ namespace EngineTests
         [TestMethod]
         public void NoSelfTriggering()
         {
-            // Verify that a unit can't trigger when it's an action its doing by itself (as it should be resolved by interactions
+            // Verify that a unit can't trigger when it's an action its doing by itself (as it should be resolved by interactions)
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
             {
                 int playerIndex = (int)player;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE; // Prepare for march
-                state.CurrentPlayer = player;
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = 1 - player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that just moves
@@ -563,7 +563,7 @@ namespace EngineTests
                 sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = marchingUnit, PlayedTarget = 0 }); // Manually insert unit
                 sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger useless debug event to properly terminate event stack
                 int preMarchHash = sm.DetailedState.GetHashCode();
-                StepResult res = sm.Step(); // This should trigger marching of units and such
+                StepResult res = sm.EndTurn(); // This should trigger marching of units and such
                 int postMarchHash = sm.DetailedState.GetHashCode();
                 Assert.AreNotEqual(postMarchHash, preMarchHash);
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
@@ -607,7 +607,7 @@ namespace EngineTests
                 int preEotHash = sm.DetailedState.GetHashCode();
                 StepResult res = sm.EndTurn();
                 Assert.AreNotEqual(preEotHash, sm.DetailedState.GetHashCode());
-                Assert.AreEqual(States.DRAW_PHASE, sm.DetailedState.CurrentState); // Ensure EOT happened ok
+                Assert.AreEqual(States.ACTION_PHASE, sm.DetailedState.CurrentState); // Ensure EOT happened ok
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
                 Assert.IsNull(cpu); // Ensure it's not here
                 // Finally revert EOT
@@ -618,7 +618,7 @@ namespace EngineTests
                 preEotHash = sm.DetailedState.GetHashCode();
                 res = sm.EndTurn();
                 Assert.AreNotEqual(preEotHash, sm.DetailedState.GetHashCode());
-                Assert.AreEqual(States.DRAW_PHASE, sm.DetailedState.CurrentState); // Ensure EOT happened ok
+                Assert.AreEqual(States.ACTION_PHASE, sm.DetailedState.CurrentState); // Ensure EOT happened ok
                 cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
                 Assert.IsNotNull(cpu); // Ensure I got it now
                 // Finally revert EOT

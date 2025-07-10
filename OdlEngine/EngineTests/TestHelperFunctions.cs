@@ -92,10 +92,12 @@ namespace EngineTests
         {
             HashSet<int> hashes = new HashSet<int>(); // Checks all hashes resulting
             GameStateStruct testState = sm.DetailedState;
-            Assert.AreEqual(testState.CurrentState, States.DRAW_PHASE); // Am I in draw phase
-            int preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
-            int preGold = testState.PlayerStates[(int)testState.CurrentPlayer].CurrentGold;
-            int preDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
+            int firstPlayer = (int)testState.CurrentPlayer;
+            int playerToVerify = 1 - firstPlayer;
+            Assert.AreEqual(testState.CurrentState, States.ACTION_PHASE); // Am I in action phase
+            int preCards = testState.PlayerStates[playerToVerify].Hand.CardCount;
+            int preGold = testState.PlayerStates[playerToVerify].CurrentGold;
+            int preDeck = testState.PlayerStates[playerToVerify].Deck.DeckSize;
             int turnCounter = testState.TurnCounter;
             // Player hashes init for first time, also hands and decks, also state!
             HashSetVerification(testState.PlayerStates[0], hashes, false);
@@ -105,12 +107,12 @@ namespace EngineTests
             HashSetVerification(testState.PlayerStates[0].Deck, hashes, false);
             HashSetVerification(testState.PlayerStates[1].Deck, hashes, false);
             HashSetVerification(testState, hashes, false);
-            // Now draw!
-            sm.Step();
+            // Now draw (end of turn leads to draw phase)
+            sm.EndTurn();
             testState = sm.DetailedState;
-            int postCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
-            int postGold = testState.PlayerStates[(int)testState.CurrentPlayer].CurrentGold;
-            int postDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
+            int postCards = testState.PlayerStates[playerToVerify].Hand.CardCount;
+            int postGold = testState.PlayerStates[playerToVerify].CurrentGold;
+            int postDeck = testState.PlayerStates[playerToVerify].Deck.DeckSize;
             Assert.AreEqual(testState.CurrentState, States.ACTION_PHASE); // Am I in next phase
             Assert.AreEqual(postCards - preCards, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player draw exact amount of cards
             Assert.AreEqual(postGold - preGold, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Did player gain exact amount of gold
@@ -127,10 +129,10 @@ namespace EngineTests
             // Now revert
             sm.UndoPreviousStep(); // Go back to beginning of drawphase
             testState = sm.DetailedState;
-            preCards = testState.PlayerStates[(int)testState.CurrentPlayer].Hand.CardCount;
-            preGold = testState.PlayerStates[(int)testState.CurrentPlayer].CurrentGold;
-            preDeck = testState.PlayerStates[(int)testState.CurrentPlayer].Deck.DeckSize;
-            Assert.AreEqual(testState.CurrentState, States.DRAW_PHASE); // Am I in draw phase again
+            preCards = testState.PlayerStates[playerToVerify].Hand.CardCount;
+            preGold = testState.PlayerStates[playerToVerify].CurrentGold;
+            preDeck = testState.PlayerStates[playerToVerify].Deck.DeckSize;
+            Assert.AreEqual(testState.CurrentState, States.ACTION_PHASE);
             Assert.AreEqual(postCards - preCards, GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player restore cards
             Assert.AreEqual(postGold - preGold, GameConstants.DRAW_PHASE_GOLD_OBTAINED); // Did player restore gold
             Assert.AreEqual(postDeck - preDeck, -GameConstants.DRAW_PHASE_CARDS_DRAWN); // Did player deck recover the card

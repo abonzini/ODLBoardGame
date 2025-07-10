@@ -115,8 +115,8 @@ namespace EngineTests
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE;
-                state.CurrentPlayer = player;
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = (CurrentPlayer)opponentIndex; // So I can end turn
                 state.PlayerStates[0].Hp.BaseValue = 30; // Just in case
                 state.PlayerStates[1].Hp.BaseValue = 30;
                 // Cards
@@ -160,7 +160,7 @@ namespace EngineTests
                     sm.LoadGame(state); // Start from here
                     // Before the advance
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                    StepResult res = sm.Step(); // Do my draw phase, trigger advance now
+                    StepResult res = sm.EndTurn(); // Do my draw phase, trigger advance now
                     // Check if debug event is there
                     CpuState cpu = TestHelperFunctions.FetchDebugEvent(res);
                     Assert.IsNotNull(cpu);
@@ -184,8 +184,8 @@ namespace EngineTests
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE; // Because they'll march
-                state.CurrentPlayer = player;
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = (CurrentPlayer)opponentIndex; // So I can end turn
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that pushes debug effect when damaging something
@@ -206,7 +206,7 @@ namespace EngineTests
                 sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger debug event to safely close the step result
                 // Before the advance
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                StepResult res = sm.Step(); // Do my draw phase, trigger advance now
+                StepResult res = sm.EndTurn(); // Do my draw phase, trigger advance now
                 // Check if debug event is there
                 List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res);
                 Assert.AreEqual(2, cpus.Count);
@@ -229,8 +229,8 @@ namespace EngineTests
                 int playerIndex = (int)player;
                 int opponentIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
-                state.CurrentState = States.DRAW_PHASE; // Because they'll march
-                state.CurrentPlayer = player;
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = (CurrentPlayer)opponentIndex; // So I can end turn
                 // Cards
                 CardFinder cardDb = new CardFinder();
                 // Card 1: Unit that pushes debug effect when damaging something
@@ -250,7 +250,7 @@ namespace EngineTests
                 sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger debug event to safely close the step result
                 // Before the advance
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                StepResult res = sm.Step(); // Do my draw phase, trigger advance now
+                StepResult res = sm.EndTurn(); // Do my draw phase, trigger advance now
                 // Check if debug event is there
                 List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res);
                 Assert.AreEqual(1, cpus.Count);
@@ -331,7 +331,7 @@ namespace EngineTests
         public void PreDamageInteraction()
         {
             // A skill that is about to deal damage but interrupts itself and changes the damage last moment
-            // Proves pre-damage and also that it can modift a damage outcome
+            // Proves pre-damage and also that it can modify a damage outcome
             Random _rng = new Random();
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
             foreach (CurrentPlayer player in players)
@@ -343,7 +343,7 @@ namespace EngineTests
                 state.CurrentPlayer = player;
                 // Cards
                 CardFinder cardDb = new CardFinder();
-                // Card 1: Skill that deals 1 damage and then triggers itself POST damage to push debug
+                // Card 1: Skill that deals 1 damage and then triggers itself PRE damage to push debug
                 Skill skill = TestCardGenerator.CreateSkill(1, 0, [], CardTargetingType.BOARD);
                 Effect chooseBoard = new Effect()
                 {
