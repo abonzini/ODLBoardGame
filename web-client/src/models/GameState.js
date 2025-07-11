@@ -6,14 +6,18 @@ export const CurrentPlayer = {
   OMNISCIENT: 'OMNISCIENT',
 };
 
+export const EntityType = {
+  NONE: 'NONE',
+  UNIT: 'UNIT',
+  BUILDING: 'BUILDING',
+  SKILL: 'SKILL',
+  PLAYER: 'PLAYER'
+};
+
 export const States = {
   START: 'START',
-  P1_INIT: 'P1_INIT',
-  P2_INIT: 'P2_INIT',
-  DRAW_PHASE: 'DRAW_PHASE',
   ACTION_PHASE: 'ACTION_PHASE',
-  EOT: 'EOT',
-  EOG: 'EOG',
+  EOG: 'EOG'
 };
 
 // Stat class matching C# structure
@@ -146,13 +150,6 @@ export class Player {
   }
 }
 
-export class Board {
-  constructor(data = {}) {
-    // Add board properties as needed
-    Object.assign(this, data);
-  }
-}
-
 export class PlacedEntity {
   constructor(data = {}) {
     // LivingEntity properties
@@ -162,6 +159,7 @@ export class PlacedEntity {
     this.uniqueId = data.uniqueId ?? null;
     this.id = data.id ?? 0;
     this.damageTokens = data.damageTokens ?? 0;
+    this.entityType = data.entityType ?? null;
     
     // PlacedEntity-specific properties
     this.tileCoordinate = data.tileCoordinate ?? -1;
@@ -181,6 +179,7 @@ export class PlacedEntity {
     placedEntity.uniqueId = json.UniqueId ?? null;
     placedEntity.id = json.Id ?? 0;
     placedEntity.damageTokens = json.DamageTokens ?? 0;
+    placedEntity.entityType = json.EntityType ?? null;
     
     // PlacedEntity-specific properties
     placedEntity.tileCoordinate = json.TileCoordinate ?? -1;
@@ -198,7 +197,6 @@ export class GameStateStruct {
     this.stateHash = data.stateHash ?? 0;
     this.currentPlayer = data.currentPlayer || CurrentPlayer.OMNISCIENT;
     this.playerStates = data.playerStates || [new Player(), new Player()];
-    this.boardState = data.boardState || new Board();
     this.entityData = data.entityData || new Map();
   }
 
@@ -211,7 +209,6 @@ export class GameStateStruct {
     gameState.stateHash = json.StateHash ?? 0;
     gameState.currentPlayer = json.CurrentPlayer || CurrentPlayer.OMNISCIENT;
     gameState.playerStates = (json.PlayerStates || []).map(playerData => Player.fromJson(playerData));
-    gameState.boardState = new Board(json.BoardState || {});
     
     // Convert EntityData from object to Map
     const entityDataMap = new Map();

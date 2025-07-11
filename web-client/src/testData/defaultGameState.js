@@ -1,4 +1,4 @@
-import { GameStateStruct, States, CurrentPlayer, Player, Board, AssortedCardCollection, Stat, PlacedEntity } from '../models/GameState';
+import { GameStateStruct, States, CurrentPlayer, Player, AssortedCardCollection, Stat, PlacedEntity } from '../models/GameState';
 
 // Default game state for testing
 export const defaultGameState = new GameStateStruct({
@@ -14,7 +14,7 @@ export const defaultGameState = new GameStateStruct({
       uniqueId: 0,
       hand: new AssortedCardCollection({
         _cardHistogram: new Map([[2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10], [11, 11]]), // 2 copies of card 1, 1 copy of card 3, 3 copies of card 5
-        _size: 6
+        _size: 65
       }),
       deck: new AssortedCardCollection({
         _cardHistogram: new Map([[1, 3], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2]]), // 3 copies of card 1, 2 copies each of cards 2-7
@@ -50,18 +50,75 @@ export const defaultGameState = new GameStateStruct({
       powerAvailable: false
     })
   ],
-  boardState: new Board(),
   entityData: new Map([
     [2, new PlacedEntity({
       name: 'Test Unit',
       hp: new Stat({ baseValue: 2, modifier: 0 }),
       owner: 0,
       uniqueId: 2,
-      id: 1,
+      id: 2,
       damageTokens: 0,
       tileCoordinate: 5,
+      entityType: 'UNIT',
       movement: new Stat({ baseValue: 1, modifier: 0 }),
       attack: new Stat({ baseValue: 2, modifier: 0 })
-    })]
+    })],
+    [3, new PlacedEntity({
+      name: 'Test Unit 2',
+      hp: new Stat({ baseValue: 2, modifier: 0 }),
+      owner: 1,
+      uniqueId: 3,
+      id: 2,
+      damageTokens: 0,
+      tileCoordinate: 5,
+      entityType: 'UNIT',
+      movement: new Stat({ baseValue: 1, modifier: 0 }),
+      attack: new Stat({ baseValue: 2, modifier: 0 })
+    })],
+    [4, new PlacedEntity({
+      name: 'Test Unit',
+      hp: new Stat({ baseValue: 2, modifier: 0 }),
+      owner: 0,
+      uniqueId: 4,
+      id: 13,
+      damageTokens: 0,
+      tileCoordinate: 5,
+      entityType: 'UNIT',
+      movement: new Stat({ baseValue: 1, modifier: 0 }),
+      attack: new Stat({ baseValue: 2, modifier: 0 })
+    })],
+    [5, new PlacedEntity({
+      name: 'Test Unit',
+      hp: new Stat({ baseValue: 2, modifier: 0 }),
+      owner: 0,
+      uniqueId: 5,
+      id: 13,
+      damageTokens: 0,
+      tileCoordinate: 5,
+      entityType: 'UNIT',
+      movement: new Stat({ baseValue: 1, modifier: 0 }),
+      attack: new Stat({ baseValue: 2, modifier: 0 })
+    })],
+    [6, new PlacedEntity({
+      name: 'Test Unit',
+      hp: new Stat({ baseValue: 2, modifier: 0 }),
+      owner: 1,
+      uniqueId: 6,
+      id: 3,
+      tileCoordinate: 5,
+      entityType: 'BUILDING',
+    })],
+    [7, new PlacedEntity({
+      name: 'Test Unit',
+      hp: new Stat({ baseValue: 2, modifier: 0 }),
+      owner: 0,
+      uniqueId: 7,
+      id: 13,
+      damageTokens: 0,
+      tileCoordinate: 5,
+      entityType: 'UNIT',
+      movement: new Stat({ baseValue: 1, modifier: 0 }),
+      attack: new Stat({ baseValue: 2, modifier: 0 })
+    })],
   ])
 });
