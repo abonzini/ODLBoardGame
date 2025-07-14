@@ -4,7 +4,7 @@
     {
         bool _hypotheticalMode = false; // Whether the state machine is currently in the hypohetical mode or not
         AssortedCardCollection _hypotheticalStoredOpponentHand = null;
-        AssortedCardCollection _hypotheticalOpponentsDeck = null;
+        AssortedCardCollection[] _hypotheticalDecks = [null, null];
         int _hypotheticalPlayer;
         readonly bool[] _hasRelevantWildcards = [false, false];
         /// <summary>
@@ -28,7 +28,8 @@
                 _hasRelevantWildcards[opposingPlayer] = true;
             }
             DetailedState.PlayerStates[opposingPlayer].Hand = newOpponentHand; // Changes opp hand
-            _hypotheticalOpponentsDeck = hypotheticalOpponentsDeck;
+            _hypotheticalDecks[_hypotheticalPlayer] = (AssortedCardCollection)DetailedState.PlayerStates[_hypotheticalPlayer].Deck.Clone(); // Get a copy of player's deck which can have its contents altered
+            _hypotheticalDecks[1 - _hypotheticalPlayer] = hypotheticalOpponentsDeck;
             HYPOTHETICAL_InitializeOpponentsDeck();
             _hypotheticalMode = true;
             _currentStep.tag = Tag.HYPOTHETICAL; // Sets to hypothetical mode, this is a protection/stopgap for controlled reversion of steps
@@ -43,7 +44,7 @@
             // (To-do, enhance with "known hand" and "known deck" when this is implemented
             foreach (KeyValuePair<int, int> kvp in DetailedState.PlayerStates[opponent].DiscardPile.GetCards())
             {
-                _hypotheticalOpponentsDeck.RemoveFromCollection(kvp.Key, kvp.Value); // The assumed deck now doesn't have these cards as they've been played already
+                _hypotheticalDecks[1 - _hypotheticalPlayer].RemoveFromCollection(kvp.Key, kvp.Value); // The assumed deck now doesn't have these cards as they've been played already
             }
         }
         /// <summary>
@@ -59,7 +60,7 @@
             _currentStep.tag = Tag.NO_TAG; // Removes hypothetical tag
             int opposingPlayer = 1 - _hypotheticalPlayer; // This is the opposing player
             DetailedState.PlayerStates[opposingPlayer].Hand = _hypotheticalStoredOpponentHand; // Returns opp hand
-            _hypotheticalOpponentsDeck = null;
+            _hypotheticalDecks = [null, null];
             _hypotheticalMode = false;
         }
         /// <summary>
@@ -67,17 +68,24 @@
         /// </summary>
         /// <param name="player">Player who will get the wildcard replaced</param>
         /// <param name="card">Card to replace wildcard with</param>
-        public StepResult DiscoverHypotheticalWildcard(int player, int card)
+        public StepResult DiscoverHypotheticalWildcard(int player, int card, bool standalone = true)
         {
             // This one requires going through game engine
             Player cardOwner = DetailedState.PlayerStates[player];
             ENGINE_HYPOTHETICAL_RevealWildcard(cardOwner, card);
-            // If player still has wildcards at hand, they will be relevant as hand (and probably deck) just changed
+            // If player still has wildcards at hand, they will be relevant as the hand (and deck) just changed
             bool wildcardIsStillRelevant = cardOwner.Hand.HasCardInCollection(0);
             ENGINE_HYPOTHETICAL_SetWildcardRelevance(cardOwner.Owner, wildcardIsStillRelevant);
-            // Repeat current state to flush event queue and make it undoable
-            ENGINE_ChangeState(DetailedState.CurrentState);
-            return _stepHistory.Last(); // Returns everything that happened in this triggering, unneeded but needed to be able to reverse these stuffs
+            if (standalone)
+            {
+                // Repeat current state to flush event queue and make it undoable
+                ENGINE_ChangeState(DetailedState.CurrentState);
+                return _stepHistory.Last(); // Returns everything that happened in this triggering, unneeded but needed to be able to reverse these stuffs
+            }
+            else
+            {
+                return null; // Someone may continue adding wildcards, their risk
+            }
         }
         /// <summary>
         /// Returns whether a player has relevant wildcards in hand
@@ -99,6 +107,15 @@
         public void SetPlayerHasRelevantWildcards(int player, bool isRelevant)
         {
             _hasRelevantWildcards[player] = isRelevant;
+        }
+        /// <summary>
+        /// Returns the card pool of hypothetical's player
+        /// </summary>
+        /// <param name="player">Which players</param>
+        /// <returns>The remaining cardpool to consider</returns>
+        public AssortedCardCollection GetPlayersHypotheticalCardPool(int player)
+        {
+            return _hypotheticalDecks[player];
         }
     }
 }

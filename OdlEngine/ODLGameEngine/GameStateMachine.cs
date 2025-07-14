@@ -139,6 +139,15 @@
             return _stepHistory.Last(); // Returns everything that happened in this triggering
         }
         /// <summary>
+        /// Closes event queue manually, to ensure the SM state is not broken after some manual fiddling
+        /// </summary>
+        /// <returns></returns>
+        public StepResult CloseEventStack()
+        {
+            ENGINE_ChangeState(DetailedState.CurrentState); // Repeat current state to flush event queue
+            return _stepHistory.Last(); // Returns everything that happened in this triggering
+        }
+        /// <summary>
         /// Test API to activate a trigger to pretend it comes from any ingame event, checks a literal place of the board
         /// </summary>
         /// <param name="trigger">What trigger</param>

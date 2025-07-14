@@ -203,7 +203,7 @@ namespace EngineTests
                 int tileCoord = 1; // Wherever
                 sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = unit, PlayedTarget = tileCoord }); // For p1
                 sm.UNIT_PlayUnit(opponentIndex, new PlayContext() { Actor = unit, PlayedTarget = tileCoord }); // For p2
-                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger debug event to safely close the step result
+                sm.CloseEventStack();
                 // Before the advance
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 StepResult res = sm.EndTurn(); // Do my draw phase, trigger advance now
@@ -247,7 +247,7 @@ namespace EngineTests
                 // Now add the units in the board
                 int tileCoord = sm.DetailedState.BoardState.PlainsLane.GetTileCoordinateConversion(LaneRelativeIndexType.ABSOLUTE, LaneRelativeIndexType.RELATIVE_TO_PLAYER, -1, playerIndex); // Get this player's end tile (wanna damage)
                 sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = unit, PlayedTarget = tileCoord }); // For p1
-                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger debug event to safely close the step result
+                sm.CloseEventStack();
                 // Before the advance
                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
                 StepResult res = sm.EndTurn(); // Do my draw phase, trigger advance now

@@ -146,7 +146,7 @@
                     auxInt1 = ((EntityValueEvent<Player, int>)e).value;
                     auxPlayerState.Hand.RemoveFromCollection(0);
                     auxPlayerState.Hand.AddToCollection(auxInt1);
-                    _hypotheticalOpponentsDeck.RemoveFromCollection(auxInt1); // One less card in hypothetical deck too
+                    _hypotheticalDecks[auxPlayerState.Owner].RemoveFromCollection(auxInt1); // One less card in hypothetical deck too
                     break;
                 case EventType.HYPOTHETICAL_SET_WILDCARD_RELEVANCE:
                     auxInt1 = ((EntityTransitionEvent<int, bool>)e).entity;
@@ -280,7 +280,7 @@
                     auxInt1 = ((EntityValueEvent<Player, int>)e).value;
                     auxPlayerState.Hand.RemoveFromCollection(auxInt1);
                     auxPlayerState.Hand.AddToCollection(0);
-                    _hypotheticalOpponentsDeck.AddToCollection(auxInt1); // One less card in hypothetical deck too
+                    _hypotheticalDecks[auxPlayerState.Owner].AddToCollection(auxInt1);
                     break;
                 case EventType.HYPOTHETICAL_SET_WILDCARD_RELEVANCE:
                     auxInt1 = ((EntityTransitionEvent<int, bool>)e).entity;

@@ -2073,7 +2073,7 @@ namespace EngineTests
                     };
                     sm.UNIT_PlayUnit(playerIndex, context);
                 }
-                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Finalize event stack cleanly
+                sm.CloseEventStack();
                 // Pre kill test
                 Assert.AreEqual(5, sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).Count);
                 int preKillHash = sm.DetailedState.GetHashCode();

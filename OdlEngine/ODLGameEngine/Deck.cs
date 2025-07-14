@@ -143,8 +143,10 @@ namespace ODLGameEngine
         }
         public override object Clone()
         {
-            Deck newDeck = new Deck();
-            newDeck._orderedCards = new List<int>();
+            Deck newDeck = new Deck
+            {
+                _orderedCards = new List<int>()
+            };
             foreach (int card in _orderedCards)
             {
                 newDeck._orderedCards.Add(card);

@@ -237,7 +237,7 @@ namespace EngineTests
             }
         }
         [TestMethod]
-        public void WildcardDiscoveryAltersOpponentsHypDeck()
+        public void WildcardDiscoveryAltersCardPools()
         {
             // When a player has wildcards, can discover the wildcard and the model of the deck is updated
             CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
@@ -247,36 +247,35 @@ namespace EngineTests
                 int otherPlayerIndex = 1 - playerIndex;
                 GameStateStruct state = TestHelperFunctions.GetBlankGameState();
                 state.CurrentState = States.ACTION_PHASE;
-                state.CurrentPlayer = player;
+                state.CurrentPlayer = 1 - player; // Want to skip the opp turn so everyone has wildcards
                 // Add a wildcard to opponent's hand
                 state.PlayerStates[otherPlayerIndex].Hand.AddToCollection(1); // Will become wildcard
-                // Start now...
+                state.PlayerStates[playerIndex].Deck.InitializeDeck([1, 1]);
                 GameStateMachine sm = new GameStateMachine();
                 sm.LoadGame(state); // Start from here
-                // Set the hypothetical deck, has 2 copies of cards 1,2,3
+                // Set the opponent hypothetical deck, has 2 copies of cards 1,2,3
                 AssortedCardCollection hypDeck = new AssortedCardCollection();
                 hypDeck.AddToCollection(1, 2);
-                hypDeck.AddToCollection(2, 2);
-                hypDeck.AddToCollection(3, 2);
-                sm.StartHypotheticalMode(playerIndex, hypDeck); // Starts hypothetical for current player, no hypothetical deck
-                int hypothethicalStateHash = sm.DetailedState.GetHashCode();
-                for (int i = 1; i <= 3; i++) // Test each card
+                sm.StartHypotheticalMode(playerIndex, hypDeck); // Starts hypothetical for current player
+                AssortedCardCollection playersDeck = sm.GetPlayersHypotheticalCardPool(playerIndex);
+                AssortedCardCollection opponentsDeck = sm.GetPlayersHypotheticalCardPool(otherPlayerIndex);
+                int[] playersToTest = [playerIndex, otherPlayerIndex]; // Test discovery of both players
+                sm.EndTurn(); // Opponent ends turn so that player draws a card
+                foreach (int playerToTest in playersToTest)
                 {
-                    // 2 of each cards
-                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(1));
-                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(2));
-                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(3));
+                    int hypothethicalStateHash = sm.DetailedState.GetHashCode();
+                    Assert.AreEqual(2, playersDeck.CheckAmountInCollection(1)); // Both players having 2 copies in their hypothetical deck
+                    Assert.AreEqual(2, opponentsDeck.CheckAmountInCollection(1));
                     // Discovery and checks
-                    sm.DiscoverHypotheticalWildcard(otherPlayerIndex, i); // Player now has a wildcard replaced by the desired
-                    Assert.AreEqual((1 == i) ? 1 : 2, hypDeck.CheckAmountInCollection(1)); // Deck should've shrunk accordingly
-                    Assert.AreEqual((2 == i) ? 1 : 2, hypDeck.CheckAmountInCollection(2));
-                    Assert.AreEqual((3 == i) ? 1 : 2, hypDeck.CheckAmountInCollection(3));
+                    sm.DiscoverHypotheticalWildcard(playerToTest, 1); // Player now has a wildcard replaced by the desired
+                    // Decks should've shrunk accordingly
+                    Assert.AreEqual((playerToTest == playerIndex) ? 1 : 2, playersDeck.CheckAmountInCollection(1));
+                    Assert.AreEqual((playerToTest == otherPlayerIndex) ? 1 : 2, opponentsDeck.CheckAmountInCollection(1));
                     Assert.AreNotEqual(hypothethicalStateHash, sm.DetailedState.GetHashCode()); // Hash changed because hand contents also changed
                     // Reversion of discovery
                     sm.UndoPreviousStep();
-                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(1)); // Goes back to normal
-                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(2));
-                    Assert.AreEqual(2, hypDeck.CheckAmountInCollection(3));
+                    Assert.AreEqual(2, playersDeck.CheckAmountInCollection(1)); // Both players having 2 copies in their hypothetical deck
+                    Assert.AreEqual(2, opponentsDeck.CheckAmountInCollection(1));
                     Assert.AreEqual(hypothethicalStateHash, sm.DetailedState.GetHashCode());
                 }
             }
@@ -381,7 +380,7 @@ namespace EngineTests
                 // Init wildcards in "uninteresting" mode, as if minmax didn't care at the moment
                 sm.SetPlayerHasRelevantWildcards(playerIndex, false);
                 sm.SetPlayerHasRelevantWildcards(otherPlayerIndex, false);
-                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Finalize event stack cleanly
+                sm.CloseEventStack();
                 Assert.IsFalse(sm.PlayerHasRelevantWildcards(playerIndex));
                 Assert.IsFalse(sm.PlayerHasRelevantWildcards(otherPlayerIndex));
                 // Ok now players will draw, and now both players should have relevant wildcards
@@ -426,7 +425,7 @@ namespace EngineTests
                 sm.SetPlayerHasRelevantWildcards(otherPlayerIndex, false);
                 Assert.IsFalse(sm.PlayerHasRelevantWildcards(playerIndex));
                 Assert.IsFalse(sm.PlayerHasRelevantWildcards(otherPlayerIndex));
-                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Finalize event stack cleanly
+                sm.CloseEventStack();
                 sm.EndTurn(); // Implements draw phase (that way both players will have atleast one wildcard
                 int hypothethicalStateHash = sm.DetailedState.GetHashCode();
                 foreach (int whichPlayer in bothPlayers)

@@ -369,8 +369,7 @@ namespace EngineTests
                         PlacedEntity theEntity = (PlacedEntity)sm.DetailedState.EntityData.Last().Value; // Get the last unit I had summoned
                         Assert.AreEqual(firstTileCoord, theEntity.TileCoordinate); // Ensure I'm not about to mess up
                         sm.LIVINGENTITY_InsertInTile(theEntity, randomTileCoord); // Move entity elsewhere
-                        // Harmless trigger in void to properly terminate effect stack, has no effect but to unbreak stuff
-                        sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext());
+                        sm.CloseEventStack();
                     }
                     int postPlayHash = sm.DetailedState.GetHashCode();
                     Assert.AreNotEqual(prePlayHash, postPlayHash);
@@ -512,7 +511,7 @@ namespace EngineTests
                     int unitCoord = testinsameLocationCase ? buildingCoord : randomCoord;
                     sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = marchingUnit, PlayedTarget = unitCoord }); // Manually insert unit
                     sm.BUILDING_ConstructBuilding(playerIndex, new ConstructionContext() { AbsoluteConstructionTile = buildingCoord, Actor = marchingUnit, Affected = marchDetectingBuilding }); // Manually insert building
-                    sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger useless debug event to properly terminate event stack
+                    sm.CloseEventStack();
                     int preMarchHash = sm.DetailedState.GetHashCode();
                     StepResult res = sm.EndTurn(); // This should trigger marching of units and such
                     int postMarchHash = sm.DetailedState.GetHashCode();
@@ -561,7 +560,7 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Beginning of test will play the unit and make it march
                 sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = marchingUnit, PlayedTarget = 0 }); // Manually insert unit
-                sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext()); // Trigger useless debug event to properly terminate event stack
+                sm.CloseEventStack();
                 int preMarchHash = sm.DetailedState.GetHashCode();
                 StepResult res = sm.EndTurn(); // This should trigger marching of units and such
                 int postMarchHash = sm.DetailedState.GetHashCode();
