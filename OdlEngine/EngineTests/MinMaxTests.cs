@@ -18,5 +18,6 @@
             // E.g. there can be a card that deals a ton of damage to enemy but also summons units, and choose which one to choose then from these?
         // A guaranteed loss case where the only winning move is to play a card that lowers opp health enough (don't score health tho)
         // Same/similar as above but the chance is depending on drawing another of these from a pool of couple of cards. Ensures average works
+        // Testing of a combo that draws many but hurts you. It'd score really bad but the (hypothetical) cards in deck can create a ohko if played in the right order (because one of them hurts you for lethal if played first). Ensures discovery of all works
     }
 }
