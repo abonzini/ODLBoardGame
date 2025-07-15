@@ -291,6 +291,14 @@
         {
             return PLAYABLE_PlayCard(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerId, 0, PlayType.ACTIVE_POWER);
         }
+        /// <summary>
+        /// Helps check if active power is playable
+        /// </summary>
+        /// <returns></returns>
+        public PlayContext GetActivePowerPlayability()
+        {
+            return GetPlayabilityOptions(DetailedState.PlayerStates[(int)DetailedState.CurrentPlayer].ActivePowerId, PlayType.ACTIVE_POWER);
+        }
         // Back-end (private)
         /// <summary>
         /// Player choses card to play and where to play it.

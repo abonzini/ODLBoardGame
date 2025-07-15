@@ -9,6 +9,7 @@ namespace GameInstance
     {
         readonly ConcurrentDictionary<(int, int, int), float> _hyperGeometricLut = new ConcurrentDictionary<(int, int, int), float>();
         readonly ConcurrentDictionary<(int, int), float> _singleSampleLut = new ConcurrentDictionary<(int, int), float>();
+        readonly ConcurrentDictionary<int, float> _sqrtLut = new ConcurrentDictionary<int, float>();
         /// <summary>
         /// Hyper geometric calc. Chance of a hand having a specific card.
         /// </summary>
@@ -57,6 +58,22 @@ namespace GameInstance
             int deckSize = parameters.Item1;
             int cardCount = parameters.Item2;
             return cardCount / deckSize;
+        }
+        /// <summary>
+        /// Square root of integer.
+        /// </summary>
+        /// <param name="N">Number</param>
+        /// <returns>The cached or calculated result</returns>
+        public float Sqrt(int N)
+        {
+            return _sqrtLut.GetOrAdd(N, SqrtCalc);
+        }
+        /// <summary>
+        /// Implementation of integer SQRT
+        /// </summary>
+        float SqrtCalc(int N)
+        {
+            return (float)Math.Sqrt(N);
         }
     }
 }

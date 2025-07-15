@@ -1,0 +1,20 @@
+﻿namespace MinMaxTests
+{
+    [TestClass]
+    public class MinMaxTests
+    {
+        // Placeholder for now IG
+        // Ideas:
+        // Pruning if guaranteed win
+        // Instant return if only EOT as option
+        // A case where you need to play a combo to win
+        // A case where you need to assume you have a specific remaining cards that you'll get eventually to win
+        // A case where ending turn is the best option (deckout win e.g.)
+        // Similar to above but you need to kill an opp unit to win (option between correct and incorrect one)
+        // Similar to above but the card to kill opp will come later (guarantee)
+        // Order of card play irrelevant for minmax (lut usage)
+        // Similar to above but have to choose between march card and deckout damage, march wins as it's better than EOT?
+        // State evaluation: Different things prioritised more than others? I.e. prefer tallness or prefer multiple bros
+            // E.g. there can be a card that deals a ton of damage to enemy but also summons units, and choose which one to choose then from these?
+    }
+}
