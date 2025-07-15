@@ -16,5 +16,7 @@
         // Similar to above but have to choose between march card and deckout damage, march wins as it's better than EOT?
         // State evaluation: Different things prioritised more than others? I.e. prefer tallness or prefer multiple bros
             // E.g. there can be a card that deals a ton of damage to enemy but also summons units, and choose which one to choose then from these?
+        // A guaranteed loss case where the only winning move is to play a card that lowers opp health enough (don't score health tho)
+        // Same/similar as above but the chance is depending on drawing another of these from a pool of couple of cards. Ensures average works
     }
 }
