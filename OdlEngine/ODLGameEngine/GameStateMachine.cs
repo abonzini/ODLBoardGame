@@ -326,6 +326,10 @@
         /// <param name="playerWhoWon">Which player won?</param>
         private void STATE_TriggerEndOfGame(int playerWhoWon) // Gets stuck in EOG forever for now
         {
+            if (_chainContext.Count > 0) // If EOG happened as part of an effect chain, this will not flush properly
+            {
+                _chainContext.Clear();
+            }
             ENGINE_SetNextPlayer((CurrentPlayer)playerWhoWon); // The "current player" in this status is also the one who won the game
             ENGINE_ChangeState(States.EOG); // Switches to EOG and the game then gets stuck here
         }

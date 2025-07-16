@@ -1724,6 +1724,83 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void EffectChainSafeCleanup()
+        {
+            // Triggers EOG via an effect, reverts, different effect, and ensures the effect has been wiped clean
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[0].Hp.BaseValue = 5; // Someone will die
+                state.PlayerStates[1].Hp.BaseValue = 5;
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Debug skill, just returns the current context
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                // Card 2: Kill skill, 10 damage to enemy
+                Skill skill2 = TestCardGenerator.CreateSkill(2, 0, [0], CardTargetingType.BOARD);
+                Effect accOverrideEffect = new Effect()
+                {
+                    EffectType = EffectType.MODIFIER,
+                    Input = Variable.TEMP_VARIABLE,
+                    TempVariable = 42,
+                    Output = Variable.ACC,
+                    ModifierOperation = ModifierOperation.SET
+                };
+                Effect boardTarget = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD,
+                };
+                Effect targetEnemyPlayer = new Effect()
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    TargetPlayer = EntityOwner.OPPONENT,
+                    SearchCriterion = SearchCriterion.ALL,
+                    TargetType = EntityType.PLAYER
+                };
+                Effect damageEffect = new Effect()
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    TempVariable = 10,
+                    Input = Variable.TEMP_VARIABLE
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE, // Pops debug results, useful
+                };
+                skill1.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill1.Interactions.Add(InteractionType.WHEN_PLAYED, [debugEffect]);
+                skill2.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill2.Interactions.Add(InteractionType.WHEN_PLAYED, [accOverrideEffect, boardTarget, targetEnemyPlayer, damageEffect]);
+                // Rest of test
+                cardDb.InjectCard(1, skill1); // Add to cardDb
+                cardDb.InjectCard(2, skill2); // Add to cardDb
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Add cards to player
+                state.PlayerStates[playerIndex].Hand.AddToCollection(2);
+                // Finally load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Test
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                // Play
+                sm.PlayFromHand(2, 0); // This kills opponent
+                Assert.AreEqual(States.EOG, sm.DetailedState.CurrentState); // Assert game ended
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Ensure no weird stuff in reversion
+                Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Now play the debug one
+                CpuState cpu = TestHelperFunctions.FetchDebugEvent(res.Item2);
+                Assert.IsNotNull(cpu);
+                Assert.AreEqual(0, cpu.Acc); // Assert that the cpu is a "new" one instead of the leftover chain of play card 2.
+                // Reversion
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Ensure no weird stuff in reversion
+            }
+        }
+        [TestMethod]
         public void GoldBuffEffect()
         {
             Random _rng = new Random();
