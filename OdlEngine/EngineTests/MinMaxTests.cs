@@ -98,10 +98,150 @@ namespace EngineTests
                 Assert.AreEqual(0, winningActions[1].Target);
             }
         }
+        [TestMethod]
+        public void DrawToEnsureLethal()
+        {
+            // Situation: Player has 3 cards in deck, 2 bricks and a card that will give them lethal. Active power also a brick
+            // In hand, they have a card that draws 2
+            // Opponent has only one damage card at hand, needs to play 2 of them but their deck is full of those, therefore, need to play precisely otherwise player loses
+            // All cards cost 2, each player has 2g, and 10hp/5hp respectively, no deckout damage should be seen in this scenario
+            // The optimal play is to draw, to ensure lethal in hand one turn before opp
+            // In debug, it could be seen discovery properly determines the 2-draw will have a 66% of giving the winning card at draw and a 100% afterwards
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                // Creation of cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that does nothing, cost 2, also active power
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 2, [0], CardTargetingType.BOARD);
+                // Card 2: Skill cost 2, does 5 to opponent
+                Skill skill2 = TestCardGenerator.CreateSkill(2, 2, [0], CardTargetingType.BOARD);
+                // Card 3: Skill cost 2, draws 2
+                Skill skill3 = TestCardGenerator.CreateSkill(3, 2, [0], CardTargetingType.BOARD);
+                // The effects
+                Effect targetBoardEffect = new Effect() // Get board
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD,
+                };
+                Effect targetOppEffect = new Effect() // Gets opponent only
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    TargetPlayer = EntityOwner.OPPONENT,
+                    TargetType = EntityType.PLAYER,
+                    SearchCriterion = SearchCriterion.ALL,
+                };
+                Effect damageEffect = new Effect() // Deals 5 damage to targets
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    TempVariable = 5,
+                    Input = Variable.TEMP_VARIABLE
+                };
+                Effect drawEffect = new Effect()
+                {
+                    EffectType = EffectType.CARD_DRAW,
+                    TempVariable = 2,
+                    Input = Variable.TEMP_VARIABLE,
+                    TargetPlayer = EntityOwner.OWNER
+                };
+                skill2.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill2.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, targetOppEffect, damageEffect]);
+                skill3.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill3.Interactions.Add(InteractionType.WHEN_PLAYED, [drawEffect]);
+                // Add to DB
+                cardDb.InjectCard(1, skill1);
+                cardDb.InjectCard(2, skill2);
+                cardDb.InjectCard(3, skill3);
+                // Assemble state
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].Hand.AddToCollection(3); // Players have the cards in hand and the active power
+                state.PlayerStates[playerIndex].Deck.InitializeDeck([1, 1, 2]); // Players won't experience deckout in this trial
+                state.PlayerStates[opponentIndex].Deck.InitializeDeck([2, 2, 2, 2, 2]);
+                state.PlayerStates[playerIndex].Hp.BaseValue = 10; // Player has 10Hp so it'll live two turns. Opp will die with 1 skill
+                state.PlayerStates[opponentIndex].Hp.BaseValue = 5;
+                state.PlayerStates[playerIndex].CurrentGold = 2; // Can spend on exactly one card per turn
+                state.PlayerStates[opponentIndex].CurrentGold = 2;
+                state.PlayerStates[playerIndex].PowerAvailable = true; // Player needs to avoid wasting their gold in the power
+                state.PlayerStates[opponentIndex].PowerAvailable = true;
+                // Hypothetical opp deck (I know their cards this time)
+                AssortedCardCollection assumedOppDeck = new AssortedCardCollection();
+                assumedOppDeck.AddToCollection(2);
+                assumedOppDeck.AddToCollection(2);
+                assumedOppDeck.AddToCollection(2);
+                assumedOppDeck.AddToCollection(2);
+                assumedOppDeck.AddToCollection(2);
+                // State machine
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                int preMinMaxHash = state.GetHashCode(); // Need to ensure integrity when returning
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                List<GameAction> winningActions = minMax.Evaluate(sm, new MinMaxWeights(), assumedOppDeck, 10); // Evaluate the minmax state with weights I don't care about and a depth of 10 turns which is more than enough
+                Assert.AreEqual(preMinMaxHash, state.GetHashCode()); // State completely unchanged
+                // Evaluate search results, there should only be one winning combination, on play 3 and then 2. Other things lead to loss so they shouldn't have been even considered (or explored)
+                Assert.AreEqual(1, winningActions.Count);
+                // First play 3
+                Assert.AreEqual(ActionType.PLAY_CARD, winningActions[0].Type);
+                Assert.AreEqual(3, winningActions[0].Card);
+                Assert.AreEqual(0, winningActions[0].Target);
+                // Should be no more actions as the next step was probably discovery of cards
+            }
+        }
+        [TestMethod]
+        public void FastReturnIfNothingToDo()
+        {
+            // Situation: Player can't play anything, their power is disabled, has a very expensive unit card, and a building with no units on board
+            // In this case, where EOT is the only option, the exploration insta-finishes with 1 node depth
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                // Creation of cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that does nothing, cost 0, also active power
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                // Card 2: Expensive unit
+                Unit unit = TestCardGenerator.CreateUnit(2, "BIG GUY", 20, [0, 4, 10], 10, 10, 10, 1);
+                // Card 3: Cheap building but can't be played as there's no units
+                Building bldg = TestCardGenerator.CreateBuilding(3, "Bldg", 0, [], 2);
+                // Add to DB
+                cardDb.InjectCard(1, skill1);
+                cardDb.InjectCard(2, unit);
+                cardDb.InjectCard(3, bldg);
+                // Assemble state
+                int playerIndex = (int)player;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].Hand.AddToCollection(2); // Both cards to hand
+                state.PlayerStates[playerIndex].Hand.AddToCollection(3);
+                state.PlayerStates[playerIndex].Hp.BaseValue = 10; // Player has 10Hp so it'll live two turns. Opp will die with 1 skill
+                state.PlayerStates[playerIndex].CurrentGold = 2; // Can't play anything anyway
+                state.PlayerStates[playerIndex].PowerAvailable = false; // Can't play anything anyway
+                // Inconsequential
+                AssortedCardCollection assumedOppDeck = new AssortedCardCollection();
+                // State machine
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                int preMinMaxHash = state.GetHashCode(); // Need to ensure integrity when returning
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                List<GameAction> winningActions = minMax.Evaluate(sm, new MinMaxWeights(), assumedOppDeck, 10); // Should return immediately
+                Assert.AreEqual(preMinMaxHash, state.GetHashCode()); // State completely unchanged
+                // Evaluate search results, a single winning node with end of turn as result 
+                Assert.AreEqual(1, winningActions.Count);
+                Assert.AreEqual(ActionType.END_TURN, winningActions[0].Type);
+                Assert.AreEqual(1, minMax.NumberUniqueNodes);
+                Assert.AreEqual(1, minMax.NumberOfEvaluatedNodes);
+                Assert.AreEqual(0, minMax.NumberOfEvaluatedTerminalNodes);
+                Assert.AreEqual(0, minMax.NumberOfEvaluatedDiscoveryNodes);
+            }
+        }
         // Placeholder for now IG
         // Ideas:
-        // Win guaranteed but only if discovered in wildcards
-        // Instant return if only EOT as option, add unaffordable unit, affordable building, and unavail AP, shhould explore 1 node only
         // A case where ending turn is the best option (deckout win e.g.)
         // Similar to above but you need to kill an opp unit to win (option between correct and incorrect one)
         // Similar to above but the card to kill opp will come later (guarantee)

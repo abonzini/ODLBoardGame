@@ -41,6 +41,7 @@ namespace GameInstance
         public int NumberOfEvaluatedNodes { get; private set; }
         public int NumberOfEvaluatedDiscoveryNodes { get; private set; }
         public int NumberOfEvaluatedTerminalNodes { get; private set; }
+        public int NumberUniqueNodes { get { return (_stateLut != null) ? _stateLut.Count : 0; } }
         // FUNCTIONS
         public MinMaxAgent(CalculatorLut lut = null)
         {
@@ -95,7 +96,6 @@ namespace GameInstance
                 {
                     finishedNavigatingTree = true;
                 }
-                // TODO TODO
             }
             // Can finish the hypothetical mode now, should reverse everything for us
             _sm.EndHypotheticalMode();
@@ -135,12 +135,7 @@ namespace GameInstance
                 int playerIndex = (int)_sm.DetailedState.CurrentPlayer;
                 // Firstly, get all possible actions into a list
                 List<GameAction> possibleActions = new List<GameAction>();
-                // First, active power playable?
-                if (_sm.GetActivePowerPlayability().PlayOutcome == PlayOutcome.OK)
-                {
-                    possibleActions.Add(new GameAction() { Type = ActionType.ACTIVE_POWER });
-                }
-                // Then, check each of the cards in hand
+                // First, check each of the cards in hand
                 foreach (KeyValuePair<int, int> cardInfo in _sm.DetailedState.PlayerStates[playerIndex].Hand.GetCards())
                 {
                     if (cardInfo.Key == 0) { continue; } // Skip wildcards as they can't be played
@@ -152,6 +147,11 @@ namespace GameInstance
                             possibleActions.Add(new GameAction() { Type = ActionType.PLAY_CARD, Card = cardInfo.Key, Target = target });
                         }
                     }
+                }
+                // Then, active power playable?
+                if (_sm.GetActivePowerPlayability().PlayOutcome == PlayOutcome.OK)
+                {
+                    possibleActions.Add(new GameAction() { Type = ActionType.ACTIVE_POWER });
                 }
                 // Finally, EOT is always an option
                 possibleActions.Add(new GameAction() { Type = ActionType.END_TURN });

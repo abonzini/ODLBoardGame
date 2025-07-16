@@ -34,7 +34,7 @@ namespace GameInstance
             {
                 for (int i = 0; i < handSize; i++) // Draw a sample for each card in hand, calculate the chance of NOT drawing
                 {
-                    result *= (deckSize - cardCount - i) / (deckSize - i); // Each draw, deck shrinks
+                    result *= (float)(deckSize - cardCount - i) / (deckSize - i); // Each draw, deck shrinks
                 }
                 result = 1 - result; // Calculate the chance of drawing
             }
@@ -57,7 +57,7 @@ namespace GameInstance
         {
             int deckSize = parameters.Item1;
             int cardCount = parameters.Item2;
-            return cardCount / deckSize;
+            return (float)cardCount / deckSize;
         }
         /// <summary>
         /// Square root of integer.
