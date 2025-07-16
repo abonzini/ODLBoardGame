@@ -20,6 +20,10 @@ namespace GameInstance
         public ActionType Type { get; set; } = ActionType.NOP;
         public int Card { get; set; } = 0; // Card associated to this action
         public int Target { get; set; } = -1; // Target associated to this action
+        public override string ToString()
+        {
+            return $"{Type}->{Card}->{Target}";
+        }
     }
 
     /// <summary>

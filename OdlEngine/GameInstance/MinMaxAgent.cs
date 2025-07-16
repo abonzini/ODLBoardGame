@@ -7,13 +7,13 @@ namespace GameInstance
     /// </summary>
     public class MinMaxWeights
     {
-        public float[] Hp;
-        public float[] Gold;
-        public float[] HandSize;
-        public float[] NBuildings;
-        public float[] UnitStatCount; // HP + Attack, not movement
-        public float[] UnitTallness; // Tallness tells us whether this tends to have a big dude or a lot of smaller dudes
-        public bool[] IsTallnessGrowthDirect; // Whether tallness grows in a direct proportion or inverse proportion (1 - tallness)
+        public float[] Hp = [0, 0];
+        public float[] Gold = [0, 0];
+        public float[] HandSize = [0, 0];
+        public float[] NBuildings = [0, 0];
+        public float[] UnitStatCount = [0, 0]; // HP + Attack, not movement
+        public float[] UnitTallness = [0, 0]; // Tallness tells us whether this tends to have a big dude or a lot of smaller dudes
+        public bool[] IsTallnessGrowthDirect = [false, false]; // Whether tallness grows in a direct proportion or inverse proportion (1 - tallness)
     }
     /// <summary>
     /// For easy access of hardcoded data
@@ -80,7 +80,7 @@ namespace GameInstance
             while (!finishedNavigatingTree)
             {
                 Tuple<float, GameAction> nextResult = _stateLut[_sm.DetailedState.GetHashCode()];
-                if (nextResult != null) // If node has a found result
+                if (nextResult != null && nextResult.Item2 != null) // If node has a found result with a valid action
                 {
                     solution.Add(nextResult.Item2);
                     PerformAction(nextResult.Item2); // We also advance the state to the next step
@@ -103,6 +103,7 @@ namespace GameInstance
         }
         float EvaluateNode(float alpha, float beta, bool isInitial = false)
         {
+            int nodeCurrentPlayerIndex = (int)_sm.DetailedState.CurrentPlayer;
             float score = 0;
             GameAction bestAction = null;
             // Add this state into state LUT if I'm not there already (loop protection for now)
@@ -116,21 +117,17 @@ namespace GameInstance
             {
                 NumberOfEvaluatedTerminalNodes++;
                 // Get score accordingly to winner
-                score = (_sm.DetailedState.CurrentPlayer == _evaluatedPlayer) ? MinMaxConstants.MAX_VALUE : MinMaxConstants.MIN_VALUE;
+                score = (nodeCurrentPlayerIndex == _evaluatedPlayerIndex) ? MinMaxConstants.MAX_VALUE : MinMaxConstants.MIN_VALUE;
             }
             else if (_sm.DetailedState.TurnCounter >= _maxTurnCounter) // Depth limit reached, Terminal node, need to evaluate
             {
                 NumberOfEvaluatedTerminalNodes++;
                 score = EvaluateCurrentGameState();
             }
-            // Otherwise, check if either player has wildcards of interest (discovery node)
-            else if (_sm.PlayerHasRelevantWildcards(_evaluatedPlayerIndex))
+            // Otherwise, check if player has wildcards of interest (discovery node)
+            else if (_sm.PlayerHasRelevantWildcards(nodeCurrentPlayerIndex))
             {
-                score = EvaluateDiscoveryNode(_evaluatedPlayerIndex, alpha, beta);
-            }
-            else if (_sm.PlayerHasRelevantWildcards(_opposingPlayerIndex))
-            {
-                score = EvaluateDiscoveryNode(_opposingPlayerIndex, alpha, beta);
+                score = EvaluateDiscoveryNode(nodeCurrentPlayerIndex, alpha, beta);
             }
             else // Otherwise, it's a good old minmax node, evaluate accordingly and get the best action
             {
@@ -146,6 +143,7 @@ namespace GameInstance
                 // Then, check each of the cards in hand
                 foreach (KeyValuePair<int, int> cardInfo in _sm.DetailedState.PlayerStates[playerIndex].Hand.GetCards())
                 {
+                    if (cardInfo.Key == 0) { continue; } // Skip wildcards as they can't be played
                     PlayContext cardPlayOptions = _sm.GetPlayabilityOptions(cardInfo.Key, PlayType.PLAY_FROM_HAND);
                     if (cardPlayOptions.PlayOutcome == PlayOutcome.OK) // If this card is playable
                     {
@@ -158,14 +156,14 @@ namespace GameInstance
                 // Finally, EOT is always an option
                 possibleActions.Add(new GameAction() { Type = ActionType.END_TURN });
                 // Finished assembling all the children nodes for this node
-                if (possibleActions.Count == 1 || isInitial) // In initial state, a node with only 1 child (EOT) will just return here, no need to explore
+                if (possibleActions.Count == 1 && isInitial) // In initial state, a node with only 1 child (EOT) will just return here, no need to explore
                 {
                     bestAction = possibleActions[0];
                 }
                 else // Otherwise just explore all of them (unless pruned)
                 {
                     bool isMax = (playerIndex == _evaluatedPlayerIndex);
-                    score = isMax ? MinMaxConstants.MIN_VALUE : MinMaxConstants.MAX_VALUE; // Init minmax score
+                    score = isMax ? float.NegativeInfinity : float.PositiveInfinity; // Init minmax score
                     foreach (GameAction action in possibleActions) // Do each one of these then...
                     {
                         float actionScore;

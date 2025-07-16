@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GameInstance\GameInstance.csproj" />
     <ProjectReference Include="..\ODLGameEngine\ODLGameEngine.csproj" />
   </ItemGroup>
 
