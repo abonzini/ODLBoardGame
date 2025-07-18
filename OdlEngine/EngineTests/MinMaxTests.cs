@@ -192,6 +192,162 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void DrawToTryGetLethal()
+        {
+            // Situation: Player has 3 cards in deck, 2 cards that will give them lethal and a brick. Active power also a brick
+            // In hand, they have a card that draws 1, everything is free
+            // Opponent has a card that kills player immediately so the player will have a guaranteed loss next turn
+            // The optimal play is to draw, but has a 66% chance of lethal, which is still hopefully the best option
+            // In debug, it could be seen discovery properly determines the 2-draw will have a 66% of giving the winning card at draw, which is better than the alternatives
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                // Creation of cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that does nothing, cost 2, also active power
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                // Card 2: Skill that does 5 to opponent
+                Skill skill2 = TestCardGenerator.CreateSkill(2, 0, [0], CardTargetingType.BOARD);
+                // Card 3: Skill that draws 1
+                Skill skill3 = TestCardGenerator.CreateSkill(3, 0, [0], CardTargetingType.BOARD);
+                // The effects
+                Effect targetBoardEffect = new Effect() // Get board
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD,
+                };
+                Effect targetOppEffect = new Effect() // Gets opponent only
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    TargetPlayer = EntityOwner.OPPONENT,
+                    TargetType = EntityType.PLAYER,
+                    SearchCriterion = SearchCriterion.ALL,
+                };
+                Effect damageEffect = new Effect() // Deals 5 damage to targets
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    TempVariable = 5,
+                    Input = Variable.TEMP_VARIABLE
+                };
+                Effect drawEffect = new Effect()
+                {
+                    EffectType = EffectType.CARD_DRAW,
+                    TempVariable = 1,
+                    Input = Variable.TEMP_VARIABLE,
+                    TargetPlayer = EntityOwner.OWNER
+                };
+                skill2.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill2.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, targetOppEffect, damageEffect]);
+                skill3.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill3.Interactions.Add(InteractionType.WHEN_PLAYED, [drawEffect]);
+                // Add to DB
+                cardDb.InjectCard(1, skill1);
+                cardDb.InjectCard(2, skill2);
+                cardDb.InjectCard(3, skill3);
+                // Assemble state
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].Hand.AddToCollection(3); // Players have a draw 1 card
+                state.PlayerStates[playerIndex].Deck.InitializeDeck([2, 2, 1]); // 66% of lethal
+                state.PlayerStates[opponentIndex].Deck.InitializeDeck([2, 2, 2, 2, 2]); // Opp WILL kill you
+                state.PlayerStates[playerIndex].Hp.BaseValue = 5; // Both players will be one-shotted
+                state.PlayerStates[opponentIndex].Hp.BaseValue = 5;
+                state.PlayerStates[playerIndex].PowerAvailable = false; // Active power is not relevant in this test
+                state.PlayerStates[opponentIndex].PowerAvailable = false;
+                // Hypothetical opp deck (I know their cards this time)
+                AssortedCardCollection assumedOppDeck = new AssortedCardCollection();
+                assumedOppDeck.AddToCollection(2);
+                assumedOppDeck.AddToCollection(2);
+                assumedOppDeck.AddToCollection(2);
+                assumedOppDeck.AddToCollection(2);
+                assumedOppDeck.AddToCollection(2);
+                // State machine
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                int preMinMaxHash = state.GetHashCode(); // Need to ensure integrity when returning
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                List<GameAction> winningActions = minMax.Evaluate(sm, new MinMaxWeights(), assumedOppDeck, 10); // Evaluate the minmax state with weights I don't care about and a depth of 10 turns which is more than enough
+                Assert.AreEqual(preMinMaxHash, state.GetHashCode()); // State completely unchanged
+                // Evaluate search results, there should only be one winning combination, on play 3 and hope for the best
+                // First play 3
+                Assert.AreEqual(ActionType.PLAY_CARD, winningActions[0].Type);
+                Assert.AreEqual(3, winningActions[0].Card);
+                Assert.AreEqual(0, winningActions[0].Target);
+                // Should be no more actions as the next step was probably discovery of cards and RNG dependent
+            }
+        }
+        [TestMethod]
+        public void EotBestOption()
+        {
+            // Situation: Opponent will die the moment I eot because of deck-out.
+            // Player has no cards in deck, and a card in hand that will kill them if played.
+            // Optimal play is to end turn, but not all of the options are EOT so the machine needs to think
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                // Creation of cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill cost 2, does 5 to user (??), also active power
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 2, [0], CardTargetingType.BOARD);
+                // The effects
+                Effect targetBoardEffect = new Effect() // Get board
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.BOARD,
+                };
+                Effect targetUserEffect = new Effect() // Gets opponent only
+                {
+                    EffectType = EffectType.FIND_ENTITIES,
+                    TargetPlayer = EntityOwner.OWNER,
+                    TargetType = EntityType.PLAYER,
+                    SearchCriterion = SearchCriterion.ALL,
+                };
+                Effect damageEffect = new Effect() // Deals 5 damage to targets
+                {
+                    EffectType = EffectType.EFFECT_DAMAGE,
+                    TempVariable = 5,
+                    Input = Variable.TEMP_VARIABLE
+                };
+                skill1.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill1.Interactions.Add(InteractionType.WHEN_PLAYED, [targetBoardEffect, targetUserEffect, damageEffect]);
+                // Add to DB
+                cardDb.InjectCard(1, skill1);
+                // Assemble state
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Players have the cards in hand and the active power
+                state.PlayerStates[playerIndex].Hp.BaseValue = 1; // Player has 1Hp so they'll die immediately
+                state.PlayerStates[opponentIndex].Hp.BaseValue = 1;
+                state.PlayerStates[playerIndex].CurrentGold = 20; // Gold is not an issue
+                state.PlayerStates[opponentIndex].CurrentGold = 20;
+                state.PlayerStates[playerIndex].PowerAvailable = true; // Player needs to avoid usign the power too
+                state.PlayerStates[opponentIndex].PowerAvailable = true;
+                // Hypothetical opp deck (I know their cards this time)
+                AssortedCardCollection assumedOppDeck = new AssortedCardCollection();
+                // State machine
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                int preMinMaxHash = state.GetHashCode(); // Need to ensure integrity when returning
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                List<GameAction> winningActions = minMax.Evaluate(sm, new MinMaxWeights(), assumedOppDeck, 10); // Evaluate the minmax state with weights I don't care about and a depth of 10 turns which is more than enough
+                Assert.AreEqual(preMinMaxHash, state.GetHashCode()); // State completely unchanged
+                // Evaluate search results, there should only be one winning combination, on play 3 and then 2. Other things lead to loss so they shouldn't have been even considered (or explored)
+                Assert.AreEqual(1, winningActions.Count);
+                // Only move is to pass
+                Assert.AreEqual(ActionType.END_TURN, winningActions[0].Type);
+                Assert.AreEqual(1, minMax.NumberOfEvaluatedNodes); // Shouldn't go too deep
+                Assert.AreNotEqual(0, minMax.NumberOfEvaluatedTerminalNodes); // However unlike the "insta EOT leaving", it does investigate some (bad) options
+            }
+        }
+        [TestMethod]
         public void FastReturnIfNothingToDo()
         {
             // Situation: Player can't play anything, their power is disabled, has a very expensive unit card, and a building with no units on board
@@ -240,17 +396,60 @@ namespace EngineTests
                 Assert.AreEqual(0, minMax.NumberOfEvaluatedDiscoveryNodes);
             }
         }
-        // Placeholder for now IG
-        // Ideas:
-        // A case where ending turn is the best option (deckout win e.g.)
-        // Similar to above but you need to kill an opp unit to win (option between correct and incorrect one)
-        // Similar to above but the card to kill opp will come later (guarantee)
-        // Order of card play irrelevant for minmax (lut usage)
-        // Similar to above but have to choose between march card and deckout damage, march wins as it's better than EOT?
+        [TestMethod]
+        public void MultiTargetPlay()
+        {
+            // Situation: Opponent has units in lanes 0,2. Will kill you on march with either of them.
+            // Player can only play 2 units, needs to play them to block the march, in which case they'll win with the deckout damage
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                // Creation of cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Skill that does nothing (irrelevant here)
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 0, [0], CardTargetingType.BOARD);
+                // Card 2: Unit
+                Unit unit1 = TestCardGenerator.CreateUnit(2, "UNIT", 0, [0, 4, 10], 1, 1, 1, 1);
+                // Add to DB
+                cardDb.InjectCard(1, skill1);
+                cardDb.InjectCard(2, unit1);
+                // Assemble state
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].Hand.AddToCollection(2, 2); // Players have 2 units in hand
+                state.PlayerStates[playerIndex].Hp.BaseValue = 1; // Player has 1Hp so they'll die immediately
+                state.PlayerStates[opponentIndex].Hp.BaseValue = 1;
+                state.PlayerStates[playerIndex].PowerAvailable = false; // No power in this test
+                state.PlayerStates[opponentIndex].PowerAvailable = false;
+                // Hypothetical opp deck (I know their cards this time)
+                AssortedCardCollection assumedOppDeck = new AssortedCardCollection();
+                // State machine and gamestate prep
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                sm.UNIT_PlayUnit(opponentIndex, new PlayContext() { Actor = (Unit)unit1.Clone(), PlayedTarget = (playerIndex == 0) ? 0 : 3 });
+                sm.UNIT_PlayUnit(opponentIndex, new PlayContext() { Actor = (Unit)unit1.Clone(), PlayedTarget = (playerIndex == 0) ? 10 : 17 });
+                sm.CloseEventStack();
+                int preMinMaxHash = state.GetHashCode(); // Need to ensure integrity when returning
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                List<GameAction> winningActions = minMax.Evaluate(sm, new MinMaxWeights(), assumedOppDeck, 10); // Evaluate the minmax state with weights I don't care about and a depth of 10 turns which is more than enough
+                Assert.AreEqual(preMinMaxHash, state.GetHashCode()); // State completely unchanged
+                // Evaluate search results, only winning move would be to lpay one unit on 0 and another on 10
+                Assert.AreEqual(3, winningActions.Count);
+                Assert.AreEqual(ActionType.PLAY_CARD, winningActions[0].Type);
+                Assert.AreEqual(2, winningActions[0].Card);
+                Assert.IsTrue(((playerIndex == 0) ? 0 : 3) == winningActions[0].Target || ((playerIndex == 0) ? 10 : 17) == winningActions[0].Target);
+                Assert.AreEqual(ActionType.PLAY_CARD, winningActions[1].Type);
+                Assert.AreEqual(2, winningActions[1].Card);
+                Assert.IsTrue(((playerIndex == 0) ? 0 : 3) == winningActions[1].Target || ((playerIndex == 0) ? 10 : 17) == winningActions[1].Target);
+                Assert.AreEqual(ActionType.END_TURN, winningActions[2].Type);
+            }
+        }
+        // Todo:
         // State evaluation: Different things prioritised more than others? I.e. prefer tallness or prefer multiple bros
-        // E.g. there can be a card that deals a ton of damage to enemy but also summons units, and choose which one to choose then from these?
-        // A guaranteed loss case where the only winning move is to play a card that lowers opp health enough (don't score health tho)
-        // Same/similar as above but the chance is depending on drawing another of these from a pool of couple of cards. Ensures average works
-        // Testing of a combo that draws many but hurts you. It'd score really bad but the (hypothetical) cards in deck can create a ohko if played in the right order (because one of them hurts you for lethal if played first). Ensures discovery of all works
+        // Dedicate some time to a full game state around midgame, check time and stuff. Returns a play of card hopefully. Use base set cards for this one, flood deck with stuff and see what happens. Expecting a time estimate, node + depth evaluation and hope for no weird exceptions
     }
 }
