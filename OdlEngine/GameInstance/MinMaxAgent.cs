@@ -26,6 +26,7 @@ namespace GameInstance
         public const float ALPHA_INITIAL = MIN_VALUE + ALPHA_BETA_THRESHOLD;
         public const float BETA_INITIAL = MAX_VALUE - ALPHA_BETA_THRESHOLD;
         public const float WILDCARD_PROBABILITY_TRESHOLD = 0.5f; // A wildcard wil be discovered if the card has at least this chance of being in there
+        public const float WILDCARD_VALUE_BOOST = 0.5F; // Boost applied to wildcards to encourage card draw even when card doesn't have an immediate deterministic value when "played"
     }
     public class MinMaxAgent
     {
@@ -122,7 +123,7 @@ namespace GameInstance
             else if (_sm.DetailedState.TurnCounter >= _maxTurnCounter) // Depth limit reached, Terminal node, need to evaluate
             {
                 NumberOfEvaluatedTerminalNodes++;
-                score = EvaluateCurrentGameState();
+                score = EvaluateTerminalGameState();
             }
             // Otherwise, check if player has wildcards of interest (discovery node)
             else if (_sm.PlayerHasRelevantWildcards(nodeCurrentPlayerIndex))
@@ -251,7 +252,7 @@ namespace GameInstance
         /// Evaluates the current game state, returns a score
         /// </summary>
         /// <returns></returns>
-        float EvaluateCurrentGameState()
+        float EvaluateTerminalGameState()
         {
             float score = 0;
             GameStateStruct state = _sm.DetailedState;
@@ -284,13 +285,14 @@ namespace GameInstance
                     unitTallness = sqrtN * _calculatorLut.Sqrt(totalUnitStatsSquared) / totalUnitStats;
                     unitTallness -= 1; // Normalising...
                     unitTallness /= (sqrtN - 1); // End normalisation, tallness now between 0-1
-                    if (_weights.IsTallnessGrowthDirect[evalIndex]) // Flip proportion if needed
+                    if (!_weights.IsTallnessGrowthDirect[evalIndex]) // Flip proportion if needed
                     {
                         unitTallness = 1 - unitTallness;
                     }
                 }
                 score += unitTallness * _weights.UnitTallness[evalIndex];
             }
+            score += state.PlayerStates[_evaluatedPlayerIndex].Hand.CheckAmountInCollection(0) * _weights.HandSize[0] * MinMaxConstants.WILDCARD_VALUE_BOOST; // Add wildcard boost to encourage player to value cards even if unknown
             // Clamp if score too high and return
             if (score > MinMaxConstants.MAX_VALUE) { score = MinMaxConstants.MAX_VALUE; }
             else if (score < MinMaxConstants.MIN_VALUE) { score = MinMaxConstants.MIN_VALUE; }

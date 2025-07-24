@@ -448,8 +448,211 @@ namespace EngineTests
                 Assert.AreEqual(ActionType.END_TURN, winningActions[2].Type);
             }
         }
-        // Todo:
-        // State evaluation: Different things prioritised more than others? I.e. prefer tallness or prefer multiple bros
+        [TestMethod]
+        public void DrawWeights()
+        {
+            // Situation: Minmax with 1 depth, just want one best play. Give player the option to draw or not, and evaluate whether draw is chosen depending on gold + card value
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                // Creation of cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Active power that draws 2 card, costs 2
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 2, [0], CardTargetingType.BOARD);
+                Effect drawEffect = new Effect()
+                {
+                    EffectType = EffectType.CARD_DRAW,
+                    TempVariable = 2,
+                    Input = Variable.TEMP_VARIABLE,
+                    TargetPlayer = EntityOwner.OWNER
+                };
+                skill1.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill1.Interactions.Add(InteractionType.WHEN_PLAYED, [drawEffect]);
+                // Add to DB
+                cardDb.InjectCard(1, skill1);
+                // Assemble state
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].PowerAvailable = true; // Power available, and only option
+                state.PlayerStates[opponentIndex].PowerAvailable = true;
+                state.PlayerStates[playerIndex].CurrentGold = 2; // Can only play one
+                state.PlayerStates[playerIndex].Deck.InitializeDeck([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]); // Initialize decks with random assorted (non-existant) cards to avoid discovery phase
+                // Hypothetical opp deck (I know their cards this time)
+                AssortedCardCollection assumedOppDeck = new AssortedCardCollection();
+                // State machine and gamestate prep
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                int preMinMaxHash = state.GetHashCode(); // Need to ensure integrity when returning
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                MinMaxWeights weights = new MinMaxWeights();
+                weights.Gold[0] = 1; // player values gold at 1, means has 2 points and playing the card woud lose them
+                float[] cardWeights = [0, 1]; // Having new cards is either valuable enough to play a draw 2, or not
+                foreach (float cardWeight in cardWeights)
+                {
+                    weights.HandSize[0] = cardWeight;
+                    List<GameAction> winningActions = minMax.Evaluate(sm, weights, assumedOppDeck, 1); // Depth 1 evaluation, that is, estimate only one turn
+                    Assert.AreEqual(preMinMaxHash, state.GetHashCode()); // State completely unchanged
+                    Assert.AreEqual(1, winningActions.Count); // Eiither end turn or draw unknown
+                    if (cardWeight > 0) // Card valuable enough to be played
+                    {
+                        Assert.AreEqual(ActionType.ACTIVE_POWER, winningActions[0].Type);
+                    }
+                    else // playing card is not worth it
+                    {
+                        Assert.AreEqual(ActionType.END_TURN, winningActions[0].Type);
+                    }
+                }
+            }
+        }
+        [TestMethod]
+        public void WildcardBonus()
+        {
+            // Situation: Ensures drawing wildcards has an extra bonus score, to assume a card is valuable even when not known during state asusmption
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                // Creation of cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Active power that draws 2 card, costs 2
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 2, [0], CardTargetingType.BOARD);
+                Effect drawEffect = new Effect()
+                {
+                    EffectType = EffectType.CARD_DRAW,
+                    TempVariable = 2,
+                    Input = Variable.TEMP_VARIABLE,
+                    TargetPlayer = EntityOwner.OWNER
+                };
+                skill1.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill1.Interactions.Add(InteractionType.WHEN_PLAYED, [drawEffect]);
+                // Add to DB
+                cardDb.InjectCard(1, skill1);
+                // Assemble state
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].PowerAvailable = true; // Power available, and only option
+                state.PlayerStates[opponentIndex].PowerAvailable = true;
+                state.PlayerStates[playerIndex].CurrentGold = 2; // Can only play one
+                state.PlayerStates[playerIndex].Deck.InitializeDeck([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]); // Initialize decks with random assorted (non-existant) cards to avoid discovery phase
+                // Hypothetical opp deck (I know their cards this time)
+                AssortedCardCollection assumedOppDeck = new AssortedCardCollection();
+                // State machine and gamestate prep
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                int preMinMaxHash = state.GetHashCode(); // Need to ensure integrity when returning
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                MinMaxWeights weights = new MinMaxWeights();
+                weights.Gold[0] = 1; // player values gold at 1, means has 2 points and playing the card woud lose them
+                weights.HandSize[0] = 0.99f; // Having hand is not valuable enough, meaning the "play card" option is never good, but wildcards would push this over the edge
+                List<GameAction> winningActions = minMax.Evaluate(sm, weights, assumedOppDeck, 1); // Depth 1 evaluation, that is, estimate only one turn
+                Assert.AreEqual(preMinMaxHash, state.GetHashCode()); // State completely unchanged
+                Assert.AreEqual(1, winningActions.Count); // Eiither end turn or draw unknown
+                Assert.AreEqual(ActionType.ACTIVE_POWER, winningActions[0].Type);
+            }
+        }
+        [TestMethod]
+        public void Tallness()
+        {
+            // Situation: gives 2 options for 12 worth of stats, either 3x 2-2 or 2x1-1 + a 4-4
+            // With a talness score, decide which option is better
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                // Creation of cards
+                CardFinder cardDb = new CardFinder();
+                // Units, stats correspond to the number
+                Unit unit11 = TestCardGenerator.CreateUnit(11, "1-1", 1, [0, 4, 10], 1, 1, 1, 1);
+                Unit unit22 = TestCardGenerator.CreateUnit(22, "2-2", 0, [0, 4, 10], 2, 2, 1, 1);
+                Unit unit44 = TestCardGenerator.CreateUnit(44, "4-4", 3, [0, 4, 10], 4, 4, 1, 1);
+                // Card 1: Active power that summons 3x 2-2, costs 6
+                Skill skill1 = TestCardGenerator.CreateSkill(1, 5, [0], CardTargetingType.BOARD);
+                Effect targetPlains = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.PLAINS
+                };
+                Effect targetForest = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.FOREST
+                };
+                Effect targetMountains = new Effect()
+                {
+                    EffectType = EffectType.ADD_LOCATION_REFERENCE,
+                    EffectLocation = EffectLocation.MOUNTAIN
+                };
+                Effect summonEffect = new Effect()
+                {
+                    EffectType = EffectType.SUMMON_UNIT,
+                    TargetPlayer = EntityOwner.OWNER,
+                    Input = Variable.TEMP_VARIABLE,
+                    TempVariable = 22
+                };
+                skill1.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                skill1.Interactions.Add(InteractionType.WHEN_PLAYED, [targetForest, targetMountains, targetPlains, summonEffect]);
+                // Add to DB
+                cardDb.InjectCard(1, skill1);
+                cardDb.InjectCard(11, unit11);
+                cardDb.InjectCard(22, unit22);
+                cardDb.InjectCard(44, unit44);
+                // Assemble state
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = player;
+                state.PlayerStates[playerIndex].Hand.AddToCollection(11, 2);
+                state.PlayerStates[playerIndex].Hand.AddToCollection(44, 1);
+                state.PlayerStates[playerIndex].PowerAvailable = true; // Power available, and only option
+                state.PlayerStates[playerIndex].CurrentGold = 5; // Can only play power or dump all units
+                // Hypothetical opp deck (I know their cards this time)
+                AssortedCardCollection assumedOppDeck = new AssortedCardCollection();
+                // State machine and gamestate prep
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state);
+                int preMinMaxHash = state.GetHashCode(); // Need to ensure integrity when returning
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                MinMaxWeights weights = new MinMaxWeights();
+                weights.UnitStatCount[0] = 1; // Stats being valued means player will attempt to play every single thing
+                weights.UnitTallness[0] = 1; // Tallness will be relevant
+                bool[] tallnessPreferredOptions = [false, true];
+                foreach (bool tallnessPreferred in tallnessPreferredOptions)
+                {
+                    weights.IsTallnessGrowthDirect[0] = tallnessPreferred;
+                    List<GameAction> winningActions = minMax.Evaluate(sm, weights, assumedOppDeck, 1); // Depth 1 evaluation, that is, estimate only one turn
+                    if (tallnessPreferred) // want the big dude here
+                    {
+                        Assert.AreEqual(4, winningActions.Count); // Play 3 dudes and skip
+                        Assert.AreEqual(ActionType.END_TURN, winningActions[3].Type);
+                        AssortedCardCollection cardsPlayed = new AssortedCardCollection();
+                        // Verify play and then add to history (don't really care about target)
+                        Assert.AreEqual(ActionType.PLAY_CARD, winningActions[0].Type);
+                        cardsPlayed.AddToCollection(winningActions[0].Card);
+                        Assert.AreEqual(ActionType.PLAY_CARD, winningActions[1].Type);
+                        cardsPlayed.AddToCollection(winningActions[1].Card);
+                        Assert.AreEqual(ActionType.PLAY_CARD, winningActions[2].Type);
+                        cardsPlayed.AddToCollection(winningActions[2].Card);
+                        // Finally, verify
+                        Assert.AreEqual(2, cardsPlayed.CheckAmountInCollection(11));
+                        Assert.AreEqual(1, cardsPlayed.CheckAmountInCollection(44));
+                    }
+                    else // Otherwise the 3 2-2 are better
+                    {
+                        Assert.AreEqual(2, winningActions.Count); // Power and skip
+                        Assert.AreEqual(ActionType.ACTIVE_POWER, winningActions[0].Type);
+                        Assert.AreEqual(ActionType.END_TURN, winningActions[1].Type);
+                    }
+                }
+            }
+        }
         // Dedicate some time to a full game state around midgame, check time and stuff. Returns a play of card hopefully. Use base set cards for this one, flood deck with stuff and see what happens. Expecting a time estimate, node + depth evaluation and hope for no weird exceptions
     }
 }
