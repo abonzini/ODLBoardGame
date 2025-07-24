@@ -91,6 +91,7 @@ namespace ODLGameEngine
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
+            hash.Add(Id); // Important as this essentially describes the entity's interactions (and triggers)
             return hash.ToHashCode();
         }
     }
@@ -110,7 +111,6 @@ namespace ODLGameEngine
             HashCode hash = new HashCode();
             hash.Add(base.GetHashCode());
             hash.Add(Owner);
-            hash.Add(UniqueId);
             return hash.ToHashCode();
         }
         /// <summary>
@@ -143,7 +143,6 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(base.GetHashCode());
-            hash.Add(Name);
             hash.Add(Hp.GetHashCode());
             hash.Add(DamageTokens);
             return hash.ToHashCode();
@@ -175,7 +174,6 @@ namespace ODLGameEngine
         {
             HashCode hash = new HashCode();
             hash.Add(base.GetHashCode());
-            hash.Add(DamageTokens);
             return hash.ToHashCode();
         }
     }

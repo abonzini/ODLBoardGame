@@ -57,12 +57,9 @@ namespace ODLGameEngine
             hash.Add(Seed);
             hash.Add(NextUniqueIndex);
             hash.Add(CurrentPlayer);
-            hash.Add(BoardState.GetHashCode());
-            foreach (KeyValuePair<int, LivingEntity> kvp in EntityData)
-            {
-                hash.Add(kvp.Key);
-                hash.Add(kvp.Value.GetHashCode());
-            }
+            hash.Add(PlayerStates[0].GetHashCode());
+            hash.Add(PlayerStates[1].GetHashCode());
+            hash.Add(BoardState.GetBoardElementHashCode(EntityData));
             return hash.ToHashCode();
         }
     }

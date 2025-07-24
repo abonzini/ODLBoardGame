@@ -289,7 +289,7 @@ namespace EngineTests
                                     _ => 1,
                                 };
                                 int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                                int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
+                                int prePlayBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData); // Check hash beforehand
                                 // Play
                                 Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                                 Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
@@ -297,7 +297,7 @@ namespace EngineTests
                                 Assert.IsNotNull(cpu);
                                 // Check returned targets
                                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
-                                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
+                                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Hash remains the same as search shouldnt modify board or entities at all
                                 List<int> searchResultList = cpu.ReferenceEntities;
                                 Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                                 // Special cases
@@ -322,7 +322,7 @@ namespace EngineTests
                                 // Revert and hash check
                                 sm.UndoPreviousStep();
                                 Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
-                                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
+                                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData));
                             }
                         }
                     }
@@ -415,7 +415,7 @@ namespace EngineTests
                     // Pre-play prep
                     int expectedEntityNumber = (targetLocation == loc) ? 6 : 2; // 6 things if correct lane, otherwise only players
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                    int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
+                    int prePlayBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData); // Check hash beforehand
                     // Play
                     static int getFromLane(LaneID lane)
                     {
@@ -433,7 +433,7 @@ namespace EngineTests
                     Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Hash remains the same as search shouldnt modify board or entities at all
                     List<int> searchResultList = cpu.ReferenceEntities;
                     Assert.AreEqual(expectedEntityNumber, searchResultList.Count);
                     // Special cases
@@ -453,7 +453,7 @@ namespace EngineTests
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData));
                 }
             }
         }
@@ -533,7 +533,7 @@ namespace EngineTests
                     searchEffect.TempVariable = ord;
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                    int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
+                    int prePlayBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData); // Check hash beforehand
                     // Play
                     Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
@@ -541,7 +541,7 @@ namespace EngineTests
                     Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Hash remains the same as search shouldnt modify board or entities at all
                     List<int> searchResultList = cpu.ReferenceEntities;
                     Assert.AreEqual(1, searchResultList.Count); // Ordinals return a single value regardless
                     // Check correct results
@@ -563,7 +563,7 @@ namespace EngineTests
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData));
                 }
             }
         }
@@ -642,7 +642,7 @@ namespace EngineTests
                     searchEffect.TempVariable = num;
                     // Pre-play prep
                     int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
-                    int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode(); // Check hash beforehand
+                    int prePlayBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData); // Check hash beforehand
                     // Play
                     Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play search card
                     Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
@@ -650,7 +650,7 @@ namespace EngineTests
                     Assert.IsNotNull(cpu);
                     // Check returned targets
                     Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash rchanged because discard pile changed
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash remains the same as search shouldnt modify board or entities at all
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Hash remains the same as search shouldnt modify board or entities at all
                     List<int> searchResultList = cpu.ReferenceEntities;
                     Assert.AreEqual(Math.Abs(num), searchResultList.Count);
                     // Check correct results
@@ -674,7 +674,7 @@ namespace EngineTests
                     // Revert and hash check
                     sm.UndoPreviousStep();
                     Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
-                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
+                    Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData));
                 }
             }
         }

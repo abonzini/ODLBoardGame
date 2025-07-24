@@ -182,28 +182,28 @@ namespace EngineTests
                 sm.LoadGame(state); // Start from here
                 // Beginning of test
                 int prePlayHash = sm.DetailedState.GetHashCode();
-                int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode();
+                int prePlayBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
                 sm.PlayFromHand(1, 0); // The unit location itself doesn't matter really
                 int postPlayHash = sm.DetailedState.GetHashCode();
-                int postPlayBoardHash = sm.DetailedState.BoardState.GetHashCode();
+                int postPlayBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
                 Assert.AreNotEqual(prePlayHash, postPlayHash); // General hash has changed because of hand size and stuff
                 Assert.AreNotEqual(prePlayBoardHash, postPlayBoardHash); // This one is also different because of the subscribed triggers even tho the number of units remains the same
                 // Play, test "active" trigger in board
                 StepResult res = sm.TestActivateTrigger(TriggerType.ON_DEBUG_TRIGGERED, EffectLocation.BOARD, new EffectContext());
                 int postTriggerHash = sm.DetailedState.GetHashCode();
-                int postTriggerBoardHash = sm.DetailedState.BoardState.GetHashCode();
+                int postTriggerBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
                 // Now the interesting bit, obviously no effect should've happened but the trigger itself shoudl've cleaned the trigger of the dead unit
                 CpuState cpu = TestHelperFunctions.FetchDebugEvent(res); // Cpu in stack only if triggered
                 Assert.IsNull(cpu); // No debug present
                 Assert.AreNotEqual(postTriggerHash, postPlayHash); // General hash still different because of board different
                 Assert.AreEqual(prePlayBoardHash, postTriggerBoardHash); // But this one would be 100% same as the boards are identical again!
                 sm.UndoPreviousStep(); // Undo this trigger
-                Assert.AreEqual(sm.DetailedState.BoardState.GetHashCode(), postPlayBoardHash); // Re-added the zombie trigger...
+                Assert.AreEqual(sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData), postPlayBoardHash); // Re-added the zombie trigger...
                 Assert.AreEqual(sm.DetailedState.GetHashCode(), postPlayHash); // Last check
                 // Finally revert the unit play
                 sm.UndoPreviousStep();
                 Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
-                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode());
+                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData));
             }
         }
         [TestMethod]

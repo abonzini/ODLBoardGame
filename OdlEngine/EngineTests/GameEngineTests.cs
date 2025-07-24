@@ -261,9 +261,9 @@ namespace EngineTests
             GameStateMachine sm = new GameStateMachine(cardDb);
             sm.LoadGame(state); // Start from here
             // HASH CHECK
-            int emptyBoardHash = sm.DetailedState.BoardState.GetHashCode();
+            int emptyBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
             int emptyBoardStateHash = sm.DetailedState.GetHashCode();
-            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Hash would be recalculated but still the same
+            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Hash would be recalculated but still the same
             Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetHashCode()); // Hash would be recalculated but still the same
             // Will play card now
             Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play it
@@ -271,20 +271,73 @@ namespace EngineTests
             Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
             Assert.IsNotNull(res.Item2);
             // And check hash again
-            int boardWUnitHash = sm.DetailedState.BoardState.GetHashCode();
+            int boardWUnitHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
             int stateWUnitHash = sm.DetailedState.GetHashCode();
             Assert.AreNotEqual(emptyBoardHash, boardWUnitHash);
             Assert.AreNotEqual(emptyBoardStateHash, stateWUnitHash);
-            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetHashCode()); // Hash would be recalculated but still the same
+            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Hash would be recalculated but still the same
             Assert.AreEqual(stateWUnitHash, sm.DetailedState.GetHashCode()); // Hash would be recalculated but still the same
             // Modify unit (shady)
             int unitIndex = sm.DetailedState.BoardState.GetPlacedEntities(EntityType.UNIT).First();
             ((Unit)sm.DetailedState.EntityData[unitIndex]).Attack.BaseValue += 5; // Add 5 to attack, whatever
-            Assert.AreEqual(boardWUnitHash, sm.DetailedState.BoardState.GetHashCode()); // Board is 100% positional so this hash should remain the same
+            Assert.AreNotEqual(boardWUnitHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Unit changed
             Assert.AreNotEqual(stateWUnitHash, sm.DetailedState.GetHashCode()); // But now the state changed because unit data is different
             sm.UndoPreviousStep();
-            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Finally hash should've reverted and known
+            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Finally hash should've reverted and known
             Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetHashCode()); // Finally hash should've reverted and known
+        }
+        [TestMethod]
+        public void BoardHashOrderIndependent() // Verify playing units out of order results in same hash
+        {
+            int playerIndex = 0;
+            GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+            state.CurrentState = States.ACTION_PHASE;
+            state.CurrentPlayer = CurrentPlayer.PLAYER_1;
+            CardFinder cardDb = new CardFinder();
+            // Card 1: basic unit
+            cardDb.InjectCard(1, TestCardGenerator.CreateUnit(1, "UNIT", 0, [0, 4, 10], 1, 1, 1, 1));
+            // Card 1: basic unit 2
+            cardDb.InjectCard(2, TestCardGenerator.CreateUnit(2, "UNIT 2", 0, [0, 4, 10], 2, 1, 1, 1));
+            state.PlayerStates[playerIndex].Hand.AddToCollection(1); // Insert token cards
+            state.PlayerStates[playerIndex].Hand.AddToCollection(2);
+            state.PlayerStates[playerIndex].CurrentGold = 4; // Set gold to 4
+            GameStateMachine sm = new GameStateMachine(cardDb);
+            sm.LoadGame(state); // Start from here
+            // HASH CHECK
+            int emptyBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
+            int emptyBoardStateHash = sm.DetailedState.GetHashCode();
+            // Will play card now in first order (1->2)
+            Tuple<PlayContext, StepResult> res = sm.PlayFromHand(1, 0); // Play 1
+            Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+            Assert.IsNotNull(res.Item2);
+            res = sm.PlayFromHand(2, 4); // Play 2
+            Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+            Assert.IsNotNull(res.Item2);
+            int fullBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
+            int fullBoardStateHash = sm.DetailedState.GetHashCode();
+            Assert.AreNotEqual(emptyBoardHash, fullBoardHash); // Hashes changed
+            Assert.AreNotEqual(emptyBoardStateHash, fullBoardStateHash);
+            // Now revert, verify
+            sm.UndoPreviousStep();
+            sm.UndoPreviousStep();
+            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Hashes reverted
+            Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetHashCode());
+            // Will play card now in second order (2->1)
+            res = sm.PlayFromHand(2, 4); // Play 2
+            Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+            Assert.IsNotNull(res.Item2);
+            res = sm.PlayFromHand(1, 0); // Play 1
+            Assert.AreEqual(res.Item1.PlayOutcome, PlayOutcome.OK);
+            Assert.IsNotNull(res.Item2);
+            fullBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
+            fullBoardStateHash = sm.DetailedState.GetHashCode();
+            Assert.AreNotEqual(emptyBoardHash, fullBoardHash); // Hashes changed
+            Assert.AreNotEqual(emptyBoardStateHash, fullBoardStateHash);
+            // Now revert, verify
+            sm.UndoPreviousStep();
+            sm.UndoPreviousStep();
+            Assert.AreEqual(emptyBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Hashes reverted
+            Assert.AreEqual(emptyBoardStateHash, sm.DetailedState.GetHashCode());
         }
     }
     public static class InitialStatesGenerator // Generates a game state for test

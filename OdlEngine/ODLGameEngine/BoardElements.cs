@@ -132,14 +132,21 @@ namespace ODLGameEngine
         }
         public override int GetHashCode()
         {
+            throw new NotImplementedException("Can't use this, need to use the GetBoardElementHashCode function now");
+        }
+        public virtual int GetBoardElementHashCode(SortedList<int, LivingEntity> entityRef)
+        {
             HashCode hash = new HashCode();
             foreach (KeyValuePair<TriggerType, SortedSet<Tuple<int, EffectLocation>>> kvp in TriggerList)
             {
                 hash.Add(kvp.Key);
                 foreach (Tuple<int, EffectLocation> trigdata in kvp.Value)
                 {
-                    hash.Add(trigdata.Item1);
-                    hash.Add(trigdata.Item2);
+                    if (entityRef.TryGetValue(trigdata.Item1, out LivingEntity entity))
+                    {
+                        hash.Add(entity.Id); // Don't care about order of unit instancing, care about order of effects. I.e. two of the same effect in a row shouldn't affect this hash
+                        hash.Add(trigdata.Item2);
+                    }
                 }
             }
             return hash.ToHashCode();
@@ -158,14 +165,14 @@ namespace ODLGameEngine
         {
             ElementType = BoardElementType.TILE;
         }
-        public override int GetHashCode()
+        public override int GetBoardElementHashCode(SortedList<int, LivingEntity> entityRef)
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetHashCode()); // Adds trigger data
+            hash.Add(base.GetBoardElementHashCode(entityRef)); // Adds trigger data
             hash.Add(Coord);
             foreach (int entity in GetPlacedEntities(EntityType.UNIT | EntityType.BUILDING))
             {
-                hash.Add(entity);
+                hash.Add(entityRef[entity].GetHashCode());
             }
             return hash.ToHashCode();
         }
@@ -300,13 +307,13 @@ namespace ODLGameEngine
             int laneCoordinate = GetTileCoordinateConversion(LaneRelativeIndexType.RELATIVE_TO_PLAYER, inIndexType, inIndex, referencePlayer);
             return laneCoordinate == (Len - 1);
         }
-        public override int GetHashCode()
+        public override int GetBoardElementHashCode(SortedList<int, LivingEntity> entityRef)
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetHashCode()); // Adds trigger data
+            hash.Add(base.GetBoardElementHashCode(entityRef)); // Adds trigger data
             foreach (Tile tile in Tiles)
             {
-                hash.Add(tile.GetHashCode());
+                hash.Add(tile.GetBoardElementHashCode(entityRef));
             }
             return hash.ToHashCode();
         }
@@ -384,14 +391,13 @@ namespace ODLGameEngine
         {
             return GetLaneContainingTile(tile.Coord);
         }
-        //EntityListOperation(PlacedEntity entity, EntityListOperation op)
-        public override int GetHashCode()
+        public override int GetBoardElementHashCode(SortedList<int, LivingEntity> entityRef)
         {
             HashCode hash = new HashCode();
-            hash.Add(base.GetHashCode()); // Adds trigger data
-            hash.Add(PlainsLane.GetHashCode());
-            hash.Add(ForestLane.GetHashCode());
-            hash.Add(MountainLane.GetHashCode());
+            hash.Add(base.GetBoardElementHashCode(entityRef)); // Adds trigger data
+            hash.Add(PlainsLane.GetBoardElementHashCode(entityRef));
+            hash.Add(ForestLane.GetBoardElementHashCode(entityRef));
+            hash.Add(MountainLane.GetBoardElementHashCode(entityRef));
             return hash.ToHashCode();
         }
     }

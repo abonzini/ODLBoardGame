@@ -45,7 +45,7 @@ namespace EngineTests
                 Assert.AreEqual(1, optionRes.ValidTargets.Count);
                 Assert.AreEqual(unitId, optionRes.ValidTargets.First()); // Target is the unit (negative) id
                 // Pre play, ensure building's not there
-                int prePlayBoardHash = sm.DetailedState.BoardState.GetHashCode();
+                int prePlayBoardHash = sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData);
                 int prePlayStateHash = sm.DetailedState.GetHashCode();
                 int nextEntityIndex = sm.DetailedState.NextUniqueIndex;
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
@@ -53,14 +53,14 @@ namespace EngineTests
                 // Now I play the building
                 sm.PlayFromHand(1, unitId);
                 // Post play, building should STILL not be there because it insta-died
-                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Board shouldn't have changed at all
+                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Board shouldn't have changed at all
                 Assert.AreNotEqual(prePlayStateHash, sm.DetailedState.GetHashCode()); // Gamestate definitely changed because hands changed, unit, etc
                 Assert.AreNotEqual(nextEntityIndex, sm.DetailedState.NextUniqueIndex); // Also ensure building was at some point instantiated
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 Assert.AreEqual(sm.DetailedState.BoardState.GetLane(laneTarget).GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
                 // Finally, revert
                 sm.UndoPreviousStep();
-                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetHashCode()); // Board shouldn't have changed at all
+                Assert.AreEqual(prePlayBoardHash, sm.DetailedState.BoardState.GetBoardElementHashCode(sm.DetailedState.EntityData)); // Board shouldn't have changed at all
                 Assert.AreEqual(prePlayStateHash, sm.DetailedState.GetHashCode()); // Gamestate definitely changed because hands changed, unit, etc
                 Assert.AreEqual(nextEntityIndex, sm.DetailedState.NextUniqueIndex); // Also ensure building was at some point instantiated
                 Assert.AreEqual(sm.DetailedState.BoardState.GetPlacedEntities(EntityType.BUILDING, playerIndex).Count, 0);
