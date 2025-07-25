@@ -25,7 +25,7 @@ namespace GameInstance
         public const float ALPHA_BETA_THRESHOLD = 1f; // Alpha/beta +-1 to prune when (almost) certain winning
         public const float ALPHA_INITIAL = MIN_VALUE + ALPHA_BETA_THRESHOLD;
         public const float BETA_INITIAL = MAX_VALUE - ALPHA_BETA_THRESHOLD;
-        public const float WILDCARD_PROBABILITY_TRESHOLD = 0.5f; // A wildcard wil be discovered if the card has at least this chance of being in there
+        public const float WILDCARD_PROBABILITY_TRESHOLD = 0.75f; // A wildcard wil be discovered if the card has at least this chance of being in there
         public const float WILDCARD_VALUE_BOOST = 0.5F; // Boost applied to wildcards to encourage card draw even when card doesn't have an immediate deterministic value when "played"
     }
     public readonly struct NodeResult
@@ -37,6 +37,10 @@ namespace GameInstance
             Score = score;
             BestAction = action;
         }
+        public override string ToString()
+        {
+            return $"{BestAction}, {Score}";
+        }
     }
     public class MinMaxAgent
     {
@@ -47,8 +51,8 @@ namespace GameInstance
         int _maxTurnCounter;
         MinMaxWeights _weights;
         readonly CalculatorLut _calculatorLut;
-        Dictionary<int, NodeResult> _stateLut = new Dictionary<int, NodeResult>();
-        Stack<GameAction> _sharedActionStack = new Stack<GameAction>();
+        readonly Dictionary<int, NodeResult> _stateLut = new Dictionary<int, NodeResult>();
+        readonly Stack<GameAction> _sharedActionStack = new Stack<GameAction>();
         // PUBLIC FIELDS (ANALYTICS)
         public int NumberOfEvaluatedNodes { get; private set; }
         public int NumberOfEvaluatedDiscoveryNodes { get; private set; }

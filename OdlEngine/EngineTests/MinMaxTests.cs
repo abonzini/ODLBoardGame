@@ -652,6 +652,69 @@ namespace EngineTests
                 }
             }
         }
-        // Dedicate some time to a full game state around midgame, check time and stuff. Returns a play of card hopefully. Use base set cards for this one, flood deck with stuff and see what happens. Expecting a time estimate, node + depth evaluation and hope for no weird exceptions
+        [TestMethod]
+        public void FullTurn()
+        {
+            // Situation: Proposes an aggro-combo vs control-big-trebuchet game, uses standard cards
+            // Proposes both players as beginning players, and see what happens
+            // Asks Minmax to evaluate turn, hopes for good times, no exceptions and at least 1 action
+            string cardDataPath = ".\\..\\..\\..\\..\\..\\CardResources\\CardData";
+            // Can reuse the cardDb
+            CardFinder cardDb = new CardFinder(cardDataPath);
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            AssortedCardCollection p0Decklist = new AssortedCardCollection([3, 3, 3, 6, 6, 8, 9, 9, 9, 10, 10, 10, 13, 13, 14, 16, 16, 16, 17, 17, 17, 18, 18, 19, 19, 11, 11, 11, 15, 15]); // Aggro big, with a controly style
+            AssortedCardCollection p1Decklist = new AssortedCardCollection([3, 3, 3, 5, 5, 7, 7, 9, 9, 9, 11, 11, 11, 12, 12, 13, 13, 14, 16, 16, 16, 17, 17, 18, 18, 18, 20, 15, 15, 15]);
+            MinMaxWeights p0Weights = new MinMaxWeights()
+            {
+                Gold = [1, -1],
+                HandSize = [2, -2], // Cards are worth a bunch, try to deal w enemy cards without using many cards
+                Hp = [1, -0.5f], // Don't care much about opponent's HP but yes to mine, just trying to keep myself alive and win in the end
+                IsTallnessGrowthDirect = [true, true], // Tallness is better for me and harder to deal with
+                NBuildings = [2, -2],
+                UnitStatCount = [1, -1], // Think it's decent value
+                UnitTallness = [1, -1] // Yea w/e
+            };
+            MinMaxWeights p1Weights = new MinMaxWeights()
+            {
+                Gold = [1, -1],
+                HandSize = [2, -2], // Cards are worth a bunch, try to deal w enemy cards without using many cards
+                Hp = [0, -1], // Don't care much about my HP but try to reduce opponents as much as I can
+                IsTallnessGrowthDirect = [false, true], // Try to swarm, but opp is hard to deal with if tall
+                NBuildings = [2, -2],
+                UnitStatCount = [1, -1], // Think it's decent value
+                UnitTallness = [1, -1] // Yea w/e
+            };
+            PlayerInitialData p0InitData = new PlayerInitialData()
+            {
+                Name = "P0",
+                PlayerClass = PlayerTribe.BASE,
+                InitialDecklist = p0Decklist,
+            };
+            PlayerInitialData p1InitData = new PlayerInitialData()
+            {
+                Name = "P1",
+                PlayerClass = PlayerTribe.BASE,
+                InitialDecklist = p1Decklist,
+            };
+            foreach (CurrentPlayer startingPlayer in players)
+            {
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                if (startingPlayer == CurrentPlayer.PLAYER_1)
+                {
+                    sm.StartNewGame(p0InitData, p1InitData);
+                }
+                else
+                {
+                    sm.StartNewGame(p1InitData, p0InitData);
+                }
+                // Hypothetical opp deck (I know their cards this time)
+                AssortedCardCollection assumedOppDeck = (startingPlayer == CurrentPlayer.PLAYER_1) ? p1Decklist : p0Decklist;
+                // Now, to start the MinMax evaluation
+                MinMaxAgent minMax = new MinMaxAgent();
+                MinMaxWeights weights = (startingPlayer == CurrentPlayer.PLAYER_1) ? p0Weights : p1Weights;
+                List<GameAction> optimalActions = minMax.Evaluate(sm, weights, assumedOppDeck, 12); // Depth 16 attempts to simulate 8 turns
+                // No test really, just trying to ensure it reaches end with no exceptions or stuff
+            }
+        }
     }
 }

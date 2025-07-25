@@ -219,7 +219,7 @@
                 {
                     if (DetailedState.EntityData.TryGetValue(unitId, out LivingEntity unit)) // Check if unit is still alive, if not, no need to march
                     {
-                        UNIT_UnitMarch((Unit)unit); // Then the unit marches on!
+                        UNIT_UnitMarch((Unit)unit); // Then the unit marches on
                     }
                 }
             }

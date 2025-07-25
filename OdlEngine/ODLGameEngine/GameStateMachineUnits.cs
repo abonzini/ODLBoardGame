@@ -47,6 +47,7 @@
                 marchCtx.FirstTileMarch = true;
                 while (marchCtx.CurrentMovement > 0) // Advancement loop, will advance until n is 0. This allow external modifiers to halt advance hopefully
                 {
+                    if (!DetailedState.EntityData.ContainsKey(unit.UniqueId)) break; // If unit doesn't exist anymore (i.e. died mid march), It can't continue it, just end it here
                     // About to start march in the current tile
                     TRIGINTER_ProcessTrigger(TriggerType.ON_MARCH, DetailedState.BoardState.Tiles[unit.TileCoordinate], marchCtx); // Trigger
                     if (marchCtx.CurrentMovement <= 0) // Re-check because it may have been altered by a card effect
