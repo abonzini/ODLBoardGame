@@ -28,6 +28,16 @@ namespace GameInstance
         public const float WILDCARD_PROBABILITY_TRESHOLD = 0.5f; // A wildcard wil be discovered if the card has at least this chance of being in there
         public const float WILDCARD_VALUE_BOOST = 0.5F; // Boost applied to wildcards to encourage card draw even when card doesn't have an immediate deterministic value when "played"
     }
+    public readonly struct NodeResult
+    {
+        public float Score { get; }
+        public GameAction BestAction { get; }
+        public NodeResult(float score, GameAction action)
+        {
+            Score = score;
+            BestAction = action;
+        }
+    }
     public class MinMaxAgent
     {
         GameStateMachine _sm;
@@ -37,7 +47,8 @@ namespace GameInstance
         int _maxTurnCounter;
         MinMaxWeights _weights;
         readonly CalculatorLut _calculatorLut;
-        Dictionary<int, Tuple<float, GameAction>> _stateLut;
+        Dictionary<int, NodeResult> _stateLut = new Dictionary<int, NodeResult>();
+        Stack<GameAction> _sharedActionStack = new Stack<GameAction>();
         // PUBLIC FIELDS (ANALYTICS)
         public int NumberOfEvaluatedNodes { get; private set; }
         public int NumberOfEvaluatedDiscoveryNodes { get; private set; }
@@ -67,23 +78,24 @@ namespace GameInstance
             _opposingPlayerIndex = 1 - _evaluatedPlayerIndex;
             _maxTurnCounter = sm.DetailedState.TurnCounter + turnDepth;
             _weights = weights;
-            _stateLut = new Dictionary<int, Tuple<float, GameAction>>();
+            _stateLut.Clear();
+            _sharedActionStack.Clear();
             NumberOfEvaluatedDiscoveryNodes = 0;
             NumberOfEvaluatedNodes = 0;
             NumberOfEvaluatedTerminalNodes = 0;
             // Now, start hypothetical mode for the state machine, assume I need to optimise for current player (otherwise this doesn't make any sense)
             _sm.StartHypotheticalMode((int)_evaluatedPlayer, opponentCardPool);
             // Now, need to evaluate minmax node
-            Tuple<float, GameAction> nextResult = EvaluateNode(MinMaxConstants.ALPHA_INITIAL, MinMaxConstants.BETA_INITIAL, true); // Evaluates the current state (first state), alpha and beta have to be min/max accordingly
+            NodeResult nextResult = EvaluateNode(MinMaxConstants.ALPHA_INITIAL, MinMaxConstants.BETA_INITIAL, true); // Evaluates the current state (first state), alpha and beta have to be min/max accordingly
             // Finished evaluating minmax tree. Now all that remains is to traverse the tree with the chosen actions
             List<GameAction> solution = new List<GameAction>();
             bool finishedNavigatingTree = false;
             do
             {
-                if (nextResult != null && nextResult.Item2 != null) // If node has a found result with a valid action
+                if (nextResult.BestAction.Type != ActionType.NOP) // If node has a found result with a valid action
                 {
-                    solution.Add(nextResult.Item2);
-                    PerformAction(nextResult.Item2); // We also advance the state to the next step
+                    solution.Add(nextResult.BestAction);
+                    PerformAction(nextResult.BestAction); // We also advance the state to the next step
                     // Quick check to see if we finished
                     if (_sm.DetailedState.CurrentPlayer != _evaluatedPlayer) finishedNavigatingTree = true; // Not the current player anymore
                     else if (_sm.DetailedState.CurrentState != States.ACTION_PHASE) finishedNavigatingTree = true; // Not a playable state anymore
@@ -103,11 +115,11 @@ namespace GameInstance
             _sm.EndHypotheticalMode();
             return solution;
         }
-        Tuple<float, GameAction> EvaluateNode(float alpha, float beta, bool isInitial = false)
+        NodeResult EvaluateNode(float alpha, float beta, bool isInitial = false)
         {
             int nodeCurrentPlayerIndex = (int)_sm.DetailedState.CurrentPlayer;
             float score = 0;
-            GameAction bestAction = null;
+            GameAction bestAction = new GameAction();
             // Now, need to see which type of node this is
             if (_sm.DetailedState.CurrentState == States.EOG) // EOG, Terminal node and CurrentPlayer is the winner
             {
@@ -129,54 +141,55 @@ namespace GameInstance
             {
                 NumberOfEvaluatedNodes++;
                 int playerIndex = (int)_sm.DetailedState.CurrentPlayer;
-                // Firstly, get all possible actions into a list
-                List<GameAction> possibleActions = new List<GameAction>();
-                // First, check each of the cards in hand
-                foreach (KeyValuePair<int, int> cardInfo in _sm.DetailedState.PlayerStates[playerIndex].Hand.GetCards())
+                // Firstly, get all possible actions into the action stack
+                int numberOfPossibleActions = 0;
+                // Need to add stack in reverse order that I want, so first, EOT is always an option
+                _sharedActionStack.Push(new GameAction(ActionType.END_TURN));
+                numberOfPossibleActions++;
+                // Then, active power playable?
+                if (_sm.GetActivePowerPlayability().PlayOutcome == PlayOutcome.OK)
                 {
-                    if (cardInfo.Key == 0) { continue; } // Skip wildcards as they can't be played
+                    _sharedActionStack.Push(new GameAction(ActionType.ACTIVE_POWER));
+                    numberOfPossibleActions++;
+                }
+                // Finally, check each of the cards in hand
+                foreach (KeyValuePair<int, int> cardInfo in _sm.DetailedState.PlayerStates[playerIndex].Hand.GetCards().Where(card => card.Key != 0))
+                {
                     PlayContext cardPlayOptions = _sm.GetPlayabilityOptions(cardInfo.Key, PlayType.PLAY_FROM_HAND);
                     if (cardPlayOptions.PlayOutcome == PlayOutcome.OK) // If this card is playable
                     {
                         foreach (int target in cardPlayOptions.ValidTargets) // Will check play for all valid targets
                         {
-                            possibleActions.Add(new GameAction() { Type = ActionType.PLAY_CARD, Card = cardInfo.Key, Target = target });
+                            _sharedActionStack.Push(new GameAction(ActionType.PLAY_CARD, cardInfo.Key, target));
+                            numberOfPossibleActions++;
                         }
                     }
                 }
-                // Then, active power playable?
-                if (_sm.GetActivePowerPlayability().PlayOutcome == PlayOutcome.OK)
-                {
-                    possibleActions.Add(new GameAction() { Type = ActionType.ACTIVE_POWER });
-                }
-                // Finally, EOT is always an option
-                possibleActions.Add(new GameAction() { Type = ActionType.END_TURN });
                 // Finished assembling all the children nodes for this node
-                if (possibleActions.Count == 1 && isInitial) // In initial state, a node with only 1 child (EOT) will just return here, no need to explore
+                if (numberOfPossibleActions == 1 && isInitial) // In initial state, a node with only 1 child (EOT) will just return here, no need to explore
                 {
-                    bestAction = possibleActions[0];
+                    bestAction = _sharedActionStack.Pop();
                 }
                 else // Otherwise just explore all of them (unless pruned)
                 {
                     bool isMax = (playerIndex == _evaluatedPlayerIndex);
                     score = isMax ? float.NegativeInfinity : float.PositiveInfinity; // Init minmax score
-                    foreach (GameAction action in possibleActions) // Do each one of these then...
+                    bool pruningTriggered = false;
+                    for (int actionNumber = 0; actionNumber < numberOfPossibleActions; actionNumber++) // Do each one of these then...
                     {
                         float actionScore;
                         // Do action
+                        GameAction action = _sharedActionStack.Pop();
+                        if (pruningTriggered) continue; // If pruning happened, need to pop all remaining options before leaving
                         PerformAction(action);
                         // Evaluate state, check if stored in LUT (i.e. if exists), or create otherwise
                         int newStateHash = _sm.DetailedState.GetHashCode();
-                        if (_stateLut.TryGetValue(newStateHash, out Tuple<float, GameAction> stateResult)) // State already know, get directly
-                        {
-                            actionScore = stateResult.Item1;
-                        }
-                        else // Otherwise it's a brand new state that I need to evaluate and add to LUT
+                        if (!_stateLut.TryGetValue(newStateHash, out NodeResult stateResult)) // State already know, get directly
                         {
                             stateResult = EvaluateNode(alpha, beta);
                             _stateLut.Add(newStateHash, stateResult);
-                            actionScore = stateResult.Item1;
                         }
+                        actionScore = stateResult.Score;
                         _sm.UndoPreviousStep(); // Leave that previous state
                         // Finally, will choose whether the action is the best one so far
                         if (isMax) // Maximizer node
@@ -186,14 +199,8 @@ namespace GameInstance
                                 score = actionScore;
                                 bestAction = action;
                             }
-                            if (score > beta) // Pruning, break loop as there's no need to continue evaluating (this option will be chosen if agent has the chance)
-                            {
-                                break;
-                            }
-                            if (score > alpha) // Alpha update
-                            {
-                                alpha = score;
-                            }
+                            pruningTriggered = (score > beta); // Pruning, will break loop as there's no need to continue evaluating (this option will be chosen if agent has the chance)
+                            alpha = Math.Max(alpha, score);
                         }
                         else // Minimizer node
                         {
@@ -202,19 +209,13 @@ namespace GameInstance
                                 score = actionScore;
                                 bestAction = action;
                             }
-                            if (score < alpha) // Pruning, break loop as there's no need to continue evaluating (this option will be chosen if agent has the chance)
-                            {
-                                break;
-                            }
-                            if (score < beta) // Beta update
-                            {
-                                beta = score;
-                            }
+                            pruningTriggered = (score < alpha); // Pruning, will break loop as there's no need to continue evaluating (this option will be chosen if agent has the chance)
+                            beta = Math.Min(beta, score);
                         }
                     }
                 }
             }
-            return new Tuple<float, GameAction>(score, bestAction);
+            return new NodeResult(score, bestAction);
         }
         /// <summary>
         /// Performs the desired action on the game state machine
@@ -296,7 +297,7 @@ namespace GameInstance
             if (discoveryCardPool.CardCount == 0) // No cards to discover unfortunately, this is an uninteresting situation, just analyze state as I can without more discoveries
             {
                 _sm.SetPlayerHasRelevantWildcards(discoveryPlayerIndex, false);
-                score = EvaluateNode(alpha, beta).Item1;
+                score = EvaluateNode(alpha, beta).Score;
             }
             else if (nWildcards >= discoveryCardPool.CardCount) // In this case, all cards can fit in the hand so I just insert all of them
             {
@@ -311,7 +312,7 @@ namespace GameInstance
                 _sm.CloseEventStack();
                 _sm.SetPlayerHasRelevantWildcards(discoveryPlayerIndex, false); // I put all cards, surely they can't have relevant wildcards
                 // Then, analyze this state (it will continue to go deep discovering all other cards)
-                score = EvaluateNode(alpha, beta).Item1;
+                score = EvaluateNode(alpha, beta).Score;
                 // Undo the multi-discover step I just did (mantain SM consistency)
                 _sm.UndoPreviousStep();
             }
@@ -336,7 +337,7 @@ namespace GameInstance
                         // Delicate process, first, discover the card
                         _sm.DiscoverHypotheticalWildcard(discoveryPlayerIndex, card);
                         // Then, analyze this state
-                        score += EvaluateNode(alpha, beta).Item1 * probability;
+                        score += EvaluateNode(alpha, beta).Score * probability;
                         // Undo the step I just did (mantain SM consistency)
                         _sm.UndoPreviousStep();
                         remainingPercentage -= probability; // If all makes sense, this number has a min value of 0
@@ -345,7 +346,7 @@ namespace GameInstance
                 if (theresUninterestingCards) // Finally, in the chance there was some cards that were not considered, need to calculate "the rest"
                 {
                     _sm.SetPlayerHasRelevantWildcards(discoveryPlayerIndex, false); // No more interesting wildcards here
-                    score += EvaluateNode(alpha, beta).Item1 * remainingPercentage; // Add the weighted equivalent to this case
+                    score += EvaluateNode(alpha, beta).Score * remainingPercentage; // Add the weighted equivalent to this case
                 }
             }
             return score;

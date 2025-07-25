@@ -15,11 +15,17 @@ namespace GameInstance
     /// <summary>
     /// Describes a game action, needs a class since a few actions have a few params
     /// </summary>
-    public class GameAction
+    public readonly struct GameAction
     {
-        public ActionType Type { get; set; } = ActionType.NOP;
-        public int Card { get; set; } = 0; // Card associated to this action
-        public int Target { get; set; } = -1; // Target associated to this action
+        public ActionType Type { get; } = ActionType.NOP;
+        public int Card { get; } = 0; // Card associated to this action
+        public int Target { get; } = -1; // Target associated to this action
+        public GameAction(ActionType type = ActionType.NOP, int card = 0, int target = -1)
+        {
+            Type = type;
+            Card = card;
+            Target = target;
+        }
         public override string ToString()
         {
             return $"{Type}->{Card}->{Target}";
