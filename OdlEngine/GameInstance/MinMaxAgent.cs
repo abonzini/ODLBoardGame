@@ -42,7 +42,6 @@ namespace GameInstance
         public int NumberOfEvaluatedNodes { get; private set; }
         public int NumberOfEvaluatedDiscoveryNodes { get; private set; }
         public int NumberOfEvaluatedTerminalNodes { get; private set; }
-        public int NumberUniqueNodes { get { return (_stateLut != null) ? _stateLut.Count : 0; } }
         // FUNCTIONS
         public MinMaxAgent(CalculatorLut lut = null)
         {
@@ -75,13 +74,12 @@ namespace GameInstance
             // Now, start hypothetical mode for the state machine, assume I need to optimise for current player (otherwise this doesn't make any sense)
             _sm.StartHypotheticalMode((int)_evaluatedPlayer, opponentCardPool);
             // Now, need to evaluate minmax node
-            EvaluateNode(MinMaxConstants.ALPHA_INITIAL, MinMaxConstants.BETA_INITIAL, true); // Evaluates the current state (first state), alpha and beta have to be min/max accordingly
+            Tuple<float, GameAction> nextResult = EvaluateNode(MinMaxConstants.ALPHA_INITIAL, MinMaxConstants.BETA_INITIAL, true); // Evaluates the current state (first state), alpha and beta have to be min/max accordingly
             // Finished evaluating minmax tree. Now all that remains is to traverse the tree with the chosen actions
             List<GameAction> solution = new List<GameAction>();
             bool finishedNavigatingTree = false;
-            while (!finishedNavigatingTree)
+            do
             {
-                Tuple<float, GameAction> nextResult = _stateLut[_sm.DetailedState.GetHashCode()];
                 if (nextResult != null && nextResult.Item2 != null) // If node has a found result with a valid action
                 {
                     solution.Add(nextResult.Item2);
@@ -91,28 +89,25 @@ namespace GameInstance
                     else if (_sm.DetailedState.CurrentState != States.ACTION_PHASE) finishedNavigatingTree = true; // Not a playable state anymore
                     else if (_sm.PlayerHasRelevantWildcards(_evaluatedPlayerIndex)) finishedNavigatingTree = true; // I got wildcards now so I can't possibly continue advancing
                     // If there's additional non-deterministic situations, will add here
-                    else { } // Good to continue!
+                    else // Good to continue, get the next result of current action
+                    {
+                        nextResult = _stateLut[_sm.DetailedState.GetHashCode()];
+                    }
                 }
                 else // Otherwise we're done here as we can't go deeper
                 {
                     finishedNavigatingTree = true;
                 }
-            }
+            } while (!finishedNavigatingTree);
             // Can finish the hypothetical mode now, should reverse everything for us
             _sm.EndHypotheticalMode();
             return solution;
         }
-        float EvaluateNode(float alpha, float beta, bool isInitial = false)
+        Tuple<float, GameAction> EvaluateNode(float alpha, float beta, bool isInitial = false)
         {
             int nodeCurrentPlayerIndex = (int)_sm.DetailedState.CurrentPlayer;
             float score = 0;
             GameAction bestAction = null;
-            // Add this state into state LUT if I'm not there already (loop protection for now)
-            int stateHash = _sm.DetailedState.GetHashCode();
-            if (!_stateLut.ContainsKey(stateHash))
-            {
-                _stateLut.Add(stateHash, null);
-            }
             // Now, need to see which type of node this is
             if (_sm.DetailedState.CurrentState == States.EOG) // EOG, Terminal node and CurrentPlayer is the winner
             {
@@ -170,21 +165,17 @@ namespace GameInstance
                         float actionScore;
                         // Do action
                         PerformAction(action);
-                        // Evaluate state, check if stored in LUT (i.e. if exists)
-                        if (_stateLut.TryGetValue(_sm.DetailedState.GetHashCode(), out Tuple<float, GameAction> res))
+                        // Evaluate state, check if stored in LUT (i.e. if exists), or create otherwise
+                        int newStateHash = _sm.DetailedState.GetHashCode();
+                        if (_stateLut.TryGetValue(newStateHash, out Tuple<float, GameAction> stateResult)) // State already know, get directly
                         {
-                            if (res == null) // If null, means there's a loop, need to ignore this here
-                            {
-                                actionScore = score;
-                            }
-                            else
-                            {
-                                actionScore = res.Item1;
-                            }
+                            actionScore = stateResult.Item1;
                         }
-                        else // Otherwise it's a brand new state that I need to evaluate
+                        else // Otherwise it's a brand new state that I need to evaluate and add to LUT
                         {
-                            actionScore = EvaluateNode(alpha, beta);
+                            stateResult = EvaluateNode(alpha, beta);
+                            _stateLut.Add(newStateHash, stateResult);
+                            actionScore = stateResult.Item1;
                         }
                         _sm.UndoPreviousStep(); // Leave that previous state
                         // Finally, will choose whether the action is the best one so far
@@ -223,9 +214,7 @@ namespace GameInstance
                     }
                 }
             }
-            // Finally, update LUT value for this node and return
-            _stateLut[stateHash] = new Tuple<float, GameAction>(score, bestAction);
-            return score;
+            return new Tuple<float, GameAction>(score, bestAction);
         }
         /// <summary>
         /// Performs the desired action on the game state machine
@@ -307,7 +296,7 @@ namespace GameInstance
             if (discoveryCardPool.CardCount == 0) // No cards to discover unfortunately, this is an uninteresting situation, just analyze state as I can without more discoveries
             {
                 _sm.SetPlayerHasRelevantWildcards(discoveryPlayerIndex, false);
-                score = EvaluateNode(alpha, beta);
+                score = EvaluateNode(alpha, beta).Item1;
             }
             else if (nWildcards >= discoveryCardPool.CardCount) // In this case, all cards can fit in the hand so I just insert all of them
             {
@@ -322,7 +311,7 @@ namespace GameInstance
                 _sm.CloseEventStack();
                 _sm.SetPlayerHasRelevantWildcards(discoveryPlayerIndex, false); // I put all cards, surely they can't have relevant wildcards
                 // Then, analyze this state (it will continue to go deep discovering all other cards)
-                score = EvaluateNode(alpha, beta);
+                score = EvaluateNode(alpha, beta).Item1;
                 // Undo the multi-discover step I just did (mantain SM consistency)
                 _sm.UndoPreviousStep();
             }
@@ -347,7 +336,7 @@ namespace GameInstance
                         // Delicate process, first, discover the card
                         _sm.DiscoverHypotheticalWildcard(discoveryPlayerIndex, card);
                         // Then, analyze this state
-                        score += EvaluateNode(alpha, beta) * probability;
+                        score += EvaluateNode(alpha, beta).Item1 * probability;
                         // Undo the step I just did (mantain SM consistency)
                         _sm.UndoPreviousStep();
                         remainingPercentage -= probability; // If all makes sense, this number has a min value of 0
@@ -356,7 +345,7 @@ namespace GameInstance
                 if (theresUninterestingCards) // Finally, in the chance there was some cards that were not considered, need to calculate "the rest"
                 {
                     _sm.SetPlayerHasRelevantWildcards(discoveryPlayerIndex, false); // No more interesting wildcards here
-                    score += EvaluateNode(alpha, beta) * remainingPercentage; // Add the weighted equivalent to this case
+                    score += EvaluateNode(alpha, beta).Item1 * remainingPercentage; // Add the weighted equivalent to this case
                 }
             }
             return score;

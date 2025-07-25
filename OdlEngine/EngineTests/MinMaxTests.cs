@@ -390,7 +390,6 @@ namespace EngineTests
                 // Evaluate search results, a single winning node with end of turn as result 
                 Assert.AreEqual(1, winningActions.Count);
                 Assert.AreEqual(ActionType.END_TURN, winningActions[0].Type);
-                Assert.AreEqual(1, minMax.NumberUniqueNodes);
                 Assert.AreEqual(1, minMax.NumberOfEvaluatedNodes);
                 Assert.AreEqual(0, minMax.NumberOfEvaluatedTerminalNodes);
                 Assert.AreEqual(0, minMax.NumberOfEvaluatedDiscoveryNodes);

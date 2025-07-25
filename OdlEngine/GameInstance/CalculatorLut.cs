@@ -29,8 +29,8 @@ namespace GameInstance
             int deckSize = parameters.Item1;
             int handSize = parameters.Item2;
             int cardCount = parameters.Item3;
-            float result = 1.0f; // Start with a 100% chance
-            if (handSize < deckSize) // Otherwise it was still 100%
+            float result = (deckSize != 0) ? 1.0f : 0f; // 100% chance unless deck is empty in which case it's obviously 0
+            if (handSize < deckSize)
             {
                 for (int i = 0; i < handSize; i++) // Draw a sample for each card in hand, calculate the chance of NOT drawing
                 {
