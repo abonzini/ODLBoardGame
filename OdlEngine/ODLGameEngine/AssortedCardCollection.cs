@@ -16,6 +16,14 @@ namespace ODLGameEngine
         // Contains all cards sorted by count kind of like an inverse histogram. Useful for wildcard discovery calculations
         public SortedDictionary<int, HashSet<int>> CountHistogram = new SortedDictionary<int, HashSet<int>>(descendingComparer);
         // Methods and stuff
+        public AssortedCardCollection() { } // Normal constructor
+        public AssortedCardCollection(List<int> Deck) // Helper constructor for tests
+        {
+            foreach (int card in Deck)
+            {
+                AddToCollection(card);
+            }
+        }
         public int CardCount { get { return _size; } }
         /// <summary>
         /// Adds card to hand

@@ -209,11 +209,15 @@ namespace EngineTests
                 StepResult res = sm.EndTurn(); // Do my draw phase, trigger advance now
                 // Check if debug event is there
                 List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res);
-                Assert.AreEqual(2, cpus.Count);
+                Assert.AreEqual(4, cpus.Count);
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                // Want to make sure the entity activated order is speicfically first me and then the opp unit
-                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.ActivatedEntity.Owner);
-                Assert.AreEqual(opponentIndex, cpus[1].CurrentSpecificContext.ActivatedEntity.Owner);
+                // Want to make sure the entity that does the damage is first attacker and then defender
+                // Way it works is first the PRE_DAMAGE activates both from attacker and defender POV
+                // And then the defender's counter attack
+                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.Actor.Owner);
+                Assert.AreEqual(playerIndex, cpus[1].CurrentSpecificContext.Actor.Owner);
+                Assert.AreEqual(opponentIndex, cpus[2].CurrentSpecificContext.Actor.Owner);
+                Assert.AreEqual(opponentIndex, cpus[3].CurrentSpecificContext.Actor.Owner);
                 // Revert EVERYTHING and hash check
                 sm.UndoPreviousStep();
                 Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
@@ -256,7 +260,7 @@ namespace EngineTests
                 Assert.AreEqual(1, cpus.Count);
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
                 // Want to make sure the entity damaged specifically the opponent player
-                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.ActivatedEntity.Owner);
+                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.Actor.Owner);
                 Assert.AreEqual(EntityType.PLAYER, ((DamageContext)cpus[0].CurrentSpecificContext).Affected.EntityType);
                 Assert.AreEqual(opponentIndex, ((DamageContext)cpus[0].CurrentSpecificContext).Affected.Owner);
                 // Revert EVERYTHING and hash check
@@ -317,9 +321,9 @@ namespace EngineTests
                 List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res.Item2);
                 Assert.AreEqual(1, cpus.Count);
                 Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
-                // Want to make sure the entity damaged specifically the opponent player
-                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.ActivatedEntity.Owner);
-                Assert.AreEqual(EntityType.SKILL, cpus[0].CurrentSpecificContext.ActivatedEntity.EntityType);
+                // Want to make sure damage ctx is ok
+                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.Actor.Owner);
+                Assert.AreEqual(EntityType.SKILL, cpus[0].CurrentSpecificContext.Actor.EntityType);
                 Assert.AreEqual(EntityType.PLAYER, ((DamageContext)cpus[0].CurrentSpecificContext).Affected.EntityType);
                 Assert.AreEqual(opponentIndex, ((DamageContext)cpus[0].CurrentSpecificContext).Affected.Owner);
                 // Revert EVERYTHING and hash check

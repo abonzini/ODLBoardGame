@@ -39,6 +39,7 @@ namespace ODLGameEngine
         SUMMON_UNIT,
         MODIFIER,
         ASSERT,
+        ASSERT_ROLE,
         KILL_ENTITIES,
         EFFECT_DAMAGE,
         CARD_DRAW,

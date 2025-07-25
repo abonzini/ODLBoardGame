@@ -42,12 +42,16 @@
         /// Will check unit HP, and will kill unit if HP <= 0! This kills and deinits unit, very important!
         /// </summary>
         /// <param name="entity">Enity to verify</param>
+        /// <param name="cleanUpDeadEntity">Entity is cleaned if hp=0 (true unless more stuff has to happen beforehand, like death effects or more damage.</param>
         /// <returns>True if unit still alive</returns>
-        public bool LIVINGENTITY_CheckIfUnitAlive(LivingEntity entity)
+        public bool LIVINGENTITY_CheckIfUnitAlive(LivingEntity entity, bool cleanUpDeadEntity = true)
         {
             if (entity.Hp.Total - entity.DamageTokens <= 0) // Entity is dead, will process death and return accordingly
             {
-                LIVINGENTITY_Kill(entity);
+                if (cleanUpDeadEntity)
+                {
+                    LIVINGENTITY_Kill(entity);
+                }
                 return false;
             }
             else
@@ -88,13 +92,22 @@
         /// THIS ONLY RESOLVES DAMAGE, INTERACTION WRAPPING SHOULD BE OUTSIDE OF THIS
         /// </summary>
         /// <param name="damageContext">Context that contains all info about current combat</param>
+        /// <param name="victimCleanup">Cleans up victim if dead</param>
         /// <returns>The modified damage context (not a new instance!)</returns>
-        DamageContext LIVINGENTITY_DamageStep(DamageContext damageContext)
+        DamageContext LIVINGENTITY_DamageStep(DamageContext damageContext, bool victimCleanup = true)
         {
-            LivingEntity defender = damageContext.Affected;
+            // Pre damage
+            damageContext.ActivatedEntity = damageContext.Actor;
+            TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, damageContext); // Pre-damage call
+            if (damageContext.Actor.UniqueId != damageContext.Affected.UniqueId) // If the victim is a different entity
+            {
+                damageContext.ActivatedEntity = damageContext.Affected;
+                TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, damageContext);
+            }
+            // Now, the damage is processed and done
+            LivingEntity victim = damageContext.Affected;
             int damage = damageContext.DamageAmount;
-
-            int remainingHp = defender.Hp.Total - defender.DamageTokens;
+            int remainingHp = victim.Hp.Total - victim.DamageTokens;
             if (damage > remainingHp)
             {
                 damageContext.OverflowDamage = damage - remainingHp;
@@ -105,9 +118,16 @@
             {
                 remainingHp -= damage;
             }
-
-            ENGINE_ChangeEntityDamageTokens(defender, defender.Hp.Total - remainingHp);
-            damageContext.TargetDead = !LIVINGENTITY_CheckIfUnitAlive(defender);
+            ENGINE_ChangeEntityDamageTokens(victim, victim.Hp.Total - remainingHp);
+            damageContext.TargetDead = !LIVINGENTITY_CheckIfUnitAlive(victim, victimCleanup);
+            // Post damage
+            damageContext.ActivatedEntity = damageContext.Actor;
+            TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, damageContext); // Pre-damage call
+            if (damageContext.Actor.UniqueId != damageContext.Affected.UniqueId) // If the victim is a different entity
+            {
+                damageContext.ActivatedEntity = damageContext.Affected;
+                TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, damageContext);
+            }
             return damageContext;
         }
     }

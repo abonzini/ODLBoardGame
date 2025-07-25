@@ -55,14 +55,7 @@
                     case EffectType.SELECT_ENTITY:
                         { // In this case there's a simple, single BoardEntity target related to the ctx in question
                             List<int> res = new List<int>();
-                            IngameEntity tgt = effect.SearchCriterion switch
-                            {
-                                SearchCriterion.EFFECT_OWNING_ENTITY => specificContext.ActivatedEntity,
-                                SearchCriterion.ACTOR_ENTITY => specificContext.Actor,
-                                SearchCriterion.AFFECTED_ENTITY => ((AffectingEffectContext)specificContext).Affected,
-                                SearchCriterion.PLAY_TARGET_ENTITY => DetailedState.EntityData[((PlayContext)specificContext).PlayedTarget],
-                                _ => throw new NotImplementedException("Invalid target for entity selection")
-                            };
+                            IngameEntity tgt = SelectEntity(effect.SearchCriterion, cpu);
                             if (effect.TargetType.HasFlag(tgt.EntityType)) // The unit is of the valid type
                             {
                                 // Determine who owns this unit then
@@ -183,6 +176,14 @@
                             _ => (inputValue == 0)
                         };
                         break;
+                    case EffectType.ASSERT_ROLE:
+                        IngameEntity comparedEntity = SelectEntity(effect.SearchCriterion, cpu);
+                        breakLoop = effect.ModifierOperation switch // Breaks the loop on assert, but allows to use the NOT modifier to assert posi
+                        {
+                            ModifierOperation.NOT => (specificContext.ActivatedEntity.UniqueId == comparedEntity.UniqueId),
+                            _ => (specificContext.ActivatedEntity.UniqueId != comparedEntity.UniqueId)
+                        };
+                        break;
                     case EffectType.KILL_ENTITIES:
                         foreach (int entityTarget in cpu.ReferenceEntities)
                         {
@@ -205,12 +206,8 @@
                                 DamageAmount = inputValue,
                                 ActivatedEntity = cpu.CurrentSpecificContext.ActivatedEntity // The current activated entity will do the damage
                             };
-                            // PRE DAMAGE
-                            TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, effectDamageContext);
                             // Damage
                             effectDamageContext = LIVINGENTITY_DamageStep(effectDamageContext);
-                            // POST DAMAGE
-                            TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, effectDamageContext); // Trigger damage event
                             // TODO: Trigger death interactions
                         }
                         break;
@@ -395,6 +392,23 @@
             TARGETS_IN_REGION,
             LAST_PLAYER,
             END
+        }
+        /// <summary>
+        /// Selects a single entity given a criterion and a possibly necessary context
+        /// </summary>
+        /// <param name="searchCriterion">Defines what entity to look for</param>
+        /// <param name="cpuContext">Context used to find the entity</param>
+        /// <returns>The entity found</returns>
+        IngameEntity SelectEntity(SearchCriterion searchCriterion, CpuState cpuContext)
+        {
+            return searchCriterion switch
+            {
+                SearchCriterion.EFFECT_OWNING_ENTITY => cpuContext.CurrentSpecificContext.ActivatedEntity,
+                SearchCriterion.ACTOR_ENTITY => cpuContext.CurrentSpecificContext.Actor,
+                SearchCriterion.AFFECTED_ENTITY => ((AffectingEffectContext)cpuContext.CurrentSpecificContext).Affected,
+                SearchCriterion.PLAY_TARGET_ENTITY => DetailedState.EntityData[((PlayContext)cpuContext.CurrentSpecificContext).PlayedTarget],
+                _ => throw new NotImplementedException("Invalid target for entity selection")
+            };
         }
         /// <summary>
         /// Function that gets serch parameters as well as reference observer, and returns a series of valid entity targets.

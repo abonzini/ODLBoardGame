@@ -22,7 +22,7 @@
       {
         "EffectType": "SUMMON_UNIT",
         "TargetPlayer": "OWNER",
-        "TempVariable": 1
+        "TempVariable": 2
       }
     ]
   }

@@ -23,7 +23,7 @@
             constructionContext.ActivatedEntity = constructionContext.Affected;
             TRIGINTER_ProcessInteraction(InteractionType.UNIT_CONSTRUCTS_BUILDING, constructionContext);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
-            LIVINGENTITY_CheckIfUnitAlive(newSpawnedBuilding);
+            LIVINGENTITY_CheckIfUnitAlive(newSpawnedBuilding, true);
             // TODO: Construction events
             //ConstructionContext constructionContext = new ConstructionContext();
             //constructionContext.Affected = newSpawnedBuilding; // Construction context updated with actual building

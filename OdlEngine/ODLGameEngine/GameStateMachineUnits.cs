@@ -19,7 +19,7 @@
             // Places unit in correct coord
             LIVINGENTITY_InsertInTile(newSpawnedUnit, playContext.PlayedTarget);
             // In case unit has 0 hp or is hit by something, need to check by the end to make sure
-            LIVINGENTITY_CheckIfUnitAlive(newSpawnedUnit);
+            LIVINGENTITY_CheckIfUnitAlive(newSpawnedUnit, true);
             return newSpawnedUnit;
         }
         /// <summary>
@@ -103,28 +103,26 @@
                 Affected = attacker,
                 DamageAmount = ((Unit)defender).Attack.Total
             } : null; // Defender does damage or not, depending
-            // Pre damage step
-            attackerDmgCtx.ActivatedEntity = attacker;
-            TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, attackerDmgCtx);
-            if (defenseDamage)
-            {
-                defenderDmgCtx.ActivatedEntity = defender;
-                TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, defenderDmgCtx);
-            }
+            bool killDeferred = (defender.EntityType != EntityType.PLAYER); // If a player is attacked, cleanup is performed no matter what, otherwise need to defer death for later
             // Actual damage step
-            attackerDmgCtx = LIVINGENTITY_DamageStep(attackerDmgCtx);
+            attackerDmgCtx = LIVINGENTITY_DamageStep(attackerDmgCtx, !killDeferred);
             if (defenseDamage)
             {
                 // If defender was also a unit, then the attacker also receives damage
-                defenderDmgCtx = LIVINGENTITY_DamageStep(defenderDmgCtx);
+                defenderDmgCtx = LIVINGENTITY_DamageStep(defenderDmgCtx, !killDeferred);
             }
-            // Post damage interactions for both entities
-            TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, attackerDmgCtx);
-            if (defenseDamage)
+            // Finally, if cleanup didn't happen, need to verify
+            if (killDeferred)
             {
-                TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, defenderDmgCtx);
+                if (attackerDmgCtx.TargetDead) // Defender died it seems
+                {
+                    LIVINGENTITY_Kill(defender);
+                }
+                if (defenderDmgCtx != null && defenderDmgCtx.TargetDead)
+                {
+                    LIVINGENTITY_Kill(attacker);
+                }
             }
-            // TODO: Trigger death interactions
         }
         /// <summary>
         /// The event that occurs when a unit steps on a building
@@ -160,11 +158,8 @@
                     DamageAmount = 1,
                     ActivatedEntity = unit
                 };
-                TRIGINTER_ProcessInteraction(InteractionType.PRE_DAMAGE, damageCtx);
                 // Actual damage step
                 damageCtx = LIVINGENTITY_DamageStep(damageCtx);
-                // Post damage interactions for both entities
-                TRIGINTER_ProcessInteraction(InteractionType.POST_DAMAGE, damageCtx);
             }
         }
     }

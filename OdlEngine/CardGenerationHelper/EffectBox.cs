@@ -86,6 +86,7 @@ namespace CardGenerationHelper
                 EffectType.SUMMON_UNIT => [TargetPlayerLabel, TargetPlayerEnumBox, InputBox, InputBox, MultiVariableBox, MultiVariableLabel],
                 EffectType.MODIFIER => [ModifierOperationBox, ModifierOperationLabel, InputBox, InputLabel, OutputBox, OutputLabel, TargetPlayerEnumBox, TargetPlayerLabel, MultiVariableBox, MultiVariableLabel],
                 EffectType.ASSERT => [InputBox, InputLabel, MultiVariableLabel, MultiVariableBox, ModifierOperationLabel, ModifierOperationBox],
+                EffectType.ASSERT_ROLE => [SearchCriterionBox, SearchCriterionLabel, ModifierOperationLabel, ModifierOperationBox],
                 EffectType.KILL_ENTITIES => [],
                 EffectType.EFFECT_DAMAGE => [InputBox, InputLabel, MultiVariableLabel, MultiVariableBox],
                 EffectType.CARD_DRAW => [InputBox, InputLabel, MultiVariableLabel, MultiVariableBox, TargetPlayerLabel, TargetPlayerEnumBox],

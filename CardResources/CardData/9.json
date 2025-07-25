@@ -16,6 +16,10 @@
   "Interactions": {
     "POST_DAMAGE": [
       {
+        "EffectType": "ASSERT_ROLE",
+        "SearchCriterion": "ACTOR_ENTITY"
+      },
+      {
         "EffectType": "ASSERT",
         "Input": "DAMAGE_AMOUNT"
       },

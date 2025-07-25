@@ -175,6 +175,12 @@ Useful for effect with complex conditions where a part of the effect is conditio
     - ```Input``` contains the value $n$ to assert
     - ```ModifierOperation``` can be used but it only checks the ```NOT``` operation, in which case the asser asserts $\neq 0$. Other options just assert $=0$
 
+- ```ASSERT_ROLE``` is like assert, ensures the entity currently activating it's effect it's a specific role. For example if in combat, ensure it's only activated when it is the unit dealing the damage. This is because many interactions can happen from both POVs, both for actor and affected.
+
+    Parameters:
+    - ```SearchCriterion``` determines which entity will be asserted
+    - ```ModifierOperation``` can be used but it only checks the ```NOT``` operation, in which case the asser asserts $\neq$. Other options just assert $=$
+
 - ```KILL_ENTITIES``` insta-kills (no damage step) each of the references on the current reference list
 
 - ```EFFECT_DAMAGE``` deals effect damage to the reference targets. Similar to combat output but processed on a different place. There's not Defender attack, even if damage is dealt by unit.

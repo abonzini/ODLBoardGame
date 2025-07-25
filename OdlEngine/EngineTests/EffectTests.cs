@@ -1944,6 +1944,58 @@ namespace EngineTests
             }
         }
         [TestMethod]
+        public void AssertRole()
+        {
+            // Normally a combat triggers twice for pre/post damage, given it happens for attacker and defender
+            // Assert can filter so that only happens if I'm actor.
+            // Parallel to PostDamageInteractionCombatUnitVUnit which tests when no assertion is used
+            CurrentPlayer[] players = [CurrentPlayer.PLAYER_1, CurrentPlayer.PLAYER_2]; // Will test both
+            foreach (CurrentPlayer player in players)
+            {
+                int playerIndex = (int)player;
+                int opponentIndex = 1 - playerIndex;
+                GameStateStruct state = TestHelperFunctions.GetBlankGameState();
+                state.CurrentState = States.ACTION_PHASE;
+                state.CurrentPlayer = (CurrentPlayer)opponentIndex; // So I can end turn
+                // Cards
+                CardFinder cardDb = new CardFinder();
+                // Card 1: Unit that pushes debug effect when damaging something
+                Unit unit = TestCardGenerator.CreateUnit(1, "DAMAGE_TRIGGER_UNITS", 0, [0, 4, 10], 2, 1, 1, 1);
+                Effect assertActor = new Effect()
+                {
+                    EffectType = EffectType.ASSERT_ROLE,
+                    SearchCriterion = SearchCriterion.ACTOR_ENTITY
+                };
+                Effect debugEffect = new Effect()
+                {
+                    EffectType = EffectType.STORE_DEBUG_IN_EVENT_PILE,
+                };
+                unit.Interactions = new Dictionary<InteractionType, List<Effect>>();
+                unit.Interactions.Add(InteractionType.POST_DAMAGE, [assertActor, debugEffect]);
+                // I'll load the game
+                GameStateMachine sm = new GameStateMachine(cardDb);
+                sm.LoadGame(state); // Start from here
+                // Now add the units in the board
+                int tileCoord = 1; // Wherever
+                sm.UNIT_PlayUnit(playerIndex, new PlayContext() { Actor = unit, PlayedTarget = tileCoord }); // For p1
+                sm.UNIT_PlayUnit(opponentIndex, new PlayContext() { Actor = unit, PlayedTarget = tileCoord }); // For p2
+                sm.CloseEventStack();
+                // Before the advance
+                int prePlayHash = sm.DetailedState.GetHashCode(); // Check hash beforehand
+                StepResult res = sm.EndTurn(); // Do my draw phase, trigger advance now
+                // Check if debug event is there
+                List<CpuState> cpus = TestHelperFunctions.FetchDebugEvents(res);
+                Assert.AreEqual(2, cpus.Count);
+                Assert.AreNotEqual(prePlayHash, sm.DetailedState.GetHashCode()); // Hash obviously changed
+                // If no assert role, there'd be 4 events but now there will be only 2, for when they're actors
+                Assert.AreEqual(playerIndex, cpus[0].CurrentSpecificContext.Actor.Owner);
+                Assert.AreEqual(opponentIndex, cpus[1].CurrentSpecificContext.Actor.Owner);
+                // Revert EVERYTHING and hash check
+                sm.UndoPreviousStep();
+                Assert.AreEqual(prePlayHash, sm.DetailedState.GetHashCode());
+            }
+        }
+        [TestMethod]
         public void MarchRelatedVariables()
         {
             // Pretend a march is occurring and see if we can read/write corresponding values
